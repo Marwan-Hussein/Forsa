@@ -1,0 +1,6 @@
+@Forsa_HostAddress = http://localhost:5167
+
+GET {{Forsa_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
