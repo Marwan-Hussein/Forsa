@@ -1,59 +1,57 @@
 ﻿# ################################################################################
-# # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+# Visual Studio / ASP.NET Core .gitignore (Clean Version)
 # ################################################################################
 
-/Forsa/.vs/Forsa.slnx
-# # Build folders
+# Build folders
+bin/
+obj/
 
-# bin/
-# obj/
+# Visual Studio files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
 
-# # Visual Studio files
-# .vs/
-# *.user
-# *.suo
-# *.userosscache
-# *.sln.docstates
+# Logs
+*.log
 
-# # Logs
-# *.log
+# OS files
+.DS_Store
+Thumbs.db
 
-# # OS files
-# .DS_Store
-# Thumbs.db
+# Environment files (VERY IMPORTANT)
+appsettings.Development.json
+appsettings.Local.json
 
-# # Environment files (VERY IMPORTANT)
-# appsettings.Development.json
-# appsettings.Local.json
+# Secrets (never push these)
+secrets.json
 
-# # Secrets (never push these)
-# secrets.json
+# Publish output
+publish/
 
-# # Publish output
-# publish/
+# Node modules (if frontend inside project)
+node_modules/
 
-# # Node modules (if frontend inside project)
-# node_modules/
+# EF Core temp / design files
+*.dbmdl
 
-# # EF Core migrations snapshot temp files
-# *.dbmdl
+# Coverage reports
+coverage/
+*.coverage
+*.coveragexml
 
-# # Coverage reports
-# coverage/
-# *.coverage
-# *.coveragexml
+# Temporary files
+*.tmp
+*.temp
 
-# # Temporary files
-# *.tmp
-# *.temp
+# SQLite DB (optional)
+*.db
+*.sqlite
 
-# # SQLite DB (optional depending on your case)
-# *.db
-# *.sqlite
+# Package managers
+packages/
 
-# # Package managers
-# packages/
-
-# # Resharper
-# _ReSharper*/
-# *.DotSettings.user
+# Resharper
+_ReSharper*/
+*.DotSettings.user
