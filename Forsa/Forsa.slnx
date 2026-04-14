@@ -1,3 +1,6 @@
 <Solution>
+  <Project Path="../Application/Application.csproj" Id="2b53cc2b-dfda-4e55-8460-f10bdc404b92" />
+  <Project Path="../Domain/Domain.csproj" Id="c6b46f51-8386-457f-89b0-f2e174224e01" />
+  <Project Path="../Infrastructure/Infrastructure.csproj" Id="8920710b-e1f4-4bb6-862d-572b8d402516" />
   <Project Path="Forsa.csproj" />
 </Solution>
