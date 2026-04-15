@@ -1,0 +1,242 @@
+import type { Event, Organization, Booking, Review } from "../types";
+
+export type { Event, Organization, Booking, Review };
+
+export const mockEvents: Event[] = [
+  {
+    id: "1",
+    title: "Tech Conference 2026: Future of AI",
+    date: "2026-03-25",
+    time: "9:00 AM - 5:00 PM",
+    location: "San Francisco Convention Center",
+    attendees: 1240,
+    price: 299,
+    category: "Business",
+    image: "tech conference artificial intelligence",
+    organizerId: "org1",
+    organizerName: "Tech Innovators Inc",
+    description: "Join us for the most comprehensive AI conference of the year. Learn from industry leaders, network with professionals, and discover the latest innovations in artificial intelligence and machine learning.",
+    isFeatured: true,
+    capacity: 2000,
+    tags: ["AI", "Technology", "Networking", "Innovation"],
+  },
+  {
+    id: "2",
+    title: "Summer Music Festival 2026",
+    date: "2026-04-15",
+    time: "2:00 PM - 11:00 PM",
+    location: "Central Park, New York",
+    attendees: 5000,
+    price: 150,
+    category: "Music",
+    image: "outdoor music festival concert",
+    organizerId: "org2",
+    organizerName: "Live Music Events",
+    description: "Experience an unforgettable day of live music featuring top artists from around the world. Food trucks, craft beer, and amazing vibes!",
+    isFeatured: true,
+    capacity: 8000,
+    tags: ["Music", "Festival", "Outdoor", "Entertainment"],
+  },
+  {
+    id: "3",
+    title: "Creative Design Workshop",
+    date: "2026-03-20",
+    time: "10:00 AM - 4:00 PM",
+    location: "Design Hub, Los Angeles",
+    attendees: 85,
+    price: "Free",
+    category: "Art",
+    image: "creative design workshop art",
+    organizerId: "org3",
+    organizerName: "Design Academy",
+    description: "A hands-on workshop for aspiring designers. Learn the latest design trends, tools, and techniques from experienced professionals.",
+    isFeatured: false,
+    capacity: 100,
+    tags: ["Design", "Workshop", "Creative", "Education"],
+  },
+  {
+    id: "4",
+    title: "Startup Networking Mixer",
+    date: "2026-03-18",
+    time: "6:00 PM - 9:00 PM",
+    location: "Innovation Center, Austin",
+    attendees: 240,
+    price: 25,
+    category: "Business",
+    image: "business networking startup event",
+    organizerId: "org1",
+    organizerName: "Tech Innovators Inc",
+    description: "Connect with fellow entrepreneurs, investors, and startup enthusiasts. Great opportunity to pitch your ideas and find co-founders.",
+    isFeatured: false,
+    capacity: 300,
+    tags: ["Networking", "Startup", "Business", "Entrepreneurship"],
+  },
+  {
+    id: "5",
+    title: "Marathon Training Camp",
+    date: "2026-04-01",
+    time: "6:00 AM - 10:00 AM",
+    location: "City Sports Complex, Boston",
+    attendees: 320,
+    price: 50,
+    category: "Sports",
+    image: "marathon running sports training",
+    organizerId: "org4",
+    organizerName: "Fitness First",
+    description: "Prepare for your next marathon with professional trainers. All fitness levels welcome!",
+    isFeatured: false,
+    capacity: 500,
+    tags: ["Sports", "Health", "Training", "Fitness"],
+  },
+  {
+    id: "6",
+    title: "Food & Wine Tasting Experience",
+    date: "2026-03-22",
+    time: "7:00 PM - 10:00 PM",
+    location: "Grand Hotel, Chicago",
+    attendees: 180,
+    price: 120,
+    category: "Food",
+    image: "wine tasting food gourmet",
+    organizerId: "org5",
+    organizerName: "Culinary Delights",
+    description: "An evening of exquisite cuisine paired with premium wines. Meet renowned chefs and sommeliers.",
+    isFeatured: true,
+    capacity: 200,
+    tags: ["Food", "Wine", "Culinary", "Luxury"],
+  },
+  {
+    id: "7",
+    title: "Digital Marketing Masterclass",
+    date: "2026-04-10",
+    time: "1:00 PM - 6:00 PM",
+    location: "Business Center, Seattle",
+    attendees: 150,
+    price: 199,
+    category: "Education",
+    image: "digital marketing business education",
+    organizerId: "org6",
+    organizerName: "Marketing Pros",
+    description: "Master the art of digital marketing with hands-on sessions covering SEO, social media, and content marketing.",
+    isFeatured: false,
+    capacity: 200,
+    tags: ["Marketing", "Education", "Business", "Digital"],
+  },
+  {
+    id: "8",
+    title: "Jazz Night Under the Stars",
+    date: "2026-03-27",
+    time: "8:00 PM - 12:00 AM",
+    location: "Riverside Park, Portland",
+    attendees: 420,
+    price: 45,
+    category: "Music",
+    image: "jazz concert night outdoor",
+    organizerId: "org2",
+    organizerName: "Live Music Events",
+    description: "Enjoy smooth jazz performances by talented musicians in a beautiful outdoor setting.",
+    isFeatured: false,
+    capacity: 600,
+    tags: ["Music", "Jazz", "Outdoor", "Evening"],
+  },
+];
+
+export const mockOrganizations: Organization[] = [
+  {
+    id: "org1",
+    name: "Tech Innovators Inc",
+    description: "Leading technology events and conferences worldwide",
+    logo: "🚀",
+    eventsCount: 24,
+    followersCount: 15420,
+    categories: ["Technology", "Business", "Innovation"],
+  },
+  {
+    id: "org2",
+    name: "Live Music Events",
+    description: "Bringing the best live music experiences to you",
+    logo: "🎵",
+    eventsCount: 48,
+    followersCount: 32100,
+    categories: ["Music", "Entertainment"],
+  },
+  {
+    id: "org3",
+    name: "Design Academy",
+    description: "Empowering creative minds through workshops and events",
+    logo: "🎨",
+    eventsCount: 16,
+    followersCount: 8500,
+    categories: ["Design", "Art", "Education"],
+  },
+  {
+    id: "org4",
+    name: "Fitness First",
+    description: "Your partner in health and fitness journey",
+    logo: "💪",
+    eventsCount: 32,
+    followersCount: 12300,
+    categories: ["Sports", "Health", "Wellness"],
+  },
+  {
+    id: "org5",
+    name: "Culinary Delights",
+    description: "Exceptional food and beverage experiences",
+    logo: "🍽️",
+    eventsCount: 28,
+    followersCount: 9800,
+    categories: ["Food", "Wine", "Culinary"],
+  },
+  {
+    id: "org6",
+    name: "Marketing Pros",
+    description: "Professional marketing training and certification",
+    logo: "📊",
+    eventsCount: 20,
+    followersCount: 11200,
+    categories: ["Marketing", "Business", "Education"],
+  },
+];
+
+// Mock reviews storage
+export const mockReviews: Review[] = [
+  {
+    id: "rev1",
+    eventId: "7",
+    userId: "user1",
+    userName: "John Doe",
+    rating: 5,
+    comment: "Outstanding event! The instructors were knowledgeable and the hands-on sessions were incredibly valuable. I learned so much about digital marketing strategies that I can apply immediately to my business. Highly recommend!",
+    createdAt: "2025-12-12T10:30:00Z",
+  },
+  {
+    id: "rev2",
+    eventId: "3",
+    userId: "user1",
+    userName: "John Doe",
+    rating: 4,
+    comment: "Really enjoyed this workshop! Great speakers and excellent networking opportunities. The only downside was that some sessions felt a bit rushed. Would love to see a two-day format next time.",
+    createdAt: "2025-10-22T15:45:00Z",
+  },
+];
+
+// Helper function to get reviews for an event
+export const getEventReviews = (eventId: string): Review[] => {
+  return mockReviews.filter((review) => review.eventId === eventId);
+};
+
+// Helper function to get user review for an event
+export const getUserReviewForEvent = (eventId: string, userId: string = "user1"): Review | undefined => {
+  return mockReviews.find((review) => review.eventId === eventId && review.userId === userId);
+};
+
+// Helper function to add a review
+export const addReview = (review: Omit<Review, "id" | "createdAt">): Review => {
+  const newReview: Review = {
+    ...review,
+    id: `rev${mockReviews.length + 1}`,
+    createdAt: new Date().toISOString(),
+  };
+  mockReviews.push(newReview);
+  return newReview;
+};
