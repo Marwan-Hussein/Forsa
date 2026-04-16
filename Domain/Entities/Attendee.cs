@@ -19,5 +19,14 @@ namespace Domain.Entities
 
         public int UserId { get; set;  }
         public User User { get; set; }
+
+
+
+
+
+        public WishListItem WishList { get; set; }
+
+        public AttendeeInterest AttendeeInterest { get; set; }
+        public List<AttendeeInterest> AttendeeInterests { get; set; }
     }
 }
