@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities
+namespace Domain.ENUMs
 {
-    public class Admin : ApplicationUser
+    public enum DeliveryMethod
     {
-       
+        Email = 1,
+        WhatsApp = 2,
+        Both = 3
     }
 }

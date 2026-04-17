@@ -7,15 +7,10 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    public class Owner
+    public class Owner : ApplicationUser
     {
-        public int OwnerId { get; set; }
-        //public int UserId { get; set; }
-        //public User user { get; set;  }
 
-
-        // relations
-        public List<Place> Places { get; set; }
-
+        // Relationships
+        public List <Place> Places { get; set; }
     }
 }
