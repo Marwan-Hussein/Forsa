@@ -22,9 +22,10 @@ namespace Domain.Entities
         public bool IsLocked { get; set; }
         public string? Reason { get; set; }
 
-        // Relationships
+        // relationsships
         public List<PlaceMedia> PlaceMedias { get; set; }
         public Owner Owner { get; set; }
+        [ForeignKey("Owner")]
         public int? OwnerId { get; set; }
         // 1 to many place to booking request
         // to do
