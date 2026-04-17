@@ -10,11 +10,12 @@ namespace Domain.Entities
     public class Owner
     {
         public int OwnerId { get; set; }
+        //public int UserId { get; set; }
+        //public User user { get; set;  }
 
 
-
-        public int UserId { get; set; }
-        public User user { get; set;  }
+        // relations
+        public List<Place> Places { get; set; }
 
     }
 }

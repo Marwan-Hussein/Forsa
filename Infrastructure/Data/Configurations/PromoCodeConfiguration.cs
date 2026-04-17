@@ -9,17 +9,11 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Data.Configurations
 {
-    internal class OwnerConfiguration : IEntityTypeConfiguration<Owner>
+    internal class PromoCodeConfiguration : IEntityTypeConfiguration<PromoCode>
     {
-        public void Configure(EntityTypeBuilder<Owner> O)
+        public void Configure(EntityTypeBuilder<PromoCode> builder)
         {
-
-
-            O.HasKey(o => o.OwnerId);
-
-            //O.HasOne(o => o.user)
-            //    .WithOne(o => o.Owner)
-            //    .HasForeignKey<Owner>(o=> o.UserId);
+            throw new NotImplementedException();
         }
     }
 }
