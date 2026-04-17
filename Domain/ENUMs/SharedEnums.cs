@@ -29,4 +29,23 @@
         Sent = 2,
         Failed = 3
     }
+    public enum EventStatus
+    {
+        Draft,
+        Published,
+        Cancelled,
+        Completed
+    }
+
+    public enum BookingStatus
+    {
+        Confirmed,
+        Cancelled
+    }
+
+    public enum MediaType
+    {
+        Image,
+        Video
+    }
 }
