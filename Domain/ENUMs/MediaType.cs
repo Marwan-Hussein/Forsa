@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities
+namespace Domain.ENUMs
 {
-    public class Admin : ApplicationUser
+    public enum MediaType
     {
-       
+        Image = 1,
+        Video = 2
     }
 }

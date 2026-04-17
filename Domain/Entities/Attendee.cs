@@ -7,11 +7,9 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    public class Attendee
+    public class Attendee : ApplicationUser
     {
-        public int AttendeeId { get; set; }
-
-        public int LoyaltyPoint { get; set; } 
+        public int LoyaltyPoint { get; set; }
 
         
 
@@ -24,13 +22,12 @@ namespace Domain.Entities
 
 
 
- 
+        public WishListItem WishList { get; set; }
+
         public AttendeeInterest AttendeeInterest { get; set; }
         public List<AttendeeInterest> AttendeeInterests { get; set; }
 
-        // One to one relationship
-        public WishListItem WishListItem { get; set; }
-        public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
-        public ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
+        public ICollection<Booking> Bookings { get; set; };
+        public ICollection<Feedback> Feedbacks { get; set; };
     }
 }

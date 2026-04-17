@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    public class WishListItem
+    public class AttendeeAttendeeInterestes
     {
-        public int WishListItemId { get; set; }
-
         public int AttendeeId { get; set; }
-        public Attendee Attendee { get; set; }
+        public int AttendeeInterestId { get; set; }
 
-        public ICollection<Event> Events { get; set; };
+        public Attendee Attendee{ get; set; }
+        public AttendeeInterest AttendeeInterest{ get; set; }
     }
 }

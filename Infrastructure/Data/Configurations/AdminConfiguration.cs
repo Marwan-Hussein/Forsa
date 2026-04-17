@@ -14,13 +14,7 @@ namespace Infrastructure.Data.Configurations
         public void Configure(EntityTypeBuilder<Admin> A)
         {
             A.ToTable("Admins");
-
-            A.HasKey(a => a.AdminId);
-
-            A.HasOne(a => a.User)
-                   .WithOne(u => u.Admin)
-                   .HasForeignKey<Admin>(a => a.UserId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            
         }
     }
 }
