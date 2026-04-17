@@ -1,4 +1,6 @@
-﻿using System;
+using Domain.Entities.AttendeeEntities;
+using Domain.Entities.EventEntities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +15,6 @@ namespace Domain.Entities
         public int AttendeeId { get; set; }
         public Attendee Attendee { get; set; }
 
-        public ICollection<Event> Events { get; set; };
+        public ICollection<Event> Events { get; set; }
     }
 }

@@ -1,4 +1,7 @@
-﻿namespace Domain.Entities
+﻿using Domain.Entities.AttendeeEntities;
+using Domain.Entities.EventEntities;
+
+namespace Domain.Entities
 {
     public class Feedback
     {

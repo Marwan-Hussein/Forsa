@@ -1,19 +1,22 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Data.Configurations
 {
-    internal class PromoCodeConfiguration : IEntityTypeConfiguration<PromoCode>
+    public class PromoCodeConfiguration : IEntityTypeConfiguration<PromoCode>
     {
         public void Configure(EntityTypeBuilder<PromoCode> builder)
         {
-            throw new NotImplementedException();
+            builder.ToTable("PromoCodes");
+
+            builder.HasKey(p => p.CodeId);
+
+            // PromoCode & Organizer
+            builder.HasOne(p => p.Organizer)
+                   .WithMany()
+                   .HasForeignKey(p => p.OrganizerId)
+                   .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Logging;
@@ -14,9 +14,9 @@ namespace Infrastructure.Data.Configurations
 
             // Attendee has one WishListItem
             builder.HasOne(w => w.Attendee)
-                   .WithOne(a => a.WishListItem)
+                   .WithOne(a => a.WishList)
                    .HasForeignKey<WishListItem>(w => w.AttendeeId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.SetNull);
 
             // WishListItem has MANY Events
             builder.HasMany(w => w.Events)

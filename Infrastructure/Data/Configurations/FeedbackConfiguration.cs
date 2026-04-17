@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,13 +22,13 @@ namespace Infrastructure.Data.Configurations
             builder.HasOne(f => f.Attendee)
                    .WithMany(a => a.Feedbacks)
                    .HasForeignKey(f => f.AttendeeId)
-                   .OnDelete(DeleteBehavior.Restrict);
+                   .OnDelete(DeleteBehavior.SetNull);
 
             // Feedback & Event
             builder.HasOne(f => f.Event)
                    .WithMany(e => e.Feedbacks)
                    .HasForeignKey(f => f.EventId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }
