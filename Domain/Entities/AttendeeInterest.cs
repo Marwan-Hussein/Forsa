@@ -11,12 +11,9 @@ namespace Domain.Entities
         public int InterestId { get; set; }
         public string InterestName  { get; set; }
 
-        
-        
 
-        public Attendee Attendee { get; set; }
+        public List<AttendeeAttendeeInterestes> AttendeeInterestes { get; set; }
 
-        public int AttendeeId { get; set; }
-        
+
     }
 }

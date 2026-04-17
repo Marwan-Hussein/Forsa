@@ -9,30 +9,30 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations
 {
-    internal class ApplicationUserConfiguration : IEntityTypeConfiguration<ApplicationUser>
+    internal class UserConfiguration : IEntityTypeConfiguration<User>
     {
-        public void Configure(EntityTypeBuilder<ApplicationUser> U)
+        public void Configure(EntityTypeBuilder<User> U)
         {
-            U.ToTable("ApplicationUsers");
+            U.ToTable("Users");
 
-            //U.HasKey(u => u.ApplicationUserId);
+            //U.HasKey(u => u.UserId);
 
-            //U.Property(u => u.ApplicationUserName)
+            //U.Property(u => u.UserName)
             //       .IsRequired()
             //       .HasMaxLength(100);
 
-            //U.Property(u => u.ApplicationUserEmail)
+            //U.Property(u => u.UserEmail)
             //       .IsRequired()
             //       .HasMaxLength(256);
 
-            //U.HasIndex(u => u.ApplicationUserEmail)
+            //U.HasIndex(u => u.UserEmail)
             //       .IsUnique();
 
             //U.Property(u => u.EncryptedPassword)
             //       .IsRequired()
             //       .HasMaxLength(256); 
 
-            //U.Property(u => u.ApplicationUserPhone)
+            //U.Property(u => u.UserPhone)
             //       .IsRequired()
             //       .HasMaxLength(20);
 

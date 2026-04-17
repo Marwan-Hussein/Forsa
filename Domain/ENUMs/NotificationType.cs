@@ -13,5 +13,4 @@ namespace Domain.ENUMs
         EventUpdate = 3,
         CertificateReady = 4
     }
-
 }

@@ -6,21 +6,12 @@ namespace Infrastructure.Data.Configurations
 {
     public class AttendeeInterestConfiguration : IEntityTypeConfiguration<AttendeeInterest>
     {
-        public void Configure(EntityTypeBuilder<AttendeeInterest> AI)
+        public void Configure(EntityTypeBuilder<AttendeeInterest> builder)
         {
-            AI.ToTable("AttendeeInterests");
-
-            AI.HasKey(ai => ai.InterestId);
-
-            AI.HasOne(ai => ai.Attendee)
-                   .WithMany() 
-                   .HasForeignKey(ai => ai.AttendeeId)
-                   .OnDelete(DeleteBehavior.Cascade);
-
-            AI.HasOne(ai => ai.Attendee)
-                   .WithMany(a => a.AttendeeInterests)
-                   .HasForeignKey(ai => ai.AttendeeId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            builder.HasMany(ai => ai.AttendeeInterestes)
+                   .WithOne(aii => aii.AttendeeInterest)
+                   .HasForeignKey(aii => aii.AttendeeInterestId)
+                   .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

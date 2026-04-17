@@ -5,20 +5,16 @@ namespace Infrastructure.Data.Configurations
 {
     public class AttendeeConfiguration : IEntityTypeConfiguration<Attendee>
     {
-        public void Configure(EntityTypeBuilder<Attendee> A)
+        public void Configure(EntityTypeBuilder<Attendee> builder)
         {
-            A.ToTable("Attendees");
-
-            A.HasKey(a => a.AttendeeId);
-
-            A.Property(a => a.LoyaltyPoint)
-                   .IsRequired()
-                   .HasDefaultValue(0); 
-
-            A.HasOne(a => a.ApplicationUser)
-                   .WithOne(u => u.Attendee) 
-                   .HasForeignKey<Attendee>(a => a.ApplicationUserId)
-                   .OnDelete(DeleteBehavior.Cascade); 
+            builder.HasOne(a => a.WishList)
+              .WithOne(w => w.Attendee)
+              .HasForeignKey<WishListItem>(w => w.AttendeeId)
+              .OnDelete(DeleteBehavior.SetNull);
+            builder.HasMany(a => a.AttendeeInterestes)
+                   .WithOne(ai => ai.Attendee)
+                   .HasForeignKey(ai => ai.AttendeeId)
+                   .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

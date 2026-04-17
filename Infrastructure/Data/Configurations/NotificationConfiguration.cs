@@ -13,7 +13,10 @@ namespace Infrastructure.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Notification> builder)
         {
-            throw new NotImplementedException();
+            builder.HasOne(n => n.User)
+                   .WithMany(u => u.Notifications)
+                   .HasForeignKey(u => u.UserId)
+                   .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }
