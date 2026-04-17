@@ -17,9 +17,9 @@ namespace Infrastructure.Data.Configurations
 
             O.HasKey(o => o.OwnerId);
 
-            //O.HasOne(o => o.user)
+            //O.HasOne(o => o.applicationuser)
             //    .WithOne(o => o.Owner)
-            //    .HasForeignKey<Owner>(o=> o.UserId);
+            //    .HasForeignKey<Owner>(o=> o.ApplicationUserId);
         }
     }
 }

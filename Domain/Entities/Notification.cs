@@ -10,9 +10,9 @@ namespace Domain.Entities
         public string Type { get; set; }
         public string SentVia { get; set; }
         public string Status { get; set; }
-        [ForeignKey("User")]
-        public int? UserId { get; set; }
-        public User User { get; set; }
+        [ForeignKey("ApplicationUser")]
+        public int? ApplicationUserId { get; set; }
+        public ApplicationUser ApplicationUser { get; set; }
 
         public DateTime CreatedAt { get; set; } 
     }

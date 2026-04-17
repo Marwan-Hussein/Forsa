@@ -2,15 +2,15 @@
 
 namespace Domain.Entities
 {
-    public class User : IdentityUser
+    public class ApplicationUser : IdentityUser
     {
-        //public int UserId { get; set; }
-        //public string UserName { get; set; }
+        //public int ApplicationUserId { get; set; }
+        //public string ApplicationUserName { get; set; }
 
-        //public string UserEmail { get; set; }
+        //public string ApplicationUserEmail { get; set; }
         //public string EncryptedPassword { get; set; }
 
-        //public string UserPhone { get; set; }
+        //public string ApplicationUserPhone { get; set; }
 
         public string  Location { get; set; }
 

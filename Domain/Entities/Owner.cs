@@ -10,8 +10,8 @@ namespace Domain.Entities
     public class Owner
     {
         public int OwnerId { get; set; }
-        //public int UserId { get; set; }
-        //public User user { get; set;  }
+        //public int ApplicationUserId { get; set; }
+        //public ApplicationUser applicationuser { get; set;  }
 
 
         // relations

@@ -15,9 +15,9 @@ namespace Infrastructure.Data.Configurations
                    .IsRequired()
                    .HasDefaultValue(0); 
 
-            A.HasOne(a => a.User)
+            A.HasOne(a => a.ApplicationUser)
                    .WithOne(u => u.Attendee) 
-                   .HasForeignKey<Attendee>(a => a.UserId)
+                   .HasForeignKey<Attendee>(a => a.ApplicationUserId)
                    .OnDelete(DeleteBehavior.Cascade); 
         }
     }

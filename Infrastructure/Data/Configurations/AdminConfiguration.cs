@@ -17,9 +17,9 @@ namespace Infrastructure.Data.Configurations
 
             A.HasKey(a => a.AdminId);
 
-            A.HasOne(a => a.User)
+            A.HasOne(a => a.ApplicationUser)
                    .WithOne(u => u.Admin)
-                   .HasForeignKey<Admin>(a => a.UserId)
+                   .HasForeignKey<Admin>(a => a.ApplicationUserId)
                    .OnDelete(DeleteBehavior.Cascade);
         }
     }
