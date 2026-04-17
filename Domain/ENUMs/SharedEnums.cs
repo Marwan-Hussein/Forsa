@@ -1,5 +1,4 @@
-﻿
-namespace Domain.ENUMs
+﻿namespace Domain.ENUMs
 {
     public enum Roles
     {
@@ -29,14 +28,5 @@ namespace Domain.ENUMs
         Pending = 1,
         Sent = 2,
         Failed = 3
-    }
-
-    public enum RequestStatus
-    {
-        Pending = 1,
-        Accepted = 2,
-        Rejected = 3,
-        Expired = 4,
-        Cancelled = 5
     }
 }
