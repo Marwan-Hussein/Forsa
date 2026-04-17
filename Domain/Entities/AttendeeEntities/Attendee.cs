@@ -23,6 +23,6 @@ namespace Domain.Entities.AttendeeEntities
 
         // Navigation properties
         public List<AttendeeSubsOrganizer> AttendeeSubsOrganizers { get; set; }
-        public List<AttendeeAttendeeInterestes> AttendeeAttendeeInterestes { get; set; }
+        public List<AttendeeInterestesWithAttendee> AttendeeInterestesWithAttendee { get; set; }
     }
 }

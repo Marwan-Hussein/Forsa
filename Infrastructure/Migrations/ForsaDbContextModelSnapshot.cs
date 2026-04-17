@@ -111,7 +111,7 @@ namespace Infrastructure.Migrations
                     b.UseTptMappingStrategy();
                 });
 
-            modelBuilder.Entity("Domain.Entities.AttendeeEntities.AttendeeAttendeeInterestes", b =>
+            modelBuilder.Entity("Domain.Entities.AttendeeEntities.AttendeeInterestesWithAttendee", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -417,7 +417,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("OrganizationTypes", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.OrganizerEntities.OrganizerOrganiztionType", b =>
+            modelBuilder.Entity("Domain.Entities.OrganizerEntities.OrganiztionTypeWithOrganizer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -763,10 +763,10 @@ namespace Infrastructure.Migrations
                     b.ToTable("Owners", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Entities.AttendeeEntities.AttendeeAttendeeInterestes", b =>
+            modelBuilder.Entity("Domain.Entities.AttendeeEntities.AttendeeInterestesWithAttendee", b =>
                 {
                     b.HasOne("Domain.Entities.AttendeeEntities.Attendee", "Attendee")
-                        .WithMany("AttendeeAttendeeInterestes")
+                        .WithMany("AttendeeInterestesWithAttendee")
                         .HasForeignKey("AttendeeId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -882,16 +882,16 @@ namespace Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Domain.Entities.OrganizerEntities.OrganizerOrganiztionType", b =>
+            modelBuilder.Entity("Domain.Entities.OrganizerEntities.OrganiztionTypeWithOrganizer", b =>
                 {
                     b.HasOne("Domain.Entities.OrganizerEntities.OrganizationType", "OrganizationType")
-                        .WithMany("OrganizerOrganiztionTypes")
+                        .WithMany("OrganiztionTypeWithOrganizers")
                         .HasForeignKey("OrganizationTypeId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Domain.Entities.OrganizerEntities.Organizer", "Organizer")
-                        .WithMany("OrganizerOrganiztionTypes")
+                        .WithMany("OrganiztionTypeWithOrganizers")
                         .HasForeignKey("OrganizerId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -1074,7 +1074,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.OrganizerEntities.OrganizationType", b =>
                 {
-                    b.Navigation("OrganizerOrganiztionTypes");
+                    b.Navigation("OrganiztionTypeWithOrganizers");
 
                     b.Navigation("Organizers");
                 });
@@ -1086,7 +1086,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.AttendeeEntities.Attendee", b =>
                 {
-                    b.Navigation("AttendeeAttendeeInterestes");
+                    b.Navigation("AttendeeInterestesWithAttendee");
 
                     b.Navigation("AttendeeSubsOrganizers");
 
@@ -1104,7 +1104,7 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("BookingRequests");
 
-                    b.Navigation("OrganizerOrganiztionTypes");
+                    b.Navigation("OrganiztionTypeWithOrganizers");
 
                     b.Navigation("PromoCodes");
                 });

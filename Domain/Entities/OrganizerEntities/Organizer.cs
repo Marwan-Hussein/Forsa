@@ -14,6 +14,6 @@ namespace Domain.Entities.OrganizerEntities
 
         // Navigation properties
         public List<AttendeeSubsOrganizer> AttendeeSubsOrganizers { get; set; }
-        public List<OrganizerOrganiztionType> OrganizerOrganiztionTypes { get; set; }
+        public List<OrganiztionTypeWithOrganizer> OrganiztionTypeWithOrganizers { get; set; }
     }
 }

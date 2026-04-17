@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities.OrganizerEntities
 {
-    public class OrganizerOrganiztionType
+    public class OrganiztionTypeWithOrganizer
     {
         public int Id { get; set; }
 

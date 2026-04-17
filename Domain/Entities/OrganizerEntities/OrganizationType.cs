@@ -11,7 +11,7 @@
         public List<Organizer> Organizers { get; set; }
 
         // Navigation properties
-        public List<OrganizerOrganiztionType> OrganizerOrganiztionTypes { get; set; }
+        public List<OrganiztionTypeWithOrganizer> OrganiztionTypeWithOrganizers { get; set; }
 
     }
 }

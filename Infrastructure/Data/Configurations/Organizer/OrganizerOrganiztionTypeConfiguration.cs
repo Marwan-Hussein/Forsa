@@ -4,21 +4,21 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations
 {
-    public class OrganizerOrganiztionTypeConfiguration : IEntityTypeConfiguration<OrganizerOrganiztionType>
+    public class OrganiztionTypeWithOrganizerConfiguration : IEntityTypeConfiguration<OrganiztionTypeWithOrganizer>
     {
-        public void Configure(EntityTypeBuilder<OrganizerOrganiztionType> builder)
+        public void Configure(EntityTypeBuilder<OrganiztionTypeWithOrganizer> builder)
         {
             builder.ToTable("OrganizerOrganizationTypes");
 
             builder.HasKey(o => o.Id);
 
             builder.HasOne(o => o.Organizer)
-                   .WithMany(o => o.OrganizerOrganiztionTypes)
+                   .WithMany(o => o.OrganiztionTypeWithOrganizers)
                    .HasForeignKey(o => o.OrganizerId)
                    .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(o => o.OrganizationType)
-                   .WithMany(o => o.OrganizerOrganiztionTypes)
+                   .WithMany(o => o.OrganiztionTypeWithOrganizers)
                    .HasForeignKey(o => o.OrganizationTypeId)
                    .OnDelete(DeleteBehavior.NoAction);
         }

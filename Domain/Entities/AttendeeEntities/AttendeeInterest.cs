@@ -12,7 +12,7 @@ namespace Domain.Entities.AttendeeEntities
         public string InterestName  { get; set; }
 
         // Navigation properties
-        public List<AttendeeAttendeeInterestes> AttendeeInterestes { get; set; }
+        public List<AttendeeInterestesWithAttendee> AttendeeInterestes { get; set; }
 
 
     }

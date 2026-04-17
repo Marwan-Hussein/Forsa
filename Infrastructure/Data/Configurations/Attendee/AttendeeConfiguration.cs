@@ -12,7 +12,7 @@ namespace Infrastructure.Data.Configurations
               .WithOne(w => w.Attendee)
               .HasForeignKey<WishListItem>(w => w.AttendeeId)
               .OnDelete(DeleteBehavior.NoAction);
-            builder.HasMany(a => a.AttendeeAttendeeInterestes)
+            builder.HasMany(a => a.AttendeeInterestesWithAttendee)
                    .WithOne(ai => ai.Attendee)
                    .HasForeignKey(ai => ai.AttendeeId)
                    .OnDelete(DeleteBehavior.NoAction);

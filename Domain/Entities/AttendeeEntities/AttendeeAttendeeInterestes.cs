@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities.AttendeeEntities
 {
-    public class AttendeeAttendeeInterestes
+    public class AttendeeInterestesWithAttendee
     {
         public int Id { get; set; }
         // FKs
