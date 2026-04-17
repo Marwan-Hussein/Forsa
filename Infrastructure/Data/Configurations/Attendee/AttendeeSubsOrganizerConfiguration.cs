@@ -15,12 +15,12 @@ namespace Infrastructure.Data.Configurations
             builder.HasOne(a => a.Attendee)
                    .WithMany(a => a.AttendeeSubsOrganizers)
                    .HasForeignKey(a => a.AttendeeId)
-                   .OnDelete(DeleteBehavior.SetNull);
+                   .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(a => a.Organizer)
                    .WithMany(a => a.AttendeeSubsOrganizers)
                    .HasForeignKey(a => a.OrganizerId)
-                   .OnDelete(DeleteBehavior.SetNull);
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

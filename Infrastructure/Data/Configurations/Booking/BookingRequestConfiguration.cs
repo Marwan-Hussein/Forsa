@@ -15,13 +15,13 @@ namespace Infrastructure.Data.Configurations
             builder.HasOne(b => b.Organizer)
                    .WithMany()
                    .HasForeignKey(b => b.OrganizerId)
-                   .OnDelete(DeleteBehavior.SetNull);
+                   .OnDelete(DeleteBehavior.NoAction);
 
             // Place is related
             builder.HasOne(b => b.Place)
                    .WithMany()
                    .HasForeignKey(b => b.PlaceId)
-                   .OnDelete(DeleteBehavior.SetNull);
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

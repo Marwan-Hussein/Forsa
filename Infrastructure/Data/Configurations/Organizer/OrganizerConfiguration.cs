@@ -1,4 +1,4 @@
-﻿using Domain.Entities.AttendeeEntities;
+using Domain.Entities.AttendeeEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -11,7 +11,7 @@ namespace Infrastructure.Data.Configurations
         public void Configure(EntityTypeBuilder<Organizer> builder)
         {
             builder.ToTable("Organizers");
-            builder.HasKey(o => o.Id);
+
 
             builder.Property(o => o.OrganizationName)
                 .IsRequired()

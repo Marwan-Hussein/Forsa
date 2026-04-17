@@ -22,13 +22,13 @@ namespace Infrastructure.Data.Configurations
             builder.HasOne(f => f.Attendee)
                    .WithMany(a => a.Feedbacks)
                    .HasForeignKey(f => f.AttendeeId)
-                   .OnDelete(DeleteBehavior.SetNull);
+                   .OnDelete(DeleteBehavior.NoAction);
 
             // Feedback & Event
             builder.HasOne(f => f.Event)
                    .WithMany(e => e.Feedbacks)
                    .HasForeignKey(f => f.EventId)
-                   .OnDelete(DeleteBehavior.SetNull);
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

@@ -2,8 +2,10 @@
 
 namespace Domain.Entities
 {
-    public class ApplicationUser: IdentityUser
+    public class ApplicationUser: IdentityUser<int>
     {
+        //public int Id { get; set; }
+
         public string FullName{ get; set; }
         public string Location{ get; set; }
         public DateTime BirthDate{ get; set; }

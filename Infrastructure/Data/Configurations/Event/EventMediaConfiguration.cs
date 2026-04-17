@@ -23,7 +23,7 @@ namespace Infrastructure.Data.Configurations
             builder.HasOne(m => m.Event)
                    .WithMany(e => e.EventMedias)
                    .HasForeignKey(m => m.EventId)
-                   .OnDelete(DeleteBehavior.SetNull);
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

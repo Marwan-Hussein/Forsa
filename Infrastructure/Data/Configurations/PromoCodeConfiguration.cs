@@ -16,7 +16,7 @@ namespace Infrastructure.Data.Configurations
             builder.HasOne(p => p.Organizer)
                    .WithMany()
                    .HasForeignKey(p => p.OrganizerId)
-                   .OnDelete(DeleteBehavior.SetNull);
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

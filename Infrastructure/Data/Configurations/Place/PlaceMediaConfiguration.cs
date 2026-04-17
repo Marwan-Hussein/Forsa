@@ -15,7 +15,7 @@ namespace Infrastructure.Data.Configurations
             builder.HasOne(pm => pm.Place)
                    .WithMany(p => p.PlaceMedias)
                    .HasForeignKey(pm => pm.PlaceId)
-                   .OnDelete(DeleteBehavior.SetNull);
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

@@ -15,27 +15,6 @@ namespace Infrastructure.Data.Configurations
         {
             U.ToTable("Users");
 
-            //U.HasKey(u => u.UserId);
-
-            //U.Property(u => u.UserName)
-            //       .IsRequired()
-            //       .HasMaxLength(100);
-
-            //U.Property(u => u.UserEmail)
-            //       .IsRequired()
-            //       .HasMaxLength(256);
-
-            //U.HasIndex(u => u.UserEmail)
-            //       .IsUnique();
-
-            //U.Property(u => u.EncryptedPassword)
-            //       .IsRequired()
-            //       .HasMaxLength(256); 
-
-            //U.Property(u => u.UserPhone)
-            //       .IsRequired()
-            //       .HasMaxLength(20);
-
             U.Property(u => u.Location)
                    .IsRequired() 
                    .HasMaxLength(250);

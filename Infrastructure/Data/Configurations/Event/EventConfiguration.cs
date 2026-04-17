@@ -48,13 +48,13 @@ namespace Infrastructure.Data.Configurations
             builder.HasMany(e => e.EventMedias)
                    .WithOne(em => em.Event)
                    .HasForeignKey(em => em.EventId)
-                   .OnDelete(DeleteBehavior.SetNull);
+                   .OnDelete(DeleteBehavior.NoAction);
 
             // 3. Event & Feedbacks
             builder.HasMany(e => e.Feedbacks)
                    .WithOne(f => f.Event)
                    .HasForeignKey(f => f.EventId)
-                   .OnDelete(DeleteBehavior.SetNull);
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

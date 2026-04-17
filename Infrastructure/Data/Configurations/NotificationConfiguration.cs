@@ -16,7 +16,7 @@ namespace Infrastructure.Data.Configurations
             builder.HasOne(n => n.User)
                    .WithMany(u => u.Notifications)
                    .HasForeignKey(u => u.UserId)
-                   .OnDelete(DeleteBehavior.SetNull);
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

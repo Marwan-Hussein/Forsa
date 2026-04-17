@@ -11,11 +11,11 @@ namespace Infrastructure.Data.Configurations
             builder.HasOne(a => a.WishList)
               .WithOne(w => w.Attendee)
               .HasForeignKey<WishListItem>(w => w.AttendeeId)
-              .OnDelete(DeleteBehavior.SetNull);
+              .OnDelete(DeleteBehavior.NoAction);
             builder.HasMany(a => a.AttendeeAttendeeInterestes)
                    .WithOne(ai => ai.Attendee)
                    .HasForeignKey(ai => ai.AttendeeId)
-                   .OnDelete(DeleteBehavior.SetNull);
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

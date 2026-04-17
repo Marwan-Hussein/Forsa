@@ -16,7 +16,7 @@ namespace Infrastructure.Data.Configurations
             builder.HasOne(w => w.Attendee)
                    .WithOne(a => a.WishList)
                    .HasForeignKey<WishListItem>(w => w.AttendeeId)
-                   .OnDelete(DeleteBehavior.SetNull);
+                   .OnDelete(DeleteBehavior.NoAction);
 
             // WishListItem has MANY Events
             builder.HasMany(w => w.Events)

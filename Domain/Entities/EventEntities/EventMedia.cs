@@ -7,7 +7,7 @@
         public string MediaType { get; set; }
 
         // FK to Event
-        public int EventId { get; set; }
+        public int? EventId { get; set; }
         public Event Event { get; set; }
     }
 }
