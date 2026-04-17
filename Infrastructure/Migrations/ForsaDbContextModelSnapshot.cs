@@ -111,6 +111,23 @@ namespace Infrastructure.Migrations
                     b.UseTptMappingStrategy();
                 });
 
+            modelBuilder.Entity("Domain.Entities.AttendeeEntities.AttendeeInterest", b =>
+                {
+                    b.Property<int>("InterestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InterestId"));
+
+                    b.Property<string>("InterestName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("InterestId");
+
+                    b.ToTable("AttendeeInterests", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.AttendeeEntities.AttendeeInterestesWithAttendee", b =>
                 {
                     b.Property<int>("Id")
@@ -132,23 +149,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("AttendeeInterestId");
 
                     b.ToTable("AttendeeAttendeeInterests", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.AttendeeEntities.AttendeeInterest", b =>
-                {
-                    b.Property<int>("InterestId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InterestId"));
-
-                    b.Property<string>("InterestName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("InterestId");
-
-                    b.ToTable("AttendeeInterests", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.AttendeeEntities.AttendeeSubsOrganizer", b =>
@@ -388,7 +388,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notification");
+                    b.ToTable("Notification", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.OrganizerEntities.OrganizationType", b =>
@@ -586,7 +586,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("WishListItemsWishListItemId");
 
-                    b.ToTable("EventWishListItem");
+                    b.ToTable("EventWishListItem", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>
@@ -736,7 +736,7 @@ namespace Infrastructure.Migrations
                     b.Property<int>("LoyaltyPoint")
                         .HasColumnType("int");
 
-                    b.ToTable("Attendee");
+                    b.ToTable("Attendee", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.OrganizerEntities.Organizer", b =>
@@ -1074,9 +1074,9 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.OrganizerEntities.OrganizationType", b =>
                 {
-                    b.Navigation("OrganiztionTypeWithOrganizers");
-
                     b.Navigation("Organizers");
+
+                    b.Navigation("OrganiztionTypeWithOrganizers");
                 });
 
             modelBuilder.Entity("Domain.Entities.PlaceEntities.Place", b =>
