@@ -11,9 +11,7 @@ namespace Domain.Entities
         public int WishListItemId { get; set; }
 
 
-
-
-
+        // Navigation properties
         public Attendee Attendee { get; set; }
         public int AttendeeId { get; set; }
     }

@@ -7,26 +7,14 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    public class Attendee
+    public class Attendee : ApplicationUser
     {
-        public int AttendeeId { get; set; }
+        public int LoyaltyPoint { get; set; }
 
-        public int LoyaltyPoint { get; set; } 
-
-        
-
-
-
-        public int UserId { get; set;  }
-        public User User { get; set; }
-
-
-
-
-
+        // Relationships
         public WishListItem WishList { get; set; }
 
-        public AttendeeInterest AttendeeInterest { get; set; }
+        // public AttendeeInterest AttendeeInterest { get; set; } // to be removed
         public List<AttendeeInterest> AttendeeInterests { get; set; }
     }
 }
