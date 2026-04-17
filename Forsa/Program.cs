@@ -1,4 +1,7 @@
 
+using Infrastructure.Data.DbContexts;
+using Microsoft.EntityFrameworkCore;
+
 namespace Forsa
 {
     public class Program
@@ -6,6 +9,8 @@ namespace Forsa
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddDbContext<ForsaDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Add services to the container.
 
@@ -29,6 +34,8 @@ namespace Forsa
             app.MapControllers();
 
             app.Run();
+
+
         }
     }
 }
