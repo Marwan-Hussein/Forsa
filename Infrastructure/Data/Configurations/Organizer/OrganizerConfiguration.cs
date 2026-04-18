@@ -1,4 +1,3 @@
-using Domain.Entities.AttendeeEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
