@@ -156,10 +156,10 @@ export default function EventsPage() {
                     <button
                       key={mode}
                       onClick={() => setSelectedDiscovery(mode)}
-                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 ${
+                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 border ${
                         selectedDiscovery === mode
-                          ? "bg-accent text-accent-foreground shadow-sm"
-                          : "bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20"
+                          ? "bg-accent text-accent-foreground border-accent shadow-md"
+                          : "bg-white border-border text-foreground hover:bg-accent hover:text-accent-foreground hover:border-accent"
                       }`}
                     >
                       {mode}
@@ -182,14 +182,30 @@ export default function EventsPage() {
                         onClick={() => setSelectedCategory(category)}
                         className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 border ${
                           selectedCategory === category
-                            ? "text-white shadow-sm"
-                            : "bg-white/80 hover:opacity-80"
+                            ? "text-white shadow-md"
+                            : "bg-white border-border text-foreground"
                         }`}
                         style={
                           selectedCategory === category
                             ? { backgroundColor: catColorVar, borderColor: catColorVar }
-                            : { backgroundColor: `color-mix(in srgb, ${catColorVar} 10%, white)`, borderColor: `color-mix(in srgb, ${catColorVar} 25%, transparent)`, color: catColorVar }
+                            : undefined
                         }
+                        onMouseEnter={(e) => {
+                          if (selectedCategory !== category) {
+                            const el = e.currentTarget;
+                            el.style.backgroundColor = catColorVar;
+                            el.style.borderColor = catColorVar;
+                            el.style.color = "white";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (selectedCategory !== category) {
+                            const el = e.currentTarget;
+                            el.style.backgroundColor = "";
+                            el.style.borderColor = "";
+                            el.style.color = "";
+                          }
+                        }}
                       >
                         {category}
                       </button>
@@ -208,10 +224,10 @@ export default function EventsPage() {
                     <button
                       key={date}
                       onClick={() => setSelectedDate(date)}
-                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 ${
+                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 border ${
                         selectedDate === date
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20"
+                          ? "bg-primary text-primary-foreground border-primary shadow-md"
+                          : "bg-white border-border text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary"
                       }`}
                     >
                       {date}
@@ -230,10 +246,10 @@ export default function EventsPage() {
                     <button
                       key={price}
                       onClick={() => setPriceRange(price)}
-                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 ${
+                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 border ${
                         priceRange === price
-                          ? "bg-Education text-white shadow-sm"
-                          : "bg-Education/10 border border-Education/20 text-Education hover:bg-Education/20"
+                          ? "bg-Education text-white border-Education shadow-md"
+                          : "bg-white border-border text-foreground hover:bg-Education hover:text-white hover:border-Education"
                       }`}
                     >
                       {price}

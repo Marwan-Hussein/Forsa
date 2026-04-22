@@ -229,7 +229,7 @@ export default function PlacesPage() {
               <Link
                 key={place.id}
                 to={`/places/${place.id}`}
-                className="group bg-white rounded-xl overflow-hidden shadow-sm border border-[rgba(39,55,77,0.1)] hover:border-accent transition-all hover:shadow-md"
+                className="group bg-white rounded-xl overflow-hidden shadow-sm border border-border hover:border-Entertainment transition-all duration-300 hover:shadow-md"
               >
                 <div className="relative h-48 overflow-hidden">
                   <ImageWithFallback
