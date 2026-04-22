@@ -81,14 +81,15 @@ export function EventCard({
       className={[
         "group relative overflow-hidden rounded-2xl border bg-white",
         "border-border",
-        "shadow-[0_2px_12px_-4px_rgb(var(--color-primary)/0.1)]",
-        // --- ALL hover via CSS (GPU-composited, no JS per frame) ---
-        "translate-y-0 transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform",
+        "shadow-[0_2px_12px_-4px_rgb(var(--color-primary)/0.08)]",
+        // --- Smooth hover: longer duration + ease-out for natural deceleration ---
+        "translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[transform,box-shadow,border-color]",
         "cursor-pointer",
-        "hover:-translate-y-1.5",
-        "hover:shadow-[0_16px_32px_-10px_rgb(var(--color-primary)/0.18)]",
-        "hover:border-[rgb(var(--color-primary)/0.2)]",
+        "hover:-translate-y-1",
+        "hover:shadow-[0_20px_40px_-12px_color-mix(in_srgb,var(--card-accent)_40%,transparent)]",
+        "hover:border-[color-mix(in_srgb,var(--card-accent)_50%,transparent)]",
       ].join(" ")}
+      style={{ "--card-accent": accent } as React.CSSProperties}
     >
       {/* Event Image */}
       <div className="relative h-[192px] overflow-hidden">

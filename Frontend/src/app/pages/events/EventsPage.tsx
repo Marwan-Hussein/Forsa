@@ -110,7 +110,7 @@ export default function EventsPage() {
         <PageHeader title="Browse Events" subtitle="Discover amazing events happening near you" />
 
         {/* Search and Filter Bar */}
-        <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-6 mb-6">
+        <div className="bg-white rounded-[14px] border border-border p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search Input */}
             <div className="flex-1 relative">
@@ -120,14 +120,14 @@ export default function EventsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search events by name, location, or keyword..."
-                className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] focus:outline-none focus:border-primary font-['Inter:Regular',sans-serif] text-[14px]"
+                className="w-full pl-10 pr-4 py-3 rounded-[8px] border border-border focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 font-['Inter:Regular',sans-serif] text-[14px] transition-all duration-300"
               />
             </div>
 
             {/* Filter Toggle Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex cursor-pointer items-center gap-2 px-6 py-3 bg-primary text-[#dde6ed] rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors"
+              className="flex cursor-pointer items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-primary/90 transition-colors"
             >
               <SlidersHorizontal className="w-4 h-4" />
               Filters
@@ -145,7 +145,7 @@ export default function EventsPage() {
 
           {/* Advanced Filters */}
           {showFilters && (
-            <div className="mt-6 pt-6 border-t border-[rgba(82,109,130,0.2)] space-y-4">
+            <div className="mt-6 pt-6 border-t border-border space-y-5">
               {/* Discovery Filter */}
               <div>
                 <label className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2">
@@ -156,10 +156,10 @@ export default function EventsPage() {
                     <button
                       key={mode}
                       onClick={() => setSelectedDiscovery(mode)}
-                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-colors ${
+                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 ${
                         selectedDiscovery === mode
-                          ? "bg-primary text-[#dde6ed] hover:bg-[#1e2936]"
-                          : "bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground hover:border-primary hover:bg-[#f8f9fa]"
+                          ? "bg-accent text-accent-foreground shadow-sm"
+                          : "bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20"
                       }`}
                     >
                       {mode}
@@ -174,19 +174,27 @@ export default function EventsPage() {
                   Category
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {categories.map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => setSelectedCategory(category)}
-                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-colors ${
-                        selectedCategory === category
-                          ? "bg-primary text-[#dde6ed] hover:bg-[#1e2936]"
-                          : "bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground hover:border-primary hover:bg-[#f8f9fa]"
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
+                  {categories.map((category) => {
+                    const catColorVar = category !== "All" ? `var(--${category})` : "var(--primary)";
+                    return (
+                      <button
+                        key={category}
+                        onClick={() => setSelectedCategory(category)}
+                        className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 border ${
+                          selectedCategory === category
+                            ? "text-white shadow-sm"
+                            : "bg-white/80 hover:opacity-80"
+                        }`}
+                        style={
+                          selectedCategory === category
+                            ? { backgroundColor: catColorVar, borderColor: catColorVar }
+                            : { backgroundColor: `color-mix(in srgb, ${catColorVar} 10%, white)`, borderColor: `color-mix(in srgb, ${catColorVar} 25%, transparent)`, color: catColorVar }
+                        }
+                      >
+                        {category}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -200,10 +208,10 @@ export default function EventsPage() {
                     <button
                       key={date}
                       onClick={() => setSelectedDate(date)}
-                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-colors ${
+                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 ${
                         selectedDate === date
-                          ? "bg-primary text-[#dde6ed] hover:bg-[#1e2936]"
-                          : "bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground hover:border-primary hover:bg-[#f8f9fa]"
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20"
                       }`}
                     >
                       {date}
@@ -222,10 +230,10 @@ export default function EventsPage() {
                     <button
                       key={price}
                       onClick={() => setPriceRange(price)}
-                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-colors ${
+                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 ${
                         priceRange === price
-                          ? "bg-primary text-[#dde6ed] hover:bg-[#1e2936]"
-                          : "bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground hover:border-primary hover:bg-[#f8f9fa]"
+                          ? "bg-Education text-white shadow-sm"
+                          : "bg-Education/10 border border-Education/20 text-Education hover:bg-Education/20"
                       }`}
                     >
                       {price}
@@ -244,7 +252,7 @@ export default function EventsPage() {
                   value={locationFilter}
                   onChange={(e) => setLocationFilter(e.target.value)}
                   placeholder="Enter city or venue..."
-                  className="w-full max-w-md px-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] focus:outline-none focus:border-primary font-['Inter:Regular',sans-serif] text-[14px]"
+                  className="w-full max-w-md px-4 py-3 rounded-[8px] border border-border focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 font-['Inter:Regular',sans-serif] text-[14px] transition-all duration-300"
                 />
               </div>
 
@@ -262,7 +270,7 @@ export default function EventsPage() {
                     setPriceRange("All");
                     setLocationFilter("");
                   }}
-                  className="flex cursor-pointer items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground font-['Inter:Medium',sans-serif] font-medium text-[14px]"
+                  className="flex cursor-pointer items-center gap-2 px-4 py-2 text-destructive hover:text-destructive/80 font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-colors"
                 >
                   <X className="w-4 h-4" />
                   Clear All Filters
@@ -293,7 +301,7 @@ export default function EventsPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-12 text-center">
+          <div className="bg-white rounded-[14px] border border-border p-12 text-center">
             <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-2">
               No events found
             </p>

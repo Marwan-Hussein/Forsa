@@ -30,17 +30,17 @@ import {
 import { EventCard } from "../../components/EventCard";
 import { mockEvents } from "../../data/mockData";
 
-const SKY_BLUE = "#5faee3";
-const DEEP_NAVY = "#182F4D";
-const ACCENT_ORANGE = "#f39c12";
-const MUTED_TEXT = "#526D82";
+const SKY_BLUE = "#0891b2";
+const DEEP_NAVY = "#1e3a5f";
+const ACCENT_ORANGE = "#0891b2";
+const MUTED_TEXT = "#64748b";
 
-const HERO_BG = `linear-gradient(180deg, #102845 0%, ${DEEP_NAVY} 28%, #3d6f9e 62%, #74b9e1 100%)`;
+const HERO_BG = `linear-gradient(180deg, #0f2440 0%, ${DEEP_NAVY} 28%, #1a6b8a 62%, #38bdf8 100%)`;
 
 
 const CTA_SECTION_BG = `
-  radial-gradient(ellipse 90% 75% at 50% 22%, rgba(118, 194, 241, 0.35) 0%, rgba(52, 98, 134, 0.15) 42%, transparent 70%),
-  linear-gradient(180deg, ${SKY_BLUE} 7%, ${brandNavy} 48%, #1a2634 100%)
+  radial-gradient(ellipse 90% 75% at 50% 22%, rgba(8, 145, 178, 0.35) 0%, rgba(30, 58, 95, 0.15) 42%, transparent 70%),
+  linear-gradient(180deg, ${SKY_BLUE} 7%, ${DEEP_NAVY} 48%, #0f172a 100%)
 `;
 
 export default function GuestHomePage() {
