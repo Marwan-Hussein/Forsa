@@ -3,20 +3,20 @@ import { brandNavy } from "../lib/brand";
 import { ForSaLogo } from "./ForSaLogo";
 
 const linkClass =
-  "font-['Inter:Regular',sans-serif] text-[14px] leading-[20px] text-[rgba(221,230,237,0.8)] hover:text-[#dde6ed] transition-colors";
+  "font-['Inter:Regular',sans-serif] text-[14px] leading-[20px] text-primary-foreground/80 hover:text-primary-foreground transition-colors";
 const headingClass =
-  "font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-[#dde6ed] mb-4";
+  "font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-primary-foreground mb-4";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto w-full text-[#dde6ed]" style={{ backgroundColor: brandNavy }}>
+    <footer className="mt-auto w-full text-primary-foreground" style={{ backgroundColor: brandNavy }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-14">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
           <div className="sm:col-span-2 lg:col-span-1">
             <Link to="/dashboard" className="mb-4 inline-block transition-opacity duration-300 ease-in-out hover:opacity-80">
               <ForSaLogo className="h-14 sm:h-16" />
             </Link>
-            <p className="font-['Inter:Regular',sans-serif] text-[14px] leading-[22px] text-[rgba(221,230,237,0.8)] max-w-[280px]">
+            <p className="font-['Inter:Regular',sans-serif] text-[14px] leading-[22px] text-primary-foreground/80 max-w-[280px]">
               Your one-stop platform for discovering and managing events.
             </p>
           </div>
@@ -87,8 +87,8 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <div className="border-t border-[rgba(221,230,237,0.2)]">
-        <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[rgba(221,230,237,0.8)] text-center py-6 px-4">
+      <div className="border-t border-primary-foreground/20">
+        <p className="font-['Inter:Regular',sans-serif] text-[14px] text-primary-foreground/80 text-center py-6 px-4">
           © 2026 ForSa. All rights reserved.
         </p>
       </div>

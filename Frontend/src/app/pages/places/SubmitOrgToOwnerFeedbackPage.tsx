@@ -74,46 +74,46 @@ export default function SubmitOrgToOwnerFeedbackPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#eff6ff] flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <main className="flex-1 px-6 py-8 max-w-4xl mx-auto w-full">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-[#526d82] mb-6">
-          <Link to="/organization-dashboard" className="hover:text-[#EC9B3B]">Dashboard</Link>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+          <Link to="/organization-dashboard" className="hover:text-accent">Dashboard</Link>
           <ChevronRight className="size-4" />
-          <Link to="/organization-dashboard" className="hover:text-[#EC9B3B]">My Events</Link>
+          <Link to="/organization-dashboard" className="hover:text-accent">My Events</Link>
           <ChevronRight className="size-4" />
-          <span className="text-[#27374d]">Submit Feedback</span>
+          <span className="text-foreground">Submit Feedback</span>
         </div>
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[#27374d] mb-2">Submit Venue Feedback</h1>
-          <p className="text-[#526d82]">Share your experience to help the venue owner improve their services</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">Submit Venue Feedback</h1>
+          <p className="text-muted-foreground">Share your experience to help the venue owner improve their services</p>
         </div>
 
         {/* Venue & Event Info Card */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)] mb-6">
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="text-sm font-semibold text-[#526d82] mb-2">VENUE INFORMATION</h3>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-2">VENUE INFORMATION</h3>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Building className="size-5 text-[#EC9B3B]" />
+                  <Building className="size-5 text-accent" />
                   <div>
-                    <p className="font-bold text-[#27374d]">{mockPlace.name}</p>
-                    <p className="text-sm text-[#526d82]">{mockPlace.address}</p>
+                    <p className="font-bold text-foreground">{mockPlace.name}</p>
+                    <p className="text-sm text-muted-foreground">{mockPlace.address}</p>
                   </div>
                 </div>
-                <p className="text-sm text-[#526d82] mt-2">
-                  <strong className="text-[#27374d]">Owner:</strong> {mockPlace.owner}
+                <p className="text-sm text-muted-foreground mt-2">
+                  <strong className="text-foreground">Owner:</strong> {mockPlace.owner}
                 </p>
               </div>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-[#526d82] mb-2">YOUR EVENT</h3>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-2">YOUR EVENT</h3>
               <div className="space-y-2">
-                <p className="font-bold text-[#27374d]">{mockEvent.title}</p>
-                <div className="flex items-center gap-4 text-sm text-[#526d82]">
+                <p className="font-bold text-foreground">{mockEvent.title}</p>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Calendar className="size-4" />
                     {new Date(mockEvent.date).toLocaleDateString()}
@@ -128,12 +128,12 @@ export default function SubmitOrgToOwnerFeedbackPage() {
         {/* Feedback Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Rating Section */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-            <h2 className="text-xl font-bold text-[#27374d] mb-4 flex items-center gap-2">
-              <Star className="size-6 text-[#EC9B3B]" />
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
+            <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+              <Star className="size-6 text-accent" />
               Overall Rating *
             </h2>
-            <p className="text-sm text-[#526d82] mb-6">
+            <p className="text-sm text-muted-foreground mb-6">
               How would you rate your overall experience with this venue?
             </p>
             
@@ -150,7 +150,7 @@ export default function SubmitOrgToOwnerFeedbackPage() {
                   <Star
                     className={`size-12 transition-colors ${
                       star <= (hoveredRating || rating)
-                        ? "fill-[#EC9B3B] text-[#EC9B3B]"
+                        ? "fill-accent text-accent"
                         : "text-gray-300"
                     }`}
                   />
@@ -159,14 +159,14 @@ export default function SubmitOrgToOwnerFeedbackPage() {
             </div>
             
             {rating > 0 && (
-              <p className="text-sm text-[#526d82]">
-                You rated this venue: <span className="font-semibold text-[#27374d]">{rating} out of 5 stars</span>
+              <p className="text-sm text-muted-foreground">
+                You rated this venue: <span className="font-semibold text-foreground">{rating} out of 5 stars</span>
               </p>
             )}
           </div>
 
           {/* Feedback Categories Guide */}
-          <div className="bg-gradient-to-br from-[#346286] to-[#76C2F1] rounded-xl p-6 text-white">
+          <div className="bg-gradient-to-br from-primary/80 to-primary/60 rounded-xl p-6 text-white">
             <h3 className="font-bold mb-4 flex items-center gap-2">
               <AlertCircle className="size-5" />
               What to Include in Your Feedback
@@ -189,12 +189,12 @@ export default function SubmitOrgToOwnerFeedbackPage() {
           </div>
 
           {/* Detailed Feedback */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-            <h2 className="text-xl font-bold text-[#27374d] mb-4 flex items-center gap-2">
-              <MessageSquare className="size-6 text-[#EC9B3B]" />
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
+            <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+              <MessageSquare className="size-6 text-accent" />
               Detailed Feedback *
             </h2>
-            <p className="text-sm text-[#526d82] mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               Please share your detailed experience with the venue. Your feedback helps the owner improve their services.
             </p>
 
@@ -205,11 +205,11 @@ export default function SubmitOrgToOwnerFeedbackPage() {
               maxLength={maxChars}
               rows={8}
               placeholder="Share your thoughts about:&#10;• The venue's facilities and cleanliness&#10;• Staff support and responsiveness&#10;• Setup and technical support&#10;• Overall experience and any suggestions for improvement"
-              className="w-full px-4 py-3 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent resize-none"
+              className="w-full px-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none"
             />
             
             <div className="flex items-center justify-between mt-2">
-              <p className="text-sm text-[#526d82]">
+              <p className="text-sm text-muted-foreground">
                 {feedback.length} / {maxChars} characters
               </p>
               {feedback.length >= maxChars && (
@@ -219,12 +219,12 @@ export default function SubmitOrgToOwnerFeedbackPage() {
           </div>
 
           {/* Additional Questions */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-            <h2 className="text-xl font-bold text-[#27374d] mb-4">Additional Questions</h2>
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
+            <h2 className="text-xl font-bold text-foreground mb-4">Additional Questions</h2>
             
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-[#27374d] mb-3">
+                <label className="block text-sm font-medium text-foreground mb-3">
                   Would you recommend this venue to other organizers?
                 </label>
                 <div className="flex gap-4">
@@ -233,33 +233,33 @@ export default function SubmitOrgToOwnerFeedbackPage() {
                       type="radio"
                       name="recommend"
                       value="yes"
-                      className="size-4 text-[#EC9B3B] focus:ring-[#EC9B3B]"
+                      className="size-4 text-accent focus:ring-accent"
                     />
-                    <span className="text-[#27374d]">Yes, definitely</span>
+                    <span className="text-foreground">Yes, definitely</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="recommend"
                       value="maybe"
-                      className="size-4 text-[#EC9B3B] focus:ring-[#EC9B3B]"
+                      className="size-4 text-accent focus:ring-accent"
                     />
-                    <span className="text-[#27374d]">Maybe</span>
+                    <span className="text-foreground">Maybe</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="recommend"
                       value="no"
-                      className="size-4 text-[#EC9B3B] focus:ring-[#EC9B3B]"
+                      className="size-4 text-accent focus:ring-accent"
                     />
-                    <span className="text-[#27374d]">No</span>
+                    <span className="text-foreground">No</span>
                   </label>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#27374d] mb-3">
+                <label className="block text-sm font-medium text-foreground mb-3">
                   Would you use this venue again for future events?
                 </label>
                 <div className="flex gap-4">
@@ -268,27 +268,27 @@ export default function SubmitOrgToOwnerFeedbackPage() {
                       type="radio"
                       name="useAgain"
                       value="yes"
-                      className="size-4 text-[#EC9B3B] focus:ring-[#EC9B3B]"
+                      className="size-4 text-accent focus:ring-accent"
                     />
-                    <span className="text-[#27374d]">Yes</span>
+                    <span className="text-foreground">Yes</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="useAgain"
                       value="maybe"
-                      className="size-4 text-[#EC9B3B] focus:ring-[#EC9B3B]"
+                      className="size-4 text-accent focus:ring-accent"
                     />
-                    <span className="text-[#27374d]">Maybe</span>
+                    <span className="text-foreground">Maybe</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="useAgain"
                       value="no"
-                      className="size-4 text-[#EC9B3B] focus:ring-[#EC9B3B]"
+                      className="size-4 text-accent focus:ring-accent"
                     />
-                    <span className="text-[#27374d]">No</span>
+                    <span className="text-foreground">No</span>
                   </label>
                 </div>
               </div>
@@ -296,14 +296,14 @@ export default function SubmitOrgToOwnerFeedbackPage() {
           </div>
 
           {/* Submit Section */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
             <div className="flex items-start gap-3 mb-6">
               <input
                 type="checkbox"
                 id="anonymous"
-                className="mt-1 size-5 rounded border-[rgba(39,55,77,0.2)] text-[#EC9B3B] focus:ring-[#EC9B3B]"
+                className="mt-1 size-5 rounded border-primary/20 text-accent focus:ring-accent"
               />
-              <label htmlFor="anonymous" className="text-sm text-[#526d82]">
+              <label htmlFor="anonymous" className="text-sm text-muted-foreground">
                 Submit feedback anonymously (your identity will not be shared with the venue owner)
               </label>
             </div>
@@ -312,14 +312,14 @@ export default function SubmitOrgToOwnerFeedbackPage() {
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="flex-1 px-6 py-3 border border-[#27374d] text-[#27374d] rounded-lg hover:bg-[#27374d] hover:text-white transition-all"
+                className="flex-1 px-6 py-3 border border-primary text-foreground rounded-lg hover:bg-primary hover:text-white transition-all"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting || rating === 0 || !feedback.trim()}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-[#EC9B3B] to-[#f4b860] text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-accent to-accent/80 text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>

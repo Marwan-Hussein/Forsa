@@ -30,9 +30,9 @@ import {
 import { EventCard } from "../../components/EventCard";
 import { mockEvents } from "../../data/mockData";
 
-const SKY_BLUE = "#4C8ABB";
+const SKY_BLUE = "#5faee3";
 const DEEP_NAVY = "#182F4D";
-const ACCENT_ORANGE = "#EC9B3B";
+const ACCENT_ORANGE = "#f39c12";
 const MUTED_TEXT = "#526D82";
 
 const HERO_BG = `linear-gradient(180deg, #102845 0%, ${DEEP_NAVY} 28%, #3d6f9e 62%, #74b9e1 100%)`;
@@ -68,37 +68,37 @@ export default function GuestHomePage() {
       icon: Sparkles,
       title: "Smart Recommendations",
       description: "AI-powered suggestions tailored to your interests and location",
-      color: "#EC9B3B",
+      color: "var(--accent)",
     },
     {
       icon: Search,
       title: "Advanced Search",
       description: "Find exactly what you're looking for with powerful filters",
-      color: "#155dfc",
+      color: "var(--primary)",
     },
     {
       icon: Calendar,
       title: "Calendar Integration",
       description: "Never miss an event with calendar sync and reminders",
-      color: "#9810fa",
+      color: "var(--Education)",
     },
     {
       icon: Ticket,
       title: "Instant Booking",
       description: "Secure your spot in seconds with seamless checkout",
-      color: "#16a34a",
+      color: "var(--Technology)",
     },
     {
       icon: Bell,
       title: "Real-time Notifications",
       description: "Stay updated with personalized event alerts",
-      color: "#f97316",
+      color: "var(--accent)",
     },
     {
       icon: Shield,
       title: "Secure & Safe",
       description: "Your data and payments are protected with bank-level security",
-      color: "#ec4899",
+      color: "var(--Entertainment)",
     },
   ];
 
@@ -110,12 +110,12 @@ export default function GuestHomePage() {
   ];
 
   const eventCategories = [
-    { name: "Business", icon: Briefcase, color: "#2563eb", count: "2,340" },
-    { name: "Music", icon: Music, color: "#7c3aed", count: "1,856" },
-    { name: "Art & Culture", icon: Palette, color: "#db2777", count: "1,203" },
-    { name: "Sports", icon: Dumbbell, color: "#16a34a", count: "987" },
-    { name: "Food & Drink", icon: UtensilsCrossed, color: "#ea580c", count: "1,456" },
-    { name: "Education", icon: GraduationCap, color: "#ca8a04", count: "2,109" },
+    { name: "Business", icon: Briefcase, color: "var(--Business)", count: "2,340" },
+    { name: "Music", icon: Music, color: "var(--Music)", count: "1,856" },
+    { name: "Art & Culture", icon: Palette, color: "var(--Art)", count: "1,203" },
+    { name: "Sports", icon: Dumbbell, color: "var(--Sports)", count: "987" },
+    { name: "Food & Drink", icon: UtensilsCrossed, color: "var(--Food)", count: "1,456" },
+    { name: "Education", icon: GraduationCap, color: "var(--Education)", count: "2,109" },
   ];
 
   const filteredEvents = useMemo(() => {
@@ -135,7 +135,7 @@ export default function GuestHomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f1f5f9] text-[#1e293b]">
+    <div className="min-h-screen bg-background text-[#1e293b]">
       {/* —— Navigation (flush with hero) —— */}
       <nav
         className={`fixed left-0 right-0 top-0 z-50 border-b transition-[background-color,box-shadow,backdrop-filter,border-color] duration-300 ease-in-out ${
@@ -182,7 +182,7 @@ export default function GuestHomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-14 xl:gap-20 items-center">
             <div>
               <motion.h1
-                className="mb-6 font-['Inter:Bold',sans-serif] text-[40px] font-bold leading-[1.08] text-[#FFFFFF] sm:text-[48px] md:text-[52px]"
+                className="mb-6 font-['Inter:Bold',sans-serif] text-[40px] font-bold leading-[1.08] text-white sm:text-[48px] md:text-[52px]"
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.58, ease: EASE_SCROLL }}
@@ -206,7 +206,7 @@ export default function GuestHomePage() {
               >
                 <Link
                   to="/register"
-                  className="inline-flex items-center justify-center gap-2 rounded-[12px] px-7 py-3.5 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-[#FFFFFF] shadow-lg transition-opacity duration-300 ease-out hover:opacity-95"
+                  className="inline-flex items-center justify-center gap-2 rounded-[12px] px-7 py-3.5 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-white shadow-lg transition-opacity duration-300 ease-out hover:opacity-95"
                   style={{ backgroundColor: DEEP_NAVY }}
                 >
                   Start Exploring
@@ -214,7 +214,7 @@ export default function GuestHomePage() {
                 </Link>
                 <Link
                   to="/events"
-                  className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#FFFFFF] px-7 py-3.5 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold shadow-md transition-colors duration-300 ease-out hover:bg-slate-50"
+                  className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-white px-7 py-3.5 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold shadow-md transition-colors duration-300 ease-out hover:bg-slate-50"
                   style={{ color: brandNavy }}
                 >
                   <Search className="h-5 w-5" />
@@ -226,7 +226,7 @@ export default function GuestHomePage() {
                   {["A", "B", "C", "D"].map((letter) => (
                     <div
                       key={letter}
-                      className="w-10 h-10 rounded-full border-2 border-[#FFFFFF] bg-slate-700/90 flex items-center justify-center text-[#FFFFFF] text-[13px] font-semibold"
+                      className="w-10 h-10 rounded-full border-2 border-white bg-slate-700/90 flex items-center justify-center text-white text-[13px] font-semibold"
                     >
                       {letter}
                     </div>
@@ -235,7 +235,7 @@ export default function GuestHomePage() {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                   <div className="flex items-center gap-0.5">
                     {[1, 2, 3, 4, 5].map((i) => (
-                      <Star key={i} className="w-4 h-4 fill-[#EC9B3B] text-[#EC9B3B]" />
+                      <Star key={i} className="w-4 h-4 fill-accent text-accent" />
                     ))}
                   </div>
                   <p
@@ -336,9 +336,9 @@ export default function GuestHomePage() {
             {stats.map((stat, index) => (
               <ScrollReveal key={index} className="flex flex-col items-center px-2 py-2 text-center md:py-4" delay={index * 0.07} y={20}>
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-[10px] bg-slate-100 mb-4">
-                  <stat.icon className="w-6 h-6 text-[#EC9B3B]" strokeWidth={2} />
+                  <stat.icon className="w-6 h-6 text-accent" strokeWidth={2} />
                 </div>
-                <p className="font-['Inter:Bold',sans-serif] font-bold text-[26px] md:text-[30px] text-[#27374d] mb-1">
+                <p className="font-['Inter:Bold',sans-serif] font-bold text-[26px] md:text-[30px] text-foreground mb-1">
                   {stat.value}
                 </p>
                 <p
@@ -354,11 +354,11 @@ export default function GuestHomePage() {
       </section>
 
       {/* —— Upcoming Events —— */}
-      <section className="border-t border-slate-100 bg-[#f8fafc] px-4 py-14 md:py-20">
+      <section className="border-t border-slate-100 bg-muted px-4 py-14 md:py-20">
         <div className="mx-auto max-w-7xl">
           <ScrollReveal className="mb-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between" y={22}>
             <div>
-              <h2 className="mb-2 font-['Inter:Bold',sans-serif] text-[30px] font-bold text-[#27374d] md:text-[38px]">
+              <h2 className="mb-2 font-['Inter:Bold',sans-serif] text-[30px] font-bold text-foreground md:text-[38px]">
                 Upcoming Events
               </h2>
               <p className="font-['Inter:Regular',sans-serif] text-[16px] text-[#64748b]">
@@ -367,7 +367,7 @@ export default function GuestHomePage() {
             </div>
             <Link
               to="/events"
-              className="inline-flex items-center justify-center self-start rounded-[10px] border border-slate-200 bg-white px-5 py-2.5 font-['Inter:Semi_Bold',sans-serif] text-[14px] font-semibold text-[#27374d] shadow-sm transition-colors duration-300 ease-out hover:border-slate-300 hover:bg-slate-50 lg:self-auto"
+              className="inline-flex items-center justify-center self-start rounded-[10px] border border-slate-200 bg-white px-5 py-2.5 font-['Inter:Semi_Bold',sans-serif] text-[14px] font-semibold text-foreground shadow-sm transition-colors duration-300 ease-out hover:border-slate-300 hover:bg-slate-50 lg:self-auto"
             >
               View All Events
             </Link>
@@ -381,7 +381,7 @@ export default function GuestHomePage() {
                 onClick={() => setEventFilter(tab.id)}
                 className={`rounded-full px-4 py-2 font-['Inter:Medium',sans-serif] text-[13px] font-medium transition-colors duration-300 ease-out md:text-[14px] ${
                   eventFilter === tab.id
-                    ? "bg-[#27374D] text-white shadow-md hover:bg-[#1e2936]"
+                    ? "bg-primary text-white shadow-md hover:bg-[#1e2936]"
                     : "border border-slate-200 bg-white text-[#475569] hover:border-slate-300 hover:bg-slate-50"
                 }`}
               >
@@ -405,10 +405,10 @@ export default function GuestHomePage() {
       </section>
 
       {/* —— Explore by Category —— */}
-      <section className="border-t border-sky-100/80 bg-[#eff6ff] px-4 py-16 md:py-20">
+      <section className="border-t border-sky-100/80 bg-background px-4 py-16 md:py-20">
         <div className="mx-auto max-w-7xl">
           <ScrollReveal className="mb-12 text-center md:mb-14" y={24}>
-            <h2 className="mb-3 font-['Inter:Bold',sans-serif] text-[30px] font-bold text-[#27374d] md:text-[38px]">
+            <h2 className="mb-3 font-['Inter:Bold',sans-serif] text-[30px] font-bold text-foreground md:text-[38px]">
               Explore by Category
             </h2>
             <p className="font-['Inter:Regular',sans-serif] text-[17px] text-[#64748b]">
@@ -431,7 +431,7 @@ export default function GuestHomePage() {
                   >
                     <Icon className="w-7 h-7" style={{ color: category.color }} strokeWidth={2} />
                   </div>
-                  <span className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] md:text-[15px] text-[#27374d] mb-1">
+                  <span className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] md:text-[15px] text-foreground mb-1">
                     {category.name}
                   </span>
                   <span className="font-['Inter:Regular',sans-serif] text-[12px] text-[#64748b]">
@@ -450,12 +450,12 @@ export default function GuestHomePage() {
         <div className="mx-auto max-w-7xl">
           <ScrollReveal className="mx-auto mb-12 max-w-2xl text-center md:mb-14" y={26}>
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-100 bg-sky-50 px-3 py-1.5">
-              <Zap className="h-4 w-4 text-[#EC9B3B]" />
-              <span className="font-['Inter:Medium',sans-serif] text-[13px] font-medium text-[#27374d]">
+              <Zap className="h-4 w-4 text-accent" />
+              <span className="font-['Inter:Medium',sans-serif] text-[13px] font-medium text-foreground">
                 Powerful Features
               </span>
             </div>
-            <h2 className="mb-4 font-['Inter:Bold',sans-serif] text-[30px] font-bold text-[#27374d] md:text-[40px]">
+            <h2 className="mb-4 font-['Inter:Bold',sans-serif] text-[30px] font-bold text-foreground md:text-[40px]">
               Everything You Need
             </h2>
             <p className="font-['Inter:Regular',sans-serif] text-[16px] leading-relaxed text-[#64748b] md:text-[17px]">
@@ -474,7 +474,7 @@ export default function GuestHomePage() {
                 >
                   <feature.icon className="w-7 h-7" style={{ color: feature.color }} />
                 </div>
-                <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-[#27374d] mb-3">
+                <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-3">
                   {feature.title}
                 </h3>
                 <p className="font-['Inter:Regular',sans-serif] text-[14px] leading-relaxed text-[#64748b]">
@@ -494,7 +494,7 @@ export default function GuestHomePage() {
       >
         <div className="relative z-10 mx-auto max-w-3xl text-center">
           <ScrollReveal y={22}>
-          <h2 className="mb-4 font-['Inter:Bold',sans-serif] text-[30px] font-bold text-[#FFFFFF] md:text-[40px]">
+          <h2 className="mb-4 font-['Inter:Bold',sans-serif] text-[30px] font-bold text-white md:text-[40px]">
             Ready to Start Your Journey?
           </h2>
           <p className="mx-auto mb-10 max-w-xl font-['Inter:Regular',sans-serif] text-[17px] text-[rgba(255,255,255,0.8)]">
@@ -503,7 +503,7 @@ export default function GuestHomePage() {
           <div className="mb-12 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4">
             <Link
               to="/register"
-              className="inline-flex items-center justify-center gap-2 rounded-[12px] px-8 py-3.5 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-[#FFFFFF] shadow-lg transition-all duration-300 ease-in-out hover:brightness-110 hover:shadow-xl active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 rounded-[12px] px-8 py-3.5 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-white shadow-lg transition-all duration-300 ease-in-out hover:brightness-110 hover:shadow-xl active:scale-[0.98]"
               style={{ backgroundColor: ACCENT_ORANGE }}
             >
               Register as Attendee
@@ -511,14 +511,14 @@ export default function GuestHomePage() {
             </Link>
             <Link
               to="/register?type=organization"
-              className="inline-flex items-center justify-center gap-2 rounded-[12px] border border-[rgba(255,255,255,0.5)] bg-transparent px-8 py-3.5 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-[#FFFFFF] transition-all duration-300 ease-in-out hover:border-white/70 hover:bg-[rgba(255,255,255,0.12)] active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 rounded-[12px] border border-[rgba(255,255,255,0.5)] bg-transparent px-8 py-3.5 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-white transition-all duration-300 ease-in-out hover:border-white/70 hover:bg-[rgba(255,255,255,0.12)] active:scale-[0.98]"
             >
               <Building2 className="h-5 w-5" />
               Register as Organization
             </Link>
             <Link
               to="/register?type=place_owner"
-              className="inline-flex items-center justify-center gap-2 rounded-[12px] border border-[rgba(255,255,255,0.5)] bg-transparent px-8 py-3.5 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-[#FFFFFF] transition-all duration-300 ease-in-out hover:border-white/70 hover:bg-[rgba(255,255,255,0.12)] active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 rounded-[12px] border border-[rgba(255,255,255,0.5)] bg-transparent px-8 py-3.5 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-white transition-all duration-300 ease-in-out hover:border-white/70 hover:bg-[rgba(255,255,255,0.12)] active:scale-[0.98]"
             >
               <MapPin className="h-5 w-5" />
               Register as Place Owner
@@ -526,15 +526,15 @@ export default function GuestHomePage() {
           </div>
           <div className="flex flex-wrap justify-center gap-x-10 gap-y-4 text-[13px] md:text-[14px] text-[rgba(255,255,255,0.95)]">
             <span className="inline-flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 shrink-0 text-[#FFFFFF]" strokeWidth={2} />
+              <CheckCircle className="w-4 h-4 shrink-0 text-white" strokeWidth={2} />
               Free to join
             </span>
             <span className="inline-flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 shrink-0 text-[#FFFFFF]" strokeWidth={2} />
+              <CheckCircle className="w-4 h-4 shrink-0 text-white" strokeWidth={2} />
               Easy to use all the time
             </span>
             <span className="inline-flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 shrink-0 text-[#FFFFFF]" strokeWidth={2} />
+              <CheckCircle className="w-4 h-4 shrink-0 text-white" strokeWidth={2} />
               Cancel anytime
             </span>
           </div>
@@ -544,7 +544,7 @@ export default function GuestHomePage() {
 
       {/* —— Footer (aligned with reference: logo + 2 link columns) —— */}
       <footer className="px-4 py-12 md:py-14" style={{ backgroundColor: brandNavy }}>
-        <div className="mx-auto max-w-7xl text-[#FFFFFF]">
+        <div className="mx-auto max-w-7xl text-white">
           <ScrollReveal className="mb-10 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-12" y={18}>
             <div>
               <div className="mb-4">
@@ -589,7 +589,7 @@ export default function GuestHomePage() {
           </ScrollReveal>
           <ScrollReveal delay={0.1} y={12}>
           <div className="border-t border-white/20 pt-8 text-center">
-            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[#FFFFFF]/90">
+            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-white/90">
               © {new Date().getFullYear()} ForSa. All rights reserved.
             </p>
           </div>

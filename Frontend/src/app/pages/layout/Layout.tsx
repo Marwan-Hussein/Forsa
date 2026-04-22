@@ -9,7 +9,7 @@ export default function Layout() {
   const showAppChrome = pathname !== "/";
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f1f5f9]">
+    <div className="min-h-screen flex flex-col bg-background">
       <Navigation />
       <main className="flex min-h-0 flex-1 flex-col w-full">
         <AnimatedOutlet />

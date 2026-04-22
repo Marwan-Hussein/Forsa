@@ -108,20 +108,20 @@ export default function RegistrationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#eff6ff] py-12 px-4">
+    <div className="min-h-screen bg-accent py-12 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <Link
             to="/"
-            className="inline-block mb-4 text-[#526d82] hover:text-[#27374d] transition-colors"
+            className="inline-block mb-4 text-muted-foreground hover:text-primary transition-colors"
           >
             ← Back to Home
           </Link>
-          <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-[#27374d] mb-2">
+          <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-primary mb-2">
             {getTitle()}
           </h1>
-          <p className="font-['Inter:Regular',sans-serif] text-[16px] text-[#526d82] mb-6">
+          <p className="font-['Inter:Regular',sans-serif] text-[16px] text-muted-foreground mb-6">
             {getDescription()}
           </p>
 
@@ -131,8 +131,8 @@ export default function RegistrationPage() {
               to="/register?type=attendee"
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 ease-in-out ${
                 registrationType === "attendee"
-                  ? "bg-[#27374d] text-[#dde6ed] hover:bg-[#1e2936]"
-                  : "bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-[#27374d] hover:bg-[#f8f9fa]"
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "bg-card border-[0.8px] border-border text-primary hover:bg-[#f8f9fa]"
               }`}
             >
               <User className="w-4 h-4" />
@@ -142,8 +142,8 @@ export default function RegistrationPage() {
               to="/register?type=organization"
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 ease-in-out ${
                 registrationType === "organization"
-                  ? "bg-[#27374d] text-[#dde6ed] hover:bg-[#1e2936]"
-                  : "bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-[#27374d] hover:bg-[#f8f9fa]"
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "bg-card border-[0.8px] border-border text-primary hover:bg-[#f8f9fa]"
               }`}
             >
               <Building2 className="w-4 h-4" />
@@ -153,8 +153,8 @@ export default function RegistrationPage() {
               to="/register?type=place"
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 ease-in-out ${
                 registrationType === "place"
-                  ? "bg-[#27374d] text-[#dde6ed] hover:bg-[#1e2936]"
-                  : "bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-[#27374d] hover:bg-[#f8f9fa]"
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "bg-card border-[0.8px] border-border text-primary hover:bg-[#f8f9fa]"
               }`}
             >
               <Home className="w-4 h-4" />
@@ -164,25 +164,25 @@ export default function RegistrationPage() {
         </div>
 
         {/* Registration Form */}
-        <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8 shadow-sm">
+        <div className="bg-card rounded-[14px] border-[0.8px] border-border p-8 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Full Name */}
             <div>
               <label
                 htmlFor="fullName"
-                className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d] mb-2"
+                className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-primary mb-2"
               >
                 {registrationType === "organization" ? "Organization Name *" : registrationType === "place" ? "Owner Name *" : "Full Name *"}
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#526d82]" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="text"
                   id="fullName"
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] focus:outline-none focus:border-[#27374d] font-['Inter:Regular',sans-serif] text-[14px] text-[#27374d]"
+                  className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-border focus:outline-none focus:border-primary font-['Inter:Regular',sans-serif] text-[14px] text-primary"
                   placeholder={registrationType === "organization" ? "Enter organization name" : registrationType === "place" ? "Enter owner name" : "Enter your full name"}
                 />
               </div>
@@ -195,19 +195,19 @@ export default function RegistrationPage() {
             <div>
               <label
                 htmlFor="username"
-                className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d] mb-2"
+                className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-primary mb-2"
               >
                 Username *
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#526d82]" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="text"
                   id="username"
                   name="username"
                   value={formData.username}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] focus:outline-none focus:border-[#27374d] font-['Inter:Regular',sans-serif] text-[14px] text-[#27374d]"
+                  className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-border focus:outline-none focus:border-primary font-['Inter:Regular',sans-serif] text-[14px] text-primary"
                   placeholder="Choose a username"
                 />
               </div>
@@ -220,19 +220,19 @@ export default function RegistrationPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d] mb-2"
+                className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-primary mb-2"
               >
                 Email Address *
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#526d82]" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="email"
                   id="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] focus:outline-none focus:border-[#27374d] font-['Inter:Regular',sans-serif] text-[14px] text-[#27374d]"
+                  className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-border focus:outline-none focus:border-primary font-['Inter:Regular',sans-serif] text-[14px] text-primary"
                   placeholder="your.email@example.com"
                 />
               </div>
@@ -245,19 +245,19 @@ export default function RegistrationPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d] mb-2"
+                className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-primary mb-2"
               >
                 Password *
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#526d82]" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="password"
                   id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] focus:outline-none focus:border-[#27374d] font-['Inter:Regular',sans-serif] text-[14px] text-[#27374d]"
+                  className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-border focus:outline-none focus:border-primary font-['Inter:Regular',sans-serif] text-[14px] text-primary"
                   placeholder="Create a strong password"
                 />
               </div>
@@ -270,19 +270,19 @@ export default function RegistrationPage() {
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d] mb-2"
+                className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-primary mb-2"
               >
                 Confirm Password *
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#526d82]" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="password"
                   id="confirmPassword"
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] focus:outline-none focus:border-[#27374d] font-['Inter:Regular',sans-serif] text-[14px] text-[#27374d]"
+                  className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-border focus:outline-none focus:border-primary font-['Inter:Regular',sans-serif] text-[14px] text-primary"
                   placeholder="Re-enter your password"
                 />
               </div>
@@ -295,19 +295,19 @@ export default function RegistrationPage() {
             <div>
               <label
                 htmlFor="phone"
-                className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d] mb-2"
+                className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-primary mb-2"
               >
                 Phone Number *
               </label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#526d82]" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="tel"
                   id="phone"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] focus:outline-none focus:border-[#27374d] font-['Inter:Regular',sans-serif] text-[14px] text-[#27374d]"
+                  className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-border focus:outline-none focus:border-primary font-['Inter:Regular',sans-serif] text-[14px] text-primary"
                   placeholder="+1 (555) 123-4567"
                 />
               </div>
@@ -320,19 +320,19 @@ export default function RegistrationPage() {
             <div>
               <label
                 htmlFor="location"
-                className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d] mb-2"
+                className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-primary mb-2"
               >
                 Location *
               </label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#526d82]" />
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="text"
                   id="location"
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] focus:outline-none focus:border-[#27374d] font-['Inter:Regular',sans-serif] text-[14px] text-[#27374d]"
+                  className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-border focus:outline-none focus:border-primary font-['Inter:Regular',sans-serif] text-[14px] text-primary"
                   placeholder="City, State/Country"
                 />
               </div>
@@ -346,19 +346,19 @@ export default function RegistrationPage() {
               <div>
                 <label
                   htmlFor="birthdate"
-                  className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d] mb-2"
+                  className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-primary mb-2"
                 >
                   Date of Birth *
                 </label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#526d82]" />
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <input
                     type="date"
                     id="birthdate"
                     name="birthdate"
                     value={formData.birthdate}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] focus:outline-none focus:border-[#27374d] font-['Inter:Regular',sans-serif] text-[14px] text-[#27374d]"
+                    className="w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-border focus:outline-none focus:border-primary font-['Inter:Regular',sans-serif] text-[14px] text-primary"
                   />
                 </div>
                 {errors.birthdate && (
@@ -372,12 +372,12 @@ export default function RegistrationPage() {
               <input
                 type="checkbox"
                 id="terms"
-                className="mt-1 w-4 h-4 rounded border-[rgba(82,109,130,0.2)] text-[#27374d] focus:ring-[#27374d]"
+                className="mt-1 w-4 h-4 rounded border-border text-primary focus:ring-primary"
                 required
               />
               <label
                 htmlFor="terms"
-                className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]"
+                className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground"
               >
                 I agree to the Terms of Service and Privacy Policy
               </label>
@@ -386,7 +386,7 @@ export default function RegistrationPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-[#27374d] text-[#dde6ed] py-3 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[16px] hover:bg-[#1e2936] transition-colors"
+              className="w-full bg-primary text-primary-foreground py-3 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[16px] hover:bg-primary/90 transition-colors"
             >
               Create Account
             </button>
@@ -394,11 +394,11 @@ export default function RegistrationPage() {
 
           {/* Already have an account */}
           <div className="mt-6 text-center">
-            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">
+            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
               Already have an account?{" "}
               <Link
                 to="/login"
-                className="font-['Inter:Medium',sans-serif] font-medium text-[#27374d] underline-offset-2 transition-colors hover:underline"
+                className="font-['Inter:Medium',sans-serif] font-medium text-primary underline-offset-2 transition-colors hover:underline"
               >
                 Sign In
               </Link>

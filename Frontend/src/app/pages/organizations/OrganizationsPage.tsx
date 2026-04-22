@@ -21,19 +21,19 @@ export default function OrganizationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#eff6ff] py-8 px-4">
+    <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-6xl mx-auto">
         {orgId && !selectedOrganization ? (
           <div className="rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] bg-white p-8 text-center">
-            <h2 className="mb-2 font-['Inter:Semi_Bold',sans-serif] text-[22px] font-semibold text-[#27374d]">
+            <h2 className="mb-2 font-['Inter:Semi_Bold',sans-serif] text-[22px] font-semibold text-foreground">
               Organization Not Found
             </h2>
-            <p className="mb-4 font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">
+            <p className="mb-4 font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
               The organization profile you requested does not exist.
             </p>
             <Link
               to="/organizations"
-              className="inline-flex cursor-pointer items-center rounded-[8px] bg-[#27374d] px-5 py-2 font-['Inter:Medium',sans-serif] text-[14px] font-medium text-[#dde6ed] transition-colors hover:bg-[#1e2936]"
+              className="inline-flex cursor-pointer items-center rounded-[8px] bg-primary px-5 py-2 font-['Inter:Medium',sans-serif] text-[14px] font-medium text-[#dde6ed] transition-colors hover:bg-[#1e2936]"
             >
               Back to Organizations
             </Link>
@@ -44,18 +44,18 @@ export default function OrganizationsPage() {
         <div className={`mb-8 ${orgId && !selectedOrganization ? "hidden" : ""}`}>
           <Link
             to={selectedOrganization ? "/organizations" : "/dashboard"}
-            className="inline-flex items-center gap-2 mb-4 text-[#526d82] hover:text-[#27374d] transition-colors font-['Inter:Regular',sans-serif] text-[14px] cursor-pointer"
+            className="inline-flex items-center gap-2 mb-4 text-muted-foreground hover:text-foreground transition-colors font-['Inter:Regular',sans-serif] text-[14px] cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             {selectedOrganization ? "Back to Organizations" : "Back to Home"}
           </Link>
           <div className="flex items-center gap-3 mb-2">
-            <Building2 className="w-8 h-8 text-[#EC9B3B]" />
-            <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-[#27374d]">
+            <Building2 className="w-8 h-8 text-accent" />
+            <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-foreground">
               {selectedOrganization ? selectedOrganization.name : "Event Organizations"}
             </h1>
           </div>
-          <p className="font-['Inter:Regular',sans-serif] text-[16px] text-[#526d82]">
+          <p className="font-['Inter:Regular',sans-serif] text-[16px] text-muted-foreground">
             {selectedOrganization
               ? "Organization profile and subscription details"
               : "Subscribe to organizations to receive updates about their events"}
@@ -69,14 +69,14 @@ export default function OrganizationsPage() {
           }`}
         >
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 w-12 h-12 bg-[#eff6ff] rounded-full flex items-center justify-center">
-              <Bell className="w-6 h-6 text-[#EC9B3B]" />
+            <div className="flex-shrink-0 w-12 h-12 bg-background rounded-full flex items-center justify-center">
+              <Bell className="w-6 h-6 text-accent" />
             </div>
             <div>
-              <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-[#27374d] mb-2">
+              <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground mb-2">
                 Why subscribe to organizations?
               </h3>
-              <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">
+              <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
                 Get notified when your favorite organizations post new events, updates, or special offers. You're currently subscribed to {subscribedOrgs.length} organization{subscribedOrgs.length !== 1 ? "s" : ""}.
               </p>
             </div>
@@ -93,14 +93,14 @@ export default function OrganizationsPage() {
                 className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="w-16 h-16 bg-[#27374d] rounded-full flex items-center justify-center text-3xl flex-shrink-0">
+                  <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-3xl flex-shrink-0">
                     {org.logo}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-[#27374d] mb-1">
+                    <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-1">
                       {org.name}
                     </h3>
-                    <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82] line-clamp-2">
+                    <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground line-clamp-2">
                       {org.description}
                     </p>
                   </div>
@@ -109,23 +109,23 @@ export default function OrganizationsPage() {
                 {/* Stats */}
                 <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-[rgba(82,109,130,0.2)]">
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-[#EC9B3B]" />
+                    <Calendar className="w-4 h-4 text-accent" />
                     <div>
-                      <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-[#27374d]">
+                      <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground">
                         {org.eventsCount}
                       </p>
-                      <p className="font-['Inter:Regular',sans-serif] text-[12px] text-[#526d82]">
+                      <p className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
                         Events
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-[#EC9B3B]" />
+                    <Users className="w-4 h-4 text-accent" />
                     <div>
-                      <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-[#27374d]">
+                      <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground">
                         {org.followersCount.toLocaleString()}
                       </p>
-                      <p className="font-['Inter:Regular',sans-serif] text-[12px] text-[#526d82]">
+                      <p className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
                         Followers
                       </p>
                     </div>
@@ -138,7 +138,7 @@ export default function OrganizationsPage() {
                     {org.categories.map((category) => (
                       <span
                         key={category}
-                        className="px-2 py-1 bg-[#eff6ff] text-[#27374d] rounded-[6px] text-[12px] font-['Inter:Medium',sans-serif] font-medium"
+                        className="px-2 py-1 bg-background text-foreground rounded-[6px] text-[12px] font-['Inter:Medium',sans-serif] font-medium"
                       >
                         {category}
                       </span>
@@ -152,8 +152,8 @@ export default function OrganizationsPage() {
                     onClick={() => toggleSubscription(org.id)}
                     className={`flex-1 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-colors flex items-center justify-center gap-2 ${
                       isSubscribed
-                        ? "bg-[#27374d] text-[#dde6ed] hover:bg-[#1e2936]"
-                        : "bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-[#27374d] hover:bg-[#f8f9fa]"
+                        ? "bg-primary text-[#dde6ed] hover:bg-[#1e2936]"
+                        : "bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground hover:bg-[#f8f9fa]"
                     }`}
                   >
                     {isSubscribed ? (
@@ -170,7 +170,7 @@ export default function OrganizationsPage() {
                   </button>
                   <Link
                     to={`/organizations/${org.id}`}
-                    className="flex-1 bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-[#27374d] py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors text-center"
+                    className="flex-1 bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors text-center"
                   >
                     View Profile
                   </Link>

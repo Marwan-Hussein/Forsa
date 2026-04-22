@@ -17,7 +17,7 @@ export default function WishlistPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#eff6ff] py-8 px-4">
+    <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="My Wishlist"
@@ -39,14 +39,14 @@ export default function WishlistPage() {
         {wishlistEvents.length > 0 && (
           <div className="mb-6 rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] bg-white p-6">
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#eff6ff]">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-background">
                 <Heart className="h-6 w-6 fill-red-500 text-red-500" />
               </div>
               <div>
-                <h3 className="mb-2 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-[#27374d]">
+                <h3 className="mb-2 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-foreground">
                   Your Saved Events
                 </h3>
-                <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">
+                <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
                   Events in your wishlist are saved for quick access. Book them before they sell out!
                 </p>
               </div>
@@ -68,16 +68,16 @@ export default function WishlistPage() {
           </div>
         ) : (
           <div className="rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] bg-white p-12 text-center">
-            <Heart className="mx-auto mb-4 h-16 w-16 text-[#526d82]" />
-            <p className="mb-2 font-['Inter:Semi_Bold',sans-serif] text-[18px] font-semibold text-[#27374d]">
+            <Heart className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+            <p className="mb-2 font-['Inter:Semi_Bold',sans-serif] text-[18px] font-semibold text-foreground">
               Your wishlist is empty
             </p>
-            <p className="mb-6 font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">
+            <p className="mb-6 font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
               Start adding events to your wishlist to keep track of events you're interested in
             </p>
             <Link
               to="/events"
-              className="inline-block rounded-lg bg-[#27374d] px-6 py-3 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-[#dde6ed] transition-all duration-300 ease-in-out hover:bg-[#1e2936] active:scale-[0.98]"
+              className="inline-block rounded-lg bg-primary px-6 py-3 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-[#dde6ed] transition-all duration-300 ease-in-out hover:bg-[#1e2936] active:scale-[0.98]"
             >
               Browse Events
             </Link>

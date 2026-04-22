@@ -26,10 +26,10 @@ export function FloatingLabelTextarea({
         placeholder=" "
         data-slot="floating-textarea"
         className={cn(
-          "peer w-full resize-none rounded-xl border border-[rgba(82,109,130,0.25)] bg-white px-4 pb-3 pt-7 font-['Inter:Regular',sans-serif] text-[14px] text-[#27374d] shadow-sm transition-[border-color,box-shadow] duration-300 ease-in-out outline-none",
+          "peer w-full resize-none rounded-xl border border-[rgba(82,109,130,0.25)] bg-white px-4 pb-3 pt-7 font-['Inter:Regular',sans-serif] text-[14px] text-foreground shadow-sm transition-[border-color,box-shadow] duration-300 ease-in-out outline-none",
           "placeholder:text-transparent",
           "hover:border-[rgba(39,55,77,0.35)]",
-          "focus:border-[#27374d] focus:ring-[3px] focus:ring-[#27374d]/12",
+          "focus:border-primary focus:ring-[3px] focus:ring-primary/12",
           "aria-invalid:border-red-400 aria-invalid:ring-red-500/15",
           className,
         )}
@@ -38,8 +38,8 @@ export function FloatingLabelTextarea({
       <label
         htmlFor={fieldId}
         className={cn(
-          "pointer-events-none absolute left-4 top-3.5 origin-[0] font-['Inter:Medium',sans-serif] text-[14px] text-[#526d82] transition-all duration-300 ease-in-out",
-          "peer-focus:top-2 peer-focus:text-[11px] peer-focus:text-[#27374d]",
+          "pointer-events-none absolute left-4 top-3.5 origin-[0] font-['Inter:Medium',sans-serif] text-[14px] text-muted-foreground transition-all duration-300 ease-in-out",
+          "peer-focus:top-2 peer-focus:text-[11px] peer-focus:text-foreground",
           "peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:text-[11px]",
         )}
       >

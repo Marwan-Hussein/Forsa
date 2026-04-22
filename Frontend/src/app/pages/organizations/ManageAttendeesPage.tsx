@@ -129,19 +129,19 @@ export default function ManageAttendeesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#eff6ff] flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <main className="flex-1 px-6 py-8 max-w-7xl mx-auto w-full">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-[#526d82] mb-6">
-          <Link to="/organization-dashboard" className="hover:text-[#EC9B3B] cursor-pointer">Dashboard</Link>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+          <Link to="/organization-dashboard" className="hover:text-accent cursor-pointer">Dashboard</Link>
           <ChevronRight className="size-4" />
-          <Link to="/organization-dashboard" className="hover:text-[#EC9B3B] cursor-pointer">My Events</Link>
+          <Link to="/organization-dashboard" className="hover:text-accent cursor-pointer">My Events</Link>
           <ChevronRight className="size-4" />
-          <span className="text-[#27374d]">Manage Attendees</span>
+          <span className="text-foreground">Manage Attendees</span>
         </div>
 
         {/* Event Header */}
-        <div className="bg-gradient-to-br from-[#182F4D] to-[#346286] rounded-xl p-6 text-white mb-8">
+        <div className="bg-gradient-to-br from-primary to-primary/80 rounded-xl p-6 text-white mb-8">
           <h1 className="text-3xl font-bold mb-4">{mockEvent.title}</h1>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center gap-2">
@@ -161,22 +161,22 @@ export default function ManageAttendeesPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#526d82] mb-1">Total Attendees</p>
-                <p className="text-3xl font-bold text-[#27374d]">{stats.total}</p>
+                <p className="text-sm text-muted-foreground mb-1">Total Attendees</p>
+                <p className="text-3xl font-bold text-foreground">{stats.total}</p>
               </div>
-              <div className="p-3 bg-gradient-to-br from-[#182F4D] to-[#346286] rounded-lg">
+              <div className="p-3 bg-gradient-to-br from-primary to-primary/80 rounded-lg">
                 <Users className="size-6 text-white" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#526d82] mb-1">Checked In</p>
+                <p className="text-sm text-muted-foreground mb-1">Checked In</p>
                 <p className="text-3xl font-bold text-green-600">{stats.checkedIn}</p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
@@ -185,10 +185,10 @@ export default function ManageAttendeesPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#526d82] mb-1">Not Checked In</p>
+                <p className="text-sm text-muted-foreground mb-1">Not Checked In</p>
                 <p className="text-3xl font-bold text-yellow-600">{stats.notCheckedIn}</p>
               </div>
               <div className="p-3 bg-yellow-100 rounded-lg">
@@ -197,13 +197,13 @@ export default function ManageAttendeesPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#526d82] mb-1">VIP Tickets</p>
-                <p className="text-3xl font-bold text-[#EC9B3B]">{stats.vipTickets}</p>
+                <p className="text-sm text-muted-foreground mb-1">VIP Tickets</p>
+                <p className="text-3xl font-bold text-accent">{stats.vipTickets}</p>
               </div>
-              <div className="p-3 bg-gradient-to-br from-[#EC9B3B] to-[#f4b860] rounded-lg">
+              <div className="p-3 bg-gradient-to-br from-accent to-accent/80 rounded-lg">
                 <CheckCircle className="size-6 text-white" />
               </div>
             </div>
@@ -211,31 +211,31 @@ export default function ManageAttendeesPage() {
         </div>
 
         {/* Actions Bar */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)] mb-6">
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10 mb-6">
           <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
             <div className="flex-1 w-full lg:w-auto">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-[#526d82]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Search by name or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                 />
               </div>
             </div>
             <div className="flex gap-2 flex-wrap">
               <Link
                 to={`/qr-scanner/${eventId}`}
-                className="px-4 py-3 bg-gradient-to-r from-[#EC9B3B] to-[#f4b860] text-white rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer"
+                className="px-4 py-3 bg-gradient-to-r from-accent to-accent/80 text-white rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer"
               >
                 <QrCode className="size-5" />
                 QR Scanner
               </Link>
               <button
                 onClick={handleExportCSV}
-                className="px-4 py-3 border border-[#27374d] text-[#27374d] rounded-lg hover:bg-[#27374d] hover:text-white transition-all flex items-center gap-2 cursor-pointer"
+                className="px-4 py-3 border border-primary text-foreground rounded-lg hover:bg-primary hover:text-white transition-all flex items-center gap-2 cursor-pointer"
               >
                 <Download className="size-5" />
                 Export CSV
@@ -246,13 +246,13 @@ export default function ManageAttendeesPage() {
           {/* Filters */}
           <div className="flex gap-4 mt-4 flex-wrap">
             <div className="flex gap-2">
-              <span className="text-sm text-[#526d82] self-center">Check-in:</span>
+              <span className="text-sm text-muted-foreground self-center">Check-in:</span>
               <button
                 onClick={() => setCheckInFilter("all")}
                 className={`px-3 py-1 text-sm rounded-lg transition-all cursor-pointer ${
                   checkInFilter === "all"
-                    ? "bg-[#27374d] text-white hover:brightness-95"
-                    : "bg-gray-100 text-[#526d82] hover:bg-gray-200"
+                    ? "bg-primary text-white hover:brightness-95"
+                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                 }`}
               >
                 All
@@ -262,7 +262,7 @@ export default function ManageAttendeesPage() {
                 className={`px-3 py-1 text-sm rounded-lg transition-all cursor-pointer ${
                   checkInFilter === "checked-in"
                     ? "bg-green-500 text-white hover:brightness-95"
-                    : "bg-gray-100 text-[#526d82] hover:bg-gray-200"
+                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                 }`}
               >
                 Checked In
@@ -272,7 +272,7 @@ export default function ManageAttendeesPage() {
                 className={`px-3 py-1 text-sm rounded-lg transition-all cursor-pointer ${
                   checkInFilter === "not-checked-in"
                     ? "bg-yellow-500 text-white hover:brightness-95"
-                    : "bg-gray-100 text-[#526d82] hover:bg-gray-200"
+                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                 }`}
               >
                 Not Checked In
@@ -280,13 +280,13 @@ export default function ManageAttendeesPage() {
             </div>
 
             <div className="flex gap-2">
-              <span className="text-sm text-[#526d82] self-center">Ticket:</span>
+              <span className="text-sm text-muted-foreground self-center">Ticket:</span>
               <button
                 onClick={() => setTicketFilter("all")}
                 className={`px-3 py-1 text-sm rounded-lg transition-all cursor-pointer ${
                   ticketFilter === "all"
-                    ? "bg-[#27374d] text-white hover:brightness-95"
-                    : "bg-gray-100 text-[#526d82] hover:bg-gray-200"
+                    ? "bg-primary text-white hover:brightness-95"
+                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                 }`}
               >
                 All
@@ -295,8 +295,8 @@ export default function ManageAttendeesPage() {
                 onClick={() => setTicketFilter("VIP")}
                 className={`px-3 py-1 text-sm rounded-lg transition-all cursor-pointer ${
                   ticketFilter === "VIP"
-                    ? "bg-[#EC9B3B] text-white hover:brightness-95"
-                    : "bg-gray-100 text-[#526d82] hover:bg-gray-200"
+                    ? "bg-accent text-white hover:brightness-95"
+                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                 }`}
               >
                 VIP
@@ -306,7 +306,7 @@ export default function ManageAttendeesPage() {
                 className={`px-3 py-1 text-sm rounded-lg transition-all cursor-pointer ${
                   ticketFilter === "General"
                     ? "bg-blue-500 text-white hover:brightness-95"
-                    : "bg-gray-100 text-[#526d82] hover:bg-gray-200"
+                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                 }`}
               >
                 General
@@ -316,35 +316,35 @@ export default function ManageAttendeesPage() {
         </div>
 
         {/* Attendees Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-[rgba(39,55,77,0.1)] overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-border/10 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-[#eff6ff] border-b border-[rgba(39,55,77,0.1)]">
+              <thead className="bg-background border-b border-border/10">
                 <tr>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-[#27374d]">Attendee</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-[#27374d]">Contact</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-[#27374d]">Ticket</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-[#27374d]">Status</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-[#27374d]">Check-in</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-[#27374d]">Actions</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-foreground">Attendee</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-foreground">Contact</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-foreground">Ticket</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-foreground">Status</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-foreground">Check-in</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredAttendees.map((attendee, index) => (
                   <tr
                     key={attendee.id}
-                    className={`border-b border-[rgba(39,55,77,0.1)] hover:bg-[#eff6ff] transition-colors ${
+                    className={`border-b border-border/10 hover:bg-background transition-colors ${
                       index % 2 === 0 ? "bg-white" : "bg-gray-50"
                     }`}
                   >
                     <td className="px-6 py-4">
                       <div>
-                        <p className="font-semibold text-[#27374d]">{attendee.name}</p>
-                        <p className="text-sm text-[#526d82]">Booked: {new Date(attendee.bookingDate).toLocaleDateString()}</p>
+                        <p className="font-semibold text-foreground">{attendee.name}</p>
+                        <p className="text-sm text-muted-foreground">Booked: {new Date(attendee.bookingDate).toLocaleDateString()}</p>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-[#526d82]">
+                      <div className="text-sm text-muted-foreground">
                         <p className="flex items-center gap-1">
                           <Mail className="size-3" />
                           {attendee.email}
@@ -360,7 +360,7 @@ export default function ManageAttendeesPage() {
                         <span
                           className={`px-2 py-1 text-xs rounded-full font-medium ${
                             attendee.ticketType === "VIP"
-                              ? "bg-[#EC9B3B]/20 text-[#EC9B3B]"
+                              ? "bg-accent/20 text-accent"
                               : attendee.ticketType === "Early Bird"
                               ? "bg-green-100 text-green-700"
                               : "bg-blue-100 text-blue-700"
@@ -368,7 +368,7 @@ export default function ManageAttendeesPage() {
                         >
                           {attendee.ticketType}
                         </span>
-                        <p className="text-xs text-[#526d82] mt-1">{attendee.ticketCount} ticket(s)</p>
+                        <p className="text-xs text-muted-foreground mt-1">{attendee.ticketCount} ticket(s)</p>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -404,7 +404,7 @@ export default function ManageAttendeesPage() {
                           )}
                         </span>
                         {attendee.checkInTime && (
-                          <p className="text-xs text-[#526d82] mt-1">
+                          <p className="text-xs text-muted-foreground mt-1">
                             {new Date(attendee.checkInTime).toLocaleString()}
                           </p>
                         )}
@@ -422,7 +422,7 @@ export default function ManageAttendeesPage() {
                         )}
                         <button
                           onClick={() => handleSendEmail(attendee)}
-                          className="p-1 border border-[#27374d] text-[#27374d] rounded hover:bg-[#27374d] hover:text-white transition-all cursor-pointer"
+                          className="p-1 border border-primary text-foreground rounded hover:bg-primary hover:text-white transition-all cursor-pointer"
                         >
                           <Mail className="size-4" />
                         </button>
@@ -436,9 +436,9 @@ export default function ManageAttendeesPage() {
 
           {filteredAttendees.length === 0 && (
             <div className="text-center py-12">
-              <Users className="size-16 text-[#526d82] mx-auto mb-4 opacity-50" />
-              <h3 className="text-xl font-bold text-[#27374d] mb-2">No attendees found</h3>
-              <p className="text-[#526d82]">Try adjusting your search or filters</p>
+              <Users className="size-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <h3 className="text-xl font-bold text-foreground mb-2">No attendees found</h3>
+              <p className="text-muted-foreground">Try adjusting your search or filters</p>
             </div>
           )}
         </div>
