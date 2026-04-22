@@ -87,7 +87,7 @@ export default function MyEventsPage() {
   const currentEvent = viewingReview ? mockEvents.find(e => e.id === viewingReview) : null;
 
   return (
-    <div className="min-h-screen bg-accent py-8 px-4">
+    <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-8">

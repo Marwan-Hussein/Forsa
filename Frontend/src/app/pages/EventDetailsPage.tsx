@@ -34,7 +34,7 @@ export default function EventDetailsPage() {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-accent flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="bg-card rounded-[14px] border-[0.8px] border-border p-8 text-center">
           <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-primary mb-2">
             Event Not Found
@@ -78,7 +78,7 @@ export default function EventDetailsPage() {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-b from-accent via-accent/50 to-background py-8 px-4"
+      className="min-h-screen bg-background py-8 px-4"
       initial="initial"
       animate="animate"
       variants={pageVariants}

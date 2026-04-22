@@ -39,7 +39,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-accent px-4 py-14 sm:py-16 md:py-20">
+    <div className="min-h-screen bg-background px-4 py-14 sm:py-16 md:py-20">
       <div className="mx-auto max-w-2xl">
         <div className="mb-10 text-center sm:mb-12">
           <Link

@@ -30,16 +30,16 @@ import {
 import { EventCard } from "../../components/EventCard";
 import { mockEvents } from "../../data/mockData";
 
-const SKY_BLUE = "#0891b2";
+const SKY_BLUE = "#f8fafc";
 const DEEP_NAVY = "#1e3a5f";
 const ACCENT_ORANGE = "#0891b2";
 const MUTED_TEXT = "#64748b";
 
-const HERO_BG = `linear-gradient(180deg, #0f2440 0%, ${DEEP_NAVY} 28%, #1a6b8a 62%, #38bdf8 100%)`;
+const HERO_BG = `linear-gradient(180deg, #0f2440 0%, ${DEEP_NAVY} 28%, #1a6b8a 62%, #f8fafc 100%)`;
 
 
 const CTA_SECTION_BG = `
-  radial-gradient(ellipse 90% 75% at 50% 22%, rgba(8, 145, 178, 0.35) 0%, rgba(30, 58, 95, 0.15) 42%, transparent 70%),
+  radial-gradient(ellipse 90% 75% at 50% 22%, rgba(30, 58, 95, 0.15) 0%, rgba(15, 23, 42, 0.05) 42%, transparent 70%),
   linear-gradient(180deg, ${SKY_BLUE} 7%, ${DEEP_NAVY} 48%, #0f172a 100%)
 `;
 
