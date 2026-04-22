@@ -1,9 +1,10 @@
-﻿using Domain.Entities.OwnerEntities;
+﻿using Domain.Common.Implementation;
+using Domain.Entities.OwnerEntities;
 using Domain.ENUMs;
 
 namespace Domain.Entities.PlaceEntities
 {
-    public class Place
+    public class Place : BaseEntity
     {
         public int PlaceId { get; set; }
         public string Name { get; set; }

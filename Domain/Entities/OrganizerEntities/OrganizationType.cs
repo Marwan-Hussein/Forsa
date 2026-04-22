@@ -1,6 +1,8 @@
-﻿namespace Domain.Entities.OrganizerEntities
+﻿using Domain.Common.Implementation;
+
+namespace Domain.Entities.OrganizerEntities
 {
-    public class OrganizationType
+    public class OrganizationType : BaseEntity
     {
         public int Id { get; set; }
         public string Name { get; set; }

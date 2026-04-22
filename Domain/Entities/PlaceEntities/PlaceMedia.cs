@@ -1,8 +1,9 @@
-﻿using Domain.ENUMs;
+﻿using Domain.Common.Implementation;
+using Domain.ENUMs;
 
 namespace Domain.Entities.PlaceEntities
 {
-    public class PlaceMedia
+    public class PlaceMedia : BaseEntity
     {
         public int Id { get; set; } 
         public string MediaURL { get; set; }

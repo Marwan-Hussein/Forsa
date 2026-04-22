@@ -1,6 +1,8 @@
-﻿namespace Domain.Entities
+﻿using Domain.Common.Implementation;
+
+namespace Domain.Entities
 {
-    public class Notification
+    public class Notification : BaseEntity
     {
         public int NotificationId { get; set; }
         public string Message { get; set; }

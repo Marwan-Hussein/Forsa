@@ -1,9 +1,10 @@
+using Domain.Common.Implementation;
 using Domain.Entities.AttendeeEntities;
 using Domain.Entities.EventEntities;
 
 namespace Domain.Entities
 {
-    public class WishListItem
+    public class WishListItem : BaseEntity
     {
         public int WishListItemId { get; set; }
 

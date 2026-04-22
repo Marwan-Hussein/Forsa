@@ -1,6 +1,8 @@
-﻿namespace Domain.Entities.AttendeeEntities
+﻿using Domain.Common.Implementation;
+
+namespace Domain.Entities.AttendeeEntities
 {
-    public class AttendeeInterest
+    public class AttendeeInterest : BaseEntity
     {
         public int InterestId { get; set; }
         public string InterestName  { get; set; }

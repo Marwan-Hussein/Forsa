@@ -1,9 +1,10 @@
+using Domain.Common.Implementation;
 using Domain.Entities.OrganizerEntities;
 using Domain.Entities.PlaceEntities;
 using Domain.ENUMs;
 namespace Domain.Entities.BookingEntities
 {
-    public class BookingRequest
+    public class BookingRequest : BaseEntity
     {
         public int RequestId{ get; set; }
         public RequestStatus Status{ get; set; }

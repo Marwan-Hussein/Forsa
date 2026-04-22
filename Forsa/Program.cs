@@ -1,7 +1,9 @@
-
 using Infrastructure.Data.DbContexts;
 using Microsoft.EntityFrameworkCore;
-
+using Application.Core.Interfaces;
+using Application.Services;
+using Infrastructure.Repositories;
+using Domain.Interfaces;
 namespace Forsa
 {
     public class Program
@@ -13,7 +15,8 @@ namespace Forsa
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Add services to the container.
-
+            builder.Services.AddScoped(typeof(IGenericService<>), typeof(GenericService<>));
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

@@ -1,10 +1,11 @@
-﻿using Domain.Entities.AttendeeEntities;
+﻿using Domain.Common.Implementation;
+using Domain.Entities.AttendeeEntities;
 using Domain.Entities.EventEntities;
 using Domain.ENUMs;
 
 namespace Domain.Entities.BookingEntities
 {
-    public class Booking
+    public class Booking : BaseEntity
     {
         public int BookingId { get; set; }
         public int NumberOfTickets { get; set; }

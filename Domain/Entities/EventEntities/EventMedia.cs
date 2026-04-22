@@ -1,6 +1,8 @@
-﻿namespace Domain.Entities.EventEntities
+﻿using Domain.Common.Implementation;
+
+namespace Domain.Entities.EventEntities
 {
-    public class EventMedia
+    public class EventMedia : BaseEntity
     {
         public int EventMediaId { get; set; }
         public string MediaUrl { get; set; }

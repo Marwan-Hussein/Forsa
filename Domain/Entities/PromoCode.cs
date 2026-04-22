@@ -1,8 +1,9 @@
-﻿using Domain.Entities.OrganizerEntities;
+﻿using Domain.Common.Implementation;
+using Domain.Entities.OrganizerEntities;
 
 namespace Domain.Entities
 {
-    public class PromoCode
+    public class PromoCode : BaseEntity
     {
         public int CodeId { get; set; }
         public string Code { get; set; }

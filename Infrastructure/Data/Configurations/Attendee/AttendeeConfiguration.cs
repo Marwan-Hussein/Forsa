@@ -8,6 +8,7 @@ namespace Infrastructure.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Attendee> builder)
         {
+            builder.ToTable("Attendees");
             builder.HasOne(a => a.WishList)
               .WithOne(w => w.Attendee)
               .HasForeignKey<WishListItem>(w => w.AttendeeId)

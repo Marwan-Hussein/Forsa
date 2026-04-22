@@ -1,9 +1,10 @@
-﻿using Domain.Entities.BookingEntities;
+﻿using Domain.Common.Implementation;
+using Domain.Entities.BookingEntities;
 using Domain.ENUMs;
 
 namespace Domain.Entities.EventEntities
 {
-    public class Event
+    public class Event : BaseEntity
     {
         public int EventId { get; set; }
         public string Title { get; set; }

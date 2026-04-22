@@ -1,9 +1,10 @@
-﻿using Domain.Entities.AttendeeEntities;
+﻿using Domain.Common.Implementation;
+using Domain.Entities.AttendeeEntities;
 using Domain.Entities.EventEntities;
 
 namespace Domain.Entities
 {
-    public class Feedback
+    public class Feedback : BaseEntity
     {
         public int FeedbackId { get; set; }
         public int Rating { get; set; }

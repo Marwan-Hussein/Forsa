@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
-
+using Domain.Common.Interfaces;
 namespace Domain.Entities
 {
-    public class ApplicationUser: IdentityUser<int>
+    public class ApplicationUser: IdentityUser<int> , IBaseEntity
     {
         //public int Id { get; set; }
 
@@ -14,7 +14,12 @@ namespace Domain.Entities
 
         // Relationships
         public List<Notification> Notifications{ get; set; }
-
-
+        // IBaseEntity properties
+        public DateTime CreatedAt { get; set; }
+        public DateTime? LastModifiedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? DeletedBy { get; set; }
     }
 }
