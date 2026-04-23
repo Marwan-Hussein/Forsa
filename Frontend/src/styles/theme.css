@@ -25,16 +25,14 @@
   --font-weight-medium: 500;
   --font-weight-normal: 400;
   --ring: #0891b2;
-  
-  --Business: 217 91% 60%;
-  --Sports: 142 71% 45%;
-  --Education: 262 83% 58%;
-  --Music: 330 81% 60%;
-  --Entertainment: 24 95% 53%;
-  --Technology: 199 89% 48%;
-  --Art: 293 75% 42%;
-  --Food: 38 92% 50%;
-
+  --Business: #2563eb;
+  --Sports: #059669;
+  --Education: #7c3aed;
+  --Music: #db2777;
+  --Entertainment: #ea580c;
+  --Technology: #0891b2;
+  --Art: #c026d3;
+  --Food: #d97706;
   --radius: 0.625rem;
   --sidebar: #ffffff;
   --sidebar-foreground: #1e293b;

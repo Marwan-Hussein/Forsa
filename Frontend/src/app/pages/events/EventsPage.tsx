@@ -152,19 +152,44 @@ export default function EventsPage() {
                   Discovery
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {discoveryFilters.map((mode) => (
-                    <button
-                      key={mode}
-                      onClick={() => setSelectedDiscovery(mode)}
-                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 border ${
-                        selectedDiscovery === mode
-                          ? "bg-accent/30 text-accent border-accent shadow-md"
-                          : "bg-white border-border text-foreground hover:bg-accent/30 hover:text-accent hover:border-accent"
-                      }`}
-                    >
-                      {mode}
-                    </button>
-                  ))}
+                  {discoveryFilters.map((mode) => {
+                    const colorVar = "var(--Business)";
+                    const isActive = selectedDiscovery === mode;
+                    return (
+                      <button
+                        key={mode}
+                        onClick={() => setSelectedDiscovery(mode)}
+                        className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-200 border ${
+                          isActive
+                            ? "shadow-md"
+                            : "bg-white border-border text-foreground"
+                        }`}
+                        style={
+                          isActive
+                            ? { backgroundColor: `color-mix(in srgb, ${colorVar} 15%, white)`, color: colorVar, borderColor: colorVar }
+                            : undefined
+                        }
+                        onMouseEnter={(e) => {
+                          if (!isActive) {
+                            const el = e.currentTarget;
+                            el.style.backgroundColor = `color-mix(in srgb, ${colorVar} 15%, white)`;
+                            el.style.color = colorVar;
+                            el.style.borderColor = colorVar;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isActive) {
+                            const el = e.currentTarget;
+                            el.style.backgroundColor = "";
+                            el.style.color = "";
+                            el.style.borderColor = "";
+                          }
+                        }}
+                      >
+                        {mode}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -175,35 +200,36 @@ export default function EventsPage() {
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {categories.map((category) => {
-                    const catColorVar = category !== "All" ? `var(--${category})` : "var(--primary)";
+                    const colorVar = category !== "All" ? `var(--${category})` : "var(--Business)";
+                    const isActive = selectedCategory === category;
                     return (
                       <button
                         key={category}
                         onClick={() => setSelectedCategory(category)}
-                        className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 border ${
-                          selectedCategory === category
-                            ? "text-white shadow-md"
+                        className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-200 border ${
+                          isActive
+                            ? "shadow-md"
                             : "bg-white border-border text-foreground"
                         }`}
                         style={
-                          selectedCategory === category
-                            ? { backgroundColor: catColorVar, borderColor: catColorVar }
+                          isActive
+                            ? { backgroundColor: `color-mix(in srgb, ${colorVar} 15%, white)`, color: colorVar, borderColor: colorVar }
                             : undefined
                         }
                         onMouseEnter={(e) => {
-                          if (selectedCategory !== category) {
+                          if (!isActive) {
                             const el = e.currentTarget;
-                            el.style.backgroundColor = catColorVar;
-                            el.style.borderColor = catColorVar;
-                            el.style.color = "white";
+                            el.style.backgroundColor = `color-mix(in srgb, ${colorVar} 15%, white)`;
+                            el.style.color = colorVar;
+                            el.style.borderColor = colorVar;
                           }
                         }}
                         onMouseLeave={(e) => {
-                          if (selectedCategory !== category) {
+                          if (!isActive) {
                             const el = e.currentTarget;
                             el.style.backgroundColor = "";
-                            el.style.borderColor = "";
                             el.style.color = "";
+                            el.style.borderColor = "";
                           }
                         }}
                       >
@@ -220,19 +246,44 @@ export default function EventsPage() {
                   Date Range
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {dateFilters.map((date) => (
-                    <button
-                      key={date}
-                      onClick={() => setSelectedDate(date)}
-                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 border ${
-                        selectedDate === date
-                          ? "bg-primary/30 text-primary border-primary shadow-md"
-                          : "bg-white border-border text-foreground hover:bg-primary/30 hover:text-primary hover:border-primary"
-                      }`}
-                    >
-                      {date}
-                    </button>
-                  ))}
+                  {dateFilters.map((date) => {
+                    const colorVar = "var(--Business)";
+                    const isActive = selectedDate === date;
+                    return (
+                      <button
+                        key={date}
+                        onClick={() => setSelectedDate(date)}
+                        className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-200 border ${
+                          isActive
+                            ? "shadow-md"
+                            : "bg-white border-border text-foreground"
+                        }`}
+                        style={
+                          isActive
+                            ? { backgroundColor: `color-mix(in srgb, ${colorVar} 15%, white)`, color: colorVar, borderColor: colorVar }
+                            : undefined
+                        }
+                        onMouseEnter={(e) => {
+                          if (!isActive) {
+                            const el = e.currentTarget;
+                            el.style.backgroundColor = `color-mix(in srgb, ${colorVar} 15%, white)`;
+                            el.style.color = colorVar;
+                            el.style.borderColor = colorVar;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isActive) {
+                            const el = e.currentTarget;
+                            el.style.backgroundColor = "";
+                            el.style.color = "";
+                            el.style.borderColor = "";
+                          }
+                        }}
+                      >
+                        {date}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -242,19 +293,44 @@ export default function EventsPage() {
                   Price Range
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {priceFilters.map((price) => (
-                    <button
-                      key={price}
-                      onClick={() => setPriceRange(price)}
-                      className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 border ${
-                        priceRange === price
-                          ? "bg-Education/30 text-Education border-Education shadow-md"
-                          : "bg-white border-border text-foreground hover:bg-Education/30 hover:text-Education hover:border-Education"
-                      }`}
-                    >
-                      {price}
-                    </button>
-                  ))}
+                  {priceFilters.map((price) => {
+                    const colorVar = "var(--Business)";
+                    const isActive = priceRange === price;
+                    return (
+                      <button
+                        key={price}
+                        onClick={() => setPriceRange(price)}
+                        className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-200 border ${
+                          isActive
+                            ? "shadow-md"
+                            : "bg-white border-border text-foreground"
+                        }`}
+                        style={
+                          isActive
+                            ? { backgroundColor: `color-mix(in srgb, ${colorVar} 15%, white)`, color: colorVar, borderColor: colorVar }
+                            : undefined
+                        }
+                        onMouseEnter={(e) => {
+                          if (!isActive) {
+                            const el = e.currentTarget;
+                            el.style.backgroundColor = `color-mix(in srgb, ${colorVar} 15%, white)`;
+                            el.style.color = colorVar;
+                            el.style.borderColor = colorVar;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isActive) {
+                            const el = e.currentTarget;
+                            el.style.backgroundColor = "";
+                            el.style.color = "";
+                            el.style.borderColor = "";
+                          }
+                        }}
+                      >
+                        {price}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
