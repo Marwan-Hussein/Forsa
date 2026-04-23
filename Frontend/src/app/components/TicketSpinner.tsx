@@ -2,8 +2,8 @@ import { motion } from "motion/react";
 
 const TICKETS_COUNT = 12;
 const ANGLE_STEP = 360 / TICKETS_COUNT; // 30 degrees
-const RADIUS = 80;
-const TOTAL_DURATION = 3; // seconds
+const RADIUS = 45;
+const TOTAL_DURATION = 1; // seconds
 
 export default function TicketSpinner() {
   // Each ticket sweeps exactly 30° from the previous ticket's position.
