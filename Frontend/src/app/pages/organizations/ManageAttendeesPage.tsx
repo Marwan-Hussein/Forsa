@@ -249,30 +249,30 @@ export default function ManageAttendeesPage() {
               <span className="text-sm text-muted-foreground self-center">Check-in:</span>
               <button
                 onClick={() => setCheckInFilter("all")}
-                className={`px-3 py-1 text-sm rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1 text-sm rounded-lg border transition-all duration-200 cursor-pointer active:bg-primary/5 ${
                   checkInFilter === "all"
-                    ? "bg-primary text-white hover:brightness-95"
-                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
+                    ? "bg-primary/10 text-primary border-primary"
+                    : "bg-white text-muted-foreground border-border hover:bg-primary/10 hover:text-primary hover:border-primary"
                 }`}
               >
                 All
               </button>
               <button
                 onClick={() => setCheckInFilter("checked-in")}
-                className={`px-3 py-1 text-sm rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1 text-sm rounded-lg border transition-all duration-200 cursor-pointer active:bg-Sports/5 ${
                   checkInFilter === "checked-in"
-                    ? "bg-green-500 text-white hover:brightness-95"
-                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
+                    ? "bg-Sports/10 text-Sports border-Sports"
+                    : "bg-white text-muted-foreground border-border hover:bg-Sports/10 hover:text-Sports hover:border-Sports"
                 }`}
               >
                 Checked In
               </button>
               <button
                 onClick={() => setCheckInFilter("not-checked-in")}
-                className={`px-3 py-1 text-sm rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1 text-sm rounded-lg border transition-all duration-200 cursor-pointer active:bg-Food/5 ${
                   checkInFilter === "not-checked-in"
-                    ? "bg-yellow-500 text-white hover:brightness-95"
-                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
+                    ? "bg-Food/10 text-Food border-Food"
+                    : "bg-white text-muted-foreground border-border hover:bg-Food/10 hover:text-Food hover:border-Food"
                 }`}
               >
                 Not Checked In
@@ -283,30 +283,30 @@ export default function ManageAttendeesPage() {
               <span className="text-sm text-muted-foreground self-center">Ticket:</span>
               <button
                 onClick={() => setTicketFilter("all")}
-                className={`px-3 py-1 text-sm rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1 text-sm rounded-lg border transition-all duration-200 cursor-pointer active:bg-primary/5 ${
                   ticketFilter === "all"
-                    ? "bg-primary text-white hover:brightness-95"
-                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
+                    ? "bg-primary/10 text-primary border-primary"
+                    : "bg-white text-muted-foreground border-border hover:bg-primary/10 hover:text-primary hover:border-primary"
                 }`}
               >
                 All
               </button>
               <button
                 onClick={() => setTicketFilter("VIP")}
-                className={`px-3 py-1 text-sm rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1 text-sm rounded-lg border transition-all duration-200 cursor-pointer active:bg-accent/5 ${
                   ticketFilter === "VIP"
-                    ? "bg-accent text-white hover:brightness-95"
-                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
+                    ? "bg-accent/10 text-accent border-accent"
+                    : "bg-white text-muted-foreground border-border hover:bg-accent/10 hover:text-accent hover:border-accent"
                 }`}
               >
                 VIP
               </button>
               <button
                 onClick={() => setTicketFilter("General")}
-                className={`px-3 py-1 text-sm rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1 text-sm rounded-lg border transition-all duration-200 cursor-pointer active:bg-Business/5 ${
                   ticketFilter === "General"
-                    ? "bg-blue-500 text-white hover:brightness-95"
-                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
+                    ? "bg-Business/10 text-Business border-Business"
+                    : "bg-white text-muted-foreground border-border hover:bg-Business/10 hover:text-Business hover:border-Business"
                 }`}
               >
                 General

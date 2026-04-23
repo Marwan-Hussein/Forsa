@@ -158,8 +158,8 @@ export default function EventsPage() {
                       onClick={() => setSelectedDiscovery(mode)}
                       className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 border ${
                         selectedDiscovery === mode
-                          ? "bg-accent text-accent-foreground border-accent shadow-md"
-                          : "bg-white border-border text-foreground hover:bg-accent hover:text-accent-foreground hover:border-accent"
+                          ? "bg-accent/30 text-accent border-accent shadow-md"
+                          : "bg-white border-border text-foreground hover:bg-accent/30 hover:text-accent hover:border-accent"
                       }`}
                     >
                       {mode}
@@ -226,8 +226,8 @@ export default function EventsPage() {
                       onClick={() => setSelectedDate(date)}
                       className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 border ${
                         selectedDate === date
-                          ? "bg-primary text-primary-foreground border-primary shadow-md"
-                          : "bg-white border-border text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                          ? "bg-primary/30 text-primary border-primary shadow-md"
+                          : "bg-white border-border text-foreground hover:bg-primary/30 hover:text-primary hover:border-primary"
                       }`}
                     >
                       {date}
@@ -248,8 +248,8 @@ export default function EventsPage() {
                       onClick={() => setPriceRange(price)}
                       className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 border ${
                         priceRange === price
-                          ? "bg-Education text-white border-Education shadow-md"
-                          : "bg-white border-border text-foreground hover:bg-Education hover:text-white hover:border-Education"
+                          ? "bg-Education/30 text-Education border-Education shadow-md"
+                          : "bg-white border-border text-foreground hover:bg-Education/30 hover:text-Education hover:border-Education"
                       }`}
                     >
                       {price}
