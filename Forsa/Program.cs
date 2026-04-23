@@ -3,8 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using Application.Core.Interfaces;
 using Application.Services;
 using Infrastructure.Repositories;
+using Infrastructure.Data;
 using Domain.Interfaces;
 using Application.Mapping;
+using FluentValidation;
+using Application.Validators;
+
 namespace Forsa
 {
     public class Program
@@ -16,9 +20,16 @@ namespace Forsa
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Add services to the container.
-            builder.Services.AddAutoMapper(typeof(EventProfile), typeof(BookingProfile));
-            builder.Services.AddFluentValidationAutoValidation();
-            builder.Services.AddValidatorsFromAssemblyContaining<Application.Validators.CreateBookingValidator>();
+            builder.Services.AddAutoMapper(cfg => 
+            {
+                cfg.AddProfile<Application.Mapping.EventProfile>();
+                cfg.AddProfile<Application.Mapping.BookingProfile>();
+            });
+
+            // Register FluentValidation validators
+            builder.Services.AddValidatorsFromAssemblyContaining<CreateBookingValidator>();
+
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IBookingService, BookingService>();
             builder.Services.AddScoped(typeof(IGenericService<>), typeof(GenericService<>));
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

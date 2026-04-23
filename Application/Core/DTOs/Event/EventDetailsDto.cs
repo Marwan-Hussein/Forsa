@@ -13,6 +13,6 @@ namespace Application.Core.DTOs.Event
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public string Place { get; set; }
-        public string AvailabilityStatus { get; set; }
+        public string AvailabilityStatus { get; set; }  // Calculated based on remaining tickets
     }
 }

@@ -7,7 +7,6 @@ using Domain.Entities.BookingEntities;
 using Domain.Entities.EventEntities;
 using Domain.ENUMs;
 using Domain.Interfaces;
-using Infrastructure.Data.DbContexts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services
@@ -18,20 +17,20 @@ namespace Application.Services
         private readonly IGenericRepository<Booking> _bookingRepository;
         private readonly IGenericRepository<Notification> _notificationRepository;
         private readonly IMapper _mapper;
-        private readonly ForsaDbContext _context;
+        private readonly IUnitOfWork _unitOfWork;
 
         public BookingService(
             IGenericRepository<Event> eventRepository,
             IGenericRepository<Booking> bookingRepository,
             IGenericRepository<Notification> notificationRepository,
             IMapper mapper,
-            ForsaDbContext context)
+            IUnitOfWork unitOfWork)
         {
             _eventRepository = eventRepository;
             _bookingRepository = bookingRepository;
             _notificationRepository = notificationRepository;
             _mapper = mapper;
-            _context = context;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<EventDetailsDto> GetEventDetailsAsync(int eventId)
@@ -109,7 +108,7 @@ namespace Application.Services
             _notificationRepository.Add(notification);
 
             // Save all changes
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
 
             // Map and return response
             return _mapper.Map<BookingResponseDto>(booking);
@@ -152,7 +151,7 @@ namespace Application.Services
             _notificationRepository.Add(notification);
 
             // Save all changes
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<BookingResponseDto> GetBookingAsync(int bookingId)
