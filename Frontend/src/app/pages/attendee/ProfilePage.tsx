@@ -84,29 +84,29 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#eff6ff] py-12 px-4">
+    <div className="min-h-screen bg-background py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 mb-4 text-[#526d82] hover:text-[#27374d] transition-colors font-['Inter:Regular',sans-serif] text-[14px] cursor-pointer"
+            className="inline-flex items-center gap-2 mb-4 text-muted-foreground hover:text-foreground transition-colors font-['Inter:Regular',sans-serif] text-[14px] cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-[#27374d] mb-2">
+              <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-foreground mb-2">
                 My Profile
               </h1>
-              <p className="font-['Inter:Regular',sans-serif] text-[16px] text-[#526d82]">
+              <p className="font-['Inter:Regular',sans-serif] text-[16px] text-muted-foreground">
                 View and update your account information
               </p>
             </div>
             <Link
               to="/interests"
-              className="bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-[#27374d] px-6 py-3 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors cursor-pointer"
+              className="bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground px-6 py-3 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors cursor-pointer"
             >
               Manage Interests
             </Link>
@@ -118,39 +118,39 @@ export default function ProfilePage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-6">
               <div className="flex flex-col items-center text-center">
-                <div className="w-24 h-24 rounded-full bg-[#27374d] flex items-center justify-center mb-4">
+                <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center mb-4">
                   <span className="font-['Inter:Bold',sans-serif] font-bold text-[32px] text-[#dde6ed]">
                     {formData.fullName.charAt(0)}
                   </span>
                 </div>
-                <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-[#27374d] mb-1">
+                <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-1">
                   {formData.fullName}
                 </h2>
-                <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82] mb-4">
+                <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-4">
                   @{formData.username}
                 </p>
                 <div className="w-full pt-4 border-t border-[rgba(82,109,130,0.2)]">
                   <div className="flex justify-between items-center mb-3">
-                    <span className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">
+                    <span className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
                       Events Attended
                     </span>
-                    <span className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-[#27374d]">
+                    <span className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground">
                       12
                     </span>
                   </div>
                   <div className="flex justify-between items-center mb-3">
-                    <span className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">
+                    <span className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
                       Upcoming Events
                     </span>
-                    <span className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-[#27374d]">
+                    <span className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground">
                       5
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">
+                    <span className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
                       Member Since
                     </span>
-                    <span className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-[#27374d]">
+                    <span className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground">
                       Jan 2026
                     </span>
                   </div>
@@ -163,13 +163,13 @@ export default function ProfilePage() {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-[#27374d]">
+                <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground">
                   Profile Information
                 </h2>
                 {!isEditing ? (
                   <button
                     onClick={handleEdit}
-                    className="bg-[#27374d] text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors cursor-pointer"
+                    className="bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors cursor-pointer"
                   >
                     Edit Profile
                   </button>
@@ -177,13 +177,13 @@ export default function ProfilePage() {
                   <div className="flex gap-2">
                     <button
                       onClick={handleCancel}
-                      className="bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-[#27374d] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors cursor-pointer"
+                      className="bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSave}
-                      className="bg-[#27374d] text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors flex items-center gap-2 cursor-pointer"
+                      className="bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors flex items-center gap-2 cursor-pointer"
                     >
                       <Save className="w-4 h-4" />
                       Save Changes
@@ -197,12 +197,12 @@ export default function ProfilePage() {
                 <div>
                   <label
                     htmlFor="fullName"
-                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d] mb-2"
+                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2"
                   >
                     Full Name
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#526d82]" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type="text"
                       id="fullName"
@@ -210,9 +210,9 @@ export default function ProfilePage() {
                       value={formData.fullName}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-[#27374d] ${
+                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-foreground ${
                         isEditing
-                          ? "focus:outline-none focus:border-[#27374d] bg-white"
+                          ? "focus:outline-none focus:border-primary bg-white"
                           : "bg-[#f8f9fa] cursor-not-allowed"
                       }`}
                     />
@@ -226,12 +226,12 @@ export default function ProfilePage() {
                 <div>
                   <label
                     htmlFor="username"
-                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d] mb-2"
+                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2"
                   >
                     Username
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#526d82]" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type="text"
                       id="username"
@@ -239,9 +239,9 @@ export default function ProfilePage() {
                       value={formData.username}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-[#27374d] ${
+                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-foreground ${
                         isEditing
-                          ? "focus:outline-none focus:border-[#27374d] bg-white"
+                          ? "focus:outline-none focus:border-primary bg-white"
                           : "bg-[#f8f9fa] cursor-not-allowed"
                       }`}
                     />
@@ -255,12 +255,12 @@ export default function ProfilePage() {
                 <div>
                   <label
                     htmlFor="email"
-                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d] mb-2"
+                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2"
                   >
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#526d82]" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type="email"
                       id="email"
@@ -268,9 +268,9 @@ export default function ProfilePage() {
                       value={formData.email}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-[#27374d] ${
+                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-foreground ${
                         isEditing
-                          ? "focus:outline-none focus:border-[#27374d] bg-white"
+                          ? "focus:outline-none focus:border-primary bg-white"
                           : "bg-[#f8f9fa] cursor-not-allowed"
                       }`}
                     />
@@ -284,12 +284,12 @@ export default function ProfilePage() {
                 <div>
                   <label
                     htmlFor="phone"
-                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d] mb-2"
+                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2"
                   >
                     Phone Number
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#526d82]" />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type="tel"
                       id="phone"
@@ -297,9 +297,9 @@ export default function ProfilePage() {
                       value={formData.phone}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-[#27374d] ${
+                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-foreground ${
                         isEditing
-                          ? "focus:outline-none focus:border-[#27374d] bg-white"
+                          ? "focus:outline-none focus:border-primary bg-white"
                           : "bg-[#f8f9fa] cursor-not-allowed"
                       }`}
                     />
@@ -313,12 +313,12 @@ export default function ProfilePage() {
                 <div>
                   <label
                     htmlFor="location"
-                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d] mb-2"
+                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2"
                   >
                     Location
                   </label>
                   <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#526d82]" />
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type="text"
                       id="location"
@@ -326,9 +326,9 @@ export default function ProfilePage() {
                       value={formData.location}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-[#27374d] ${
+                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-foreground ${
                         isEditing
-                          ? "focus:outline-none focus:border-[#27374d] bg-white"
+                          ? "focus:outline-none focus:border-primary bg-white"
                           : "bg-[#f8f9fa] cursor-not-allowed"
                       }`}
                     />
@@ -342,12 +342,12 @@ export default function ProfilePage() {
                 <div>
                   <label
                     htmlFor="birthdate"
-                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d] mb-2"
+                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2"
                   >
                     Date of Birth
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#526d82]" />
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type="date"
                       id="birthdate"
@@ -355,9 +355,9 @@ export default function ProfilePage() {
                       value={formData.birthdate}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-[#27374d] ${
+                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-foreground ${
                         isEditing
-                          ? "focus:outline-none focus:border-[#27374d] bg-white"
+                          ? "focus:outline-none focus:border-primary bg-white"
                           : "bg-[#f8f9fa] cursor-not-allowed"
                       }`}
                     />

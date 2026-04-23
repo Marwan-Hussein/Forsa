@@ -135,20 +135,20 @@ export default function MyBookingRequestsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#eff6ff] flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <main className="flex-1 px-6 py-8 max-w-7xl mx-auto w-full">
         {/* Header */}
         <div className="mb-8">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="mb-4 inline-flex items-center gap-2 text-sm text-[#526d82] transition-colors hover:text-[#27374d] cursor-pointer"
+            className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
           >
             <ArrowLeft className="size-4" />
             Back
           </button>
-          <h1 className="text-4xl font-bold text-[#27374d] mb-2">My Booking Requests</h1>
-          <p className="text-[#526d82]">Track and manage your venue booking requests</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">My Booking Requests</h1>
+          <p className="text-muted-foreground">Track and manage your venue booking requests</p>
         </div>
 
         {/* Stats */}
@@ -156,8 +156,8 @@ export default function MyBookingRequestsPage() {
           <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#526d82] mb-1">Total Requests</p>
-                <p className="text-3xl font-bold text-[#27374d]">{stats.total}</p>
+                <p className="text-sm text-muted-foreground mb-1">Total Requests</p>
+                <p className="text-3xl font-bold text-foreground">{stats.total}</p>
               </div>
               <div className="p-3 bg-gradient-to-br from-[#182F4D] to-[#346286] rounded-lg">
                 <Calendar className="size-6 text-white" />
@@ -168,7 +168,7 @@ export default function MyBookingRequestsPage() {
           <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#526d82] mb-1">Pending</p>
+                <p className="text-sm text-muted-foreground mb-1">Pending</p>
                 <p className="text-3xl font-bold text-yellow-600">{stats.pending}</p>
               </div>
               <div className="p-3 bg-yellow-100 rounded-lg">
@@ -180,7 +180,7 @@ export default function MyBookingRequestsPage() {
           <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#526d82] mb-1">Approved</p>
+                <p className="text-sm text-muted-foreground mb-1">Approved</p>
                 <p className="text-3xl font-bold text-green-600">{stats.approved}</p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
@@ -192,7 +192,7 @@ export default function MyBookingRequestsPage() {
           <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#526d82] mb-1">Rejected</p>
+                <p className="text-sm text-muted-foreground mb-1">Rejected</p>
                 <p className="text-3xl font-bold text-red-600">{stats.rejected}</p>
               </div>
               <div className="p-3 bg-red-100 rounded-lg">
@@ -206,7 +206,7 @@ export default function MyBookingRequestsPage() {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)] mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-[#526d82]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search by event or venue name..."
@@ -220,8 +220,8 @@ export default function MyBookingRequestsPage() {
                 onClick={() => setStatusFilter("all")}
                 className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
                   statusFilter === "all"
-                    ? "bg-[#27374d] text-white hover:brightness-95"
-                    : "bg-gray-100 text-[#526d82] hover:bg-gray-200"
+                    ? "bg-primary text-white hover:brightness-95"
+                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                 }`}
               >
                 All
@@ -231,7 +231,7 @@ export default function MyBookingRequestsPage() {
                 className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
                   statusFilter === "pending"
                     ? "bg-yellow-500 text-white hover:brightness-95"
-                    : "bg-gray-100 text-[#526d82] hover:bg-gray-200"
+                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                 }`}
               >
                 Pending
@@ -241,7 +241,7 @@ export default function MyBookingRequestsPage() {
                 className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
                   statusFilter === "approved"
                     ? "bg-green-500 text-white hover:brightness-95"
-                    : "bg-gray-100 text-[#526d82] hover:bg-gray-200"
+                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                 }`}
               >
                 Approved
@@ -251,7 +251,7 @@ export default function MyBookingRequestsPage() {
                 className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
                   statusFilter === "rejected"
                     ? "bg-red-500 text-white hover:brightness-95"
-                    : "bg-gray-100 text-[#526d82] hover:bg-gray-200"
+                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                 }`}
               >
                 Rejected
@@ -264,9 +264,9 @@ export default function MyBookingRequestsPage() {
         <div className="space-y-4">
           {filteredRequests.length === 0 ? (
             <div className="bg-white rounded-xl p-12 shadow-sm border border-[rgba(39,55,77,0.1)] text-center">
-              <Calendar className="size-16 text-[#526d82] mx-auto mb-4 opacity-50" />
-              <h3 className="text-xl font-bold text-[#27374d] mb-2">No booking requests found</h3>
-              <p className="text-[#526d82] mb-6">
+              <Calendar className="size-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <h3 className="text-xl font-bold text-foreground mb-2">No booking requests found</h3>
+              <p className="text-muted-foreground mb-6">
                 {searchQuery || statusFilter !== "all"
                   ? "Try adjusting your filters or search query"
                   : "You haven't submitted any booking requests yet"}
@@ -282,18 +282,18 @@ export default function MyBookingRequestsPage() {
             filteredRequests.map((request) => (
               <div
                 key={request.id}
-                className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)] hover:border-[#EC9B3B] transition-all"
+                className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)] hover:border-accent transition-all"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-bold text-[#27374d]">{request.eventName}</h3>
+                      <h3 className="text-xl font-bold text-foreground">{request.eventName}</h3>
                       <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(request.status)} flex items-center gap-1`}>
                         {getStatusIcon(request.status)}
                         {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                       </span>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-[#526d82]">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <MapPin className="size-4" />
                         <span>{request.placeName}</span>
@@ -315,7 +315,7 @@ export default function MyBookingRequestsPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => setSelectedRequest(request)}
-                      className="px-4 py-2 border border-[#27374d] text-[#27374d] rounded-lg hover:bg-[#27374d] hover:text-white transition-all flex items-center gap-2 cursor-pointer"
+                      className="px-4 py-2 border border-primary text-foreground rounded-lg hover:bg-primary hover:text-white transition-all flex items-center gap-2 cursor-pointer"
                     >
                       <Eye className="size-4" />
                       View Details
@@ -329,10 +329,10 @@ export default function MyBookingRequestsPage() {
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-[rgba(39,55,77,0.1)]">
-                  <div className="text-sm text-[#526d82]">
+                  <div className="text-sm text-muted-foreground">
                     Submitted on {new Date(request.submittedDate).toLocaleDateString()}
                   </div>
-                  <div className="text-sm font-semibold text-[#27374d]">
+                  <div className="text-sm font-semibold text-foreground">
                     Estimated Cost: ${request.estimatedCost.toLocaleString()}
                   </div>
                 </div>
@@ -364,12 +364,12 @@ export default function MyBookingRequestsPage() {
           <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white border-b border-[rgba(39,55,77,0.1)] p-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-[#27374d]">Booking Request Details</h2>
+                <h2 className="text-2xl font-bold text-foreground">Booking Request Details</h2>
                 <button
                   onClick={() => setSelectedRequest(null)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                 >
-                  <XCircle className="size-6 text-[#526d82]" />
+                  <XCircle className="size-6 text-muted-foreground" />
                 </button>
               </div>
             </div>
@@ -385,40 +385,40 @@ export default function MyBookingRequestsPage() {
 
               {/* Event Info */}
               <div>
-                <h3 className="text-lg font-bold text-[#27374d] mb-3">Event Information</h3>
-                <div className="space-y-2 text-[#526d82]">
-                  <p><strong className="text-[#27374d]">Event Name:</strong> {selectedRequest.eventName}</p>
-                  <p><strong className="text-[#27374d]">Date:</strong> {new Date(selectedRequest.eventDate).toLocaleDateString()}</p>
-                  <p><strong className="text-[#27374d]">Time:</strong> {selectedRequest.startTime} - {selectedRequest.endTime}</p>
-                  <p><strong className="text-[#27374d]">Expected Attendees:</strong> {selectedRequest.expectedAttendees}</p>
+                <h3 className="text-lg font-bold text-foreground mb-3">Event Information</h3>
+                <div className="space-y-2 text-muted-foreground">
+                  <p><strong className="text-foreground">Event Name:</strong> {selectedRequest.eventName}</p>
+                  <p><strong className="text-foreground">Date:</strong> {new Date(selectedRequest.eventDate).toLocaleDateString()}</p>
+                  <p><strong className="text-foreground">Time:</strong> {selectedRequest.startTime} - {selectedRequest.endTime}</p>
+                  <p><strong className="text-foreground">Expected Attendees:</strong> {selectedRequest.expectedAttendees}</p>
                 </div>
               </div>
 
               {/* Venue Info */}
               <div>
-                <h3 className="text-lg font-bold text-[#27374d] mb-3">Venue Information</h3>
-                <div className="space-y-2 text-[#526d82]">
-                  <p><strong className="text-[#27374d]">Venue:</strong> {selectedRequest.placeName}</p>
-                  <p><strong className="text-[#27374d]">Address:</strong> {selectedRequest.placeAddress}</p>
+                <h3 className="text-lg font-bold text-foreground mb-3">Venue Information</h3>
+                <div className="space-y-2 text-muted-foreground">
+                  <p><strong className="text-foreground">Venue:</strong> {selectedRequest.placeName}</p>
+                  <p><strong className="text-foreground">Address:</strong> {selectedRequest.placeAddress}</p>
                 </div>
               </div>
 
               {/* Contact Info */}
               <div>
-                <h3 className="text-lg font-bold text-[#27374d] mb-3">Contact Information</h3>
-                <div className="space-y-2 text-[#526d82]">
-                  <p><strong className="text-[#27374d]">Name:</strong> {selectedRequest.contactName}</p>
-                  <p><strong className="text-[#27374d]">Email:</strong> {selectedRequest.contactEmail}</p>
-                  <p><strong className="text-[#27374d]">Phone:</strong> {selectedRequest.contactPhone}</p>
+                <h3 className="text-lg font-bold text-foreground mb-3">Contact Information</h3>
+                <div className="space-y-2 text-muted-foreground">
+                  <p><strong className="text-foreground">Name:</strong> {selectedRequest.contactName}</p>
+                  <p><strong className="text-foreground">Email:</strong> {selectedRequest.contactEmail}</p>
+                  <p><strong className="text-foreground">Phone:</strong> {selectedRequest.contactPhone}</p>
                 </div>
               </div>
 
               {/* Submission Info */}
               <div>
-                <h3 className="text-lg font-bold text-[#27374d] mb-3">Request Details</h3>
-                <div className="space-y-2 text-[#526d82]">
-                  <p><strong className="text-[#27374d]">Submitted on:</strong> {new Date(selectedRequest.submittedDate).toLocaleDateString()}</p>
-                  <p><strong className="text-[#27374d]">Estimated Cost:</strong> ${selectedRequest.estimatedCost.toLocaleString()}</p>
+                <h3 className="text-lg font-bold text-foreground mb-3">Request Details</h3>
+                <div className="space-y-2 text-muted-foreground">
+                  <p><strong className="text-foreground">Submitted on:</strong> {new Date(selectedRequest.submittedDate).toLocaleDateString()}</p>
+                  <p><strong className="text-foreground">Estimated Cost:</strong> ${selectedRequest.estimatedCost.toLocaleString()}</p>
                 </div>
               </div>
 

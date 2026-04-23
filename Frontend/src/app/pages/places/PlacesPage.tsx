@@ -129,30 +129,30 @@ export default function PlacesPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#eff6ff]">
+    <div className="min-h-screen bg-background">
       <main className="px-6 py-8 max-w-7xl mx-auto w-full">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[#27374d] mb-2">Browse Venues</h1>
-          <p className="text-[#526d82]">Find the perfect venue for your next event</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">Browse Venues</h1>
+          <p className="text-muted-foreground">Find the perfect venue for your next event</p>
         </div>
 
         {/* Search and Filters */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)] mb-8">
           <div className="flex flex-col md:flex-row gap-4 mb-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-[#526d82]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search venues by name or location..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
               />
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="px-6 py-3 bg-[#27374d] text-white rounded-lg hover:bg-[#1d2938] transition-colors flex items-center gap-2"
+              className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
             >
               <Filter className="size-5" />
               Filters
@@ -164,11 +164,11 @@ export default function PlacesPage() {
           {showFilters && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-[rgba(39,55,77,0.1)]">
               <div>
-                <label className="block text-sm font-medium text-[#27374d] mb-2">Venue Type</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Venue Type</label>
                 <select
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
-                  className="w-full px-4 py-2 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full px-4 py-2 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                 >
                   {placeTypes.map((type) => (
                     <option key={type} value={type}>
@@ -178,11 +178,11 @@ export default function PlacesPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#27374d] mb-2">Capacity</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Capacity</label>
                 <select
                   value={selectedCapacity}
                   onChange={(e) => setSelectedCapacity(e.target.value)}
-                  className="w-full px-4 py-2 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full px-4 py-2 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                 >
                   {capacityRanges.map((range) => (
                     <option key={range} value={range}>
@@ -192,11 +192,11 @@ export default function PlacesPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#27374d] mb-2">Price Range</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Price Range</label>
                 <select
                   value={selectedPrice}
                   onChange={(e) => setSelectedPrice(e.target.value)}
-                  className="w-full px-4 py-2 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full px-4 py-2 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                 >
                   {priceRanges.map((range) => (
                     <option key={range} value={range}>
@@ -211,7 +211,7 @@ export default function PlacesPage() {
 
         {/* Results Count */}
         <div className="mb-6">
-          <p className="text-[#526d82]">
+          <p className="text-muted-foreground">
             Showing {filteredPlaces.length} {filteredPlaces.length === 1 ? "venue" : "venues"}
           </p>
         </div>
@@ -219,9 +219,9 @@ export default function PlacesPage() {
         {/* Places Grid */}
         {filteredPlaces.length === 0 ? (
           <div className="bg-white rounded-xl p-12 shadow-sm border border-[rgba(39,55,77,0.1)] text-center">
-            <Building2 className="size-16 text-[#526d82] mx-auto mb-4 opacity-50" />
-            <h3 className="text-xl font-bold text-[#27374d] mb-2">No venues found</h3>
-            <p className="text-[#526d82]">Try adjusting your search or filters</p>
+            <Building2 className="size-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+            <h3 className="text-xl font-bold text-foreground mb-2">No venues found</h3>
+            <p className="text-muted-foreground">Try adjusting your search or filters</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -229,7 +229,7 @@ export default function PlacesPage() {
               <Link
                 key={place.id}
                 to={`/places/${place.id}`}
-                className="group bg-white rounded-xl overflow-hidden shadow-sm border border-[rgba(39,55,77,0.1)] hover:border-[#EC9B3B] transition-all hover:shadow-md"
+                className="group bg-white rounded-xl overflow-hidden shadow-sm border border-border hover:border-Entertainment transition-all duration-300 hover:shadow-md"
               >
                 <div className="relative h-48 overflow-hidden">
                   <ImageWithFallback
@@ -237,27 +237,27 @@ export default function PlacesPage() {
                     alt={place.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[#27374d] text-xs font-medium px-2.5 py-1 rounded-full">
+                  <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-foreground text-xs font-medium px-2.5 py-1 rounded-full">
                     {place.type}
                   </span>
                   <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center gap-1">
-                    <Star className="size-4 fill-[#EC9B3B] text-[#EC9B3B]" />
-                    <span className="text-sm font-medium text-[#27374d]">{place.rating}</span>
+                    <Star className="size-4 fill-accent text-accent" />
+                    <span className="text-sm font-medium text-foreground">{place.rating}</span>
                   </div>
                 </div>
 
                 <div className="p-5">
-                  <h3 className="font-bold text-xl text-[#27374d] mb-2 group-hover:text-[#EC9B3B] transition-colors">
+                  <h3 className="font-bold text-xl text-foreground mb-2 group-hover:text-accent transition-colors">
                     {place.name}
                   </h3>
 
-                  <div className="flex items-center gap-2 text-sm text-[#526d82] mb-3">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                     <MapPin className="size-4" />
                     <span>{place.location}</span>
                   </div>
 
                   <div className="flex items-center justify-between mb-3 text-sm">
-                    <div className="flex items-center gap-2 text-[#526d82]">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                       <Users className="size-4" />
                       <span>Up to {place.capacity} people</span>
                     </div>
@@ -267,7 +267,7 @@ export default function PlacesPage() {
                     {place.amenities.slice(0, 3).map((amenity) => (
                       <span
                         key={amenity}
-                        className="px-2 py-1 bg-[#eff6ff] text-[#526d82] text-xs rounded-full flex items-center gap-1"
+                        className="px-2 py-1 bg-background text-muted-foreground text-xs rounded-full flex items-center gap-1"
                       >
                         {amenity === "WiFi" && <Wifi className="size-3" />}
                         {amenity === "Parking" && <Car className="size-3" />}
@@ -279,13 +279,13 @@ export default function PlacesPage() {
 
                   <div className="flex items-center justify-between pt-4 border-t border-[rgba(39,55,77,0.1)]">
                     <div>
-                      <p className="text-xs text-[#526d82]">Starting from</p>
-                      <p className="text-2xl font-bold text-[#27374d]">
+                      <p className="text-xs text-muted-foreground">Starting from</p>
+                      <p className="text-2xl font-bold text-foreground">
                         ${place.pricePerDay.toLocaleString()}
-                        <span className="text-sm font-normal text-[#526d82]">/day</span>
+                        <span className="text-sm font-normal text-muted-foreground">/day</span>
                       </p>
                     </div>
-                    <div className="text-sm text-[#526d82]">
+                    <div className="text-sm text-muted-foreground">
                       {place.reviews} reviews
                     </div>
                   </div>

@@ -50,24 +50,24 @@ export default function CalendarPage() {
   const selectedDateEvents = selectedDate ? getEventsForDate(selectedDate) : [];
 
   return (
-    <div className="min-h-screen bg-[#eff6ff] py-8 px-4">
+    <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 mb-4 text-[#526d82] hover:text-[#27374d] transition-colors font-['Inter:Regular',sans-serif] text-[14px]"
+            className="inline-flex items-center gap-2 mb-4 text-muted-foreground hover:text-foreground transition-colors font-['Inter:Regular',sans-serif] text-[14px]"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Link>
           <div className="flex items-center gap-3 mb-2">
-            <CalendarIcon className="w-8 h-8 text-[#EC9B3B]" />
-            <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-[#27374d]">
+            <CalendarIcon className="w-8 h-8 text-accent" />
+            <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-foreground">
               Event Calendar
             </h1>
           </div>
-          <p className="font-['Inter:Regular',sans-serif] text-[16px] text-[#526d82]">
+          <p className="font-['Inter:Regular',sans-serif] text-[16px] text-muted-foreground">
             View all your events in a calendar format
           </p>
         </div>
@@ -78,27 +78,27 @@ export default function CalendarPage() {
             <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-6">
               {/* Calendar Header */}
               <div className="flex items-center justify-between mb-6">
-                <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-[#27374d]">
+                <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground">
                   {format(currentDate, "MMMM yyyy")}
                 </h2>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setCurrentDate(subMonths(currentDate, 1))}
-                    className="w-10 h-10 flex items-center justify-center bg-[#eff6ff] rounded-[8px] hover:bg-[#dde6ed] transition-colors"
+                    className="w-10 h-10 flex items-center justify-center bg-background rounded-[8px] hover:bg-[#dde6ed] transition-colors"
                   >
-                    <ChevronLeft className="w-5 h-5 text-[#27374d]" />
+                    <ChevronLeft className="w-5 h-5 text-foreground" />
                   </button>
                   <button
                     onClick={() => setCurrentDate(new Date())}
-                    className="px-4 h-10 bg-[#eff6ff] rounded-[8px] hover:bg-[#dde6ed] transition-colors font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d]"
+                    className="px-4 h-10 bg-background rounded-[8px] hover:bg-[#dde6ed] transition-colors font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground"
                   >
                     Today
                   </button>
                   <button
                     onClick={() => setCurrentDate(addMonths(currentDate, 1))}
-                    className="w-10 h-10 flex items-center justify-center bg-[#eff6ff] rounded-[8px] hover:bg-[#dde6ed] transition-colors"
+                    className="w-10 h-10 flex items-center justify-center bg-background rounded-[8px] hover:bg-[#dde6ed] transition-colors"
                   >
-                    <ChevronRight className="w-5 h-5 text-[#27374d]" />
+                    <ChevronRight className="w-5 h-5 text-foreground" />
                   </button>
                 </div>
               </div>
@@ -109,7 +109,7 @@ export default function CalendarPage() {
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                   <div
                     key={day}
-                    className="h-10 flex items-center justify-center font-['Inter:Semi_Bold',sans-serif] font-semibold text-[12px] text-[#526d82]"
+                    className="h-10 flex items-center justify-center font-['Inter:Semi_Bold',sans-serif] font-semibold text-[12px] text-muted-foreground"
                   >
                     {day}
                   </div>
@@ -128,16 +128,16 @@ export default function CalendarPage() {
                       onClick={() => setSelectedDate(day)}
                       className={`min-h-[80px] p-2 rounded-[8px] border-[0.8px] transition-all ${
                         isSelected
-                          ? "border-[#27374d] bg-[#27374d]/5 hover:bg-[#27374d]/10"
-                          : "border-[rgba(82,109,130,0.1)] hover:border-[#27374d]/30 hover:bg-[#eff6ff]/50"
+                          ? "border-primary bg-primary/5 hover:bg-primary/10"
+                          : "border-[rgba(82,109,130,0.1)] hover:border-primary/30 hover:bg-background/50"
                       } ${!isCurrentMonth ? "opacity-40" : ""}`}
                     >
                       <div className="flex flex-col items-start h-full">
                         <span
                           className={`w-6 h-6 flex items-center justify-center rounded-full text-[12px] font-['Inter:Medium',sans-serif] font-medium mb-1 ${
                             isToday
-                              ? "bg-[#27374d] text-white"
-                              : "text-[#27374d]"
+                              ? "bg-primary text-white"
+                              : "text-foreground"
                           }`}
                         >
                           {format(day, "d")}
@@ -152,7 +152,7 @@ export default function CalendarPage() {
                             />
                           ))}
                           {dayEvents.length > 2 && (
-                            <div className="text-[10px] font-['Inter:Medium',sans-serif] text-[#526d82]">
+                            <div className="text-[10px] font-['Inter:Medium',sans-serif] text-muted-foreground">
                               +{dayEvents.length - 2} more
                             </div>
                           )}
@@ -168,37 +168,37 @@ export default function CalendarPage() {
                 <div className="flex flex-wrap gap-4">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-[#155dfc]" />
-                    <span className="font-['Inter:Regular',sans-serif] text-[12px] text-[#526d82]">
+                    <span className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
                       Business
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-[#9810fa]" />
-                    <span className="font-['Inter:Regular',sans-serif] text-[12px] text-[#526d82]">
+                    <span className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
                       Music
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-[#ec4899]" />
-                    <span className="font-['Inter:Regular',sans-serif] text-[12px] text-[#526d82]">
+                    <span className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
                       Art
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-[#16a34a]" />
-                    <span className="font-['Inter:Regular',sans-serif] text-[12px] text-[#526d82]">
+                    <span className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
                       Sports
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-[#f97316]" />
-                    <span className="font-['Inter:Regular',sans-serif] text-[12px] text-[#526d82]">
+                    <span className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
                       Food
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-[#eab308]" />
-                    <span className="font-['Inter:Regular',sans-serif] text-[12px] text-[#526d82]">
+                    <span className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
                       Education
                     </span>
                   </div>
@@ -210,7 +210,7 @@ export default function CalendarPage() {
           {/* Selected Date Events */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-6 sticky top-6">
-              <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-[#27374d] mb-4">
+              <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-4">
                 {selectedDate
                   ? format(selectedDate, "MMMM d, yyyy")
                   : "Select a date"}
@@ -223,7 +223,7 @@ export default function CalendarPage() {
                       <Link
                         key={event.id}
                         to={`/events/${event.id}`}
-                        className="block p-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] hover:border-[#27374d] hover:shadow-sm transition-all"
+                        className="block p-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] hover:border-primary hover:shadow-sm transition-all"
                       >
                         <div className="flex items-start gap-3">
                           <div
@@ -231,7 +231,7 @@ export default function CalendarPage() {
                             style={{ backgroundColor: event.color }}
                           />
                           <div className="flex-1 min-w-0">
-                            <p className="font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d] truncate">
+                            <p className="font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground truncate">
                               {event.title}
                             </p>
                           </div>
@@ -240,12 +240,12 @@ export default function CalendarPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82] text-center py-8">
+                  <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground text-center py-8">
                     No events on this day
                   </p>
                 )
               ) : (
-                <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82] text-center py-8">
+                <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground text-center py-8">
                   Click on a date to view events
                 </p>
               )}
@@ -253,7 +253,7 @@ export default function CalendarPage() {
               <div className="mt-6 pt-6 border-t border-[rgba(82,109,130,0.2)]">
                 <Link
                   to="/my-events"
-                  className="block w-full bg-[#27374d] text-[#dde6ed] py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors text-center"
+                  className="block w-full bg-primary text-[#dde6ed] py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors text-center"
                 >
                   View All My Events
                 </Link>

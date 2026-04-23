@@ -89,19 +89,19 @@ export default function QRCodeScannerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#eff6ff] flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <main className="flex-1 px-6 py-8 max-w-7xl mx-auto w-full">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-[#526d82] mb-6">
-          <Link to="/organization-dashboard" className="hover:text-[#EC9B3B] cursor-pointer">Dashboard</Link>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+          <Link to="/organization-dashboard" className="hover:text-accent cursor-pointer">Dashboard</Link>
           <ChevronRight className="size-4" />
-          <Link to={`/manage-attendees/${eventId}`} className="hover:text-[#EC9B3B] cursor-pointer">Manage Attendees</Link>
+          <Link to={`/manage-attendees/${eventId}`} className="hover:text-accent cursor-pointer">Manage Attendees</Link>
           <ChevronRight className="size-4" />
-          <span className="text-[#27374d]">QR Scanner</span>
+          <span className="text-foreground">QR Scanner</span>
         </div>
 
         {/* Event Header */}
-        <div className="bg-gradient-to-br from-[#182F4D] to-[#346286] rounded-xl p-6 text-white mb-8">
+        <div className="bg-gradient-to-br from-primary to-primary/80 rounded-xl p-6 text-white mb-8">
           <h1 className="text-3xl font-bold mb-4 flex items-center gap-3">
             <QrCode className="size-8" />
             QR Code Scanner
@@ -133,10 +133,10 @@ export default function QRCodeScannerPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#526d82] mb-1">Successfully Scanned</p>
+                <p className="text-sm text-muted-foreground mb-1">Successfully Scanned</p>
                 <p className="text-3xl font-bold text-green-600">{stats.totalScanned}</p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
@@ -145,10 +145,10 @@ export default function QRCodeScannerPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#526d82] mb-1">Failed Scans</p>
+                <p className="text-sm text-muted-foreground mb-1">Failed Scans</p>
                 <p className="text-3xl font-bold text-red-600">{stats.failedScans}</p>
               </div>
               <div className="p-3 bg-red-100 rounded-lg">
@@ -157,17 +157,17 @@ export default function QRCodeScannerPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#526d82] mb-1">Last Scan</p>
-                <p className="text-lg font-bold text-[#27374d]">
+                <p className="text-sm text-muted-foreground mb-1">Last Scan</p>
+                <p className="text-lg font-bold text-foreground">
                   {stats.lastScanTime
                     ? new Date(stats.lastScanTime).toLocaleTimeString()
                     : "N/A"}
                 </p>
               </div>
-              <div className="p-3 bg-gradient-to-br from-[#EC9B3B] to-[#f4b860] rounded-lg">
+              <div className="p-3 bg-gradient-to-br from-accent to-accent/80 rounded-lg">
                 <Clock className="size-6 text-white" />
               </div>
             </div>
@@ -178,27 +178,27 @@ export default function QRCodeScannerPage() {
           {/* Scanner Section */}
           <div className="space-y-6">
             {/* Scanner Card */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-              <h2 className="text-xl font-bold text-[#27374d] mb-4">Scan QR Code</h2>
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
+              <h2 className="text-xl font-bold text-foreground mb-4">Scan QR Code</h2>
               
               {/* Scanner Area */}
-              <div className="relative aspect-square bg-[#eff6ff] rounded-xl border-2 border-dashed border-[#27374d] flex items-center justify-center mb-6">
+              <div className="relative aspect-square bg-background rounded-xl border-2 border-dashed border-primary flex items-center justify-center mb-6">
                 {isScanning ? (
                   <div className="text-center">
                     <div className="relative size-48 mx-auto mb-4">
-                      <div className="absolute inset-0 border-4 border-[#EC9B3B] rounded-lg animate-pulse" />
-                      <div className="absolute inset-4 border-4 border-[#EC9B3B]/50 rounded-lg animate-pulse" style={{ animationDelay: "0.2s" }} />
-                      <div className="absolute inset-8 border-4 border-[#EC9B3B]/25 rounded-lg animate-pulse" style={{ animationDelay: "0.4s" }} />
-                      <Camera className="absolute inset-0 m-auto size-16 text-[#27374d] opacity-50" />
+                      <div className="absolute inset-0 border-4 border-accent rounded-lg animate-pulse" />
+                      <div className="absolute inset-4 border-4 border-accent/50 rounded-lg animate-pulse" style={{ animationDelay: "0.2s" }} />
+                      <div className="absolute inset-8 border-4 border-accent/25 rounded-lg animate-pulse" style={{ animationDelay: "0.4s" }} />
+                      <Camera className="absolute inset-0 m-auto size-16 text-foreground opacity-50" />
                     </div>
-                    <p className="text-[#27374d] font-semibold">Scanning...</p>
-                    <p className="text-sm text-[#526d82]">Point camera at QR code</p>
+                    <p className="text-foreground font-semibold">Scanning...</p>
+                    <p className="text-sm text-muted-foreground">Point camera at QR code</p>
                   </div>
                 ) : (
                   <div className="text-center">
-                    <QrCode className="size-24 text-[#526d82] opacity-50 mx-auto mb-4" />
-                    <p className="text-[#27374d] font-semibold mb-2">Ready to Scan</p>
-                    <p className="text-sm text-[#526d82] mb-4">Click the button below to start scanning</p>
+                    <QrCode className="size-24 text-muted-foreground opacity-50 mx-auto mb-4" />
+                    <p className="text-foreground font-semibold mb-2">Ready to Scan</p>
+                    <p className="text-sm text-muted-foreground mb-4">Click the button below to start scanning</p>
                   </div>
                 )}
               </div>
@@ -208,14 +208,14 @@ export default function QRCodeScannerPage() {
                 <button
                   onClick={handleStartScanning}
                   disabled={isScanning}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-[#EC9B3B] to-[#f4b860] text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full px-6 py-3 bg-gradient-to-r from-accent to-accent/80 text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Camera className="size-5" />
                   {isScanning ? "Scanning..." : "Start Scanning"}
                 </button>
                 <button
                   onClick={handleManualEntry}
-                  className="w-full px-6 py-3 border border-[#27374d] text-[#27374d] rounded-lg hover:bg-[#27374d] hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full px-6 py-3 border border-primary text-foreground rounded-lg hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Smartphone className="size-5" />
                   Manual Ticket Entry
@@ -252,15 +252,15 @@ export default function QRCodeScannerPage() {
                         ? "Check-in Successful!"
                         : "Check-in Failed"}
                     </h3>
-                    <div className="space-y-1 text-sm text-[#526d82]">
-                      <p><strong className="text-[#27374d]">Name:</strong> {lastScannedResult.attendeeName}</p>
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      <p><strong className="text-foreground">Name:</strong> {lastScannedResult.attendeeName}</p>
                       {lastScannedResult.status === "success" && (
                         <>
-                          <p><strong className="text-[#27374d]">Ticket Type:</strong> {lastScannedResult.ticketType}</p>
-                          <p><strong className="text-[#27374d]">Tickets:</strong> {lastScannedResult.ticketCount}</p>
+                          <p><strong className="text-foreground">Ticket Type:</strong> {lastScannedResult.ticketType}</p>
+                          <p><strong className="text-foreground">Tickets:</strong> {lastScannedResult.ticketCount}</p>
                         </>
                       )}
-                      <p><strong className="text-[#27374d]">Time:</strong> {new Date(lastScannedResult.scanTime).toLocaleTimeString()}</p>
+                      <p><strong className="text-foreground">Time:</strong> {new Date(lastScannedResult.scanTime).toLocaleTimeString()}</p>
                       {lastScannedResult.status === "error" && lastScannedResult.errorMessage && (
                         <p className="text-red-600 mt-2">
                           <strong>Error:</strong> {lastScannedResult.errorMessage}
@@ -273,7 +273,7 @@ export default function QRCodeScannerPage() {
             )}
 
             {/* Instructions */}
-            <div className="bg-gradient-to-br from-[#346286] to-[#76C2F1] rounded-xl p-6 text-white">
+            <div className="bg-gradient-to-br from-primary/80 to-primary/60 rounded-xl p-6 text-white">
               <h3 className="font-bold mb-3 flex items-center gap-2">
                 <AlertCircle className="size-5" />
                 Scanning Instructions
@@ -300,8 +300,8 @@ export default function QRCodeScannerPage() {
           </div>
 
           {/* Recent Scans */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-            <h2 className="text-xl font-bold text-[#27374d] mb-4">Recent Scans</h2>
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
+            <h2 className="text-xl font-bold text-foreground mb-4">Recent Scans</h2>
             
             <div className="space-y-3 max-h-[600px] overflow-y-auto">
               {scanResults.map((result) => (
@@ -325,13 +325,13 @@ export default function QRCodeScannerPage() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-semibold text-[#27374d]">{result.attendeeName}</h4>
-                        <span className="text-xs text-[#526d82]">
+                        <h4 className="font-semibold text-foreground">{result.attendeeName}</h4>
+                        <span className="text-xs text-muted-foreground">
                           {new Date(result.scanTime).toLocaleTimeString()}
                         </span>
                       </div>
                       {result.status === "success" ? (
-                        <div className="space-y-1 text-sm text-[#526d82]">
+                        <div className="space-y-1 text-sm text-muted-foreground">
                           <p>
                             <span className="font-medium">Ticket:</span> {result.ticketType} × {result.ticketCount}
                           </p>
@@ -355,8 +355,8 @@ export default function QRCodeScannerPage() {
 
             {scanResults.length === 0 && (
               <div className="text-center py-12">
-                <QrCode className="size-16 text-[#526d82] mx-auto mb-4 opacity-50" />
-                <p className="text-[#526d82]">No scans yet. Start scanning to see results here.</p>
+                <QrCode className="size-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                <p className="text-muted-foreground">No scans yet. Start scanning to see results here.</p>
               </div>
             )}
           </div>

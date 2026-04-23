@@ -82,37 +82,37 @@ export default function BookingRequestFormPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#eff6ff]">
+    <div className="min-h-screen bg-background">
       <main className="px-6 py-8 max-w-4xl mx-auto w-full">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-[#526d82] mb-6">
-          <Link to="/places" className="hover:text-[#EC9B3B] cursor-pointer">Places</Link>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+          <Link to="/places" className="hover:text-accent cursor-pointer">Places</Link>
           <ChevronRight className="size-4" />
-          <Link to={`/places/${placeId}`} className="hover:text-[#EC9B3B] cursor-pointer">{mockPlace.name}</Link>
+          <Link to={`/places/${placeId}`} className="hover:text-accent cursor-pointer">{mockPlace.name}</Link>
           <ChevronRight className="size-4" />
-          <span className="text-[#27374d]">Book Venue</span>
+          <span className="text-foreground">Book Venue</span>
         </div>
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[#27374d] mb-2">Booking Request</h1>
-          <p className="text-[#526d82]">Fill out the form below to request a booking for {mockPlace.name}</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">Booking Request</h1>
+          <p className="text-muted-foreground">Fill out the form below to request a booking for {mockPlace.name}</p>
         </div>
 
         {/* Venue Info Card */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)] mb-6">
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10 mb-6">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-xl font-bold text-[#27374d] mb-2">{mockPlace.name}</h2>
-              <div className="flex items-center gap-2 text-[#526d82] mb-3">
+              <h2 className="text-xl font-bold text-foreground mb-2">{mockPlace.name}</h2>
+              <div className="flex items-center gap-2 text-muted-foreground mb-3">
                 <MapPin className="size-5" />
                 <span>{mockPlace.address}</span>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-sm text-[#526d82]">Starting from</p>
-              <p className="text-2xl font-bold text-[#27374d]">${mockPlace.pricePerDay}</p>
-              <p className="text-sm text-[#526d82]">per day</p>
+              <p className="text-sm text-muted-foreground">Starting from</p>
+              <p className="text-2xl font-bold text-foreground">${mockPlace.pricePerDay}</p>
+              <p className="text-sm text-muted-foreground">per day</p>
             </div>
           </div>
         </div>
@@ -120,15 +120,15 @@ export default function BookingRequestFormPage() {
         {/* Booking Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Event Information Section */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-            <h2 className="text-xl font-bold text-[#27374d] mb-6 flex items-center gap-2">
-              <FileText className="size-6 text-[#EC9B3B]" />
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
+            <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+              <FileText className="size-6 text-accent" />
               Event Information
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
-                <label htmlFor="eventName" className="block text-sm font-medium text-[#27374d] mb-2">
+                <label htmlFor="eventName" className="block text-sm font-medium text-foreground mb-2">
                   Event Name *
                 </label>
                 <input
@@ -138,13 +138,13 @@ export default function BookingRequestFormPage() {
                   required
                   value={formData.eventName}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="Enter event name"
                 />
               </div>
 
               <div>
-                <label htmlFor="eventType" className="block text-sm font-medium text-[#27374d] mb-2">
+                <label htmlFor="eventType" className="block text-sm font-medium text-foreground mb-2">
                   Event Type *
                 </label>
                 <select
@@ -153,7 +153,7 @@ export default function BookingRequestFormPage() {
                   required
                   value={formData.eventType}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                 >
                   <option value="">Select event type</option>
                   {eventTypes.map(type => (
@@ -163,7 +163,7 @@ export default function BookingRequestFormPage() {
               </div>
 
               <div>
-                <label htmlFor="organizationName" className="block text-sm font-medium text-[#27374d] mb-2">
+                <label htmlFor="organizationName" className="block text-sm font-medium text-foreground mb-2">
                   Organization Name
                 </label>
                 <input
@@ -172,7 +172,7 @@ export default function BookingRequestFormPage() {
                   name="organizationName"
                   value={formData.organizationName}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="Your organization (optional)"
                 />
               </div>
@@ -180,15 +180,15 @@ export default function BookingRequestFormPage() {
           </div>
 
           {/* Contact Information Section */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-            <h2 className="text-xl font-bold text-[#27374d] mb-6 flex items-center gap-2">
-              <Mail className="size-6 text-[#EC9B3B]" />
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
+            <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+              <Mail className="size-6 text-accent" />
               Contact Information
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="contactName" className="block text-sm font-medium text-[#27374d] mb-2">
+                <label htmlFor="contactName" className="block text-sm font-medium text-foreground mb-2">
                   Full Name *
                 </label>
                 <input
@@ -198,13 +198,13 @@ export default function BookingRequestFormPage() {
                   required
                   value={formData.contactName}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="Your full name"
                 />
               </div>
 
               <div>
-                <label htmlFor="contactEmail" className="block text-sm font-medium text-[#27374d] mb-2">
+                <label htmlFor="contactEmail" className="block text-sm font-medium text-foreground mb-2">
                   Email Address *
                 </label>
                 <input
@@ -214,13 +214,13 @@ export default function BookingRequestFormPage() {
                   required
                   value={formData.contactEmail}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="your.email@example.com"
                 />
               </div>
 
               <div>
-                <label htmlFor="contactPhone" className="block text-sm font-medium text-[#27374d] mb-2">
+                <label htmlFor="contactPhone" className="block text-sm font-medium text-foreground mb-2">
                   Phone Number *
                 </label>
                 <input
@@ -230,7 +230,7 @@ export default function BookingRequestFormPage() {
                   required
                   value={formData.contactPhone}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="+1 (555) 123-4567"
                 />
               </div>
@@ -238,15 +238,15 @@ export default function BookingRequestFormPage() {
           </div>
 
           {/* Event Details Section */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-            <h2 className="text-xl font-bold text-[#27374d] mb-6 flex items-center gap-2">
-              <Calendar className="size-6 text-[#EC9B3B]" />
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
+            <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+              <Calendar className="size-6 text-accent" />
               Event Details
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="eventDate" className="block text-sm font-medium text-[#27374d] mb-2">
+                <label htmlFor="eventDate" className="block text-sm font-medium text-foreground mb-2">
                   Event Date *
                 </label>
                 <input
@@ -257,12 +257,12 @@ export default function BookingRequestFormPage() {
                   value={formData.eventDate}
                   onChange={handleChange}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label htmlFor="expectedAttendees" className="block text-sm font-medium text-[#27374d] mb-2">
+                <label htmlFor="expectedAttendees" className="block text-sm font-medium text-foreground mb-2">
                   Expected Attendees *
                 </label>
                 <input
@@ -273,13 +273,13 @@ export default function BookingRequestFormPage() {
                   min="1"
                   value={formData.expectedAttendees}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="Number of attendees"
                 />
               </div>
 
               <div>
-                <label htmlFor="startTime" className="block text-sm font-medium text-[#27374d] mb-2">
+                <label htmlFor="startTime" className="block text-sm font-medium text-foreground mb-2">
                   Start Time *
                 </label>
                 <input
@@ -289,12 +289,12 @@ export default function BookingRequestFormPage() {
                   required
                   value={formData.startTime}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label htmlFor="endTime" className="block text-sm font-medium text-[#27374d] mb-2">
+                <label htmlFor="endTime" className="block text-sm font-medium text-foreground mb-2">
                   End Time *
                 </label>
                 <input
@@ -304,16 +304,16 @@ export default function BookingRequestFormPage() {
                   required
                   value={formData.endTime}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                 />
               </div>
             </div>
           </div>
 
           {/* Requirements Section */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-            <h2 className="text-xl font-bold text-[#27374d] mb-6 flex items-center gap-2">
-              <Building className="size-6 text-[#EC9B3B]" />
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
+            <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+              <Building className="size-6 text-accent" />
               Requirements & Services
             </h2>
             
@@ -325,9 +325,9 @@ export default function BookingRequestFormPage() {
                   name="cateringNeeded"
                   checked={formData.cateringNeeded}
                   onChange={handleChange}
-                  className="size-5 rounded border-[rgba(39,55,77,0.2)] text-[#EC9B3B] focus:ring-[#EC9B3B] cursor-pointer"
+                  className="size-5 rounded border-primary/20 text-accent focus:ring-accent cursor-pointer"
                 />
-                <label htmlFor="cateringNeeded" className="text-[#27374d] cursor-pointer">
+                <label htmlFor="cateringNeeded" className="text-foreground cursor-pointer">
                   Catering services required
                 </label>
               </div>
@@ -339,9 +339,9 @@ export default function BookingRequestFormPage() {
                   name="avEquipmentNeeded"
                   checked={formData.avEquipmentNeeded}
                   onChange={handleChange}
-                  className="size-5 rounded border-[rgba(39,55,77,0.2)] text-[#EC9B3B] focus:ring-[#EC9B3B] cursor-pointer"
+                  className="size-5 rounded border-primary/20 text-accent focus:ring-accent cursor-pointer"
                 />
-                <label htmlFor="avEquipmentNeeded" className="text-[#27374d] cursor-pointer">
+                <label htmlFor="avEquipmentNeeded" className="text-foreground cursor-pointer">
                   AV equipment needed (projector, microphones, etc.)
                 </label>
               </div>
@@ -353,15 +353,15 @@ export default function BookingRequestFormPage() {
                   name="parkingNeeded"
                   checked={formData.parkingNeeded}
                   onChange={handleChange}
-                  className="size-5 rounded border-[rgba(39,55,77,0.2)] text-[#EC9B3B] focus:ring-[#EC9B3B] cursor-pointer"
+                  className="size-5 rounded border-primary/20 text-accent focus:ring-accent cursor-pointer"
                 />
-                <label htmlFor="parkingNeeded" className="text-[#27374d] cursor-pointer">
+                <label htmlFor="parkingNeeded" className="text-foreground cursor-pointer">
                   Parking required for attendees
                 </label>
               </div>
 
               <div className="mt-6">
-                <label htmlFor="setupRequirements" className="block text-sm font-medium text-[#27374d] mb-2">
+                <label htmlFor="setupRequirements" className="block text-sm font-medium text-foreground mb-2">
                   Setup Requirements
                 </label>
                 <textarea
@@ -370,13 +370,13 @@ export default function BookingRequestFormPage() {
                   rows={3}
                   value={formData.setupRequirements}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="Describe your setup requirements (e.g., theater style, round tables, stage setup)"
                 />
               </div>
 
               <div>
-                <label htmlFor="additionalNotes" className="block text-sm font-medium text-[#27374d] mb-2">
+                <label htmlFor="additionalNotes" className="block text-sm font-medium text-foreground mb-2">
                   Additional Notes
                 </label>
                 <textarea
@@ -385,7 +385,7 @@ export default function BookingRequestFormPage() {
                   rows={4}
                   value={formData.additionalNotes}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-[rgba(39,55,77,0.2)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EC9B3B] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="Any additional information or special requests"
                 />
               </div>
@@ -393,15 +393,15 @@ export default function BookingRequestFormPage() {
           </div>
 
           {/* Submit Section */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
             <div className="flex items-start gap-3 mb-6">
               <input
                 type="checkbox"
                 id="terms"
                 required
-                className="mt-1 size-5 rounded border-[rgba(39,55,77,0.2)] text-[#EC9B3B] focus:ring-[#EC9B3B] cursor-pointer"
+                className="mt-1 size-5 rounded border-primary/20 text-accent focus:ring-accent cursor-pointer"
               />
-              <label htmlFor="terms" className="text-sm text-[#526d82] cursor-pointer">
+              <label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer">
                 I agree to the terms and conditions and understand that this is a booking request. 
                 Final confirmation will be sent via email after the venue owner reviews my request.
               </label>
@@ -411,14 +411,14 @@ export default function BookingRequestFormPage() {
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="flex-1 px-6 py-3 border border-[#27374d] text-[#27374d] rounded-lg hover:bg-[#27374d] hover:text-white transition-all cursor-pointer"
+                className="flex-1 px-6 py-3 border border-primary text-foreground rounded-lg hover:bg-primary hover:text-white transition-all cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-[#EC9B3B] to-[#f4b860] text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-accent to-accent/80 text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>

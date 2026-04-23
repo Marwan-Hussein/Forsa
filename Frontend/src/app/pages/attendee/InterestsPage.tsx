@@ -66,24 +66,24 @@ export default function InterestsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#eff6ff] py-12 px-4">
+    <div className="min-h-screen bg-background py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <Link
             to="/profile"
-            className="inline-flex cursor-pointer items-center gap-2 mb-4 text-[#526d82] hover:text-[#27374d] transition-colors font-['Inter:Regular',sans-serif] text-[14px]"
+            className="inline-flex cursor-pointer items-center gap-2 mb-4 text-muted-foreground hover:text-foreground transition-colors font-['Inter:Regular',sans-serif] text-[14px]"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Profile
           </Link>
           <div className="flex items-center gap-3 mb-2">
-            <Sparkles className="w-8 h-8 text-[#EC9B3B]" />
-            <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-[#27374d]">
+            <Sparkles className="w-8 h-8 text-accent" />
+            <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-foreground">
               Manage Your Interests
             </h1>
           </div>
-          <p className="font-['Inter:Regular',sans-serif] text-[16px] text-[#526d82]">
+          <p className="font-['Inter:Regular',sans-serif] text-[16px] text-muted-foreground">
             Select your interests to receive personalized event recommendations
           </p>
         </div>
@@ -91,27 +91,27 @@ export default function InterestsPage() {
         {/* Info Card */}
         <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-6 mb-6">
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 w-12 h-12 bg-[#eff6ff] rounded-full flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-[#27374d]" />
+            <div className="flex-shrink-0 w-12 h-12 bg-background rounded-full flex items-center justify-center">
+              <Sparkles className="w-6 h-6 text-foreground" />
             </div>
             <div>
-              <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-[#27374d] mb-2">
+              <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground mb-2">
                 Why select interests?
               </h3>
-              <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82] mb-2">
+              <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-2">
                 We use your interests to:
               </p>
-              <ul className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82] space-y-1 ml-4">
+              <ul className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground space-y-1 ml-4">
                 <li className="flex items-start gap-2">
-                  <span className="text-[#EC9B3B] mt-1">•</span>
+                  <span className="text-accent mt-1">•</span>
                   <span>Recommend events you'll love</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-[#EC9B3B] mt-1">•</span>
+                  <span className="text-accent mt-1">•</span>
                   <span>Send you personalized notifications</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-[#EC9B3B] mt-1">•</span>
+                  <span className="text-accent mt-1">•</span>
                   <span>Help you discover new experiences</span>
                 </li>
               </ul>
@@ -123,10 +123,10 @@ export default function InterestsPage() {
         <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-[#27374d] mb-1">
+              <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-1">
                 Select Your Interests
               </h2>
-              <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">
+              <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
                 {selectedInterests.length} interest
                 {selectedInterests.length !== 1 ? "s" : ""} selected
               </p>
@@ -135,13 +135,13 @@ export default function InterestsPage() {
               <div className="flex gap-2">
                 <button
                   onClick={handleReset}
-                  className="bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-[#27374d] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors cursor-pointer"
+                  className="bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
-                  className="bg-[#27374d] text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors flex items-center gap-2 cursor-pointer"
+                  className="bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors flex items-center gap-2 cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
                   Save Changes
@@ -160,28 +160,28 @@ export default function InterestsPage() {
                   onClick={() => toggleInterest(interest.id)}
                   className={`relative p-4 rounded-[12px] border-[0.8px] transition-all cursor-pointer ${
                     isSelected
-                      ? "border-[#27374d] bg-[#27374d] shadow-md hover:brightness-110"
-                      : "border-[rgba(82,109,130,0.2)] bg-white hover:border-[#526d82] hover:shadow-sm"
+                      ? "border-primary bg-primary shadow-md hover:brightness-110"
+                      : "border-[rgba(82,109,130,0.2)] bg-white hover:border-muted hover:shadow-sm"
                   }`}
                 >
                   <div className="flex flex-col items-center text-center gap-2">
                     <div
                       className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
-                        isSelected ? "bg-white/10" : "bg-[#eff6ff]"
+                        isSelected ? "bg-white/10" : "bg-background"
                       }`}
                     >
                       {interest.icon}
                     </div>
                     <span
                       className={`font-['Inter:Medium',sans-serif] font-medium text-[14px] ${
-                        isSelected ? "text-[#dde6ed]" : "text-[#27374d]"
+                        isSelected ? "text-[#dde6ed]" : "text-foreground"
                       }`}
                     >
                       {interest.name}
                     </span>
                   </div>
                   {isSelected && (
-                    <div className="absolute top-2 right-2 w-5 h-5 bg-[#EC9B3B] rounded-full flex items-center justify-center">
+                    <div className="absolute top-2 right-2 w-5 h-5 bg-accent rounded-full flex items-center justify-center">
                       <svg
                         className="w-3 h-3 text-white"
                         fill="none"
@@ -203,7 +203,7 @@ export default function InterestsPage() {
           {/* Selected Interests Summary */}
           {selectedInterests.length > 0 && (
             <div className="mt-8 pt-6 border-t border-[rgba(82,109,130,0.2)]">
-              <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-[#27374d] mb-3">
+              <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground mb-3">
                 Your Selected Interests
               </h3>
               <div className="flex flex-wrap gap-2">
@@ -213,10 +213,10 @@ export default function InterestsPage() {
                   return (
                     <div
                       key={id}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#eff6ff] rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)]"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-background rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)]"
                     >
                       <span>{interest.icon}</span>
-                      <span className="font-['Inter:Medium',sans-serif] font-medium text-[14px] text-[#27374d]">
+                      <span className="font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground">
                         {interest.name}
                       </span>
                     </div>

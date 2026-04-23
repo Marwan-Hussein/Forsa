@@ -112,21 +112,21 @@ export default function ViewFeedbackRatingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#eff6ff] flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <main className="flex-1 px-6 py-8 max-w-7xl mx-auto w-full">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-[#526d82] mb-6">
-          <Link to="/owner-dashboard" className="hover:text-[#EC9B3B]">Dashboard</Link>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+          <Link to="/owner-dashboard" className="hover:text-accent">Dashboard</Link>
           <ChevronRight className="size-4" />
-          <Link to="/my-places" className="hover:text-[#EC9B3B]">My Venues</Link>
+          <Link to="/my-places" className="hover:text-accent">My Venues</Link>
           <ChevronRight className="size-4" />
-          <span className="text-[#27374d]">Feedback & Ratings</span>
+          <span className="text-foreground">Feedback & Ratings</span>
         </div>
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[#27374d] mb-2">Feedback & Ratings</h1>
-          <div className="flex items-center gap-2 text-[#526d82]">
+          <h1 className="text-4xl font-bold text-foreground mb-2">Feedback & Ratings</h1>
+          <div className="flex items-center gap-2 text-muted-foreground">
             <Building className="size-5" />
             <span>{mockPlace.name}</span>
           </div>
@@ -134,22 +134,22 @@ export default function ViewFeedbackRatingPage() {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-[#EC9B3B] to-[#f4b860] rounded-lg">
+              <div className="p-3 bg-gradient-to-br from-accent to-accent/80 rounded-lg">
                 <Star className="size-6 text-white" />
               </div>
             </div>
-            <p className="text-sm text-[#526d82] mb-1">Average Rating</p>
+            <p className="text-sm text-muted-foreground mb-1">Average Rating</p>
             <div className="flex items-end gap-2">
-              <p className="text-4xl font-bold text-[#27374d]">{stats.averageRating}</p>
+              <p className="text-4xl font-bold text-foreground">{stats.averageRating}</p>
               <div className="flex items-center mb-2">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
                     className={`size-4 ${
                       i < Math.floor(parseFloat(stats.averageRating))
-                        ? "fill-[#EC9B3B] text-[#EC9B3B]"
+                        ? "fill-accent text-accent"
                         : "text-gray-300"
                     }`}
                   />
@@ -158,41 +158,41 @@ export default function ViewFeedbackRatingPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-[#182F4D] to-[#346286] rounded-lg">
+              <div className="p-3 bg-gradient-to-br from-primary to-primary/80 rounded-lg">
                 <MessageSquare className="size-6 text-white" />
               </div>
             </div>
-            <p className="text-sm text-[#526d82] mb-1">Total Reviews</p>
-            <p className="text-4xl font-bold text-[#27374d]">{stats.totalReviews}</p>
+            <p className="text-sm text-muted-foreground mb-1">Total Reviews</p>
+            <p className="text-4xl font-bold text-foreground">{stats.totalReviews}</p>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-green-100 rounded-lg">
                 <ThumbsUp className="size-6 text-green-600" />
               </div>
               <TrendingUp className="size-5 text-green-500" />
             </div>
-            <p className="text-sm text-[#526d82] mb-1">Would Recommend</p>
+            <p className="text-sm text-muted-foreground mb-1">Would Recommend</p>
             <p className="text-4xl font-bold text-green-600">{stats.recommendationRate}%</p>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-[#346286] to-[#76C2F1] rounded-lg">
+              <div className="p-3 bg-gradient-to-br from-primary/80 to-primary/60 rounded-lg">
                 <BarChart3 className="size-6 text-white" />
               </div>
             </div>
-            <p className="text-sm text-[#526d82] mb-1">5-Star Reviews</p>
-            <p className="text-4xl font-bold text-[#27374d]">{stats.ratingDistribution[5]}</p>
+            <p className="text-sm text-muted-foreground mb-1">5-Star Reviews</p>
+            <p className="text-4xl font-bold text-foreground">{stats.ratingDistribution[5]}</p>
           </div>
         </div>
 
         {/* Rating Distribution */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)] mb-6">
-          <h2 className="text-xl font-bold text-[#27374d] mb-6">Rating Distribution</h2>
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10 mb-6">
+          <h2 className="text-xl font-bold text-foreground mb-6">Rating Distribution</h2>
           <div className="space-y-4">
             {[5, 4, 3, 2, 1].map((rating) => {
               const count = stats.ratingDistribution[rating as keyof typeof stats.ratingDistribution];
@@ -201,16 +201,16 @@ export default function ViewFeedbackRatingPage() {
               return (
                 <div key={rating} className="flex items-center gap-4">
                   <div className="flex items-center gap-1 w-20">
-                    <span className="text-sm font-medium text-[#27374d]">{rating}</span>
-                    <Star className="size-4 fill-[#EC9B3B] text-[#EC9B3B]" />
+                    <span className="text-sm font-medium text-foreground">{rating}</span>
+                    <Star className="size-4 fill-accent text-accent" />
                   </div>
                   <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
                     <div
-                      className="bg-gradient-to-r from-[#EC9B3B] to-[#f4b860] h-full rounded-full transition-all"
+                      className="bg-gradient-to-r from-accent to-accent/80 h-full rounded-full transition-all"
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
-                  <span className="text-sm text-[#526d82] w-16 text-right">{count} ({percentage.toFixed(0)}%)</span>
+                  <span className="text-sm text-muted-foreground w-16 text-right">{count} ({percentage.toFixed(0)}%)</span>
                 </div>
               );
             })}
@@ -220,15 +220,15 @@ export default function ViewFeedbackRatingPage() {
         {/* Filters */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)] mb-6">
           <div className="flex items-center gap-4">
-            <Filter className="size-5 text-[#526d82]" />
-            <span className="text-sm font-medium text-[#27374d]">Filter by rating:</span>
+            <Filter className="size-5 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">Filter by rating:</span>
             <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => setRatingFilter("all")}
                 className={`px-4 py-2 rounded-lg transition-all ${
                   ratingFilter === "all"
-                    ? "bg-[#27374d] text-white hover:brightness-95"
-                    : "bg-gray-100 text-[#526d82] hover:bg-gray-200"
+                    ? "bg-primary text-white hover:brightness-95"
+                    : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                 }`}
               >
                 All ({mockFeedbacks.length})
@@ -239,8 +239,8 @@ export default function ViewFeedbackRatingPage() {
                   onClick={() => setRatingFilter(String(rating) as RatingFilter)}
                   className={`px-4 py-2 rounded-lg transition-all flex items-center gap-1 ${
                     ratingFilter === String(rating)
-                      ? "bg-[#EC9B3B] text-white hover:brightness-95"
-                      : "bg-gray-100 text-[#526d82] hover:bg-gray-200"
+                      ? "bg-accent text-white hover:brightness-95"
+                      : "bg-gray-100 text-muted-foreground hover:bg-gray-200"
                   }`}
                 >
                   {rating} <Star className="size-4" /> ({stats.ratingDistribution[rating as keyof typeof stats.ratingDistribution]})
@@ -252,13 +252,13 @@ export default function ViewFeedbackRatingPage() {
 
         {/* Feedback List */}
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-[#27374d]">Customer Reviews ({filteredFeedbacks.length})</h2>
+          <h2 className="text-2xl font-bold text-foreground">Customer Reviews ({filteredFeedbacks.length})</h2>
           
           {filteredFeedbacks.length === 0 ? (
             <div className="bg-white rounded-xl p-12 shadow-sm border border-[rgba(39,55,77,0.1)] text-center">
-              <MessageSquare className="size-16 text-[#526d82] mx-auto mb-4 opacity-50" />
-              <h3 className="text-xl font-bold text-[#27374d] mb-2">No reviews found</h3>
-              <p className="text-[#526d82]">
+              <MessageSquare className="size-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <h3 className="text-xl font-bold text-foreground mb-2">No reviews found</h3>
+              <p className="text-muted-foreground">
                 {ratingFilter !== "all"
                   ? "Try adjusting your filter to see more reviews"
                   : "You haven't received any feedback yet"}
@@ -268,7 +268,7 @@ export default function ViewFeedbackRatingPage() {
             filteredFeedbacks.map((feedback) => (
               <div
                 key={feedback.id}
-                className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)] hover:border-[#EC9B3B] transition-all"
+                className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)] hover:border-accent transition-all"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
@@ -279,16 +279,16 @@ export default function ViewFeedbackRatingPage() {
                             key={i}
                             className={`size-5 ${
                               i < feedback.rating
-                                ? "fill-[#EC9B3B] text-[#EC9B3B]"
+                                ? "fill-accent text-accent"
                                 : "text-gray-300"
                             }`}
                           />
                         ))}
                       </div>
-                      <span className="text-lg font-bold text-[#27374d]">{feedback.rating}.0</span>
+                      <span className="text-lg font-bold text-foreground">{feedback.rating}.0</span>
                     </div>
                     
-                    <div className="flex items-center gap-3 text-sm text-[#526d82] mb-3">
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
                       <span className="flex items-center gap-1">
                         <User className="size-4" />
                         {feedback.isAnonymous ? "Anonymous Organizer" : feedback.organizationName}
@@ -299,8 +299,8 @@ export default function ViewFeedbackRatingPage() {
                       </span>
                     </div>
 
-                    <h3 className="font-semibold text-[#27374d] mb-2">{feedback.eventName}</h3>
-                    <p className="text-[#526d82] leading-relaxed mb-4">{feedback.feedback}</p>
+                    <h3 className="font-semibold text-foreground mb-2">{feedback.eventName}</h3>
+                    <p className="text-muted-foreground leading-relaxed mb-4">{feedback.feedback}</p>
 
                     <div className="flex items-center gap-4 text-sm">
                       {feedback.wouldRecommend === "yes" && (
@@ -317,7 +317,7 @@ export default function ViewFeedbackRatingPage() {
                     </div>
                   </div>
 
-                  <div className="text-right text-sm text-[#526d82]">
+                  <div className="text-right text-sm text-muted-foreground">
                     <p>Submitted</p>
                     <p className="font-semibold">{new Date(feedback.submittedDate).toLocaleDateString()}</p>
                   </div>
@@ -329,7 +329,7 @@ export default function ViewFeedbackRatingPage() {
 
         {/* Insights Section */}
         {filteredFeedbacks.length > 0 && (
-          <div className="mt-8 bg-gradient-to-br from-[#182F4D] to-[#346286] rounded-xl p-6 text-white">
+          <div className="mt-8 bg-gradient-to-br from-primary to-primary/80 rounded-xl p-6 text-white">
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
               <TrendingUp className="size-6" />
               Insights & Summary

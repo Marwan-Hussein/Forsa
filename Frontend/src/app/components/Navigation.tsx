@@ -85,7 +85,7 @@ const navShell = (elevated: boolean) =>
     "sticky top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-300 ease-in-out",
     elevated
       ? "border-b border-white/10 shadow-lg shadow-black/15 backdrop-blur-md backdrop-saturate-150"
-      : "border-b border-transparent shadow-[0_4px_6px_-1px_rgba(0,0,0,0.15)]",
+      : "border-b border-transparent shadow-[0_4px_6px_-1px_rgb(0,0,0/0.15)]",
   ].join(" ");
 
 const navBarStyle = (elevated: boolean): CSSProperties => ({

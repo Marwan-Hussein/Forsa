@@ -34,17 +34,17 @@ export default function EventDetailsPage() {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-[#eff6ff] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8 text-center">
-          <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-[#27374d] mb-2">
+          <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-2">
             Event Not Found
           </h2>
-          <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82] mb-4">
+          <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-4">
             The event you're looking for doesn't exist.
           </p>
           <Link
             to="/events"
-            className="inline-block bg-[#27374d] text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936]"
+            className="inline-block bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936]"
           >
             Browse Events
           </Link>
@@ -88,7 +88,7 @@ export default function EventDetailsPage() {
         {/* Back Button */}
         <Link
           to="/events"
-          className="inline-flex items-center gap-2 mb-6 text-[#526d82] transition-all duration-300 ease-in-out hover:gap-3 hover:text-[#27374d] font-['Inter:Regular',sans-serif] text-[14px] cursor-pointer"
+          className="inline-flex items-center gap-2 mb-6 text-muted-foreground transition-all duration-300 ease-in-out hover:gap-3 hover:text-foreground font-['Inter:Regular',sans-serif] text-[14px] cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Events
@@ -112,10 +112,10 @@ export default function EventDetailsPage() {
                     whileTap={{ scale: 0.92 }}
                     transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
                     onClick={() => setIsInWishlist(!isInWishlist)}
-                    className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-white text-[#526d82] shadow-md transition-colors duration-300 ease-in-out hover:bg-[#f8fafc]"
+                    className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-white text-muted-foreground shadow-md transition-colors duration-300 ease-in-out hover:bg-muted"
                   >
                     <Heart
-                      className={`h-5 w-5 ${isInWishlist ? "fill-red-500 text-red-500" : "text-[#526d82]"}`}
+                      className={`h-5 w-5 ${isInWishlist ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
                     />
                   </motion.button>
                   <motion.button
@@ -123,7 +123,7 @@ export default function EventDetailsPage() {
                     whileTap={{ scale: 0.92 }}
                     transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
                     onClick={() => setShowShareModal(true)}
-                    className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-white text-[#526d82] shadow-md transition-colors duration-300 ease-in-out hover:bg-[#f8fafc]"
+                    className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-white text-muted-foreground shadow-md transition-colors duration-300 ease-in-out hover:bg-muted"
                   >
                     <Share2 className="h-5 w-5" />
                   </motion.button>
@@ -134,7 +134,7 @@ export default function EventDetailsPage() {
             {/* Event Details */}
             <div className="rounded-2xl border border-[rgba(82,109,130,0.14)] bg-white p-8 shadow-[0_4px_24px_-8px_rgba(39,55,77,0.12)]">
               <div className="flex items-start justify-between mb-4">
-                <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[30px] text-[#27374d]">
+                <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[30px] text-foreground">
                   {event.title}
                 </h1>
                 <span className="px-3 py-1 bg-[#155dfc] text-white rounded-[8px] text-[12px] font-['Inter:Medium',sans-serif] font-medium">
@@ -144,14 +144,14 @@ export default function EventDetailsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#eff6ff] rounded-full flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-[#EC9B3B]" />
+                  <div className="w-10 h-10 bg-background rounded-full flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-accent" />
                   </div>
                   <div>
-                    <p className="font-['Inter:Medium',sans-serif] font-medium text-[12px] text-[#526d82]">
+                    <p className="font-['Inter:Medium',sans-serif] font-medium text-[12px] text-muted-foreground">
                       Date
                     </p>
-                    <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] text-[#27374d]">
+                    <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] text-foreground">
                       {new Date(event.date).toLocaleDateString("en-US", {
                         weekday: "long",
                         year: "numeric",
@@ -163,42 +163,42 @@ export default function EventDetailsPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#eff6ff] rounded-full flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-[#EC9B3B]" />
+                  <div className="w-10 h-10 bg-background rounded-full flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-accent" />
                   </div>
                   <div>
-                    <p className="font-['Inter:Medium',sans-serif] font-medium text-[12px] text-[#526d82]">
+                    <p className="font-['Inter:Medium',sans-serif] font-medium text-[12px] text-muted-foreground">
                       Time
                     </p>
-                    <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] text-[#27374d]">
+                    <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] text-foreground">
                       {event.time}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#eff6ff] rounded-full flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-[#EC9B3B]" />
+                  <div className="w-10 h-10 bg-background rounded-full flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-accent" />
                   </div>
                   <div>
-                    <p className="font-['Inter:Medium',sans-serif] font-medium text-[12px] text-[#526d82]">
+                    <p className="font-['Inter:Medium',sans-serif] font-medium text-[12px] text-muted-foreground">
                       Location
                     </p>
-                    <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] text-[#27374d]">
+                    <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] text-foreground">
                       {event.location}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#eff6ff] rounded-full flex items-center justify-center">
-                    <Users className="w-5 h-5 text-[#EC9B3B]" />
+                  <div className="w-10 h-10 bg-background rounded-full flex items-center justify-center">
+                    <Users className="w-5 h-5 text-accent" />
                   </div>
                   <div>
-                    <p className="font-['Inter:Medium',sans-serif] font-medium text-[12px] text-[#526d82]">
+                    <p className="font-['Inter:Medium',sans-serif] font-medium text-[12px] text-muted-foreground">
                       Attendees
                     </p>
-                    <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] text-[#27374d]">
+                    <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] text-foreground">
                       {event.attendees} / {event.capacity}
                     </p>
                   </div>
@@ -206,23 +206,23 @@ export default function EventDetailsPage() {
               </div>
 
               <div className="border-t border-[rgba(82,109,130,0.2)] pt-6 mb-6">
-                <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-[#27374d] mb-3">
+                <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-3">
                   About This Event
                 </h2>
-                <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82] leading-relaxed">
+                <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground leading-relaxed">
                   {event.description}
                 </p>
               </div>
 
               <div className="border-t border-[rgba(82,109,130,0.2)] pt-6">
-                <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-[#27374d] mb-3">
+                <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-3">
                   Tags
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   {event.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-3 py-1 bg-[#eff6ff] text-[#27374d] rounded-[8px] text-[12px] font-['Inter:Medium',sans-serif] font-medium"
+                      className="px-3 py-1 bg-background text-foreground rounded-[8px] text-[12px] font-['Inter:Medium',sans-serif] font-medium"
                     >
                       #{tag}
                     </span>
@@ -237,10 +237,10 @@ export default function EventDetailsPage() {
             {/* Booking Card */}
             <div className="rounded-2xl border border-[rgba(82,109,130,0.14)] bg-white p-6 shadow-[0_8px_28px_-10px_rgba(39,55,77,0.18)]">
               <div className="mb-6">
-                <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82] mb-2">
+                <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-2">
                   Ticket Price
                 </p>
-                <p className="font-['Inter:Bold',sans-serif] font-bold text-[32px] text-[#27374d]">
+                <p className="font-['Inter:Bold',sans-serif] font-bold text-[32px] text-foreground">
                   {event.price === "Free" ? "Free" : `$${event.price}`}
                 </p>
               </div>
@@ -258,7 +258,7 @@ export default function EventDetailsPage() {
               </motion.button>
 
               <div className="mt-4 pt-4 border-t border-[rgba(82,109,130,0.2)]">
-                <p className="font-['Inter:Regular',sans-serif] text-[12px] text-[#526d82] text-center">
+                <p className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground text-center">
                   {event.capacity - event.attendees} spots remaining
                 </p>
               </div>
@@ -267,28 +267,28 @@ export default function EventDetailsPage() {
             {/* Organizer Card */}
             {organization && (
               <div className="rounded-2xl border border-[rgba(82,109,130,0.14)] bg-white p-6 shadow-sm">
-                <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-[#27374d] mb-4">
+                <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground mb-4">
                   Organized By
                 </h3>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-[#27374d] rounded-full flex items-center justify-center text-2xl">
+                  <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-2xl">
                     {organization.logo}
                   </div>
                   <div>
-                    <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] text-[#27374d]">
+                    <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] text-foreground">
                       {organization.name}
                     </p>
-                    <p className="font-['Inter:Regular',sans-serif] text-[12px] text-[#526d82]">
+                    <p className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
                       {organization.followersCount.toLocaleString()} followers
                     </p>
                   </div>
                 </div>
-                <p className="font-['Inter:Regular',sans-serif] text-[12px] text-[#526d82] mb-4">
+                <p className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground mb-4">
                   {organization.description}
                 </p>
                 <Link
                   to={`/organizations/${organization.id}`}
-                  className="w-full bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-[#27374d] py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Building2 className="w-4 h-4" />
                   View Profile
@@ -334,14 +334,14 @@ export default function EventDetailsPage() {
             >
               <h2
                 id="booking-modal-title"
-                className="mb-4 font-['Inter:Bold',sans-serif] text-[24px] font-bold text-[#27374d]"
+                className="mb-4 font-['Inter:Bold',sans-serif] text-[24px] font-bold text-foreground"
               >
                 Book Tickets
               </h2>
-              <p className="mb-6 font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">{event.title}</p>
+              <p className="mb-6 font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">{event.title}</p>
 
               <div className="mb-6">
-                <label className="mb-2 block font-['Inter:Medium',sans-serif] text-[14px] font-medium text-[#27374d]">
+                <label className="mb-2 block font-['Inter:Medium',sans-serif] text-[14px] font-medium text-foreground">
                   Number of Tickets
                 </label>
                 <div className="flex items-center gap-4">
@@ -350,11 +350,11 @@ export default function EventDetailsPage() {
                     whileTap={{ scale: 0.94 }}
                     transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
                     onClick={() => setTicketCount(Math.max(1, ticketCount - 1))}
-                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-[#eff6ff] font-['Inter:Bold',sans-serif] text-[18px] text-[#27374d] transition-colors duration-300 ease-in-out hover:bg-[#dde6ed]"
+                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-background font-['Inter:Bold',sans-serif] text-[18px] text-foreground transition-colors duration-300 ease-in-out hover:bg-[#dde6ed]"
                   >
                     -
                   </motion.button>
-                  <span className="min-w-[2rem] text-center font-['Inter:Semi_Bold',sans-serif] text-[20px] font-semibold text-[#27374d]">
+                  <span className="min-w-[2rem] text-center font-['Inter:Semi_Bold',sans-serif] text-[20px] font-semibold text-foreground">
                     {ticketCount}
                   </span>
                   <motion.button
@@ -362,25 +362,25 @@ export default function EventDetailsPage() {
                     whileTap={{ scale: 0.94 }}
                     transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
                     onClick={() => setTicketCount(ticketCount + 1)}
-                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-[#eff6ff] font-['Inter:Bold',sans-serif] text-[18px] text-[#27374d] transition-colors duration-300 ease-in-out hover:bg-[#dde6ed]"
+                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-background font-['Inter:Bold',sans-serif] text-[18px] text-foreground transition-colors duration-300 ease-in-out hover:bg-[#dde6ed]"
                   >
                     +
                   </motion.button>
                 </div>
               </div>
 
-              <div className="mb-6 rounded-xl bg-[#eff6ff]/90 p-4 ring-1 ring-[#27374d]/5">
+              <div className="mb-6 rounded-xl bg-background/90 p-4 ring-1 ring-[#27374d]/5">
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">Ticket Price:</span>
-                  <span className="font-['Inter:Semi_Bold',sans-serif] text-[14px] font-semibold text-[#27374d]">
+                  <span className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">Ticket Price:</span>
+                  <span className="font-['Inter:Semi_Bold',sans-serif] text-[14px] font-semibold text-foreground">
                     {event.price === "Free" ? "Free" : `$${event.price}`}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-[#27374d]">
+                  <span className="font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-foreground">
                     Total:
                   </span>
-                  <span className="font-['Inter:Bold',sans-serif] text-[20px] font-bold text-[#27374d]">
+                  <span className="font-['Inter:Bold',sans-serif] text-[20px] font-bold text-foreground">
                     {totalPrice === 0 ? "Free" : `$${totalPrice}`}
                   </span>
                 </div>
@@ -390,14 +390,14 @@ export default function EventDetailsPage() {
                 <button
                   type="button"
                   onClick={() => setShowBookingModal(false)}
-                  className="flex-1 rounded-xl border border-[rgba(82,109,130,0.2)] bg-white py-3 font-['Inter:Medium',sans-serif] text-[14px] font-medium text-[#27374d] transition-colors duration-300 ease-in-out hover:bg-[#f8f9fa] active:scale-[0.98] cursor-pointer"
+                  className="flex-1 rounded-xl border border-[rgba(82,109,130,0.2)] bg-white py-3 font-['Inter:Medium',sans-serif] text-[14px] font-medium text-foreground transition-colors duration-300 ease-in-out hover:bg-[#f8f9fa] active:scale-[0.98] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleBooking}
-                  className="flex-1 rounded-xl bg-[#27374d] py-3 font-['Inter:Medium',sans-serif] text-[14px] font-medium text-[#dde6ed] transition-colors duration-300 ease-in-out hover:bg-[#1e2936] active:scale-[0.98] cursor-pointer"
+                  className="flex-1 rounded-xl bg-primary py-3 font-['Inter:Medium',sans-serif] text-[14px] font-medium text-[#dde6ed] transition-colors duration-300 ease-in-out hover:bg-[#1e2936] active:scale-[0.98] cursor-pointer"
                 >
                   Confirm Booking
                 </button>
@@ -442,7 +442,7 @@ export default function EventDetailsPage() {
             >
               <h2
                 id="share-modal-title"
-                className="mb-6 font-['Inter:Bold',sans-serif] text-[24px] font-bold text-[#27374d]"
+                className="mb-6 font-['Inter:Bold',sans-serif] text-[24px] font-bold text-foreground"
               >
                 Share Event
               </h2>
@@ -472,7 +472,7 @@ export default function EventDetailsPage() {
                 <button
                   type="button"
                   onClick={copyEventLink}
-                  className="w-full rounded-xl bg-[#eff6ff] py-3 font-['Inter:Medium',sans-serif] text-[14px] font-medium text-[#27374d] transition-colors duration-300 ease-in-out hover:bg-[#dde6ed] active:scale-[0.99] cursor-pointer"
+                  className="w-full rounded-xl bg-background py-3 font-['Inter:Medium',sans-serif] text-[14px] font-medium text-foreground transition-colors duration-300 ease-in-out hover:bg-[#dde6ed] active:scale-[0.99] cursor-pointer"
                 >
                   Copy Link
                 </button>
@@ -481,7 +481,7 @@ export default function EventDetailsPage() {
               <button
                 type="button"
                 onClick={() => setShowShareModal(false)}
-                className="w-full rounded-xl border border-[rgba(82,109,130,0.2)] bg-white py-3 font-['Inter:Medium',sans-serif] text-[14px] font-medium text-[#27374d] transition-colors duration-300 ease-in-out hover:bg-[#f8f9fa] active:scale-[0.98] cursor-pointer"
+                className="w-full rounded-xl border border-[rgba(82,109,130,0.2)] bg-white py-3 font-['Inter:Medium',sans-serif] text-[14px] font-medium text-foreground transition-colors duration-300 ease-in-out hover:bg-[#f8f9fa] active:scale-[0.98] cursor-pointer"
               >
                 Close
               </button>

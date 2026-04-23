@@ -30,16 +30,18 @@ export function EventCard({
 }: EventCardProps) {
   const navigate = useNavigate();
   const categoryColors: Record<string, string> = {
-    Business: "#155dfc",
-    Music: "#9810fa",
-    Art: "#ec4899",
-    Sports: "#16a34a",
-    Food: "#f97316",
-    Education: "#eab308",
+    Business: "var(--Business)",
+    Music: "var(--Music)",
+    Art: "var(--Art)",
+    Sports: "var(--Sports)",
+    Food: "var(--Food)",
+    Education: "var(--Education)",
+    Technology: "var(--Technology)",
+    Entertainment: "var(--Entertainment)",
   };
 
   const priceDisplay = event.price === "Free" ? "Free" : `$${event.price}`;
-  const accent = categoryColors[event.category] || "#526d82";
+  const accent = categoryColors[event.category] || "hsl(var(--color-muted-foreground))";
 
   const enterMotion =
     reveal === "scroll"
@@ -78,15 +80,16 @@ export function EventCard({
       }}
       className={[
         "group relative overflow-hidden rounded-2xl border bg-white",
-        "border-[rgba(82,109,130,0.14)]",
-        "shadow-[0_2px_12px_-4px_rgba(39,55,77,0.10)]",
-        // --- ALL hover via CSS (GPU-composited, no JS per frame) ---
-        "translate-y-0 transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform",
+        "border-border",
+        "shadow-[0_2px_12px_-4px_rgb(var(--color-primary)/0.08)]",
+        // --- Smooth hover: longer duration + ease-out for natural deceleration ---
+        "translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[transform,box-shadow,border-color]",
         "cursor-pointer",
-        "hover:-translate-y-1.5",
-        "hover:shadow-[0_16px_32px_-10px_rgba(39,55,77,0.18)]",
-        "hover:border-[rgba(39,55,77,0.20)]",
+        "hover:-translate-y-1",
+        "hover:shadow-[0_20px_40px_-12px_color-mix(in_srgb,var(--card-accent)_40%,transparent)]",
+        "hover:border-[color-mix(in_srgb,var(--card-accent)_50%,transparent)]",
       ].join(" ")}
+      style={{ "--card-accent": accent } as React.CSSProperties}
     >
       {/* Event Image */}
       <div className="relative h-[192px] overflow-hidden">
@@ -98,7 +101,7 @@ export function EventCard({
           />
         </div>
         <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#27374d]/50 via-[#27374d]/8 to-transparent"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-primary/50 via-primary/8 to-transparent"
           aria-hidden
         />
         {/* Category Badge */}
@@ -117,7 +120,7 @@ export function EventCard({
               e.stopPropagation();
               onToggleWishlist(event.id);
             }}
-            className="absolute top-3 left-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-white/90 text-[#526d82] shadow-sm transition-[background-color,color] duration-200 ease-out hover:bg-white hover:text-red-500 active:scale-95"
+            className="absolute top-3 left-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-white/90 text-muted-foreground shadow-sm transition-[background-color,color] duration-200 ease-out hover:bg-white hover:text-red-500 active:scale-95"
           >
             <Heart
               className={`h-4 w-4 ${isInWishlist ? "fill-red-500 text-red-500" : ""}`}
@@ -128,14 +131,14 @@ export function EventCard({
 
       {/* Event Content */}
       <div className="relative p-4">
-        <h3 className="mb-3 line-clamp-2 min-h-[56px] font-['Inter:Semi_Bold',sans-serif] text-[18px] font-semibold text-[#27374d]">
+        <h3 className="mb-3 line-clamp-2 min-h-[56px] font-['Inter:Semi_Bold',sans-serif] text-[18px] font-semibold text-primary">
           {event.title}
         </h3>
 
         <div className="mb-4 space-y-2">
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 shrink-0 text-[#EC9B3B]" />
-            <span className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">
+            <Calendar className="h-4 w-4 shrink-0 text-accent" />
+            <span className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
               {new Date(event.date).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
@@ -144,30 +147,30 @@ export function EventCard({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 shrink-0 text-[#EC9B3B]" />
-            <span className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">{event.time}</span>
+            <Clock className="h-4 w-4 shrink-0 text-accent" />
+            <span className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">{event.time}</span>
           </div>
           <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 shrink-0 text-[#EC9B3B]" />
-            <span className="truncate font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">
+            <MapPin className="h-4 w-4 shrink-0 text-accent" />
+            <span className="truncate font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
               {event.location}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 shrink-0 text-[#EC9B3B]" />
-            <span className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">
+            <Users className="h-4 w-4 shrink-0 text-accent" />
+            <span className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
               {event.attendees} attending
             </span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-[rgba(82,109,130,0.12)] pt-3">
-          <span className="font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-[#27374d]">
+        <div className="flex items-center justify-between border-t border-border pt-3">
+          <span className="font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-primary">
             {priceDisplay}
           </span>
           <Link
             to={`/events/${event.id}`}
-            className="rounded-lg bg-[#27374d] px-4 py-2 font-['Inter:Medium',sans-serif] text-[14px] font-medium text-[#dde6ed] shadow-sm transition-[background-color,transform] duration-200 ease-out hover:bg-[#1e2936] active:scale-[0.97]"
+            className="rounded-lg bg-primary px-4 py-2 font-['Inter:Medium',sans-serif] text-[14px] font-medium text-primary-foreground shadow-sm transition-[background-color,transform] duration-200 ease-out hover:bg-primary/90 active:scale-[0.97]"
           >
             View Details
           </Link>

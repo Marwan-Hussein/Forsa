@@ -98,13 +98,13 @@ export default function PlaceDetailsPage() {
   const [selectedImage, setSelectedImage] = useState(0);
 
   return (
-    <div className="min-h-screen bg-[#eff6ff]">
+    <div className="min-h-screen bg-background">
       <main className="px-6 py-8 max-w-7xl mx-auto w-full">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-[#526d82] mb-6">
-          <Link to="/places" className="hover:text-[#EC9B3B]">Places</Link>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+          <Link to="/places" className="hover:text-accent">Places</Link>
           <ChevronRight className="size-4" />
-          <span className="text-[#27374d]">{mockPlace.name}</span>
+          <span className="text-foreground">{mockPlace.name}</span>
         </div>
 
         {/* Image Gallery */}
@@ -121,8 +121,8 @@ export default function PlaceDetailsPage() {
               <button
                 key={index}
                 onClick={() => setSelectedImage(index + 1)}
-                className={`relative overflow-hidden rounded-lg transition-all duration-300 ease-in-out hover:ring-2 hover:ring-[#EC9B3B]/50 ${
-                  selectedImage === index + 1 ? "ring-2 ring-[#EC9B3B]" : ""
+                className={`relative overflow-hidden rounded-lg transition-all duration-300 ease-in-out hover:ring-2 hover:ring-accent/50 ${
+                  selectedImage === index + 1 ? "ring-2 ring-accent" : ""
                 }`}
               >
                 <ImageWithFallback
@@ -134,8 +134,8 @@ export default function PlaceDetailsPage() {
             ))}
             <button
               onClick={() => setSelectedImage(0)}
-              className={`relative overflow-hidden rounded-lg transition-all duration-300 ease-in-out hover:ring-2 hover:ring-[#EC9B3B]/50 ${
-                selectedImage === 0 ? "ring-2 ring-[#EC9B3B]" : ""
+              className={`relative overflow-hidden rounded-lg transition-all duration-300 ease-in-out hover:ring-2 hover:ring-accent/50 ${
+                selectedImage === 0 ? "ring-2 ring-accent" : ""
               }`}
             >
               <ImageWithFallback
@@ -154,22 +154,22 @@ export default function PlaceDetailsPage() {
             <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-[#27374d] mb-2">{mockPlace.name}</h1>
-                  <div className="flex items-center gap-2 text-[#526d82] mb-3">
+                  <h1 className="text-3xl font-bold text-foreground mb-2">{mockPlace.name}</h1>
+                  <div className="flex items-center gap-2 text-muted-foreground mb-3">
                     <MapPin className="size-5" />
                     <span>{mockPlace.address}, {mockPlace.city}, {mockPlace.state} {mockPlace.zipCode}</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1">
-                      <Star className="size-5 fill-[#EC9B3B] text-[#EC9B3B]" />
-                      <span className="font-semibold text-[#27374d]">{mockPlace.rating}</span>
-                      <span className="text-sm text-[#526d82]">({mockPlace.reviews} reviews)</span>
+                      <Star className="size-5 fill-accent text-accent" />
+                      <span className="font-semibold text-foreground">{mockPlace.rating}</span>
+                      <span className="text-sm text-muted-foreground">({mockPlace.reviews} reviews)</span>
                     </div>
                   </div>
                 </div>
                 <Link
                   to={`/places/${placeId}/book`}
-                  className="px-6 py-3 bg-gradient-to-r from-[#EC9B3B] to-[#f4b860] text-white rounded-lg hover:opacity-90 transition-opacity"
+                  className="px-6 py-3 bg-gradient-to-r from-accent to-accent/80 text-white rounded-lg hover:opacity-90 transition-opacity"
                 >
                   Book This Venue
                 </Link>
@@ -178,25 +178,25 @@ export default function PlaceDetailsPage() {
 
             {/* Description */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-              <h2 className="text-xl font-bold text-[#27374d] mb-4">About This Venue</h2>
-              <p className="text-[#526d82] leading-relaxed mb-4">{mockPlace.fullDescription}</p>
+              <h2 className="text-xl font-bold text-foreground mb-4">About This Venue</h2>
+              <p className="text-muted-foreground leading-relaxed mb-4">{mockPlace.fullDescription}</p>
               <div className="grid grid-cols-2 gap-4 mt-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-br from-[#182F4D] to-[#346286] rounded-lg">
+                  <div className="p-3 bg-gradient-to-br from-primary to-primary/80 rounded-lg">
                     <Users className="size-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm text-[#526d82]">Capacity</p>
-                    <p className="font-semibold text-[#27374d]">{mockPlace.capacity.min} - {mockPlace.capacity.max} people</p>
+                    <p className="text-sm text-muted-foreground">Capacity</p>
+                    <p className="font-semibold text-foreground">{mockPlace.capacity.min} - {mockPlace.capacity.max} people</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-br from-[#EC9B3B] to-[#f4b860] rounded-lg">
+                  <div className="p-3 bg-gradient-to-br from-accent to-accent/80 rounded-lg">
                     <DollarSign className="size-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm text-[#526d82]">Price Range</p>
-                    <p className="font-semibold text-[#27374d]">${mockPlace.priceRange.min} - ${mockPlace.priceRange.max}/day</p>
+                    <p className="text-sm text-muted-foreground">Price Range</p>
+                    <p className="font-semibold text-foreground">${mockPlace.priceRange.min} - ${mockPlace.priceRange.max}/day</p>
                   </div>
                 </div>
               </div>
@@ -204,14 +204,14 @@ export default function PlaceDetailsPage() {
 
             {/* Amenities */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-              <h2 className="text-xl font-bold text-[#27374d] mb-4">Amenities</h2>
+              <h2 className="text-xl font-bold text-foreground mb-4">Amenities</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {mockPlace.amenities.map((amenity, index) => {
                   const Icon = amenity.icon;
                   return (
-                    <div key={index} className="flex items-center gap-3 p-3 bg-[#eff6ff] rounded-lg">
-                      <Icon className="size-5 text-[#27374d]" />
-                      <span className="text-sm text-[#27374d]">{amenity.name}</span>
+                    <div key={index} className="flex items-center gap-3 p-3 bg-background rounded-lg">
+                      <Icon className="size-5 text-foreground" />
+                      <span className="text-sm text-foreground">{amenity.name}</span>
                     </div>
                   );
                 })}
@@ -220,13 +220,13 @@ export default function PlaceDetailsPage() {
 
             {/* Upcoming Events */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-              <h2 className="text-xl font-bold text-[#27374d] mb-4">Upcoming Events at This Venue</h2>
+              <h2 className="text-xl font-bold text-foreground mb-4">Upcoming Events at This Venue</h2>
               <div className="space-y-3">
                 {mockPlace.upcomingEvents.map((event) => (
-                  <div key={event.id} className="flex items-center justify-between p-4 bg-[#eff6ff] rounded-lg">
+                  <div key={event.id} className="flex items-center justify-between p-4 bg-background rounded-lg">
                     <div>
-                      <h3 className="font-semibold text-[#27374d]">{event.title}</h3>
-                      <div className="flex items-center gap-4 text-sm text-[#526d82] mt-1">
+                      <h3 className="font-semibold text-foreground">{event.title}</h3>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                         <span className="flex items-center gap-1">
                           <Calendar className="size-4" />
                           {new Date(event.date).toLocaleDateString()}
@@ -237,7 +237,7 @@ export default function PlaceDetailsPage() {
                         </span>
                       </div>
                     </div>
-                    <span className="text-sm text-[#526d82]">by {event.organizer}</span>
+                    <span className="text-sm text-muted-foreground">by {event.organizer}</span>
                   </div>
                 ))}
               </div>
@@ -248,35 +248,35 @@ export default function PlaceDetailsPage() {
           <div className="space-y-6">
             {/* Contact Information */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-              <h2 className="text-xl font-bold text-[#27374d] mb-4">Contact Information</h2>
+              <h2 className="text-xl font-bold text-foreground mb-4">Contact Information</h2>
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-[#526d82] mb-1">Owner</p>
-                  <p className="font-semibold text-[#27374d]">{mockPlace.owner}</p>
+                  <p className="text-sm text-muted-foreground mb-1">Owner</p>
+                  <p className="font-semibold text-foreground">{mockPlace.owner}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Phone className="size-5 text-[#EC9B3B]" />
+                  <Phone className="size-5 text-accent" />
                   <div>
-                    <p className="text-sm text-[#526d82]">Phone</p>
-                    <a href={`tel:${mockPlace.ownerPhone}`} className="text-[#27374d] hover:text-[#EC9B3B]">
+                    <p className="text-sm text-muted-foreground">Phone</p>
+                    <a href={`tel:${mockPlace.ownerPhone}`} className="text-foreground hover:text-accent">
                       {mockPlace.ownerPhone}
                     </a>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Mail className="size-5 text-[#EC9B3B]" />
+                  <Mail className="size-5 text-accent" />
                   <div>
-                    <p className="text-sm text-[#526d82]">Email</p>
-                    <a href={`mailto:${mockPlace.ownerEmail}`} className="text-[#27374d] hover:text-[#EC9B3B] break-all">
+                    <p className="text-sm text-muted-foreground">Email</p>
+                    <a href={`mailto:${mockPlace.ownerEmail}`} className="text-foreground hover:text-accent break-all">
                       {mockPlace.ownerEmail}
                     </a>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Globe className="size-5 text-[#EC9B3B]" />
+                  <Globe className="size-5 text-accent" />
                   <div>
-                    <p className="text-sm text-[#526d82]">Website</p>
-                    <a href={`https://${mockPlace.website}`} target="_blank" rel="noopener noreferrer" className="text-[#27374d] hover:text-[#EC9B3B]">
+                    <p className="text-sm text-muted-foreground">Website</p>
+                    <a href={`https://${mockPlace.website}`} target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-accent">
                       {mockPlace.website}
                     </a>
                   </div>
@@ -285,7 +285,7 @@ export default function PlaceDetailsPage() {
             </div>
 
             {/* Quick Stats */}
-            <div className="bg-gradient-to-br from-[#182F4D] to-[#346286] rounded-xl p-6 text-white">
+            <div className="bg-gradient-to-br from-primary to-primary/80 rounded-xl p-6 text-white">
               <h2 className="text-xl font-bold mb-4">Quick Stats</h2>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -305,11 +305,11 @@ export default function PlaceDetailsPage() {
 
             {/* Availability Calendar Preview */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-              <h2 className="text-xl font-bold text-[#27374d] mb-4">Availability</h2>
+              <h2 className="text-xl font-bold text-foreground mb-4">Availability</h2>
               <div className="space-y-2">
                 {mockPlace.availability.map((day, index) => (
                   <div key={index} className="flex items-center justify-between p-2 rounded">
-                    <span className="text-sm text-[#526d82]">{new Date(day.date).toLocaleDateString()}</span>
+                    <span className="text-sm text-muted-foreground">{new Date(day.date).toLocaleDateString()}</span>
                     <span
                       className={`text-xs px-2 py-1 rounded-full ${
                         day.status === "available"
@@ -324,7 +324,7 @@ export default function PlaceDetailsPage() {
               </div>
               <Link
                 to={`/places/${placeId}/book`}
-                className="mt-4 block text-center px-4 py-2 border border-[#27374d] text-[#27374d] rounded-lg hover:bg-[#27374d] hover:text-white transition-all"
+                className="mt-4 block text-center px-4 py-2 border border-primary text-foreground rounded-lg hover:bg-primary hover:text-white transition-all"
               >
                 Check Full Availability
               </Link>

@@ -119,13 +119,13 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#eff6ff] py-8 px-4">
+    <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 mb-4 text-[#526d82] hover:text-[#27374d] transition-colors font-['Inter:Regular',sans-serif] text-[14px] cursor-pointer"
+            className="inline-flex items-center gap-2 mb-4 text-muted-foreground hover:text-foreground transition-colors font-['Inter:Regular',sans-serif] text-[14px] cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
@@ -133,18 +133,18 @@ export default function NotificationsPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <Bell className="w-8 h-8 text-[#EC9B3B]" />
-                <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-[#27374d]">
+                <Bell className="w-8 h-8 text-accent" />
+                <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-foreground">
                   Notifications
                 </h1>
               </div>
-              <p className="font-['Inter:Regular',sans-serif] text-[16px] text-[#526d82]">
+              <p className="font-['Inter:Regular',sans-serif] text-[16px] text-muted-foreground">
                 {unreadCount} unread notification{unreadCount !== 1 ? "s" : ""}
               </p>
             </div>
             <Link
               to="/notifications/settings"
-              className="flex items-center gap-2 px-4 py-2 bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-[#27374d] rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors cursor-pointer"
             >
               <Settings className="w-4 h-4" />
               Settings
@@ -160,8 +160,8 @@ export default function NotificationsPage() {
                 onClick={() => setFilter("all")}
                 className={`px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-colors cursor-pointer ${
                   filter === "all"
-                    ? "bg-[#27374d] text-[#dde6ed] hover:bg-[#1e2936]"
-                    : "bg-[#eff6ff] text-[#27374d] hover:bg-[#dde6ed]"
+                    ? "bg-primary text-[#dde6ed] hover:bg-[#1e2936]"
+                    : "bg-background text-foreground hover:bg-[#dde6ed]"
                 }`}
               >
                 All ({notifications.length})
@@ -170,8 +170,8 @@ export default function NotificationsPage() {
                 onClick={() => setFilter("unread")}
                 className={`px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-colors cursor-pointer ${
                   filter === "unread"
-                    ? "bg-[#27374d] text-[#dde6ed] hover:bg-[#1e2936]"
-                    : "bg-[#eff6ff] text-[#27374d] hover:bg-[#dde6ed]"
+                    ? "bg-primary text-[#dde6ed] hover:bg-[#1e2936]"
+                    : "bg-background text-foreground hover:bg-[#dde6ed]"
                 }`}
               >
                 Unread ({unreadCount})
@@ -180,7 +180,7 @@ export default function NotificationsPage() {
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="px-4 py-2 text-[#27374d] hover:text-[#1e2936] font-['Inter:Medium',sans-serif] font-medium text-[14px] cursor-pointer"
+                className="px-4 py-2 text-foreground hover:text-[#1e2936] font-['Inter:Medium',sans-serif] font-medium text-[14px] cursor-pointer"
               >
                 Mark all as read
               </button>
@@ -195,7 +195,7 @@ export default function NotificationsPage() {
               <div
                 key={notification.id}
                 className={`bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-4 hover:shadow-md transition-shadow ${
-                  !notification.read ? "bg-[#eff6ff]/50" : ""
+                  !notification.read ? "bg-background/50" : ""
                 }`}
               >
                 <div className="flex items-start gap-4">
@@ -210,24 +210,24 @@ export default function NotificationsPage() {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-1">
-                      <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-[#27374d]">
+                      <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground">
                         {notification.title}
                       </h3>
                       {!notification.read && (
-                        <div className="w-2 h-2 bg-[#EC9B3B] rounded-full flex-shrink-0 mt-2" />
+                        <div className="w-2 h-2 bg-accent rounded-full flex-shrink-0 mt-2" />
                       )}
                     </div>
-                    <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82] mb-2">
+                    <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-2">
                       {notification.message}
                     </p>
                     <div className="flex items-center gap-4">
-                      <span className="font-['Inter:Regular',sans-serif] text-[12px] text-[#526d82]">
+                      <span className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
                         {formatTimestamp(notification.timestamp)}
                       </span>
                       {notification.link && (
                         <Link
                           to={notification.link}
-                          className="font-['Inter:Medium',sans-serif] font-medium text-[12px] text-[#27374d] hover:underline cursor-pointer"
+                          className="font-['Inter:Medium',sans-serif] font-medium text-[12px] text-foreground hover:underline cursor-pointer"
                         >
                           View →
                         </Link>
@@ -240,7 +240,7 @@ export default function NotificationsPage() {
                     {!notification.read && (
                       <button
                         onClick={() => markAsRead(notification.id)}
-                        className="w-8 h-8 flex items-center justify-center hover:bg-[#eff6ff] rounded-[8px] transition-colors cursor-pointer"
+                        className="w-8 h-8 flex items-center justify-center hover:bg-background rounded-[8px] transition-colors cursor-pointer"
                         title="Mark as read"
                       >
                         <Check className="w-4 h-4 text-[#16a34a]" />
@@ -259,11 +259,11 @@ export default function NotificationsPage() {
             ))
           ) : (
             <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-12 text-center">
-              <Bell className="w-16 h-16 text-[#526d82] mx-auto mb-4" />
-              <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-[#27374d] mb-2">
+              <Bell className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-2">
                 No notifications
               </p>
-              <p className="font-['Inter:Regular',sans-serif] text-[14px] text-[#526d82]">
+              <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
                 {filter === "unread"
                   ? "You're all caught up!"
                   : "You'll see notifications here when you have updates"}
