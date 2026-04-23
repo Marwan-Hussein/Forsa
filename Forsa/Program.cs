@@ -4,6 +4,7 @@ using Application.Core.Interfaces;
 using Application.Services;
 using Infrastructure.Repositories;
 using Domain.Interfaces;
+using Application.Mapping;
 namespace Forsa
 {
     public class Program
@@ -15,6 +16,8 @@ namespace Forsa
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Add services to the container.
+            builder.Services.AddAutoMapper(typeof(EventProfile), typeof(BookingProfile));
+            builder.Services.AddScoped<IBookingService, BookingService>();
             builder.Services.AddScoped(typeof(IGenericService<>), typeof(GenericService<>));
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddControllers();
