@@ -1,4 +1,4 @@
-﻿using Domain.Interfaces;
+using Domain.Interfaces;
 using Infrastructure.Data.DbContexts;
 using System;
 using System.Collections.Generic;
@@ -44,6 +44,11 @@ namespace Infrastructure.Repositories
             {
                 _context.Set<T>().Remove(entity);
             }
+        }
+
+        public IQueryable<T> GetQueryable()
+        {
+            return _context.Set<T>().AsQueryable();
         }
     }
 }
