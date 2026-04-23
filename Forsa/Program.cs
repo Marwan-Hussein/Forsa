@@ -17,6 +17,8 @@ namespace Forsa
 
             // Add services to the container.
             builder.Services.AddAutoMapper(typeof(EventProfile), typeof(BookingProfile));
+            builder.Services.AddFluentValidationAutoValidation();
+            builder.Services.AddValidatorsFromAssemblyContaining<Application.Validators.CreateBookingValidator>();
             builder.Services.AddScoped<IBookingService, BookingService>();
             builder.Services.AddScoped(typeof(IGenericService<>), typeof(GenericService<>));
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
