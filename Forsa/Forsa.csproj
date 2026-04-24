@@ -19,5 +19,14 @@
     <ProjectReference Include="..\Application\Application.csproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
+	
+  <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('..\Frontend\node_modules') ">
+      <Exec Command="node --version" ContinueOnError="true">
+          <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+      </Exec>
+      <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project." />
+      <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
+      <Exec WorkingDirectory="..\Frontend" Command="npm install" />
+  </Target>
 
 </Project>
