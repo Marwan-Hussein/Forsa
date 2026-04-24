@@ -58,4 +58,3 @@ _ReSharper*/
 
 # Migrations
 Infrastructure/Migrations/
-Infrastructure/Migrations/ForsaDbContextModelSnapshot.cs
