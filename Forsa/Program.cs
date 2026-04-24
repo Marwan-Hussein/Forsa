@@ -15,7 +15,7 @@ namespace Forsa
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowFrontend",
-                    policy => policy.WithOrigins("http://localhost:3000") // React's default port
+                    policy => policy.WithOrigins("http://localhost:5173") // Vite dev server port
                                     .AllowAnyMethod()
                                     .AllowAnyHeader()
                     );
@@ -55,7 +55,7 @@ namespace Forsa
                 spa.Options.SourcePath = "../Frontend";
                 if (app.Environment.IsDevelopment())
                 {
-                    spa.UseProxyToSpaDevelopmentServer("http://localhost:3000");
+                    spa.UseProxyToSpaDevelopmentServer("http://localhost:5173");
                 }
             });
 
