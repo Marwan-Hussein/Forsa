@@ -55,3 +55,7 @@ packages/
 # Resharper
 _ReSharper*/
 *.DotSettings.user
+
+# Migrations
+Infrastructure/Migrations/
+Infrastructure/Migrations/ForsaDbContextModelSnapshot.cs
