@@ -1,4 +1,5 @@
 ﻿using Domain.Common.Implementation;
+using Domain.ENUMs; // Added to reference enums
 
 namespace Domain.Entities
 {
@@ -7,9 +8,10 @@ namespace Domain.Entities
         public int NotificationId { get; set; }
         public string Message { get; set; }
 
-        public string Type { get; set; }
-        public string SentVia { get; set; }
-        public string Status { get; set; }
+        // ✏️ Modified: Replaced string properties with ENUMs for better type safety
+        public NotificationType Type { get; set; }
+        public DeliveryMethod SentVia { get; set; }
+        public NotificationStatus Status { get; set; }
         public int? UserId { get; set; }
         public ApplicationUser User { get; set; }
 

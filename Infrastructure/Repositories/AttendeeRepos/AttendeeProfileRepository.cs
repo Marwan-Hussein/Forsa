@@ -48,5 +48,13 @@ namespace Infrastructure.Repositories.AttendeeRepos
         {
             _context.SaveChanges();
         }
+
+        // ✏️ Modified: Added implementation to get all interests
+        public List<AttendeeInterest> GetAllInterests()
+        {
+            return _context.Set<AttendeeInterest>()
+                           .Where(i => !i.IsDeleted)
+                           .ToList();
+        }
     }
 }

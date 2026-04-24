@@ -97,11 +97,11 @@ namespace Application.Services
             // Create notification
             var notification = new Notification
             {
-                Type = "BookingConfirmation",
-                SentVia = "Email",
+                Type = NotificationType.BookingConfirmation,
+                SentVia = DeliveryMethod.Email,
                 UserId = dto.AttendeeId,
                 Message = $"Your booking for '{eventEntity.Title}' has been confirmed. Booking ID: {booking.BookingId}",
-                Status = "Pending",
+                Status = NotificationStatus.Pending,
                 IsDeleted = false
             };
 
@@ -140,11 +140,11 @@ namespace Application.Services
             // Create cancellation notification
             var notification = new Notification
             {
-                Type = "BookingCancellation",
-                SentVia = "Email",
+                Type = NotificationType.BookingConfirmation,
+                SentVia = DeliveryMethod.Email,
                 UserId = booking.AttendeeId,
                 Message = $"Your booking for '{booking.Event.Title}' has been cancelled. Booking ID: {booking.BookingId}",
-                Status = "Pending",
+                Status =    NotificationStatus.Pending,
                 IsDeleted = false
             };
 

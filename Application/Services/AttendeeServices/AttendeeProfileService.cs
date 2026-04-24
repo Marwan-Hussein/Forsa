@@ -57,5 +57,13 @@ namespace Application.Services.AttendeeServices
             var updated = _repo.GetAttendeeWithInterests(attendeeId);
             return updated == null ? null : _mapper.Map<AttendeeProfileDto>(updated);
         }
+
+        // ✏️ Modified: Added implementation to get mapping entity to DTO 
+        public List<InterestDto> GetAllInterests()
+        {
+            return _repo.GetAllInterests()
+                        .Select(i => new InterestDto { Id = i.InterestId, Name = i.InterestName })
+                        .ToList();
+        }
     }
 }

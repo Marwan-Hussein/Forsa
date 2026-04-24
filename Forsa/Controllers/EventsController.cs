@@ -8,11 +8,25 @@ namespace Forsa.Controllers
     [Route("api/[controller]")]
     public class EventsController : ControllerBase
     {
+        private readonly IEventService _eventService;
         private readonly IBookingService _bookingService;
 
-        public EventsController(IBookingService bookingService)
+        public EventsController(IEventService eventService, IBookingService bookingService)
         {
+            _eventService = eventService;
             _bookingService = bookingService;
+        }
+
+        [HttpGet]
+        public ActionResult<IEnumerable<EventDetailsDto>> GetAllEvents()
+        {
+            return Ok(_eventService.GetAllEvents());
+        }
+
+        [HttpGet("search")]
+        public ActionResult<IEnumerable<EventDetailsDto>> SearchEvents([FromQuery] EventSearchParameter parameters)
+        {
+            return Ok(_eventService.FilterEventsByParameters(parameters));
         }
 
         [HttpGet("{id}/details")]
