@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace Domain.Common.Implementation
 {
-    // ✏️ Modified: Implements IEntity<int> and adds Id property for a common primary key contract
     public abstract class BaseEntity : IEntity<int>
     {
         public int Id { get; set; }

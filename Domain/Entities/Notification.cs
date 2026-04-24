@@ -8,7 +8,6 @@ namespace Domain.Entities
         public int NotificationId { get; set; }
         public string Message { get; set; }
 
-        // ✏️ Modified: Replaced string properties with ENUMs for better type safety
         public NotificationType Type { get; set; }
         public DeliveryMethod SentVia { get; set; }
         public NotificationStatus Status { get; set; }

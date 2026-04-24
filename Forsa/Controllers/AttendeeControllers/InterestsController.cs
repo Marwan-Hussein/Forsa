@@ -10,7 +10,6 @@ namespace Forsa.Controllers.AttendeeControllers
 
     public class InterestsController : ControllerBase
     {
-        // ✏️ Modified: Switched to IAttendeeProfileService instead of exposing domain entity with IGenericService
         private readonly IAttendeeProfileService _service;
         public InterestsController(IAttendeeProfileService service)
         {

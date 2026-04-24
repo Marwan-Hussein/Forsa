@@ -14,7 +14,6 @@ namespace Domain.Interfaces.AttendeeInterfaces
         List<int> GetValidInterestIds(List<int> requestedIds);
         void UpdateAttendeeInterests(Attendee attendee, List<int> validInterestIds);
         void SaveChanges();
-        // ✏️ Modified: Added method to get all interests
         List<AttendeeInterest> GetAllInterests();
     }
 }

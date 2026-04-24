@@ -2,7 +2,6 @@
 using Domain.Common.Interfaces;
 namespace Domain.Entities
 {
-    // ✏️ Modified: Implements IEntity<int> instead of IBaseEntity, and removed unnecessary commented Id
     public class ApplicationUser: IdentityUser<int> , IEntity<int>
     {
 

@@ -20,7 +20,6 @@ namespace Infrastructure.Repositories
             return _context.Set<T>().ToList();
         }
 
-        // ✏️ Modified: Updated to return nullable
         public T? GetById(int id)
         {
             return _context.Set<T>().Find(id);
@@ -39,7 +38,6 @@ namespace Infrastructure.Repositories
         public void Delete(int id)
         {
             var entity = _context.Set<T>().Find(id);
-            // ✏️ Modified: simplified if statement
             if (entity != null) _context.Set<T>().Remove(entity);
         }
     }

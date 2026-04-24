@@ -39,7 +39,6 @@ namespace Forsa
                 });
             });
 
-            // ✏️ Modified: Replaced manual 20+ line registration with AddApplicationServices and AddInfrastructureServices
             builder.Services.AddApplicationServices();
             builder.Services.AddInfrastructureServices(builder.Configuration);
 

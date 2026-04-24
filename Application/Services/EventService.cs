@@ -8,7 +8,6 @@ using System.Linq;
 
 namespace Application.Services
 {
-    // ✏️ Modified: Rewrote without GenericService, returning DTOs, fixed typo in interface method
     public class EventService : IEventService
     {
         private readonly IQueryableRepository<Event> _repo;
