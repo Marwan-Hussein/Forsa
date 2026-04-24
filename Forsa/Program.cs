@@ -11,6 +11,16 @@ namespace Forsa
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            // Cors Service
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend",
+                    policy => policy.WithOrigins("http://localhost:3000") // React's default port
+                                    .AllowAnyMethod()
+                                    .AllowAnyHeader()
+                    );
+            });
+
             builder.Services.AddDbContext<ForsaDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -30,6 +40,10 @@ namespace Forsa
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            // Active Cors Middleware
+            app.UseHttpsRedirection();
+            app.UseCors("AllowFrontend");
 
             app.UseAuthorization();
 
