@@ -1,6 +1,7 @@
 using Application.Core.DTOs.Event;
 using Application.Core.Interfaces;
 using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Domain.Entities.EventEntities;
 
@@ -12,11 +13,13 @@ namespace Forsa.Controllers
     {
         private readonly IEventService _eventService;
         private readonly IMapper _mapper;
+        private readonly IValidator<EventSearchParameter> _validator;
 
-        public EventsController(IEventService eventService, IMapper mapper)
+        public EventsController(IEventService eventService, IMapper mapper, IValidator<EventSearchParameter> validator)
         {
             _eventService = eventService;
             _mapper = mapper;
+            _validator = validator;
         }
 
         [HttpGet]
@@ -37,13 +40,22 @@ namespace Forsa.Controllers
         [HttpGet("search")]
         public async Task<ActionResult<List<EventDetailsDto>>> SearchEvents([FromQuery] EventSearchParameter parameters)
         {
+            // FluentValidation
+            var validationResult = await _validator.ValidateAsync(parameters);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors
+                    .Select(e => new { field = e.PropertyName, message = e.ErrorMessage });
+                return BadRequest(new { errors });
+            }
+
             try
             {
                 var events = _eventService.FilterEventsByParameters(parameters);
                 var eventDtos = _mapper.Map<List<EventDetailsDto>>(events);
                 return Ok(eventDtos);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, "An error occurred while searching events");
             }

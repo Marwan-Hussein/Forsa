@@ -1,5 +1,6 @@
 using Application.Core.DTOs.AttendeeDTOs;
 using Application.Core.DTOs.Booking;
+using Application.Core.DTOs.Event;
 using Application.Core.Interfaces;
 using Application.Core.Interfaces.AttendeeInterfaces;
 using Application.Services;
@@ -50,6 +51,7 @@ namespace Forsa
                 cfg.AddProfile<BookingProfile>();
             });
             builder.Services.AddTransient<IValidator<CreateBookingRequestDto>, CreateBookingValidator>();
+            builder.Services.AddTransient<IValidator<EventSearchParameter>, EventSearchParameterValidator>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IBookingService, BookingService>();
             builder.Services.AddScoped(typeof(IQueryableRepository<>), typeof(QueryableRepository<>));
