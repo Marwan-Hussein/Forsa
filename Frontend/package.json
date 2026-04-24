@@ -1,6 +1,7 @@
 {
   "name": "forsa",
   "private": true,
+  "proxy": "https://localhost:7001",
   "version": "0.0.1",
   "type": "module",
   "scripts": {
@@ -92,5 +93,4 @@
       "vite": "6.3.5"
     }
   }
-  "proxy": "https://localhost:7001",
 }
