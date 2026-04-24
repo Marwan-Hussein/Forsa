@@ -1,16 +1,14 @@
 using Domain.Interfaces;
+using Domain.Common.Interfaces;
 using Infrastructure.Data.DbContexts;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : class
+    public class GenericRepository<T> : IGenericRepository<T> where T : class, IEntity<int>
     {
-        ForsaDbContext _context;
+        protected readonly ForsaDbContext _context;
 
         public GenericRepository(ForsaDbContext context)
         {
@@ -22,7 +20,7 @@ namespace Infrastructure.Repositories
             return _context.Set<T>().ToList();
         }
 
-        public T GetById(int id)
+        public T? GetById(int id)
         {
             return _context.Set<T>().Find(id);
         }
@@ -40,10 +38,7 @@ namespace Infrastructure.Repositories
         public void Delete(int id)
         {
             var entity = _context.Set<T>().Find(id);
-            if (entity != null)
-            {
-                _context.Set<T>().Remove(entity);
-            }
+            if (entity != null) _context.Set<T>().Remove(entity);
         }
     }
 }

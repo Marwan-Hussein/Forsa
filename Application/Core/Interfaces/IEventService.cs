@@ -1,11 +1,12 @@
 using Application.Core.DTOs.Event;
-using Application.Core.Interfaces;
-using Domain.Entities.EventEntities;
+using System.Collections.Generic;
 
 namespace Application.Core.Interfaces
 {
-    public interface IEventService : IGenericService<Event>
+    public interface IEventService
     {
-        List<Event> FilterEventsByParameters(EventSearchParameter parameters);
+        List<EventDetailsDto> GetAllEvents();
+        EventDetailsDto? GetEventById(int id);
+        List<EventDetailsDto> FilterEventsByParameters(EventSearchParameter parameters);
     }
 }

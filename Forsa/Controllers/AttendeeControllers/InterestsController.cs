@@ -1,6 +1,5 @@
 ﻿using Application.Core.DTOs.AttendeeDTOs;
-using Application.Core.Interfaces;
-using Domain.Entities.AttendeeEntities;
+using Application.Core.Interfaces.AttendeeInterfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Forsa.Controllers.AttendeeControllers
@@ -11,8 +10,8 @@ namespace Forsa.Controllers.AttendeeControllers
 
     public class InterestsController : ControllerBase
     {
-        private readonly IGenericService<AttendeeInterest> _service;
-        public InterestsController(IGenericService<AttendeeInterest> service)
+        private readonly IAttendeeProfileService _service;
+        public InterestsController(IAttendeeProfileService service)
         {
             _service = service;
         }
@@ -21,14 +20,8 @@ namespace Forsa.Controllers.AttendeeControllers
         [HttpGet]
         public ActionResult<IEnumerable<InterestDto>> GetAll()
         {
-            var list = _service.GetAll()
-                               .Select(i => new InterestDto
-                               {
-                                    Id = i.InterestId,
-                                    Name = i.InterestName
-                               })
-                               .ToList();
-            return Ok(list);
+            // ✏️ Modified: Retrieving from service directly already mapped
+            return Ok(_service.GetAllInterests());
         }
 
     }

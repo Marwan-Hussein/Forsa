@@ -1,17 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Domain.Common.Interfaces;
 
 namespace Domain.Interfaces
 {
-    public interface IGenericRepository<T> where T : class
+    public interface IGenericRepository<T> where T : IEntity<int>
     {
-        public IEnumerable<T> GetAll();
-        public T GetById(int id);
-        public void Add(T entity);
-        public void Update(T entity);
-        public void Delete(int id);
+        IEnumerable<T> GetAll();
+        T? GetById(int id);
+        void Add(T entity);
+        void Update(T entity);
+        void Delete(int id);
     }
 }

@@ -2,9 +2,8 @@
 using Domain.Common.Interfaces;
 namespace Domain.Entities
 {
-    public class ApplicationUser: IdentityUser<int> , IBaseEntity
+    public class ApplicationUser: IdentityUser<int> , IEntity<int>
     {
-        //public int Id { get; set; }
 
         public string FullName{ get; set; }
         public string Location{ get; set; }

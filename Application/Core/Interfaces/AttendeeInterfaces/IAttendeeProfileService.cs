@@ -12,5 +12,6 @@ namespace Application.Core.Interfaces.AttendeeInterfaces
         AttendeeProfileDto? GetProfile(int attendeeId);
         AttendeeProfileDto? UpdateProfile(int attendeeId, UpdateAttendeeProfileDto request);
         AttendeeProfileDto? UpdateInterests(int attendeeId, List<int> interestIds);
+        List<InterestDto> GetAllInterests();
     }
 }

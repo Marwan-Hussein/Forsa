@@ -16,6 +16,8 @@ using Application.Validators;
 using Infrastructure.Repositories.AttendeeRepos;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using Application;
+using Infrastructure;
 namespace Forsa
 {
     public class Program
@@ -36,30 +38,10 @@ namespace Forsa
                           .AllowAnyMethod();
                 });
             });
-            
 
-            // Add services to the container.
-            builder.Services.AddScoped(typeof(IGenericService<>), typeof(GenericService<>));
-            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            builder.Services.AddApplicationServices();
+            builder.Services.AddInfrastructureServices(builder.Configuration);
 
-            // Booking Module
-            builder.Services.AddAutoMapper(cfg =>
-            {
-                cfg.AddProfile<EventProfile>();
-                cfg.AddProfile<BookingProfile>();
-            });
-            builder.Services.AddValidatorsFromAssemblyContaining<CreateBookingValidator>();
-            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-            builder.Services.AddScoped<IBookingService, BookingService>();
-            builder.Services.AddScoped(typeof(IQueryableRepository<>), typeof(QueryableRepository<>));
-            builder.Services.AddScoped<IEventService, EventService>();
-            builder.Services.AddScoped<IEventRepository, EventRepository>();
-            builder.Services.AddControllers();
-            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-            builder.Services.AddScoped(typeof(IAttendeeProfileService), typeof(AttendeeProfileService));
-            builder.Services.AddScoped(typeof(IAttendeeProfileRepository), typeof(AttendeeProfileRepository));
-            builder.Services.AddScoped<IValidator<UpdateAttendeeProfileDto>, UpdateAttendeeProfileDtoValidator>();
-            builder.Services.AddScoped<IValidator<UpdateAttendeeInterestsDto>, UpdateAttendeeInterestsDtoValidator>();
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {

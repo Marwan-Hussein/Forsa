@@ -1,19 +1,39 @@
+using Application.Core.DTOs.Event;
 using Application.Core.Interfaces;
+using AutoMapper;
 using Domain.Entities.EventEntities;
 using Domain.Interfaces;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Application.Services
 {
-    public class EventService : GenericService<Event>, IEventService
+    public class EventService : IEventService
     {
-        private readonly IEventRepository _repo;
-        public EventService(IGenericRepository<Event> repo) : base(repo){
+        private readonly IQueryableRepository<Event> _repo;
+        private readonly IMapper _mapper;
+
+        public EventService(IQueryableRepository<Event> repo, IMapper mapper)
+        {
             _repo = repo;
+            _mapper = mapper;
         }
 
-        public List<Event> FilterEvents(EventSearchParameter criteria)
+        public List<EventDetailsDto> GetAllEvents()
         {
-            IQueryable<Event> events = GetAll().AsQueryable();
+            var events = _repo.GetAll();
+            return _mapper.Map<List<EventDetailsDto>>(events);
+        }
+
+        public EventDetailsDto? GetEventById(int id)
+        {
+            var ev = _repo.GetById(id);
+            return ev == null ? null : _mapper.Map<EventDetailsDto>(ev);
+        }
+
+        public List<EventDetailsDto> FilterEventsByParameters(EventSearchParameter criteria)
+        {
+            var events = _repo.GetQueryable();
 
             if (!string.IsNullOrWhiteSpace(criteria.EventName))
                 events = events.Where(E => E.Title.Contains(criteria.EventName));
@@ -40,7 +60,7 @@ namespace Application.Services
                 }
             }
 
-            return events.ToList(); 
+            return _mapper.Map<List<EventDetailsDto>>(events.ToList()); 
         }
     }
 }
