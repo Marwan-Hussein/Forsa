@@ -13,15 +13,15 @@ namespace Application.Services
 {
     public class BookingService : IBookingService
     {
-        private readonly IGenericRepository<Event> _eventRepository;
-        private readonly IGenericRepository<Booking> _bookingRepository;
+        private readonly IQueryableRepository<Event> _eventRepository;
+        private readonly IQueryableRepository<Booking> _bookingRepository;
         private readonly IGenericRepository<Notification> _notificationRepository;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
 
         public BookingService(
-            IGenericRepository<Event> eventRepository,
-            IGenericRepository<Booking> bookingRepository,
+            IQueryableRepository<Event> eventRepository,
+            IQueryableRepository<Booking> bookingRepository,
             IGenericRepository<Notification> notificationRepository,
             IMapper mapper,
             IUnitOfWork unitOfWork)

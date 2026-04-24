@@ -3,8 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Application.Core.Interfaces;
 using Application.Services;
 using Infrastructure.Repositories;
-using Infrastructure.Data;
 using Domain.Interfaces;
+using Infrastructure.Data;
 using Application.Mapping;
 using FluentValidation;
 using Application.Validators;
@@ -20,19 +20,20 @@ namespace Forsa
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Add services to the container.
-            builder.Services.AddAutoMapper(cfg => 
-            {
-                cfg.AddProfile<Application.Mapping.EventProfile>();
-                cfg.AddProfile<Application.Mapping.BookingProfile>();
-            });
-
-            // Register FluentValidation validators
-            builder.Services.AddValidatorsFromAssemblyContaining<CreateBookingValidator>();
-
-            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-            builder.Services.AddScoped<IBookingService, BookingService>();
             builder.Services.AddScoped(typeof(IGenericService<>), typeof(GenericService<>));
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+            // Booking Module
+            builder.Services.AddAutoMapper(cfg =>
+            {
+                cfg.AddProfile<EventProfile>();
+                cfg.AddProfile<BookingProfile>();
+            });
+            builder.Services.AddValidatorsFromAssemblyContaining<CreateBookingValidator>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IBookingService, BookingService>();
+            builder.Services.AddScoped(typeof(IQueryableRepository<>), typeof(QueryableRepository<>));
+
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
