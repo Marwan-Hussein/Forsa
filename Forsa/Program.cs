@@ -1,4 +1,5 @@
 using Application.Core.DTOs.AttendeeDTOs;
+using Application.Core.DTOs.Booking;
 using Application.Core.Interfaces;
 using Application.Core.Interfaces.AttendeeInterfaces;
 using Application.Services;
@@ -48,14 +49,13 @@ namespace Forsa
                 cfg.AddProfile<EventProfile>();
                 cfg.AddProfile<BookingProfile>();
             });
-            builder.Services.AddValidatorsFromAssemblyContaining<CreateBookingValidator>();
+            builder.Services.AddTransient<IValidator<CreateBookingRequestDto>, CreateBookingValidator>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IBookingService, BookingService>();
             builder.Services.AddScoped(typeof(IQueryableRepository<>), typeof(QueryableRepository<>));
             builder.Services.AddScoped<IEventService, EventService>();
             builder.Services.AddScoped<IEventRepository, EventRepository>();
             builder.Services.AddControllers();
-            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             builder.Services.AddScoped(typeof(IAttendeeProfileService), typeof(AttendeeProfileService));
             builder.Services.AddScoped(typeof(IAttendeeProfileRepository), typeof(AttendeeProfileRepository));
             builder.Services.AddScoped<IValidator<UpdateAttendeeProfileDto>, UpdateAttendeeProfileDtoValidator>();

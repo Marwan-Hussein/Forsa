@@ -1,3 +1,4 @@
+using Application.Core.DTOs.Event;
 using Application.Core.Interfaces;
 using Domain.Entities.EventEntities;
 using Domain.Interfaces;
@@ -7,11 +8,11 @@ namespace Application.Services
     public class EventService : GenericService<Event>, IEventService
     {
         private readonly IEventRepository _repo;
-        public EventService(IGenericRepository<Event> repo) : base(repo){
+        public EventService(IEventRepository repo) : base(repo){
             _repo = repo;
         }
 
-        public List<Event> FilterEvents(EventSearchParameter criteria)
+        public List<Event> FilterEventsByParameters(EventSearchParameter criteria)
         {
             IQueryable<Event> events = GetAll().AsQueryable();
 
