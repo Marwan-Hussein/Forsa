@@ -27,18 +27,40 @@ namespace Application.Services
 
             if (!string.IsNullOrWhiteSpace(criteria.SortBy))
             {
-                if (criteria.SortBy.ToLower() == "title")
+                switch (criteria.SortBy.ToLower())
                 {
-                    events = criteria.IsDescending 
-                        ? events.OrderByDescending(e => e.Title) 
-                        : events.OrderBy(e => e.Title);
+                    case "title":
+                        events = criteria.IsDescending 
+                            ? events.OrderByDescending(e => e.Title) 
+                            : events.OrderBy(e => e.Title);
+                        break;
+                    case "location":
+                        events = criteria.IsDescending 
+                            ? events.OrderByDescending(e => e.Place) 
+                            : events.OrderBy(e => e.Place);
+                        break;
+                    case "date":
+                        events = criteria.IsDescending 
+                            ? events.OrderByDescending(e => e.StartDate) 
+                            : events.OrderBy(e => e.StartDate);
+                        break;
+                    case "price":
+                        events = criteria.IsDescending 
+                            ? events.OrderByDescending(e => e.TicketPrice) 
+                            : events.OrderBy(e => e.TicketPrice);
+                        break;
+                    default:
+                        // Default sorting by start date
+                        events = criteria.IsDescending 
+                            ? events.OrderByDescending(e => e.StartDate) 
+                            : events.OrderBy(e => e.StartDate);
+                        break;
                 }
-                else if (criteria.SortBy.ToLower() == "location")
-                {
-                    events = criteria.IsDescending 
-                        ? events.OrderByDescending(e => e.Place) 
-                        : events.OrderBy(e => e.Place);
-                }
+            }
+            else
+            {
+                // Default sorting by start date ascending
+                events = events.OrderBy(e => e.StartDate);
             }
 
             return events.ToList(); 
