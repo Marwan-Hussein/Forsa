@@ -33,7 +33,8 @@ namespace Forsa
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IBookingService, BookingService>();
             builder.Services.AddScoped(typeof(IQueryableRepository<>), typeof(QueryableRepository<>));
-
+            builder.Services.AddScoped<IEventService, EventService>();
+            builder.Services.AddScoped<IEventRepository, EventRepository>();
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
