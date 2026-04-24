@@ -7,6 +7,8 @@ namespace Forsa.Controllers.AttendeeControllers
 {
     [ApiController]
     [Route("api/interests")]
+    [ApiConventionType(typeof(DefaultApiConventions))]
+
     public class InterestsController : ControllerBase
     {
         private readonly IGenericService<AttendeeInterest> _service;
@@ -17,7 +19,6 @@ namespace Forsa.Controllers.AttendeeControllers
 
         // GET: api/interests
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<InterestDto>), StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<InterestDto>> GetAll()
         {
             var list = _service.GetAll()

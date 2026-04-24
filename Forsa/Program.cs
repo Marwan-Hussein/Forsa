@@ -9,10 +9,8 @@ using Domain.Interfaces.AttendeeInterfaces;
 using FluentValidation;
 using Infrastructure.Data.DbContexts;
 using Infrastructure.Repositories;
-using Domain.Interfaces;
 using Infrastructure.Data;
 using Application.Mapping;
-using FluentValidation;
 using Application.Validators;
 
 using Infrastructure.Repositories.AttendeeRepos;
@@ -27,6 +25,18 @@ namespace Forsa
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddDbContext<ForsaDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            // Add Frontend CORS policy
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("Frontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+            
 
             // Add services to the container.
             builder.Services.AddScoped(typeof(IGenericService<>), typeof(GenericService<>));
@@ -47,6 +57,7 @@ namespace Forsa
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             builder.Services.AddScoped(typeof(IAttendeeProfileService), typeof(AttendeeProfileService));
             builder.Services.AddScoped(typeof(IAttendeeProfileRepository), typeof(AttendeeProfileRepository));
+            builder.Services.AddScoped<IValidator<UpdateAttendeeProfileDto>, UpdateAttendeeProfileDtoValidator>();
             builder.Services.AddScoped<IValidator<UpdateAttendeeInterestsDto>, UpdateAttendeeInterestsDtoValidator>();
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
@@ -65,6 +76,8 @@ namespace Forsa
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            app.UseCors("Frontend");
 
             app.UseAuthorization();
 

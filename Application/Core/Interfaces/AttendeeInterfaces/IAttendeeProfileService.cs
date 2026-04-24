@@ -10,6 +10,7 @@ namespace Application.Core.Interfaces.AttendeeInterfaces
     public interface IAttendeeProfileService
     {
         AttendeeProfileDto? GetProfile(int attendeeId);
+        AttendeeProfileDto? UpdateProfile(int attendeeId, UpdateAttendeeProfileDto request);
         AttendeeProfileDto? UpdateInterests(int attendeeId, List<int> interestIds);
     }
 }

@@ -1,69 +1,196 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { ArrowLeft, Save, Sparkles } from "lucide-react";
+import { toast } from "sonner";
+import { ApiError } from "../../api/api";
+import {
+  getAllInterests,
+  getAttendeeInterests,
+  getCurrentAttendeeId,
+  updateAttendeeInterests,
+  type InterestDto,
+} from "../../lib/attendee-api";
 
-interface Interest {
-  id: string;
-  name: string;
+interface Interest extends InterestDto {
   icon: string;
   color: string;
 }
 
-const availableInterests: Interest[] = [
-  { id: "business", name: "Business", icon: "💼", color: "#155dfc" },
-  { id: "music", name: "Music", icon: "🎵", color: "#9810fa" },
-  { id: "technology", name: "Technology", icon: "💻", color: "#0ea5e9" },
-  { id: "sports", name: "Sports", icon: "⚽", color: "#16a34a" },
-  { id: "art", name: "Art & Design", icon: "🎨", color: "#ec4899" },
-  { id: "food", name: "Food & Drink", icon: "🍽️", color: "#f97316" },
-  { id: "health", name: "Health & Wellness", icon: "🧘", color: "#8b5cf6" },
-  { id: "education", name: "Education", icon: "📚", color: "#eab308" },
-  { id: "travel", name: "Travel", icon: "✈️", color: "#06b6d4" },
-  { id: "gaming", name: "Gaming", icon: "🎮", color: "#a855f7" },
-  { id: "fashion", name: "Fashion", icon: "👗", color: "#ec4899" },
-  { id: "photography", name: "Photography", icon: "📸", color: "#64748b" },
-  { id: "film", name: "Film & Media", icon: "🎬", color: "#dc2626" },
-  { id: "networking", name: "Networking", icon: "🤝", color: "#0891b2" },
-  { id: "charity", name: "Charity & Causes", icon: "❤️", color: "#ef4444" },
-  { id: "science", name: "Science", icon: "🔬", color: "#10b981" },
-];
+const interestStyles: Record<string, { icon: string; color: string }> = {
+  business: { icon: "💼", color: "#155dfc" },
+  music: { icon: "🎵", color: "#9810fa" },
+  technology: { icon: "💻", color: "#0ea5e9" },
+  sports: { icon: "⚽", color: "#16a34a" },
+  art: { icon: "🎨", color: "#ec4899" },
+  health: { icon: "🧘", color: "#8b5cf6" },
+  education: { icon: "📚", color: "#eab308" },
+  travel: { icon: "✈️", color: "#06b6d4" },
+};
 
-export default function InterestsPage() {
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([
-    "business",
-    "technology",
-    "music",
-  ]);
-  const [isModified, setIsModified] = useState(false);
-  const [originalInterests, setOriginalInterests] = useState<string[]>([
-    "business",
-    "technology",
-    "music",
-  ]);
-
-  const toggleInterest = (interestId: string) => {
-    setSelectedInterests((prev) => {
-      const newInterests = prev.includes(interestId)
-        ? prev.filter((id) => id !== interestId)
-        : [...prev, interestId];
-      setIsModified(
-        JSON.stringify(newInterests.sort()) !==
-          JSON.stringify(originalInterests.sort())
-      );
-      return newInterests;
-    });
+function mapInterest(interest: InterestDto): Interest {
+  const style = interestStyles[interest.name.toLowerCase()] ?? {
+    icon: "✨",
+    color: "#526d82",
   };
 
-  const handleSave = () => {
-    setOriginalInterests([...selectedInterests]);
-    setIsModified(false);
-    alert("Interests updated successfully! (This is a demo)");
+  return {
+    ...interest,
+    icon: style.icon,
+    color: style.color,
+  };
+}
+
+function haveSameInterests(first: number[], second: number[]) {
+  if (first.length !== second.length) {
+    return false;
+  }
+
+  const sortedFirst = [...first].sort((a, b) => a - b);
+  const sortedSecond = [...second].sort((a, b) => a - b);
+
+  return sortedFirst.every((value, index) => value === sortedSecond[index]);
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof ApiError) {
+    if (typeof error.data === "object" && error.data !== null && "errors" in error.data) {
+      const errors = (error.data as { errors?: Record<string, string[]> }).errors;
+      const firstMessage = errors && Object.values(errors)[0]?.[0];
+      if (firstMessage) {
+        return firstMessage;
+      }
+    }
+
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
+export default function InterestsPage() {
+  const attendeeId = getCurrentAttendeeId();
+  const [availableInterests, setAvailableInterests] = useState<Interest[]>([]);
+  const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
+  const [originalInterests, setOriginalInterests] = useState<number[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const isModified = !haveSameInterests(selectedInterests, originalInterests);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadInterests() {
+      try {
+        setIsLoading(true);
+        setLoadError(null);
+
+        const [allInterests, attendeeInterests] = await Promise.all([
+          getAllInterests(),
+          getAttendeeInterests(attendeeId),
+        ]);
+
+        if (!isActive) {
+          return;
+        }
+
+        const nextSelectedInterests = attendeeInterests.map((interest) => interest.id);
+        setAvailableInterests(allInterests.map(mapInterest));
+        setSelectedInterests(nextSelectedInterests);
+        setOriginalInterests(nextSelectedInterests);
+      } catch (error) {
+        if (!isActive) {
+          return;
+        }
+
+        setLoadError(getErrorMessage(error, "Failed to load interests."));
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadInterests();
+
+    return () => {
+      isActive = false;
+    };
+  }, [attendeeId]);
+
+  const toggleInterest = (interestId: number) => {
+    setSelectedInterests((prev) =>
+      prev.includes(interestId)
+        ? prev.filter((id) => id !== interestId)
+        : [...prev, interestId]
+    );
+  };
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+
+      const updatedProfile = await updateAttendeeInterests(attendeeId, selectedInterests);
+      const nextSelectedInterests = updatedProfile.interests.map((interest) => interest.id);
+
+      setSelectedInterests(nextSelectedInterests);
+      setOriginalInterests(nextSelectedInterests);
+      toast.success("Interests updated successfully.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to update interests."));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleReset = () => {
     setSelectedInterests([...originalInterests]);
-    setIsModified(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background py-12 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8 text-center">
+            <h1 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-2">
+              Loading interests...
+            </h1>
+            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
+              Fetching your saved interests from the API.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-background py-12 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8 text-center">
+            <h1 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-2">
+              Could not load interests
+            </h1>
+            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-4">
+              {loadError}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors cursor-pointer"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background py-12 px-4">
@@ -141,10 +268,11 @@ export default function InterestsPage() {
                 </button>
                 <button
                   onClick={handleSave}
+                  disabled={isSaving}
                   className="bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors flex items-center gap-2 cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
-                  Save Changes
+                  {isSaving ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             )}

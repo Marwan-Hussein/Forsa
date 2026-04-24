@@ -26,6 +26,26 @@ namespace Application.Services.AttendeeServices
             if (attendee == null) return null;
             return _mapper.Map<AttendeeProfileDto>(attendee);
         }
+        public AttendeeProfileDto? UpdateProfile(int attendeeId, UpdateAttendeeProfileDto request)
+        {
+            var attendee = _repo.GetAttendeeWithInterests(attendeeId);
+            if (attendee == null) return null;
+
+            attendee.FullName = request.FullName.Trim();
+            attendee.UserName = request.UserName.Trim();
+            attendee.NormalizedUserName = attendee.UserName.ToUpperInvariant();
+            attendee.Email = request.Email.Trim();
+            attendee.NormalizedEmail = attendee.Email.ToUpperInvariant();
+            attendee.PhoneNumber = request.PhoneNumber.Trim();
+            attendee.Location = request.Location.Trim();
+            attendee.BirthDate = request.BirthDate;
+            attendee.LastModifiedAt = DateTime.UtcNow;
+
+            _repo.SaveChanges();
+
+            var updated = _repo.GetAttendeeWithInterests(attendeeId);
+            return updated == null ? null : _mapper.Map<AttendeeProfileDto>(updated);
+        }
         public AttendeeProfileDto? UpdateInterests(int attendeeId, List<int> interestIds)
         {
             var attendee = _repo.GetAttendeeWithInterests(attendeeId);
@@ -37,27 +57,5 @@ namespace Application.Services.AttendeeServices
             var updated = _repo.GetAttendeeWithInterests(attendeeId);
             return updated == null ? null : _mapper.Map<AttendeeProfileDto>(updated);
         }
-        //private static AttendeeProfileDto MapToDto(Attendee attendee)
-        //{
-        //    return new AttendeeProfileDto
-        //    {
-        //        Id = attendee.Id,
-        //        FullName = attendee.FullName,
-        //        UserName = attendee.UserName,
-        //        Email = attendee.Email,
-        //        PhoneNumber = attendee.PhoneNumber,
-        //        Location = attendee.Location,
-        //        BirthDate = attendee.BirthDate,
-        //        ProfilePicture = attendee.ProfilePicture,
-        //        LoyaltyPoint = attendee.LoyaltyPoint,
-        //        Interests = attendee.AttendeeInterestesWithAttendee
-        //            .Select(j => new InterestDto
-        //            {
-        //                Id = j.AttendeeInterest.InterestId,
-        //                Name = j.AttendeeInterest.InterestName
-        //            })
-        //            .ToList()
-        //    };
-        //}
     }
 }
