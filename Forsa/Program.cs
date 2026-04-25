@@ -47,21 +47,8 @@ namespace Forsa
 
             app.UseAuthorization();
 
-
             app.MapControllers();
-
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = "../Frontend";
-                if (app.Environment.IsDevelopment())
-                {
-                    spa.UseProxyToSpaDevelopmentServer("http://localhost:5173");
-                }
-            });
-
             app.Run();
-
-
         }
     }
 }
