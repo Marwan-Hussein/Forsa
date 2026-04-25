@@ -8,7 +8,7 @@ namespace Infrastructure.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<OrganiztionTypeWithOrganizer> builder)
         {
-            builder.ToTable("OrganizerOrganizationTypes");
+            builder.ToTable("OrganiztionTypeWithOrganizer");
 
             builder.HasKey(o => o.Id);
 

@@ -10,7 +10,7 @@ namespace Infrastructure.Data.Configurations
         {
             builder.ToTable("PromoCodes");
 
-            builder.HasKey(p => p.CodeId);
+            builder.HasKey(p => p.Id);
 
             // PromoCode & Organizer
             builder.HasOne(p => p.Organizer)

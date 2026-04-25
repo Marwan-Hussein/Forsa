@@ -131,11 +131,11 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.AttendeeEntities.AttendeeInterest", b =>
                 {
-                    b.Property<int>("InterestId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InterestId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -148,9 +148,6 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("DeletedBy")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
 
                     b.Property<string>("InterestName")
                         .IsRequired()
@@ -165,72 +162,64 @@ namespace Infrastructure.Migrations
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("InterestId");
+                    b.HasKey("Id");
 
                     b.ToTable("AttendeeInterests", (string)null);
 
                     b.HasData(
                         new
                         {
-                            InterestId = 1,
+                            Id = 1,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Id = 0,
                             InterestName = "Technology",
                             IsDeleted = false
                         },
                         new
                         {
-                            InterestId = 2,
+                            Id = 2,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Id = 0,
                             InterestName = "Business",
                             IsDeleted = false
                         },
                         new
                         {
-                            InterestId = 3,
+                            Id = 3,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Id = 0,
                             InterestName = "Education",
                             IsDeleted = false
                         },
                         new
                         {
-                            InterestId = 4,
+                            Id = 4,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Id = 0,
                             InterestName = "Sports",
                             IsDeleted = false
                         },
                         new
                         {
-                            InterestId = 5,
+                            Id = 5,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Id = 0,
                             InterestName = "Music",
                             IsDeleted = false
                         },
                         new
                         {
-                            InterestId = 6,
+                            Id = 6,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Id = 0,
                             InterestName = "Art",
                             IsDeleted = false
                         },
                         new
                         {
-                            InterestId = 7,
+                            Id = 7,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Id = 0,
                             InterestName = "Health",
                             IsDeleted = false
                         },
                         new
                         {
-                            InterestId = 8,
+                            Id = 8,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Id = 0,
                             InterestName = "Travel",
                             IsDeleted = false
                         });
@@ -256,7 +245,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("AttendeeInterestId");
 
-                    b.ToTable("AttendeeAttendeeInterests", (string)null);
+                    b.ToTable("AttendeeInterestesWithAttendee", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.AttendeeEntities.AttendeeSubsOrganizer", b =>
@@ -284,11 +273,11 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.BookingEntities.Booking", b =>
                 {
-                    b.Property<int>("BookingId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BookingId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AttendeeId")
                         .HasColumnType("int");
@@ -311,9 +300,6 @@ namespace Infrastructure.Migrations
                     b.Property<int>("EventId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -334,7 +320,7 @@ namespace Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.HasKey("BookingId");
+                    b.HasKey("Id");
 
                     b.HasIndex("AttendeeId");
 
@@ -345,12 +331,11 @@ namespace Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            BookingId = 1,
+                            Id = 1,
                             AttendeeId = 2,
                             BookingDate = new DateTime(2027, 4, 1, 10, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedAt = new DateTime(2026, 1, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EventId = 1,
-                            Id = 0,
                             IsDeleted = false,
                             NumberOfTickets = 1,
                             QRCode = "QR_1234567890",
@@ -358,12 +343,11 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            BookingId = 2,
+                            Id = 2,
                             AttendeeId = 2,
                             BookingDate = new DateTime(2027, 4, 5, 14, 30, 0, 0, DateTimeKind.Unspecified),
                             CreatedAt = new DateTime(2026, 1, 16, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EventId = 2,
-                            Id = 0,
                             IsDeleted = false,
                             NumberOfTickets = 2,
                             QRCode = "QR_0987654321",
@@ -373,11 +357,11 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.BookingEntities.BookingRequest", b =>
                 {
-                    b.Property<int>("RequestId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RequestId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -392,9 +376,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("EventId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Id")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
@@ -418,7 +399,7 @@ namespace Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.HasKey("RequestId");
+                    b.HasKey("Id");
 
                     b.HasIndex("OrganizerId");
 
@@ -431,11 +412,11 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.EventEntities.Event", b =>
                 {
-                    b.Property<int>("EventId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EventId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Category")
                         .IsRequired()
@@ -461,9 +442,6 @@ namespace Infrastructure.Migrations
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -501,19 +479,18 @@ namespace Infrastructure.Migrations
                     b.Property<int>("TotalTickets")
                         .HasColumnType("int");
 
-                    b.HasKey("EventId");
+                    b.HasKey("Id");
 
                     b.ToTable("Events", (string)null);
 
                     b.HasData(
                         new
                         {
-                            EventId = 1,
+                            Id = 1,
                             Category = "Technology",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "A summit for technology innovators to share ideas and connect.",
                             EndDate = new DateTime(2027, 5, 12, 17, 0, 0, 0, DateTimeKind.Unspecified),
-                            Id = 0,
                             IsDeleted = false,
                             Place = "Main Hall, Tech Center",
                             PlaceId = 1,
@@ -526,12 +503,11 @@ namespace Infrastructure.Migrations
                         },
                         new
                         {
-                            EventId = 2,
+                            Id = 2,
                             Category = "Business",
                             CreatedAt = new DateTime(2026, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "An international conference on modern business strategies.",
                             EndDate = new DateTime(2027, 6, 17, 18, 0, 0, 0, DateTimeKind.Unspecified),
-                            Id = 0,
                             IsDeleted = false,
                             Place = "Conference Center B",
                             PlaceId = 2,
@@ -546,11 +522,11 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.EventEntities.EventMedia", b =>
                 {
-                    b.Property<int>("EventMediaId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EventMediaId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -565,9 +541,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("EventId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Id")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
@@ -589,7 +562,7 @@ namespace Infrastructure.Migrations
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("EventMediaId");
+                    b.HasKey("Id");
 
                     b.HasIndex("EventId");
 
@@ -598,11 +571,11 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Feedback", b =>
                 {
-                    b.Property<int>("FeedbackId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FeedbackId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AttendeeId")
                         .HasColumnType("int");
@@ -627,9 +600,6 @@ namespace Infrastructure.Migrations
                     b.Property<int>("EventId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -642,7 +612,7 @@ namespace Infrastructure.Migrations
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
-                    b.HasKey("FeedbackId");
+                    b.HasKey("Id");
 
                     b.HasIndex("AttendeeId");
 
@@ -683,9 +653,6 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("NotificationId")
-                        .HasColumnType("int");
 
                     b.Property<int>("SentVia")
                         .HasColumnType("int");
@@ -773,16 +740,16 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("OrganizerId");
 
-                    b.ToTable("OrganizerOrganizationTypes", (string)null);
+                    b.ToTable("OrganiztionTypeWithOrganizer", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.PlaceEntities.Place", b =>
                 {
-                    b.Property<int>("PlaceId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PlaceId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Capacity")
                         .HasColumnType("int");
@@ -811,9 +778,6 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal>("HourlyPrice")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -844,7 +808,7 @@ namespace Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.HasKey("PlaceId");
+                    b.HasKey("Id");
 
                     b.HasIndex("OwnerId");
 
@@ -899,11 +863,11 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.PromoCode", b =>
                 {
-                    b.Property<int>("CodeId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CodeId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -930,9 +894,6 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("ExpiryDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -951,7 +912,7 @@ namespace Infrastructure.Migrations
                     b.Property<int>("UsageLimit")
                         .HasColumnType("int");
 
-                    b.HasKey("CodeId");
+                    b.HasKey("Id");
 
                     b.HasIndex("OrganizerId");
 
@@ -962,11 +923,11 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.WishListItem", b =>
                 {
-                    b.Property<int>("WishListItemId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WishListItemId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AttendeeId")
                         .HasColumnType("int");
@@ -983,9 +944,6 @@ namespace Infrastructure.Migrations
                     b.Property<string>("DeletedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -995,7 +953,7 @@ namespace Infrastructure.Migrations
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("WishListItemId");
+                    b.HasKey("Id");
 
                     b.HasIndex("AttendeeId")
                         .IsUnique();
@@ -1005,15 +963,15 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("EventWishListItem", b =>
                 {
-                    b.Property<int>("EventsEventId")
+                    b.Property<int>("EventsId")
                         .HasColumnType("int");
 
-                    b.Property<int>("WishListItemsWishListItemId")
+                    b.Property<int>("WishListItemsId")
                         .HasColumnType("int");
 
-                    b.HasKey("EventsEventId", "WishListItemsWishListItemId");
+                    b.HasKey("EventsId", "WishListItemsId");
 
-                    b.HasIndex("WishListItemsWishListItemId");
+                    b.HasIndex("WishListItemsId");
 
                     b.ToTable("EventWishListItem");
                 });
@@ -1170,10 +1128,10 @@ namespace Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 2,
+                            Id = 1,
                             AccessFailedCount = 0,
                             BirthDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ConcurrencyStamp = "50b95b72-6f9a-4d2e-9463-ca4cd7545a9c",
+                            ConcurrencyStamp = "0b4cade8-f3e0-45a8-9fb7-afa0fdae3302",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "attendee@forsa.com",
                             EmailConfirmed = true,
@@ -1185,6 +1143,25 @@ namespace Infrastructure.Migrations
                             PhoneNumberConfirmed = false,
                             TwoFactorEnabled = false,
                             UserName = "testattendee",
+                            LoyaltyPoint = 0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            AccessFailedCount = 0,
+                            BirthDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            ConcurrencyStamp = "cc6cdb06-029a-4fd1-aadb-ee1b222e2fc9",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "attendee2@forsa.com",
+                            EmailConfirmed = true,
+                            FullName = "Test Attendee 2",
+                            IsDeleted = false,
+                            Location = "Dummy Location",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "ATTENDEE2@FORSA.COM",
+                            PhoneNumberConfirmed = false,
+                            TwoFactorEnabled = false,
+                            UserName = "testattendee2",
                             LoyaltyPoint = 0
                         });
                 });
@@ -1401,13 +1378,13 @@ namespace Infrastructure.Migrations
                 {
                     b.HasOne("Domain.Entities.EventEntities.Event", null)
                         .WithMany()
-                        .HasForeignKey("EventsEventId")
+                        .HasForeignKey("EventsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Domain.Entities.WishListItem", null)
                         .WithMany()
-                        .HasForeignKey("WishListItemsWishListItemId")
+                        .HasForeignKey("WishListItemsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

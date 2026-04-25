@@ -2,6 +2,7 @@
 using Application.Core.Interfaces.AttendeeInterfaces;
 using AutoMapper;
 using Domain.Entities.AttendeeEntities;
+using Domain.Interfaces;
 using Domain.Interfaces.AttendeeInterfaces;
 using System;
 using System.Collections.Generic;
@@ -14,21 +15,23 @@ namespace Application.Services.AttendeeServices
     public class AttendeeProfileService : IAttendeeProfileService
     {
         private readonly IAttendeeProfileRepository _repo;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public AttendeeProfileService(IAttendeeProfileRepository repo, IMapper mapper)
+        public AttendeeProfileService(IAttendeeProfileRepository repo, IUnitOfWork unitOfWork, IMapper mapper)
         {
             _repo = repo;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-        public AttendeeProfileDto? GetProfile(int attendeeId)
+        public async Task<AttendeeProfileDto?> GetProfileAsync(int attendeeId)
         {
-            var attendee = _repo.GetAttendeeWithInterests(attendeeId);
+            var attendee = await _repo.GetAttendeeWithInterestsAsync(attendeeId);
             if (attendee == null) return null;
             return _mapper.Map<AttendeeProfileDto>(attendee);
         }
-        public AttendeeProfileDto? UpdateProfile(int attendeeId, UpdateAttendeeProfileDto request)
+        public async Task<AttendeeProfileDto?> UpdateProfileAsync(int attendeeId, UpdateAttendeeProfileDto request)
         {
-            var attendee = _repo.GetAttendeeWithInterests(attendeeId);
+            var attendee = await _repo.GetAttendeeWithInterestsAsync(attendeeId);
             if (attendee == null) return null;
 
             attendee.FullName = request.FullName.Trim();
@@ -41,27 +44,27 @@ namespace Application.Services.AttendeeServices
             attendee.BirthDate = request.BirthDate;
             attendee.LastModifiedAt = DateTime.UtcNow;
 
-            _repo.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
-            var updated = _repo.GetAttendeeWithInterests(attendeeId);
+            var updated = await _repo.GetAttendeeWithInterestsAsync(attendeeId);
             return updated == null ? null : _mapper.Map<AttendeeProfileDto>(updated);
         }
-        public AttendeeProfileDto? UpdateInterests(int attendeeId, List<int> interestIds)
+        public async Task<AttendeeProfileDto?> UpdateInterestsAsync(int attendeeId, List<int> interestIds)
         {
-            var attendee = _repo.GetAttendeeWithInterests(attendeeId);
+            var attendee = await _repo.GetAttendeeWithInterestsAsync(attendeeId);
             if (attendee == null) return null;
             var requestedIds = (interestIds ?? new List<int>()).Distinct().ToList();
-            var validIds = _repo.GetValidInterestIds(requestedIds);
+            var validIds = await _repo.GetValidInterestIdsAsync(requestedIds);
             _repo.UpdateAttendeeInterests(attendee, validIds);
-            _repo.SaveChanges();
-            var updated = _repo.GetAttendeeWithInterests(attendeeId);
+            await _unitOfWork.SaveChangesAsync();
+            var updated = await _repo.GetAttendeeWithInterestsAsync(attendeeId);
             return updated == null ? null : _mapper.Map<AttendeeProfileDto>(updated);
         }
 
-        public List<InterestDto> GetAllInterests()
+        public async Task<List<InterestDto>> GetAllInterestsAsync()
         {
-            return _repo.GetAllInterests()
-                        .Select(i => new InterestDto { Id = i.InterestId, Name = i.InterestName })
+            return (await _repo.GetAllInterestsAsync())
+                        .Select(i => new InterestDto { Id = i.Id, Name = i.InterestName })
                         .ToList();
         }
     }

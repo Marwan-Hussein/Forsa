@@ -9,9 +9,9 @@ namespace Application.Core.Interfaces.AttendeeInterfaces
 {
     public interface IAttendeeProfileService
     {
-        AttendeeProfileDto? GetProfile(int attendeeId);
-        AttendeeProfileDto? UpdateProfile(int attendeeId, UpdateAttendeeProfileDto request);
-        AttendeeProfileDto? UpdateInterests(int attendeeId, List<int> interestIds);
-        List<InterestDto> GetAllInterests();
+        Task<AttendeeProfileDto?> GetProfileAsync(int attendeeId);
+        Task<AttendeeProfileDto?> UpdateProfileAsync(int attendeeId, UpdateAttendeeProfileDto request);
+        Task<AttendeeProfileDto?> UpdateInterestsAsync(int attendeeId, List<int> interestIds);
+        Task<List<InterestDto>> GetAllInterestsAsync();
     }
 }

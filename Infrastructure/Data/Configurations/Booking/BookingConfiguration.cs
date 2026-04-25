@@ -10,7 +10,7 @@ namespace Infrastructure.Data.Configurations
         {
             builder.ToTable("Bookings");
 
-            builder.HasKey(b => b.BookingId);
+            builder.HasKey(b => b.Id);
 
             builder.Property(b => b.NumberOfTickets)
                    .IsRequired();
@@ -38,8 +38,8 @@ namespace Infrastructure.Data.Configurations
             builder.HasData(
                 new Booking
                 {
-                    BookingId = 1,
-                    AttendeeId = 2, // Assuming standard ID sequence for User seeding not here
+                    Id = 1,
+                    AttendeeId = 2,
                     EventId = 1,
                     NumberOfTickets = 1,
                     Status = Domain.ENUMs.BookingStatus.Confirmed,
@@ -50,7 +50,7 @@ namespace Infrastructure.Data.Configurations
                 },
                 new Booking
                 {
-                    BookingId = 2,
+                    Id = 2,
                     AttendeeId = 2,
                     EventId = 2,
                     NumberOfTickets = 2,

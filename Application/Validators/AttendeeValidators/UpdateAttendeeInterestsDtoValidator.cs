@@ -1,7 +1,7 @@
 using Application.Core.DTOs.AttendeeDTOs;
 using FluentValidation;
 
-namespace Application.Validators.Attendee
+namespace Application.Validators.AttendeeValidators
 {
     public class UpdateAttendeeInterestsDtoValidator : AbstractValidator<UpdateAttendeeInterestsDto>
     {

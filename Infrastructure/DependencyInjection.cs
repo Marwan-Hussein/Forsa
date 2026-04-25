@@ -12,6 +12,9 @@ public static class DependencyInjection
         services.AddScoped(typeof(Domain.Interfaces.IGenericRepository<>), typeof(Infrastructure.Repositories.GenericRepository<>));
         services.AddScoped(typeof(Domain.Interfaces.IQueryableRepository<>), typeof(Infrastructure.Repositories.QueryableRepository<>));
         services.AddScoped<Domain.Interfaces.IEventRepository, Infrastructure.Repositories.EventRepository>();
+
+        // Attendee 
+        services.AddScoped<Domain.Interfaces.AttendeeInterfaces.IAttendeeRepository, Infrastructure.Repositories.AttendeeRepos.AttendeeRepository>();
         services.AddScoped<Domain.Interfaces.AttendeeInterfaces.IAttendeeProfileRepository, Infrastructure.Repositories.AttendeeRepos.AttendeeProfileRepository>();
         return services;
     }

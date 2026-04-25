@@ -6,8 +6,6 @@ namespace Domain.Entities
 {
     public class WishListItem : BaseEntity
     {
-        public int WishListItemId { get; set; }
-
         public int AttendeeId { get; set; }
         public Attendee Attendee { get; set; }
 

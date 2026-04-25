@@ -9,6 +9,8 @@ namespace Application.Mapping
         public EventProfile()
         {
             CreateMap<Event, EventDetailsDto>()
+                .ForMember(dest => dest.EventId,
+                           opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Status,
                            opt => opt.MapFrom(src => src.Status.ToString()));
         }

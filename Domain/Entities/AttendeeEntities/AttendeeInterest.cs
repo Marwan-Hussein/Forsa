@@ -4,7 +4,6 @@ namespace Domain.Entities.AttendeeEntities
 {
     public class AttendeeInterest : BaseEntity
     {
-        public int InterestId { get; set; }
         public string InterestName  { get; set; }
 
         // Navigation properties

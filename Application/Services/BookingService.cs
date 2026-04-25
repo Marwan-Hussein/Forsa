@@ -36,7 +36,7 @@ namespace Application.Services
         public async Task<EventDetailsDto> GetEventDetailsAsync(int eventId)
         {
             var eventEntity = await _eventRepository.GetQueryable()
-                .FirstOrDefaultAsync(e => e.EventId == eventId && !e.IsDeleted);
+                .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
 
             if (eventEntity == null)
                 throw new KeyNotFoundException("Event no longer available");
@@ -51,7 +51,7 @@ namespace Application.Services
         {
             // Get event and validate
             var eventEntity = await _eventRepository.GetQueryable()
-                .FirstOrDefaultAsync(e => e.EventId == dto.EventId && !e.IsDeleted);
+                .FirstOrDefaultAsync(e => e.Id == dto.EventId && !e.IsDeleted);
 
             if (eventEntity == null)
                 throw new KeyNotFoundException("Event not found");
@@ -100,7 +100,7 @@ namespace Application.Services
                 Type = NotificationType.BookingConfirmation,
                 SentVia = DeliveryMethod.Email,
                 UserId = dto.AttendeeId,
-                Message = $"Your booking for '{eventEntity.Title}' has been confirmed. Booking ID: {booking.BookingId}",
+                Message = $"Your booking for '{eventEntity.Title}' has been confirmed. Booking ID: {booking.Id}",
                 Status = NotificationStatus.Pending,
                 IsDeleted = false
             };
@@ -119,7 +119,7 @@ namespace Application.Services
             // Get booking by id
             var booking = await _bookingRepository.GetQueryable()
                 .Include(b => b.Event)
-                .FirstOrDefaultAsync(b => b.BookingId == bookingId && !b.IsDeleted);
+                .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
 
             if (booking == null)
                 throw new KeyNotFoundException("Booking not found");
@@ -143,7 +143,7 @@ namespace Application.Services
                 Type = NotificationType.BookingConfirmation,
                 SentVia = DeliveryMethod.Email,
                 UserId = booking.AttendeeId,
-                Message = $"Your booking for '{booking.Event.Title}' has been cancelled. Booking ID: {booking.BookingId}",
+                Message = $"Your booking for '{booking.Event.Title}' has been cancelled. Booking ID: {booking.Id}",
                 Status =    NotificationStatus.Pending,
                 IsDeleted = false
             };
@@ -158,7 +158,7 @@ namespace Application.Services
         {
             var booking = await _bookingRepository.GetQueryable()
                 .Include(b => b.Event)
-                .FirstOrDefaultAsync(b => b.BookingId == bookingId && !b.IsDeleted);
+                .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
 
             if (booking == null)
                 throw new KeyNotFoundException("Booking not found");

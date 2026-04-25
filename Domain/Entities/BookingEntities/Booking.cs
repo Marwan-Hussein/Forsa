@@ -7,7 +7,6 @@ namespace Domain.Entities.BookingEntities
 {
     public class Booking : BaseEntity
     {
-        public int BookingId { get; set; }
         public int NumberOfTickets { get; set; }
         public DateTime BookingDate { get; set; }
         public BookingStatus Status { get; set; }

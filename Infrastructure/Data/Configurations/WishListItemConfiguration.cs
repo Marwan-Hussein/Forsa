@@ -9,7 +9,7 @@ namespace Infrastructure.Data.Configurations
         public void Configure(EntityTypeBuilder<WishListItem> builder)
         {
             builder.ToTable("WishlistItems");
-            builder.HasKey(w => w.WishListItemId);
+            builder.HasKey(w => w.Id);
 
             // Attendee has one WishListItem
             builder.HasOne(w => w.Attendee)

@@ -9,7 +9,7 @@ namespace Infrastructure.Data.Configurations
         public void Configure(EntityTypeBuilder<AttendeeInterest> builder)
         {
             builder.ToTable("AttendeeInterests");
-            builder.HasKey(ai => ai.InterestId);
+            builder.HasKey(ai => ai.Id);
 
             builder.HasMany(ai => ai.AttendeeInterestes)
                    .WithOne(aii => aii.AttendeeInterest)
@@ -19,56 +19,56 @@ namespace Infrastructure.Data.Configurations
             builder.HasData(
                 new AttendeeInterest
                 {
-                    InterestId = 1,
+                    Id = 1,
                     InterestName = "Technology",
                     CreatedAt = new DateTime(2026, 1, 1),
                     IsDeleted = false
                 },
                 new AttendeeInterest
                 {
-                    InterestId = 2,
+                    Id = 2,
                     InterestName = "Business",
                     CreatedAt = new DateTime(2026, 1, 1),
                     IsDeleted = false
                 },
                 new AttendeeInterest
                 {
-                    InterestId = 3,
+                    Id = 3,
                     InterestName = "Education",
                     CreatedAt = new DateTime(2026, 1, 1),
                     IsDeleted = false
                 },
                 new AttendeeInterest
                 {
-                    InterestId = 4,
+                    Id = 4,
                     InterestName = "Sports",
                     CreatedAt = new DateTime(2026, 1, 1),
                     IsDeleted = false
                 },
                 new AttendeeInterest
                 {
-                    InterestId = 5,
+                    Id = 5,
                     InterestName = "Music",
                     CreatedAt = new DateTime(2026, 1, 1),
                     IsDeleted = false
                 },
                 new AttendeeInterest
                 {
-                    InterestId = 6,
+                    Id = 6,
                     InterestName = "Art",
                     CreatedAt = new DateTime(2026, 1, 1),
                     IsDeleted = false
                 },
                 new AttendeeInterest
                 {
-                    InterestId = 7,
+                    Id = 7,
                     InterestName = "Health",
                     CreatedAt = new DateTime(2026, 1, 1),
                     IsDeleted = false
                 },
                 new AttendeeInterest
                 {
-                    InterestId = 8,
+                    Id = 8,
                     InterestName = "Travel",
                     CreatedAt = new DateTime(2026, 1, 1),
                     IsDeleted = false

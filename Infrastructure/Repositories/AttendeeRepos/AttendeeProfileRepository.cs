@@ -18,20 +18,20 @@ namespace Infrastructure.Repositories.AttendeeRepos
         {
             _context = context;
         }
-        public Attendee? GetAttendeeWithInterests(int attendeeId)
+        public async Task<Attendee?> GetAttendeeWithInterestsAsync(int attendeeId)
         {
-            return _context.Set<Attendee>()
+            return await _context.Set<Attendee>()
                            .Include(a => a.AttendeeInterestesWithAttendee)
                            .ThenInclude(j => j.AttendeeInterest)
-                           .FirstOrDefault(a => a.Id == attendeeId);
+                           .FirstOrDefaultAsync(a => a.Id == attendeeId);
         }
-        public List<int> GetValidInterestIds(List<int> requestedIds)
+        public async Task<List<int>> GetValidInterestIdsAsync(List<int> requestedIds)
         {
             requestedIds ??= new List<int>();
-            return _context.Set<AttendeeInterest>()
-                           .Where(i => requestedIds.Contains(i.InterestId))
-                           .Select(i => i.InterestId)
-                           .ToList();
+            return await _context.Set<AttendeeInterest>()
+                           .Where(i => requestedIds.Contains(i.Id))
+                           .Select(i => i.Id)
+                           .ToListAsync();
         }
         public void UpdateAttendeeInterests(Attendee attendee, List<int> validInterestIds)
         {
@@ -44,16 +44,12 @@ namespace Infrastructure.Repositories.AttendeeRepos
             });
             _context.Set<AttendeeInterestesWithAttendee>().AddRange(links);
         }
-        public void SaveChanges()
-        {
-            _context.SaveChanges();
-        }
 
-        public List<AttendeeInterest> GetAllInterests()
+        public async Task<List<AttendeeInterest>> GetAllInterestsAsync()
         {
-            return _context.Set<AttendeeInterest>()
+            return await _context.Set<AttendeeInterest>()
                            .Where(i => !i.IsDeleted)
-                           .ToList();
+                           .ToListAsync();
         }
     }
 }

@@ -5,7 +5,6 @@ namespace Domain.Entities
 {
     public class PromoCode : BaseEntity
     {
-        public int CodeId { get; set; }
         public string Code { get; set; }
         public decimal DiscountValue { get; set; }
         public DateTime ExpiryDate { get; set; }

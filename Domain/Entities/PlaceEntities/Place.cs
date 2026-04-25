@@ -6,7 +6,6 @@ namespace Domain.Entities.PlaceEntities
 {
     public class Place : BaseEntity
     {
-        public int PlaceId { get; set; }
         public string Name { get; set; }
         public string Location { get; set; }
         public int Capacity { get; set; }

@@ -10,7 +10,7 @@ namespace Infrastructure.Data.Configurations
         {
             builder.ToTable("BookingRequests");
 
-            builder.HasKey(b => b.RequestId);
+            builder.HasKey(b => b.Id);
 
             builder.HasOne(b => b.Organizer)
                    .WithMany()

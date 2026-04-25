@@ -4,7 +4,6 @@ namespace Domain.Entities.EventEntities
 {
     public class EventMedia : BaseEntity
     {
-        public int EventMediaId { get; set; }
         public string MediaUrl { get; set; }
         public string MediaType { get; set; }
 

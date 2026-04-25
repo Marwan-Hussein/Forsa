@@ -6,7 +6,6 @@ namespace Domain.Entities.BookingEntities
 {
     public class BookingRequest : BaseEntity
     {
-        public int RequestId{ get; set; }
         public RequestStatus Status{ get; set; }
 
         // Foreign keys

@@ -9,6 +9,8 @@ namespace Application.Mapping
         public BookingProfile()
         {
             CreateMap<Booking, BookingResponseDto>()
+                .ForMember(dest => dest.BookingId,
+                           opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.EventTitle,
                            opt => opt.MapFrom(src => src.Event.Title))
                 .ForMember(dest => dest.Status,

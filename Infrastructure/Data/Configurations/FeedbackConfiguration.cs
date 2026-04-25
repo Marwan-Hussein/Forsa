@@ -10,7 +10,7 @@ namespace Infrastructure.Data.Configurations
         {
             builder.ToTable("Feedbacks");
 
-            builder.HasKey(f => f.FeedbackId);
+            builder.HasKey(f => f.Id);
 
             builder.Property(f => f.Rating)
                    .IsRequired();

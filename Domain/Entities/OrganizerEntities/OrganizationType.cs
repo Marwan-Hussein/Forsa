@@ -4,7 +4,6 @@ namespace Domain.Entities.OrganizerEntities
 {
     public class OrganizationType : BaseEntity
     {
-        public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public bool IsActive { get; set; }

@@ -25,20 +25,24 @@ namespace Forsa.Controllers.AttendeeControllers
             _updateInterestsValidator = updateInterestsValidator;
         }
 
+        // -------------------------- attendee/profile endpoints --------------------------
+
         // GET: api/attendees/{id}/profile
         [HttpGet("{id:int}/profile")]
-        public ActionResult<AttendeeProfileDto> GetProfile(int id)
+        public async Task<ActionResult<AttendeeProfileDto>> GetProfile(int id)
         {
-            var profile = _service.GetProfile(id);
+            var profile = await _service.GetProfileAsync(id);
             if (profile == null) return NotFound(new { message = "Attendee not found." });
             return Ok(profile);
         }
 
         // PUT: api/attendees/{id}/profile
         [HttpPut("{id:int}/profile")]
-        public ActionResult<AttendeeProfileDto> UpdateProfile(int id, UpdateAttendeeProfileDto dto)
+        public async Task<ActionResult<AttendeeProfileDto>> UpdateProfile(int id, UpdateAttendeeProfileDto dto)
         {
-            var validationResult = _updateProfileValidator.Validate(dto ?? new UpdateAttendeeProfileDto());
+            dto ??= new UpdateAttendeeProfileDto();
+
+            var validationResult = await _updateProfileValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
             {
                 return BadRequest(new
@@ -52,25 +56,29 @@ namespace Forsa.Controllers.AttendeeControllers
                 });
             }
 
-            var updated = _service.UpdateProfile(id, dto);
+            var updated = await _service.UpdateProfileAsync(id, dto);
             if (updated == null) return NotFound(new { message = "Attendee not found." });
             return Ok(updated);
         }
 
+        // -------------------------- attendee/interests endpoints --------------------------
+
         // GET: api/attendees/{id}/interests
         [HttpGet("{id:int}/interests")]
-        public ActionResult<IEnumerable<InterestDto>> GetInterests(int id)
+        public async Task<ActionResult<IEnumerable<InterestDto>>> GetInterests(int id)
         {
-            var profile = _service.GetProfile(id);
+            var profile = await _service.GetProfileAsync(id);
             if (profile == null) return NotFound(new { message = "Attendee not found." });
             return Ok(profile.Interests);
         }
 
         // PUT: api/attendees/{id}/interests
         [HttpPut("{id:int}/interests")]
-        public ActionResult<AttendeeProfileDto> UpdateInterests(int id, UpdateAttendeeInterestsDto dto)
+        public async Task<ActionResult<AttendeeProfileDto>> UpdateInterests(int id, UpdateAttendeeInterestsDto dto)
         {
-            var validationResult = _updateInterestsValidator.Validate(dto ?? new UpdateAttendeeInterestsDto());
+            dto ??= new UpdateAttendeeInterestsDto();
+
+            var validationResult = await _updateInterestsValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
             {
                 return BadRequest(new
@@ -84,7 +92,7 @@ namespace Forsa.Controllers.AttendeeControllers
                 });
             }
 
-            var updated = _service.UpdateInterests(id, dto?.InterestIds ?? new List<int>());
+            var updated = await _service.UpdateInterestsAsync(id, dto?.InterestIds ?? new List<int>());
             if (updated == null) return NotFound(new { message = "Attendee not found." });
             return Ok(updated);
         }

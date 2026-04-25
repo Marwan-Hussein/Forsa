@@ -10,7 +10,7 @@ namespace Infrastructure.Data.Configurations
         {
             builder.ToTable("EventMedias");
 
-            builder.HasKey(m => m.EventMediaId);
+            builder.HasKey(m => m.Id);
 
             builder.Property(m => m.MediaUrl)
                    .IsRequired()

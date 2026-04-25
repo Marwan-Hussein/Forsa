@@ -18,10 +18,9 @@ namespace Forsa.Controllers.AttendeeControllers
 
         // GET: api/interests
         [HttpGet]
-        public ActionResult<IEnumerable<InterestDto>> GetAll()
+        public async Task<ActionResult<IEnumerable<InterestDto>>> GetAll()
         {
-            // ✏️ Modified: Retrieving from service directly already mapped
-            return Ok(_service.GetAllInterests());
+            return Ok(await _service.GetAllInterestsAsync());
         }
 
     }

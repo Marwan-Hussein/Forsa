@@ -10,7 +10,7 @@ namespace Infrastructure.Data.Configurations
         {
             builder.ToTable("Places");
 
-            builder.HasKey(p => p.PlaceId);
+            builder.HasKey(p => p.Id);
 
             builder.HasOne(p => p.Owner)
                    .WithMany(o => o.Places)

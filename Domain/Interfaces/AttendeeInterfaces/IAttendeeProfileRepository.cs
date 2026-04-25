@@ -10,10 +10,9 @@ namespace Domain.Interfaces.AttendeeInterfaces
 {
     public interface IAttendeeProfileRepository
     {
-        Attendee? GetAttendeeWithInterests(int attendeeId);
-        List<int> GetValidInterestIds(List<int> requestedIds);
+        Task<Attendee?> GetAttendeeWithInterestsAsync(int attendeeId);
+        Task<List<int>> GetValidInterestIdsAsync(List<int> requestedIds);
         void UpdateAttendeeInterests(Attendee attendee, List<int> validInterestIds);
-        void SaveChanges();
-        List<AttendeeInterest> GetAllInterests();
+        Task<List<AttendeeInterest>> GetAllInterestsAsync();
     }
 }

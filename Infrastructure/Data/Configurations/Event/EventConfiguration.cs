@@ -10,7 +10,7 @@ namespace Infrastructure.Data.Configurations
         {
             builder.ToTable("Events");
 
-            builder.HasKey(e => e.EventId);
+            builder.HasKey(e => e.Id);
 
             builder.Property(e => e.Title)
                    .IsRequired()
@@ -47,7 +47,7 @@ namespace Infrastructure.Data.Configurations
             builder.HasData(
                 new Event
                 {
-                    EventId = 1,
+                    Id = 1,
                     Title = "Tech Innovators Summit",
                     Description = "A summit for technology innovators to share ideas and connect.",
                     Category = "Technology",
@@ -64,7 +64,7 @@ namespace Infrastructure.Data.Configurations
                 },
                 new Event
                 {
-                    EventId = 2,
+                    Id = 2,
                     Title = "Global Business Conference",
                     Description = "An international conference on modern business strategies.",
                     Category = "Business",

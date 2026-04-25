@@ -18,7 +18,7 @@ namespace Application.Mapping.AttendeeMapping
                 .ForMember(dest => dest.Interests, opt => opt.MapFrom(src =>
                     src.AttendeeInterestesWithAttendee.Select(j => new InterestDto
                     {
-                        Id = j.AttendeeInterest.InterestId,
+                        Id = j.AttendeeInterest.Id,
                         Name = j.AttendeeInterest.InterestName
                     })));
         }
