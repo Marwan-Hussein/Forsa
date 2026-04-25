@@ -25,6 +25,16 @@ namespace Forsa
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            // Cors Service
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend",
+                    policy => policy.WithOrigins("http://localhost:5173") // Vite dev server port
+                                    .AllowAnyMethod()
+                                    .AllowAnyHeader()
+                    );
+            });
+
             builder.Services.AddDbContext<ForsaDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -60,16 +70,17 @@ namespace Forsa
                 app.UseSwaggerUI();
             }
 
+            // Active Cors Middleware
+            app.UseHttpsRedirection();
+            app.UseCors("AllowFrontend");
             app.UseCors("Frontend");
 
             app.UseAuthorization();
 
+            app.UseAuthorization();
 
             app.MapControllers();
-
             app.Run();
-
-
         }
     }
 }
