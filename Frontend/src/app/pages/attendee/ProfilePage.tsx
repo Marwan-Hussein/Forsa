@@ -1,45 +1,151 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { User, Mail, Phone, MapPin, Calendar, Save, ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+import { ApiError } from "../../api/api";
+import {
+  getAttendeeProfile,
+  getCurrentAttendeeId,
+  updateAttendeeProfile,
+  type AttendeeProfileDto,
+  type UpdateAttendeeProfileRequest,
+} from "../../lib/attendee-api";
+
+const emptyFormData: UpdateAttendeeProfileRequest = {
+  fullName: "",
+  userName: "",
+  email: "",
+  phoneNumber: "",
+  location: "",
+  birthDate: "",
+};
+
+const validationFieldMap: Record<string, keyof UpdateAttendeeProfileRequest> = {
+  FullName: "fullName",
+  UserName: "userName",
+  Email: "email",
+  PhoneNumber: "phoneNumber",
+  Location: "location",
+  BirthDate: "birthDate",
+};
+
+function mapProfileToForm(profile: AttendeeProfileDto): UpdateAttendeeProfileRequest {
+  return {
+    fullName: profile.fullName ?? "",
+    userName: profile.userName ?? "",
+    email: profile.email ?? "",
+    phoneNumber: profile.phoneNumber ?? "",
+    location: profile.location ?? "",
+    birthDate: profile.birthDate ? profile.birthDate.slice(0, 10) : "",
+  };
+}
+
+function getValidationErrors(error: unknown) {
+  if (!(error instanceof ApiError) || typeof error.data !== "object" || error.data === null) {
+    return {} as Partial<Record<keyof UpdateAttendeeProfileRequest, string>>;
+  }
+
+  const rawErrors = (error.data as { errors?: Record<string, string[]> }).errors;
+  if (!rawErrors) {
+    return {} as Partial<Record<keyof UpdateAttendeeProfileRequest, string>>;
+  }
+
+  const nextErrors: Partial<Record<keyof UpdateAttendeeProfileRequest, string>> = {};
+
+  for (const [field, messages] of Object.entries(rawErrors)) {
+    const mappedField = validationFieldMap[field];
+    if (mappedField && Array.isArray(messages) && typeof messages[0] === "string") {
+      nextErrors[mappedField] = messages[0];
+    }
+  }
+
+  return nextErrors;
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof ApiError) {
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return fallback;
+}
 
 export default function ProfilePage() {
+  const attendeeId = getCurrentAttendeeId();
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: "Mohamed Kotb",
-    username: "mohamedkotb",
-    email: "mohamedkotb@email.com",
-    phone: "+20 1000000000",
-    location: "Cairo, Egypt",
-    birthdate: "2004-06-29",
-  });
+  const [formData, setFormData] = useState<UpdateAttendeeProfileRequest>(emptyFormData);
+  const [originalData, setOriginalData] = useState<UpdateAttendeeProfileRequest>(emptyFormData);
+  const [errors, setErrors] = useState<Partial<Record<keyof UpdateAttendeeProfileRequest, string>>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const [originalData, setOriginalData] = useState({ ...formData });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadProfile() {
+      try {
+        setIsLoading(true);
+        setLoadError(null);
+
+        const profile = await getAttendeeProfile(attendeeId);
+        if (!isActive) {
+          return;
+        }
+
+        const mappedProfile = mapProfileToForm(profile);
+        setFormData(mappedProfile);
+        setOriginalData(mappedProfile);
+      } catch (error) {
+        if (!isActive) {
+          return;
+        }
+
+        setLoadError(getErrorMessage(error, "Failed to load profile."));
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadProfile();
+
+    return () => {
+      isActive = false;
+    };
+  }, [attendeeId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const fieldName = name as keyof UpdateAttendeeProfileRequest;
+
+    setFormData((prev) => ({ ...prev, [fieldName]: value }));
     // Clear error when user starts typing
-    if (errors[name]) {
+    if (errors[fieldName]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
-        delete newErrors[name];
+        delete newErrors[fieldName];
         return newErrors;
       });
     }
   };
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: Partial<Record<keyof UpdateAttendeeProfileRequest, string>> = {};
 
     if (!formData.fullName.trim()) {
       newErrors.fullName = "Full name is required";
     }
 
-    if (!formData.username.trim()) {
-      newErrors.username = "Username is required";
-    } else if (formData.username.length < 3) {
-      newErrors.username = "Username must be at least 3 characters";
+    if (!formData.userName.trim()) {
+      newErrors.userName = "Username is required";
+    } else if (formData.userName.length < 3) {
+      newErrors.userName = "Username must be at least 3 characters";
     }
 
     if (!formData.email.trim()) {
@@ -48,16 +154,16 @@ export default function ProfilePage() {
       newErrors.email = "Please enter a valid email";
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
+    if (!formData.phoneNumber.trim()) {
+      newErrors.phoneNumber = "Phone number is required";
     }
 
     if (!formData.location.trim()) {
       newErrors.location = "Location is required";
     }
 
-    if (!formData.birthdate) {
-      newErrors.birthdate = "Birthdate is required";
+    if (!formData.birthDate) {
+      newErrors.birthDate = "Birthdate is required";
     }
 
     setErrors(newErrors);
@@ -75,13 +181,73 @@ export default function ProfilePage() {
     setErrors({});
   };
 
-  const handleSave = () => {
-    if (validateForm()) {
+  const handleSave = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+
+      const updatedProfile = await updateAttendeeProfile(attendeeId, formData);
+      const mappedProfile = mapProfileToForm(updatedProfile);
+
+      setFormData(mappedProfile);
+      setOriginalData(mappedProfile);
+      setErrors({});
       setIsEditing(false);
-      setOriginalData({ ...formData });
-      alert("Profile updated successfully! (This is a demo)");
+      toast.success("Profile updated successfully.");
+    } catch (error) {
+      const serverErrors = getValidationErrors(error);
+      if (Object.keys(serverErrors).length > 0) {
+        setErrors(serverErrors);
+      }
+
+      toast.error(getErrorMessage(error, "Failed to update profile."));
+    } finally {
+      setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background py-12 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8 text-center">
+            <h1 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-2">
+              Loading profile...
+            </h1>
+            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
+              Fetching your attendee data from the API.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-background py-12 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8 text-center">
+            <h1 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-2">
+              Could not load profile
+            </h1>
+            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-4">
+              {loadError}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors cursor-pointer"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background py-12 px-4">
@@ -127,7 +293,7 @@ export default function ProfilePage() {
                   {formData.fullName}
                 </h2>
                 <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-4">
-                  @{formData.username}
+                  @{formData.userName}
                 </p>
                 <div className="w-full pt-4 border-t border-[rgba(82,109,130,0.2)]">
                   <div className="flex justify-between items-center mb-3">
@@ -183,10 +349,11 @@ export default function ProfilePage() {
                     </button>
                     <button
                       onClick={handleSave}
+                      disabled={isSaving}
                       className="bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors flex items-center gap-2 cursor-pointer"
                     >
                       <Save className="w-4 h-4" />
-                      Save Changes
+                      {isSaving ? "Saving..." : "Save Changes"}
                     </button>
                   </div>
                 )}
@@ -234,9 +401,9 @@ export default function ProfilePage() {
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type="text"
-                      id="username"
-                      name="username"
-                      value={formData.username}
+                      id="userName"
+                      name="userName"
+                      value={formData.userName}
                       onChange={handleChange}
                       disabled={!isEditing}
                       className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-foreground ${
@@ -246,8 +413,8 @@ export default function ProfilePage() {
                       }`}
                     />
                   </div>
-                  {errors.username && (
-                    <p className="mt-1 text-[12px] text-red-500">{errors.username}</p>
+                  {errors.userName && (
+                    <p className="mt-1 text-[12px] text-red-500">{errors.userName}</p>
                   )}
                 </div>
 
@@ -292,9 +459,9 @@ export default function ProfilePage() {
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type="tel"
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
+                      id="phoneNumber"
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
                       onChange={handleChange}
                       disabled={!isEditing}
                       className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-foreground ${
@@ -304,8 +471,8 @@ export default function ProfilePage() {
                       }`}
                     />
                   </div>
-                  {errors.phone && (
-                    <p className="mt-1 text-[12px] text-red-500">{errors.phone}</p>
+                  {errors.phoneNumber && (
+                    <p className="mt-1 text-[12px] text-red-500">{errors.phoneNumber}</p>
                   )}
                 </div>
 
@@ -350,9 +517,9 @@ export default function ProfilePage() {
                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type="date"
-                      id="birthdate"
-                      name="birthdate"
-                      value={formData.birthdate}
+                      id="birthDate"
+                      name="birthDate"
+                      value={formData.birthDate}
                       onChange={handleChange}
                       disabled={!isEditing}
                       className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-foreground ${
@@ -362,8 +529,8 @@ export default function ProfilePage() {
                       }`}
                     />
                   </div>
-                  {errors.birthdate && (
-                    <p className="mt-1 text-[12px] text-red-500">{errors.birthdate}</p>
+                  {errors.birthDate && (
+                    <p className="mt-1 text-[12px] text-red-500">{errors.birthDate}</p>
                   )}
                 </div>
               </div>

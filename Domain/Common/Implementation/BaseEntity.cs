@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace Domain.Common.Implementation
 {
-    public class BaseEntity : IBaseEntity
+    public abstract class BaseEntity : IEntity<int>
     {
+        public int Id { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? LastModifiedAt { get; set; }
         public DateTime? DeletedAt { get; set; }
