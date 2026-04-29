@@ -1,3 +1,10 @@
+using Application.Core.Interfaces;
+using Application.Services;
+using Domain.Interfaces;
+using Domain.Interfaces.AttendeeInterfaces;
+using Infrastructure.Data;
+using Infrastructure.Repositories;
+using Infrastructure.Repositories.AttendeeRepos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,14 +15,15 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Add Infrastructure Layer Services here. Example: DbContexts, Repositories, external clients.
-        services.AddScoped<Domain.Interfaces.IUnitOfWork, Infrastructure.Data.UnitOfWork>();
-        services.AddScoped(typeof(Domain.Interfaces.IGenericRepository<>), typeof(Infrastructure.Repositories.GenericRepository<>));
-        services.AddScoped(typeof(Domain.Interfaces.IQueryableRepository<>), typeof(Infrastructure.Repositories.QueryableRepository<>));
-        services.AddScoped<Domain.Interfaces.IEventRepository, Infrastructure.Repositories.EventRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        services.AddScoped(typeof(IQueryableRepository<>), typeof(QueryableRepository<>));
+        services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<IAuthService,AuthService>();
 
         // Attendee 
-        services.AddScoped<Domain.Interfaces.AttendeeInterfaces.IAttendeeRepository, Infrastructure.Repositories.AttendeeRepos.AttendeeRepository>();
-        services.AddScoped<Domain.Interfaces.AttendeeInterfaces.IAttendeeProfileRepository, Infrastructure.Repositories.AttendeeRepos.AttendeeProfileRepository>();
+        services.AddScoped<IAttendeeRepository, AttendeeRepository>();
+        services.AddScoped<IAttendeeProfileRepository,AttendeeProfileRepository>();
         return services;
     }
 }
