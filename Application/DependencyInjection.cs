@@ -1,3 +1,5 @@
+using Application.Authorization.Handlers;
+using Application.Authorization.Requirements;
 using Application.Core.Interfaces;
 using Application.Core.Interfaces.AttendeeInterfaces;
 using Application.Core.Interfaces.Auth;
@@ -60,7 +62,19 @@ public static class DependencyInjection
             options.AddPolicy("OwnerOnly", policy => policy.RequireRole("Owner"));
             options.AddPolicy("OrganizerOnly", policy => policy.RequireRole("Organizer"));
             options.AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
+
+            options.AddPolicy("BookingOwnerOrAdmin", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.AddRequirements(new ResourceOwnerRequirement());
+            });
         });
+
+        // Register HttpContextAccessor for handlers
+        services.AddHttpContextAccessor();
+        
+        // Register Authorization Handlers
+        services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, BookingOwnerHandler>();
 
         // Jwt Dependency Injection
         services.AddScoped<IJwtService, JwtService>();

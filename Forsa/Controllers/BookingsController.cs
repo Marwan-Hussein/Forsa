@@ -51,7 +51,7 @@ namespace Forsa.Controllers
             }
         }
 
-        [Authorize(Policy = "AttendeeOnly")]
+        [Authorize(Policy = "BookingOwnerOrAdmin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> CancelBooking(int id)
         {
