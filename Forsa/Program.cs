@@ -30,7 +30,7 @@ namespace Forsa
                 });
             });
 
-            builder.Services.AddApplicationServices();
+            builder.Services.AddApplicationServices(builder.Configuration);
             builder.Services.AddInfrastructureServices(builder.Configuration);
 
             builder.Services.AddControllers()
@@ -55,6 +55,7 @@ namespace Forsa
             // app.UseHttpsRedirection();
             app.UseCors("Frontend");
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

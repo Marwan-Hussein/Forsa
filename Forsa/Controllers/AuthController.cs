@@ -1,5 +1,5 @@
 ﻿using Application.Core.DTOs.Auth;
-using Application.Core.Interfaces;
+using Application.Core.Interfaces.Auth;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Forsa.Controllers
