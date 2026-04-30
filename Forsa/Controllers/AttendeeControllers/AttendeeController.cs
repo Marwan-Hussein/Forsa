@@ -31,34 +31,40 @@ namespace Forsa.Controllers.AttendeeControllers
         [HttpGet("{id:int}/profile")]
         public async Task<ActionResult<AttendeeProfileDto>> GetProfile(int id)
         {
-            var profile = await _service.GetProfileAsync(id);
-            if (profile == null) return NotFound(new { message = "Attendee not found." });
-            return Ok(profile);
+            try
+            {
+                var profile = await _service.GetProfileAsync(id);
+                if (profile == null) return NotFound(new { message = "Attendee not found." });
+                return Ok(profile);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while fetching attendee profile");
+            }
         }
 
         // PUT: api/attendees/{id}/profile
         [HttpPut("{id:int}/profile")]
         public async Task<ActionResult<AttendeeProfileDto>> UpdateProfile(int id, UpdateAttendeeProfileDto dto)
         {
-            dto ??= new UpdateAttendeeProfileDto();
-
-            var validationResult = await _updateProfileValidator.ValidateAsync(dto);
-            if (!validationResult.IsValid)
+            try
             {
-                return BadRequest(new
-                {
-                    message = "Validation failed.",
-                    errors = validationResult.Errors
-                        .GroupBy(error => error.PropertyName)
-                        .ToDictionary(
-                            group => group.Key,
-                            group => group.Select(error => error.ErrorMessage).ToArray())
-                });
-            }
+                dto ??= new UpdateAttendeeProfileDto();
 
-            var updated = await _service.UpdateProfileAsync(id, dto);
-            if (updated == null) return NotFound(new { message = "Attendee not found." });
-            return Ok(updated);
+                var validationResult = await _updateProfileValidator.ValidateAsync(dto);
+                if (!validationResult.IsValid)
+                {
+                    return BadRequest(new { message = "Validation failed." });
+                }
+
+                var updated = await _service.UpdateProfileAsync(id, dto);
+                if (updated == null) return NotFound(new { message = "Attendee not found." });
+                return Ok(updated);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while updating attendee profile");
+            }
         }
 
         // -------------------------- attendee/interests endpoints --------------------------
@@ -67,34 +73,40 @@ namespace Forsa.Controllers.AttendeeControllers
         [HttpGet("{id:int}/interests")]
         public async Task<ActionResult<IEnumerable<InterestDto>>> GetInterests(int id)
         {
-            var profile = await _service.GetProfileAsync(id);
-            if (profile == null) return NotFound(new { message = "Attendee not found." });
-            return Ok(profile.Interests);
+            try
+            {
+                var profile = await _service.GetProfileAsync(id);
+                if (profile == null) return NotFound(new { message = "Attendee not found." });
+                return Ok(profile.Interests);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while fetching attendee interests");
+            }
         }
 
         // PUT: api/attendees/{id}/interests
         [HttpPut("{id:int}/interests")]
         public async Task<ActionResult<AttendeeProfileDto>> UpdateInterests(int id, UpdateAttendeeInterestsDto dto)
         {
-            dto ??= new UpdateAttendeeInterestsDto();
-
-            var validationResult = await _updateInterestsValidator.ValidateAsync(dto);
-            if (!validationResult.IsValid)
+            try
             {
-                return BadRequest(new
-                {
-                    message = "Validation failed.",
-                    errors = validationResult.Errors
-                        .GroupBy(error => error.PropertyName)
-                        .ToDictionary(
-                            group => group.Key,
-                            group => group.Select(error => error.ErrorMessage).ToArray())
-                });
-            }
+                dto ??= new UpdateAttendeeInterestsDto();
 
-            var updated = await _service.UpdateInterestsAsync(id, dto?.InterestIds ?? new List<int>());
-            if (updated == null) return NotFound(new { message = "Attendee not found." });
-            return Ok(updated);
+                var validationResult = await _updateInterestsValidator.ValidateAsync(dto);
+                if (!validationResult.IsValid)
+                {
+                    return BadRequest(new { message = "Validation failed." });
+                }
+
+                var updated = await _service.UpdateInterestsAsync(id, dto?.InterestIds ?? new List<int>());
+                if (updated == null) return NotFound(new { message = "Attendee not found." });
+                return Ok(updated);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while updating attendee interests");
+            }
         }
     }
 }

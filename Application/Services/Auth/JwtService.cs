@@ -33,7 +33,7 @@ public class JwtService : IJwtService
             Subject = new ClaimsIdentity(authClaims),
             Issuer = _jwtSettings.Issuer,
             Audience = _jwtSettings.Audience,
-            Expires = DateTime.UtcNow.AddDays(_jwtSettings.DurationInDays),
+            Expires = DateTime.UtcNow.AddMinutes(_jwtSettings.JWTDurationInMinutes),
             SigningCredentials = creds
         };
 

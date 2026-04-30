@@ -11,6 +11,7 @@ namespace Application.Core.DTOs.Auth
         public string FullName { get; set; } = null!;
         public string Email { get; set; }
         public string Token { get; set; }
+        public string RefreshToken { get; set; }
         public DateTime ExpireOn { get; set; }
     }
 }
