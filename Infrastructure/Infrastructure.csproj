@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <!-- ✏️ Modified: Added abstractions packages for dependency injection -->
+    <PackageReference Include="MailKit" Version="4.16.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.7" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.26" />
@@ -20,6 +21,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="StackExchange.Redis" Version="2.12.14" />
   </ItemGroup>
 
   <ItemGroup>
