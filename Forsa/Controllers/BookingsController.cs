@@ -1,6 +1,7 @@
 using Application.Core.DTOs.Booking;
 using Application.Core.Interfaces;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Forsa.Controllers
@@ -18,6 +19,7 @@ namespace Forsa.Controllers
             _validator = validator;
         }
 
+        [Authorize(Policy = "AttendeeOnly")]
         [HttpPost]
         public async Task<ActionResult<BookingResponseDto>> CreateBooking([FromBody] CreateBookingRequestDto request)
         {
@@ -49,6 +51,7 @@ namespace Forsa.Controllers
             }
         }
 
+        [Authorize(Policy = "AttendeeOnly")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> CancelBooking(int id)
         {
@@ -71,6 +74,7 @@ namespace Forsa.Controllers
             }
         }
 
+        [Authorize(Policy = "AuthenticatedUser")]
         [HttpGet("{id}")]
         public async Task<ActionResult<BookingResponseDto>> GetBooking(int id)
         {

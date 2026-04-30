@@ -1,6 +1,7 @@
-﻿using Application.Core.DTOs.AttendeeDTOs;
+using Application.Core.DTOs.AttendeeDTOs;
 using Application.Core.Interfaces.AttendeeInterfaces;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Forsa.Controllers.AttendeeControllers
@@ -28,6 +29,7 @@ namespace Forsa.Controllers.AttendeeControllers
         // -------------------------- attendee/profile endpoints --------------------------
 
         // GET: api/attendees/{id}/profile
+        [Authorize(Policy = "AuthenticatedUser")]
         [HttpGet("{id:int}/profile")]
         public async Task<ActionResult<AttendeeProfileDto>> GetProfile(int id)
         {
@@ -37,6 +39,7 @@ namespace Forsa.Controllers.AttendeeControllers
         }
 
         // PUT: api/attendees/{id}/profile
+        [Authorize(Policy = "AttendeeOnly")]
         [HttpPut("{id:int}/profile")]
         public async Task<ActionResult<AttendeeProfileDto>> UpdateProfile(int id, UpdateAttendeeProfileDto dto)
         {
@@ -64,6 +67,7 @@ namespace Forsa.Controllers.AttendeeControllers
         // -------------------------- attendee/interests endpoints --------------------------
 
         // GET: api/attendees/{id}/interests
+        [Authorize(Policy = "AuthenticatedUser")]
         [HttpGet("{id:int}/interests")]
         public async Task<ActionResult<IEnumerable<InterestDto>>> GetInterests(int id)
         {
@@ -73,6 +77,7 @@ namespace Forsa.Controllers.AttendeeControllers
         }
 
         // PUT: api/attendees/{id}/interests
+        [Authorize(Policy = "AttendeeOnly")]
         [HttpPut("{id:int}/interests")]
         public async Task<ActionResult<AttendeeProfileDto>> UpdateInterests(int id, UpdateAttendeeInterestsDto dto)
         {
