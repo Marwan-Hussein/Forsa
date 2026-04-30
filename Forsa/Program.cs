@@ -1,9 +1,11 @@
 
+using Application;
+using Domain.Entities;
+using Infrastructure;
 using Infrastructure.Data.DbContexts;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
-using Application;
-using Infrastructure;
 namespace Forsa
 {
     public class Program
@@ -14,7 +16,9 @@ namespace Forsa
            
             builder.Services.AddDbContext<ForsaDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>()
+                            .AddEntityFrameworkStores<ForsaDbContext>()
+                            .AddDefaultTokenProviders();
             // Add Frontend CORS policy
             builder.Services.AddCors(options =>
             {
