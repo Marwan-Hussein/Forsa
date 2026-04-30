@@ -1,5 +1,5 @@
 ﻿using Application.Core.DTOs.Auth;
-using Application.Core.Interfaces;
+using Application.Core.Interfaces.Auth;
 using AutoMapper;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -9,9 +9,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Services
+namespace Application.Services.Auth
 {
-    public class AuthService(IMapper mapper , UserManager<ApplicationUser> userManager) : IAuthService
+    public class AuthService(IMapper mapper , UserManager<ApplicationUser> userManager, IJwtService jwtService) : IAuthService
     {
         public async Task<UserDto> RegisterAsync(RegisterDto registerDto)
         {
@@ -30,13 +30,14 @@ namespace Application.Services
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
                 throw new Exception($"User creation failed: {errors}");
             }
+            var token = jwtService.GenerateToken(user);
 
             return new UserDto
             {
                 FullName = user.FullName,
                 Email = user.Email,
-                Token = "Testing",
-                ExpireOn = DateTime.UtcNow.AddDays(1)   
+                Token = token,
+                ExpireOn = DateTime.UtcNow.AddDays(7)   
             };
         }
 
@@ -50,12 +51,13 @@ namespace Application.Services
             if (!passwordValid)
                 throw new Exception("Invalid email or password.");
 
+            var token = jwtService.GenerateToken(user);
             return new UserDto
             {
                 FullName = user.FullName,
                 Email = user.Email,
-                Token = "Testing",
-                ExpireOn = DateTime.UtcNow.AddDays(1)
+                Token = token,
+                ExpireOn = DateTime.UtcNow.AddDays(7)
             };
         }
 

@@ -1,5 +1,5 @@
-using Application.Core.Interfaces;
-using Application.Services;
+using Application.Core.Interfaces.Auth;
+using Application.Services.Auth;
 using Domain.Interfaces;
 using Domain.Interfaces.AttendeeInterfaces;
 using Infrastructure.Data;
