@@ -1,8 +1,10 @@
-﻿namespace Application.Core.Interfaces.Auth
+﻿using Domain.Entities;
+
+namespace Application.Core.Interfaces.Auth
 {
     public interface IOTPService
     {
-        public string GenerateOTP();
-        public bool VerifyOTP(string otp);
+        Task GenerateOTPAsync(ApplicationUser user);
+        Task<bool> VerifyOTPAsync(ApplicationUser user, string otp);
     }
 }
