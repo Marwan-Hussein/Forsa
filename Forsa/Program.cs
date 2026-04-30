@@ -30,6 +30,18 @@ namespace Forsa
                 });
             });
 
+
+
+            // Add Google Auth Configuration 
+            var google = builder.Configuration.GetSection("Authenication : Google");
+            builder.Services.AddAuthentication()
+                .AddGoogle(options => {
+                    options.ClientId = google["ClientId"]!;
+                    options.ClientSecret = google["ClientSecret"]!;
+                    options.CallbackPath = "/signin-google";
+                }
+                );
+
             builder.Services.AddApplicationServices(builder.Configuration);
             builder.Services.AddInfrastructureServices(builder.Configuration);
 
