@@ -10,9 +10,7 @@ namespace Application.Core.Interfaces.Auth
 {
     public interface IExternalAuth 
     {
-        //Task<UserDto> GoogleSignInAsync(string googleToken);
-        Task<ExternalLoginInfo> GetExternalLoginInfoAsync();
-        Task<UserDto> ProcessExternalLoginAsync(ExternalLoginInfo info);
+         Task<UserDto> ProcessExternalLoginAsync(ExternalAuthDto info);
 
     }
 }
