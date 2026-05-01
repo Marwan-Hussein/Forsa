@@ -1,5 +1,6 @@
 using Application.Core.Interfaces.Auth.OTP;
 using Domain.Entities;
+using Domain.Interfaces;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -7,7 +8,8 @@ namespace Application.Services.Auth.OTP
 {
     public class OTPService : IOTPService
     {
-        private readonly IRedisCacheService _redis;
+        private readonly IQueryableRepository<UserOtp> _otpRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailService _email;
 
         private string HashOtp(string otp)
@@ -18,22 +20,34 @@ namespace Application.Services.Auth.OTP
             return Convert.ToBase64String(hash);
         }
 
-        public OTPService(IRedisCacheService redis, IEmailService email)
+        public OTPService(IQueryableRepository<UserOtp> otpRepository, IUnitOfWork unitOfWork, IEmailService email)
         {
-            _redis = redis;
+            _otpRepository = otpRepository;
+            _unitOfWork = unitOfWork;
             _email = email;
         }
 
         public async Task GenerateAndSendOTPAsync(string email)
         {
-            // Generate a cryptographically secure 6-digit OTP
             var otp = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
             var otpHash = HashOtp(otp);
 
-            // store in Redis (5 min expiry) – keyed by email since the user doesn't exist yet
-            await _redis.SetAsync($"otp:{email}", otpHash, TimeSpan.FromMinutes(5));
+            var existingOtps = _otpRepository.GetQueryable().Where(o => o.Email == email).ToList();
+            foreach (var existing in existingOtps)
+            {
+                _otpRepository.Delete(existing.Id);
+            }
 
-            // Build a professional HTML email body
+            var userOtp = new UserOtp
+            {
+                Email = email,
+                OtpHash = otpHash,
+                ExpiryTime = DateTime.UtcNow.AddMinutes(5)
+            };
+
+            _otpRepository.Add(userOtp);
+            await _unitOfWork.SaveChangesAsync();
+
             var htmlBody = $@"
                 <div style='font-family: Inter, Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #f9fafb; border-radius: 16px;'>
                     <div style='text-align: center; margin-bottom: 24px;'>
@@ -60,17 +74,27 @@ namespace Application.Services.Auth.OTP
 
         public async Task<bool> VerifyOTPAsync(string email, string otp)
         {
-            var key = $"otp:{email}";
+            var userOtp = _otpRepository.GetQueryable()
+                .Where(o => o.Email == email)
+                .OrderByDescending(o => o.ExpiryTime)
+                .FirstOrDefault();
 
-            var storedHashedOtp = await _redis.GetAsync<string>(key);
-            if (storedHashedOtp == null)
-                return false; // expired or not generated
+            if (userOtp == null)
+                return false; 
+
+            if (userOtp.ExpiryTime < DateTime.UtcNow)
+            {
+                _otpRepository.Delete(userOtp.Id);
+                await _unitOfWork.SaveChangesAsync();
+                return false; 
+            }
 
             var correctOtpHash = HashOtp(otp);
-            if (storedHashedOtp != correctOtpHash)
-                return false; // incorrect OTP
+            if (userOtp.OtpHash != correctOtpHash)
+                return false; 
 
-            await _redis.RemoveAsync(key); // OTP can only be used once
+            _otpRepository.Delete(userOtp.Id);
+            await _unitOfWork.SaveChangesAsync();
             return true;
         }
 
@@ -79,4 +103,4 @@ namespace Application.Services.Auth.OTP
             return await VerifyOTPAsync(user.Email!, otp);
         }
     }
-}
+}

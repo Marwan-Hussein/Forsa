@@ -921,6 +921,30 @@ namespace Infrastructure.Migrations
                     b.ToTable("PromoCodes", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.UserOtp", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ExpiryTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OtpHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserOtps");
+                });
+
             modelBuilder.Entity("Domain.Entities.WishListItem", b =>
                 {
                     b.Property<int>("Id")
@@ -1131,7 +1155,7 @@ namespace Infrastructure.Migrations
                             Id = 1,
                             AccessFailedCount = 0,
                             BirthDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ConcurrencyStamp = "5df09f2d-ed8d-4d93-8f7b-ec39fab34fdb",
+                            ConcurrencyStamp = "5c037fbb-a6b9-459f-9098-123351dc50f2",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "attendee@forsa.com",
                             EmailConfirmed = true,
@@ -1150,7 +1174,7 @@ namespace Infrastructure.Migrations
                             Id = 2,
                             AccessFailedCount = 0,
                             BirthDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ConcurrencyStamp = "13cebd48-d85a-45ce-bf4a-25a67413ed9c",
+                            ConcurrencyStamp = "7c3aa9b2-6104-40ef-9dfc-9db666622c6e",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "attendee2@forsa.com",
                             EmailConfirmed = true,

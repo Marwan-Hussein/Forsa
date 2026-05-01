@@ -4,11 +4,6 @@ using Application.Core.Interfaces.Auth.OTP;
 using AutoMapper;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services.Auth
 {
@@ -18,31 +13,29 @@ namespace Application.Services.Auth
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IJwtService _jwtService;
         private readonly IOTPService _otpService;
-        private readonly IRedisCacheService _redis;
 
         public AuthService(
             IMapper mapper,
             UserManager<ApplicationUser> userManager,
             IJwtService jwtService,
-            IOTPService otpService,
-            IRedisCacheService redis)
+            IOTPService otpService)
         {
             _mapper = mapper;
             _userManager = userManager;
             _jwtService = jwtService;
             _otpService = otpService;
-            _redis = redis;
         }
 
         public async Task<UserDto> RegisterAsync(RegisterDto registerDto)
         {
-            var emailExist = await _userManager.FindByEmailAsync(registerDto.Email);
+            /*var emailExist = await _userManager.FindByEmailAsync(registerDto.Email);
             if (emailExist != null)
             {
                 throw new Exception("Email already exists");
             }
 
             var user = _mapper.Map<ApplicationUser>(registerDto);
+            user.EmailConfirmed = false;
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
 
@@ -52,20 +45,17 @@ namespace Application.Services.Auth
                 throw new Exception($"User creation failed: {errors}");
             }
             var token = _jwtService.GenerateToken(user);
-
+            */
+            var otpResult = await InitiateRegistrationAsync(registerDto);
             return new UserDto
             {
-                FullName = user.FullName,
-                Email = user.Email,
-                Token = token,
+                FullName = registerDto.FullName,
+                Email = registerDto.Email,
+                //Token = token,
                 ExpireOn = DateTime.UtcNow.AddDays(7)   
             };
         }
 
-        /// <summary>
-        /// Step 1: Validate the registration data, store it in Redis, and send an OTP.
-        /// The user account is NOT created at this point.
-        /// </summary>
         public async Task<OtpResponseDto> InitiateRegistrationAsync(RegisterDto registerDto)
         {
             // Check if email is already taken
@@ -75,10 +65,18 @@ namespace Application.Services.Auth
                 throw new Exception("Email already exists");
             }
 
-            // Store the registration data in Redis (10 min expiry) so we can retrieve it after OTP verification
-            await _redis.SetAsync($"reg:{registerDto.Email}", registerDto, TimeSpan.FromMinutes(10));
+            // Create the user in the database normally
+            var user = _mapper.Map<ApplicationUser>(registerDto);
+            user.EmailConfirmed = false; // Need to verify OTP
+            var result = await _userManager.CreateAsync(user, registerDto.Password);
 
-            // Generate and send OTP to the user's email
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception($"User creation failed: {errors}");
+            }
+
+            // Generate and send OTP to the user's email after registration
             await _otpService.GenerateAndSendOTPAsync(registerDto.Email);
 
             return new OtpResponseDto
@@ -88,45 +86,25 @@ namespace Application.Services.Auth
             };
         }
 
-        /// <summary>
-        /// Step 2: Verify the OTP. If valid, retrieve the cached registration data, 
-        /// create the user, and return a JWT token.
-        /// </summary>
         public async Task<UserDto> VerifyOtpAndRegisterAsync(VerifyOtpDto verifyOtpDto)
         {
-            // Verify the OTP
+            // Verify the OTP using DB
             var isValid = await _otpService.VerifyOTPAsync(verifyOtpDto.Email, verifyOtpDto.Otp);
             if (!isValid)
             {
                 throw new Exception("Invalid or expired OTP code.");
             }
 
-            // Retrieve the cached registration data
-            var registerDto = await _redis.GetAsync<RegisterDto>($"reg:{verifyOtpDto.Email}");
-            if (registerDto == null)
+            // Retrieve the user that was created
+            var user = await _userManager.FindByEmailAsync(verifyOtpDto.Email);
+            if (user == null)
             {
-                throw new Exception("Registration session expired. Please register again.");
+                throw new Exception("User not found.");
             }
 
-            // Clean up Redis
-            await _redis.RemoveAsync($"reg:{verifyOtpDto.Email}");
-
-            // Double-check email hasn't been taken in the meantime
-            var emailExist = await _userManager.FindByEmailAsync(registerDto.Email);
-            if (emailExist != null)
-            {
-                throw new Exception("Email already exists");
-            }
-
-            // Create the user
-            var user = _mapper.Map<ApplicationUser>(registerDto);
-            var result = await _userManager.CreateAsync(user, registerDto.Password);
-
-            if (!result.Succeeded)
-            {
-                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                throw new Exception($"User creation failed: {errors}");
-            }
+            // Mark email as confirmed
+            user.EmailConfirmed = true;
+            await _userManager.UpdateAsync(user);
 
             var token = _jwtService.GenerateToken(user);
 
@@ -139,16 +117,12 @@ namespace Application.Services.Auth
             };
         }
 
-        /// <summary>
-        /// Resend OTP: checks that the registration session still exists and generates a new OTP.
-        /// </summary>
         public async Task<OtpResponseDto> ResendOtpAsync(ResendOtpDto resendOtpDto)
         {
-            // Check that the registration data is still cached
-            var registerDto = await _redis.GetAsync<RegisterDto>($"reg:{resendOtpDto.Email}");
-            if (registerDto == null)
+            var user = await _userManager.FindByEmailAsync(resendOtpDto.Email);
+            if (user == null)
             {
-                throw new Exception("Registration session expired. Please register again.");
+                throw new Exception("User not found.");
             }
 
             // Generate and send a new OTP
@@ -171,6 +145,9 @@ namespace Application.Services.Auth
             if (!passwordValid)
                 throw new Exception("Invalid email or password.");
 
+            if (!user.EmailConfirmed)
+                throw new Exception("Please verify your email before logging in.");
+
             var token = _jwtService.GenerateToken(user);
             return new UserDto
             {
@@ -180,7 +157,5 @@ namespace Application.Services.Auth
                 ExpireOn = DateTime.UtcNow.AddDays(7)
             };
         }
-
     }
 }
-
