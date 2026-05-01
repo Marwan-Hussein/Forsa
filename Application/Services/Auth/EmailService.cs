@@ -7,7 +7,7 @@ namespace Application.Services.Auth
 {
     public class EmailService : IEmailService
     {
-        public Task SendAsync(string to, string subject, string body)
+        public async Task SendAsync(string to, string subject, string body)
         {
             var msg = new MimeMessage();
             msg.From.Add(new MailboxAddress("Forsa", "no-reply@forsa.com"));
