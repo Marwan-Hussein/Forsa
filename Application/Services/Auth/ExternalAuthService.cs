@@ -17,43 +17,45 @@ namespace Application.Services.Auth
                                     , IJwtService jwtService) : IExternalAuth
     {
 
-            // proceedure 
-            // check if the info was in the data base 
-            // if it was existed --> generate jwt token to frontend 
-            // if the only  email exist --> update data base
-            // if info isn't existed  --> create new user and store it in data base 
+        // proceedure 
+        // check if the info was in the data base 
+        // if it was existed --> generate jwt token to frontend 
+        // if the only  email exist --> update data base
+        // if info isn't existed  --> create new user and store it in data base 
 
 
 
-          public async Task<UserDto> ProcessExternalLoginAsync(ExternalAuthDto dto){
-                    var user = await userManager.FindByLoginAsync(dto.Provider, dto.ProviderKey);
+        public async Task<UserDto> ProcessExternalLoginAsync(ExternalAuthDto dto)
+        {
+            // 1. & 2. Find user by provider or email (using your existing logic)
+            var user = await userManager.FindByLoginAsync(dto.Provider, dto.ProviderKey);
 
-                    if (user == null)
-                    {
-                        user = await userManager.FindByEmailAsync(dto.Email);
-                        if (user != null)
-                        {
-                            var loginInfo = new UserLoginInfo(dto.Provider, dto.ProviderKey, dto.Provider);
-                            await userManager.AddLoginAsync(user, loginInfo);
-                        }
-                    }
+            if (user == null)
+            {
+                user = await userManager.FindByEmailAsync(dto.Email);
+                if (user != null)
+                {
+                    await userManager.AddLoginAsync(user, new UserLoginInfo(dto.Provider, dto.ProviderKey, dto.Provider));
+                }
+            }
 
-                    if (user == null)
-                    {
-                        user = new ApplicationUser { UserName = dto.Email, Email = dto.Email };
-                        await userManager.CreateAsync(user);
+            if (user == null)
+            {
+                user = new ApplicationUser { UserName = dto.Email, Email = dto.Email };
+                await userManager.CreateAsync(user);
+                await userManager.AddLoginAsync(user, new UserLoginInfo(dto.Provider, dto.ProviderKey, dto.Provider));
 
-                        var loginInfo = new UserLoginInfo(dto.Provider, dto.ProviderKey, dto.Provider);
-                        await userManager.AddLoginAsync(user, loginInfo);
-                    }
+            }
 
-                    return new UserDto
-                    {
-                        FullName = dto.Name,
-                        Email = user.Email,
-                        Token = jwtService.GenerateToken(user),
-                        ExpireOn = DateTime.UtcNow.AddDays(1)
-                    };
-          }
+            var roles = await userManager.GetRolesAsync(user);
+
+            return new UserDto
+            {
+                FullName = dto.Name,
+                Email = user.Email,
+                Token = jwtService.GenerateToken(user, roles),
+                ExpireOn = DateTime.UtcNow.AddDays(1)
+            };
+        }
     }
 }
