@@ -45,7 +45,7 @@ namespace Application.Services.Auth.OTP
              */
             var key = $"otp:{user.Id}";
 
-            var storedHashedOtp = await _redis.GetAsync(key);
+            var storedHashedOtp = await _redis.GetAsync<string>(key);
             if (storedHashedOtp == null)
                 return false; // expired or not generated
 
