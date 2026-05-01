@@ -56,6 +56,7 @@ namespace Application.Services.AttendeeServices
             var requestedIds = (interestIds ?? new List<int>()).Distinct().ToList();
             var validIds = await _repo.GetValidInterestIdsAsync(requestedIds);
             _repo.UpdateAttendeeInterests(attendee, validIds);
+
             await _unitOfWork.SaveChangesAsync();
             var updated = await _repo.GetAttendeeWithInterestsAsync(attendeeId);
             return updated == null ? null : _mapper.Map<AttendeeProfileDto>(updated);

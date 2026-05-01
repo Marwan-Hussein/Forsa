@@ -41,7 +41,7 @@ namespace Forsa.Controllers
                 var result = await _authService.LoginAsync(request);
                 return Ok(result);
             }
-            catch (Exception ex) when (ex.Message == "Invalid Email or Password.")
+            catch (Exception ex) when (ex.Message == "Invalid email or password.")
             {
                 return Unauthorized(new { message = ex.Message });
             }

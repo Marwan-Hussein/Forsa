@@ -77,7 +77,6 @@ public static class DependencyInjection
         // Register Authorization Handlers
         services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, BookingOwnerHandler>();
 
-        // Jwt Dependency Injection
         // Jwt & Refresh Token Dependency Injection
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();

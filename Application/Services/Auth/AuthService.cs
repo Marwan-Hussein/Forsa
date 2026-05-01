@@ -14,6 +14,7 @@ namespace Application.Services.Auth
         UserManager<ApplicationUser> userManager,
         IJwtService jwtService,
         IRefreshTokenService refreshTokenService,
+        RoleManager<IdentityRole<int>> roleManager,
         IOptions<JwtSettings> jwtSettings) : IAuthService
     {
         private readonly JwtSettings _jwtSettings = jwtSettings.Value;
@@ -32,14 +33,6 @@ namespace Application.Services.Auth
 
             var result = await userManager.CreateAsync(user, registerDto.Password);
             HandleResult(result, "User creation failed");
-
-            return CreateUserDto(user, refreshToken);
-
-            if (!result.Succeeded)
-            {
-                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                throw new Exception($"User creation failed: {errors}");
-            }
 
             // Determine which role to assign
             string assignedRole = "Attendee"; // default
@@ -66,15 +59,9 @@ namespace Application.Services.Auth
             await userManager.AddToRoleAsync(user, assignedRole);
 
             var roles = await userManager.GetRolesAsync(user);
-            var token = jwtService.GenerateToken(user, roles);
 
-            return new UserDto
-            {
-                FullName = user.FullName,
-                Email = user.Email,
-                Token = token,
-                ExpireOn = DateTime.UtcNow.AddDays(7)   
-            };
+            return CreateUserDto(user, refreshToken, roles);
+            
         }
 
         public async Task<UserDto> LoginAsync(LoginDto loginDto)
@@ -87,15 +74,14 @@ namespace Application.Services.Auth
             if (!passwordValid)
                 throw new Exception("Invalid email or password.");
 
-            var roles = await userManager.GetRolesAsync(user);
-            var token = jwtService.GenerateToken(user, roles);
             var refreshToken = refreshTokenService.GenerateToken();
             user.RefreshTokens.Add(refreshTokenService.CreateRefreshToken(refreshToken));
+            var roles = await userManager.GetRolesAsync(user);
 
             var result = await userManager.UpdateAsync(user);
             HandleResult(result, "Refresh token creation failed");
 
-            return CreateUserDto(user, refreshToken);
+            return CreateUserDto(user, refreshToken, roles);
         }
 
         public async Task<UserDto> RefreshTokenAsync(RefreshTokenRequestDto refreshTokenRequestDto)
@@ -106,10 +92,11 @@ namespace Application.Services.Auth
             var newRefreshToken = refreshTokenService.GenerateToken();
             user.RefreshTokens.Add(refreshTokenService.CreateRefreshToken(newRefreshToken));
 
+            var roles = await userManager.GetRolesAsync(user);
             var result = await userManager.UpdateAsync(user);
             HandleResult(result, "Refresh token rotation failed");
 
-            return CreateUserDto(user, newRefreshToken);
+            return CreateUserDto(user, newRefreshToken, roles);
         }
 
         public async Task RevokeRefreshTokenAsync(RefreshTokenRequestDto refreshTokenRequestDto)
@@ -136,13 +123,13 @@ namespace Application.Services.Auth
             return (user, refreshToken);
         }
 
-        private UserDto CreateUserDto(ApplicationUser user, string refreshToken)
+        private UserDto CreateUserDto(ApplicationUser user, string refreshToken, IList<string> roles)
         {
             return new UserDto
             {
                 FullName = user.FullName,
                 Email = user.Email,
-                Token = jwtService.GenerateToken(user),
+                Token = jwtService.GenerateToken(user, roles),
                 ExpireOn = DateTime.UtcNow.AddMinutes(_jwtSettings.JWTDurationInMinutes),
                 RefreshToken = refreshToken
             };

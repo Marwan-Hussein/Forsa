@@ -1,0 +1,3 @@
+Email: admin@forsa.com
+Password: Admin@12345
+Role: Admin

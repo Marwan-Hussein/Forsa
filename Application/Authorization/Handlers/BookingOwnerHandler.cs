@@ -20,7 +20,7 @@ namespace Application.Authorization.Handlers
             _bookingRepository = bookingRepository;
         }
 
-        protected override Task HandleRequirementAsync(
+        protected override async Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
             ResourceOwnerRequirement requirement)
         {
@@ -30,24 +30,24 @@ namespace Application.Authorization.Handlers
             if (userIdClaim == null)
             {
                 context.Fail();
-                return Task.CompletedTask;
+                return;
             }
 
             // Admins can bypass ownership checks
             if (context.User.IsInRole("Admin"))
             {
                 context.Succeed(requirement);
-                return Task.CompletedTask;
+                return;
             }
 
             var routeId = httpContext?.GetRouteValue("id")?.ToString();
             if (routeId == null || !int.TryParse(routeId, out var bookingId))
             {
                 context.Fail();
-                return Task.CompletedTask;
+                return;
             }
 
-            var booking = _bookingRepository.GetById(bookingId);
+            var booking = await _bookingRepository.GetByIdAsync(bookingId);
             if (booking != null && booking.AttendeeId.ToString() == userIdClaim)
             {
                 context.Succeed(requirement);
@@ -56,8 +56,6 @@ namespace Application.Authorization.Handlers
             {
                 context.Fail();
             }
-
-            return Task.CompletedTask;
         }
     }
 }
