@@ -18,6 +18,7 @@ namespace Infrastructure.Data.DbContexts
             builder.Entity<IdentityRoleClaim<int>>().ToTable("RoleClaims");
             builder.Entity<IdentityUserToken<int>>().ToTable("UserTokens");
         }
+        public DbSet<UserOtp> UserOtps { get; set; }
     }
 }
 

@@ -7,6 +7,10 @@ using Infrastructure.Data.DbContexts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using StackExchange.Redis;
+using Application.Core.Interfaces.Auth.OTP;
+using Application.Services.Auth.OTP;
+
 namespace Forsa
 {
     // if you want to create a local admin user, you can uncomment the commented code lines and run once the program
@@ -22,6 +26,17 @@ namespace Forsa
             builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>()
                             .AddEntityFrameworkStores<ForsaDbContext>()
                             .AddDefaultTokenProviders();
+
+            // redis
+            var redisConnection = builder.Configuration.GetConnectionString("Redis");
+            builder.Services.AddSingleton<IConnectionMultiplexer>(sp=>
+                {
+                    var configuration = ConfigurationOptions.Parse(redisConnection);
+                    configuration.AbortOnConnectFail = false; // This prevents the crash
+                    return ConnectionMultiplexer.Connect(configuration);
+                });
+            builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+
             // Add Frontend CORS policy
             builder.Services.AddCors(options =>
             {

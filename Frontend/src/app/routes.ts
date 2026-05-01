@@ -4,6 +4,7 @@ import GuestHomePage from "./pages/home/GuestHomePage";
 import AttendeeDashboard from "./pages/attendee/AttendeeDashboard";
 import LoginPage from "./pages/auth/LoginPage";
 import RegistrationPage from "./pages/auth/RegistrationPage";
+import OTPPage from "./pages/auth/OTPPage";
 import ProfilePage from "./pages/attendee/ProfilePage";
 import InterestsPage from "./pages/attendee/InterestsPage";
 import EventsPage from "./pages/events/EventsPage";
@@ -46,6 +47,10 @@ export const router = createBrowserRouter([
       {
         path: "register",
         Component: RegistrationPage,
+      },
+      {
+        path: "verify-otp",
+        Component: OTPPage,
       },
       {
         path: "profile",
