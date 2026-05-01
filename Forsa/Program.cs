@@ -1,11 +1,15 @@
 
 using Application;
+using Application.Services.Auth;
+using Application.Core.Interfaces.Auth;
 using Domain.Entities;
 using Infrastructure;
 using Infrastructure.Data.DbContexts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using StackExchange.Redis;
+
 namespace Forsa
 {
     public class Program
@@ -19,6 +23,13 @@ namespace Forsa
             builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>()
                             .AddEntityFrameworkStores<ForsaDbContext>()
                             .AddDefaultTokenProviders();
+
+            // redis
+            var redisConnection = builder.Configuration.GetConnectionString("Redis");
+            builder.Services.AddSingleton<IConnectionMultiplexer>(sp=>
+                ConnectionMultiplexer.Connect(redisConnection));
+            builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+
             // Add Frontend CORS policy
             builder.Services.AddCors(options =>
             {

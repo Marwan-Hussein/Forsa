@@ -21,7 +21,7 @@ namespace Application.Services.Auth
             };
 
             string jsonData = JsonSerializer.Serialize(value, options);
-            await _database.StringSetAsync(key, jsonData, expiry);
+            await _database.StringSetAsync(key, jsonData, expiry, When.Always);
         }
         public async Task<T?> GetAsync<T>(string key)
         {
