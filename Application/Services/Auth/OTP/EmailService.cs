@@ -1,9 +1,9 @@
 ﻿using MailKit.Net.Smtp;
 using MailKit;
-using Application.Core.Interfaces.Auth;
 using MimeKit;
+using Application.Core.Interfaces.Auth.OTP;
 
-namespace Application.Services.Auth
+namespace Application.Services.Auth.OTP
 {
     public class EmailService : IEmailService
     {

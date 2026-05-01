@@ -1,4 +1,4 @@
-﻿namespace Application.Core.Interfaces.Auth
+﻿namespace Application.Core.Interfaces.Auth.OTP
 {
     internal interface IEmailService
     {

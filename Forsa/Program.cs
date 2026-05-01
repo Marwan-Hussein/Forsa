@@ -1,7 +1,5 @@
 
 using Application;
-using Application.Services.Auth;
-using Application.Core.Interfaces.Auth;
 using Domain.Entities;
 using Infrastructure;
 using Infrastructure.Data.DbContexts;
@@ -9,6 +7,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using StackExchange.Redis;
+using Application.Core.Interfaces.Auth.OTP;
+using Application.Services.Auth.OTP;
 
 namespace Forsa
 {

@@ -1,8 +1,8 @@
-﻿using Application.Core.Interfaces.Auth;
+﻿using Application.Core.Interfaces.Auth.OTP;
 using StackExchange.Redis;
 using System.Text.Json;
 
-namespace Application.Services.Auth
+namespace Application.Services.Auth.OTP
 {
     public class RedisCacheService : IRedisCacheService
     {

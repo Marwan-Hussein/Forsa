@@ -1,9 +1,9 @@
-﻿using Application.Core.Interfaces.Auth;
+﻿using Application.Core.Interfaces.Auth.OTP;
 using Domain.Entities;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Application.Services.Auth
+namespace Application.Services.Auth.OTP
 {
     internal class OTPService : IOTPService
     {
