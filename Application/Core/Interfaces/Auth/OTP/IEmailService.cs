@@ -1,6 +1,6 @@
-﻿namespace Application.Core.Interfaces.Auth.OTP
+namespace Application.Core.Interfaces.Auth.OTP
 {
-    internal interface IEmailService
+    public interface IEmailService
     {
         Task SendAsync(string to, string subject, string body);
     }

@@ -1,9 +1,11 @@
 using Application.Core.Interfaces;
 using Application.Core.Interfaces.AttendeeInterfaces;
 using Application.Core.Interfaces.Auth;
+using Application.Core.Interfaces.Auth.OTP;
 using Application.Core.Settings;
 using Application.Services;
 using Application.Services.AttendeeServices;
+using Application.Services.Auth.OTP;
 using Domain.Entities;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -53,6 +55,15 @@ public static class DependencyInjection
         });
         // Jwt Dependency Injection
         services.AddScoped<IJwtService, JwtService>();
+
+        // Email Settings Configuration
+        services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+
+        // OTP Services
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IOTPService, OTPService>();
+
         return services;
     }
 }
+

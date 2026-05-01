@@ -27,7 +27,11 @@ namespace Forsa
             // redis
             var redisConnection = builder.Configuration.GetConnectionString("Redis");
             builder.Services.AddSingleton<IConnectionMultiplexer>(sp=>
-                ConnectionMultiplexer.Connect(redisConnection));
+                {
+                    var configuration = ConfigurationOptions.Parse(redisConnection);
+                    configuration.AbortOnConnectFail = false; // This prevents the crash
+                    return ConnectionMultiplexer.Connect(configuration);
+                });
             builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 
             // Add Frontend CORS policy
