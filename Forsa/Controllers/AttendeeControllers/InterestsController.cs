@@ -20,7 +20,14 @@ namespace Forsa.Controllers.AttendeeControllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<InterestDto>>> GetAll()
         {
-            return Ok(await _service.GetAllInterestsAsync());
+            try
+            {
+                return Ok(await _service.GetAllInterestsAsync());
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while fetching interests");
+            }
         }
 
     }

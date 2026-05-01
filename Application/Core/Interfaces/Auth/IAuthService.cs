@@ -11,5 +11,7 @@ namespace Application.Core.Interfaces.Auth
     {
         Task<UserDto> RegisterAsync(RegisterDto registerDto);
         Task<UserDto> LoginAsync(LoginDto loginDto);
+        Task<UserDto> RefreshTokenAsync(RefreshTokenRequestDto refreshTokenRequestDto);
+        Task RevokeRefreshTokenAsync(RefreshTokenRequestDto refreshTokenRequestDto);
     }
 }

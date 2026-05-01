@@ -6,6 +6,7 @@ using Application.Core.Interfaces.Auth;
 using Application.Core.Settings;
 using Application.Services;
 using Application.Services.AttendeeServices;
+using Application.Services.Auth;
 using Domain.Entities;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -77,7 +78,9 @@ public static class DependencyInjection
         services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, BookingOwnerHandler>();
 
         // Jwt Dependency Injection
+        // Jwt & Refresh Token Dependency Injection
         services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<IRefreshTokenService, RefreshTokenService>();
         return services;
     }
 }

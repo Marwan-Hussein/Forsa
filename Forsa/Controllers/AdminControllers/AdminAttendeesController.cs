@@ -30,56 +30,76 @@ namespace Forsa.Controllers.AdminControllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AttendeeProfileDto>>> GetAll([FromQuery] AttendeeSearchParameters parameters)
         {
-            return Ok(await _service.GetAllAsync(parameters));
+            try
+            {
+                return Ok(await _service.GetAllAsync(parameters));
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while fetching attendees");
+            }
         }
 
         // GET: api/admin/attendees/{id}
         [HttpGet("{id:int}")]
         public async Task<ActionResult<AttendeeProfileDto>> GetById(int id)
         {
-            var attendee = await _service.GetByIdAsync(id);
-            if (attendee == null)
-                return NotFound(new { message = "Attendee not found." });
+            try
+            {
+                var attendee = await _service.GetByIdAsync(id);
+                if (attendee == null)
+                    return NotFound(new { message = "Attendee not found." });
 
-            return Ok(attendee);
+                return Ok(attendee);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while fetching attendee");
+            }
         }
 
         // PUT: api/admin/attendees/{id}
         [HttpPut("{id:int}")]
         public async Task<ActionResult<AttendeeProfileDto>> Update(int id, UpdateAttendeeProfileDto dto)
         {
-            dto ??= new UpdateAttendeeProfileDto();
-
-            var validationResult = await _updateValidator.ValidateAsync(dto);
-            if (!validationResult.IsValid)
+            try
             {
-                return BadRequest(new
+                dto ??= new UpdateAttendeeProfileDto();
+
+                var validationResult = await _updateValidator.ValidateAsync(dto);
+                if (!validationResult.IsValid)
                 {
-                    message = "Validation failed.",
-                    errors = validationResult.Errors
-                        .GroupBy(error => error.PropertyName)
-                        .ToDictionary(
-                            group => group.Key,
-                            group => group.Select(error => error.ErrorMessage).ToArray())
-                });
+                    return BadRequest(new { message = "Validation failed." });
+                }
+
+                var updated = await _service.UpdateAsync(id, dto);
+                if (updated == null)
+                    return NotFound(new { message = "Attendee not found." });
+
+                return Ok(updated);
             }
-
-            var updated = await _service.UpdateAsync(id, dto);
-            if (updated == null)
-                return NotFound(new { message = "Attendee not found." });
-
-            return Ok(updated);
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while updating attendee");
+            }
         }
 
         // DELETE: api/admin/attendees/{id}
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var deleted = await _service.SoftDeleteAsync(id);
-            if (!deleted)
-                return NotFound(new { message = "Attendee not found." });
+            try
+            {
+                var deleted = await _service.SoftDeleteAsync(id);
+                if (!deleted)
+                    return NotFound(new { message = "Attendee not found." });
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while deleting attendee");
+            }
         }
     }
 }
