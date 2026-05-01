@@ -1,4 +1,4 @@
-﻿using Application.Core.Interfaces.Auth;
+using Application.Core.Interfaces.Auth;
 using Application.Core.Settings;
 using Domain.Entities;
 using Microsoft.Extensions.Options;
@@ -16,7 +16,7 @@ public class JwtService : IJwtService
         _jwtSettings = jwtSettings.Value;
     }
 
-    public string GenerateToken(ApplicationUser user)
+    public string GenerateToken(ApplicationUser user, IList<string> roles)
     {
         var authClaims = new List<Claim>
         {
@@ -25,6 +25,9 @@ public class JwtService : IJwtService
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
+        // Add one claim per role so policy checks work
+        foreach (var role in roles)
+            authClaims.Add(new Claim(ClaimTypes.Role, role));
         var authKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
         var creds = new SigningCredentials(authKey, SecurityAlgorithms.HmacSha256);
 

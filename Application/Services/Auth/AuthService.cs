@@ -1,4 +1,4 @@
-﻿using Application.Core.DTOs.Auth;
+using Application.Core.DTOs.Auth;
 using Application.Core.Interfaces.Auth;
 using AutoMapper;
 using Domain.Entities;
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Application.Services.Auth
 {
-    public class AuthService(IMapper mapper , UserManager<ApplicationUser> userManager, IJwtService jwtService) : IAuthService
+    public class AuthService(IMapper mapper , UserManager<ApplicationUser> userManager, RoleManager<IdentityRole<int>> roleManager, IJwtService jwtService) : IAuthService
     {
         public async Task<UserDto> RegisterAsync(RegisterDto registerDto)
         {
@@ -30,7 +30,33 @@ namespace Application.Services.Auth
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
                 throw new Exception($"User creation failed: {errors}");
             }
-            var token = jwtService.GenerateToken(user);
+
+            // Determine which role to assign
+            string assignedRole = "Attendee"; // default
+            
+            if (!string.IsNullOrWhiteSpace(registerDto.Role))
+            {
+                var requestedRole = registerDto.Role.Trim();
+                if (requestedRole.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new Exception("Cannot register as an Admin.");
+                }
+                
+                if (Enum.TryParse(typeof(Domain.ENUMs.Roles), requestedRole, true, out var parsedRole))
+                {
+                    assignedRole = parsedRole.ToString();
+                }
+            }
+
+            if (!await roleManager.RoleExistsAsync(assignedRole))
+            {
+                await roleManager.CreateAsync(new IdentityRole<int>(assignedRole));
+            }
+
+            await userManager.AddToRoleAsync(user, assignedRole);
+
+            var roles = await userManager.GetRolesAsync(user);
+            var token = jwtService.GenerateToken(user, roles);
 
             return new UserDto
             {
@@ -51,7 +77,8 @@ namespace Application.Services.Auth
             if (!passwordValid)
                 throw new Exception("Invalid email or password.");
 
-            var token = jwtService.GenerateToken(user);
+            var roles = await userManager.GetRolesAsync(user);
+            var token = jwtService.GenerateToken(user, roles);
             return new UserDto
             {
                 FullName = user.FullName,

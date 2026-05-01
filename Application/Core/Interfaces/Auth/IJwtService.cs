@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +9,6 @@ namespace Application.Core.Interfaces.Auth
 {
     public interface IJwtService
     {
-        string GenerateToken(ApplicationUser appUser);
+        string GenerateToken(ApplicationUser appUser, IList<string> roles);
     }
 }
