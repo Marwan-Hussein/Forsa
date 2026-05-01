@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Domain.Common.Interfaces;
+using Domain.Entities.AuthEntities;
 namespace Domain.Entities
 {
     public class ApplicationUser: IdentityUser<int> , IEntity<int>
@@ -13,6 +14,8 @@ namespace Domain.Entities
 
         // Relationships
         public List<Notification> Notifications{ get; set; }
+        public List<RefreshToken> RefreshTokens { get; set; } = [];
+       
         // IBaseEntity properties
         public DateTime CreatedAt { get; set; }
         public DateTime? LastModifiedAt { get; set; }

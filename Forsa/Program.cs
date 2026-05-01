@@ -1,6 +1,7 @@
 
 using Application;
 using Domain.Entities;
+// using Forsa.Seed;
 using Infrastructure;
 using Infrastructure.Data.DbContexts;
 using Microsoft.AspNetCore.Identity;
@@ -12,8 +13,10 @@ using Application.Services.Auth.OTP;
 
 namespace Forsa
 {
+    // if you want to create a local admin user, you can uncomment the commented code lines and run once the program
     public class Program
     {
+        // public static async Task Main(string[] args)
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -45,6 +48,18 @@ namespace Forsa
                 });
             });
 
+
+
+            // Add Google Auth Configuration 
+            var google = builder.Configuration.GetSection("Authenication : Google");
+            builder.Services.AddAuthentication()
+                .AddGoogle(options => {
+                    options.ClientId = google["ClientId"]!;
+                    options.ClientSecret = google["ClientSecret"]!;
+                    options.CallbackPath = "/signin-google";
+                }
+                );
+
             builder.Services.AddApplicationServices(builder.Configuration);
             builder.Services.AddInfrastructureServices(builder.Configuration);
 
@@ -62,6 +77,7 @@ namespace Forsa
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
+                //await LocalAdminSeeder.SeedAsync(app.Services);
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
@@ -75,6 +91,8 @@ namespace Forsa
 
             app.MapControllers();
             app.Run();
+
+
         }
     }
 }

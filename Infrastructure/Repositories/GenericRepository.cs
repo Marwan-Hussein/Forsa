@@ -1,8 +1,7 @@
 using Domain.Interfaces;
 using Domain.Common.Interfaces;
 using Infrastructure.Data.DbContexts;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
@@ -15,19 +14,19 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        public IEnumerable<T> GetAll()
+        public async Task<List<T>> GetAllAsync()
         {
-            return _context.Set<T>().ToList();
+            return await _context.Set<T>().ToListAsync();
         }
 
-        public T? GetById(int id)
+        public async Task<T?> GetByIdAsync(int id)
         {
-            return _context.Set<T>().Find(id);
+            return await _context.Set<T>().FindAsync(id);
         }
 
-        public void Add(T entity)
+        public async Task AddAsync(T entity)
         {
-            _context.Set<T>().Add(entity);
+            await _context.Set<T>().AddAsync(entity);
         }
 
         public void Update(T entity)
@@ -35,9 +34,9 @@ namespace Infrastructure.Repositories
             _context.Set<T>().Update(entity);
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var entity = _context.Set<T>().Find(id);
+            var entity = await _context.Set<T>().FindAsync(id);
             if (entity != null) _context.Set<T>().Remove(entity);
         }
     }

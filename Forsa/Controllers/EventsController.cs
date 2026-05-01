@@ -18,15 +18,16 @@ namespace Forsa.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<EventDetailsDto>> GetAllEvents()
+        public async Task<ActionResult<IEnumerable<EventDetailsDto>>> GetAllEvents()
         {
-            return Ok(_eventService.GetAllEvents());
+            return Ok(await _eventService.GetAllEvents());
         }
 
         [HttpGet("search")]
-        public ActionResult<IEnumerable<EventDetailsDto>> SearchEvents([FromQuery] EventSearchParameter parameters)
+        public async Task<ActionResult<EventDetailsDto>> SearchEvents([FromQuery] EventSearchParameter parameters)
         {
-            return Ok(_eventService.FilterEventsByParameters(parameters));
+          
+            return Ok(await _eventService.FilterEventsByParameters(parameters));
         }
 
         [HttpGet("{id}/details")]

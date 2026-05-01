@@ -11,6 +11,7 @@ namespace Infrastructure.Data.Configurations
             builder.ToTable("Bookings");
 
             builder.HasKey(b => b.Id);
+            builder.Property(b => b.Id).HasColumnName("BookingId");
 
             builder.Property(b => b.NumberOfTickets)
                    .IsRequired();

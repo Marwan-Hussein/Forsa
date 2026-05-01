@@ -100,6 +100,7 @@ namespace Forsa.Controllers
             }
         }
 
+        
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login([FromBody] LoginDto request)
         {
@@ -108,7 +109,7 @@ namespace Forsa.Controllers
                 var result = await _authService.LoginAsync(request);
                 return Ok(result);
             }
-            catch (Exception ex) when (ex.Message == "Invalid Email or Password.")
+            catch (Exception ex) when (ex.Message == "Invalid email or password.")
             {
                 return Unauthorized(new { message = ex.Message });
             }
@@ -117,5 +118,83 @@ namespace Forsa.Controllers
                 return StatusCode(500, "An error occurred while logging in");
             }
         }
+
+
+        // external login endpoints 
+        [HttpGet("external-login")]
+        public IActionResult ExternalLogin(string provider) {
+            var redirectUrl = Url.Action(nameof(ExternalCallBack),"Auth");
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider , redirectUrl);
+            return Challenge(properties,provider);
+        }
+
+        [HttpGet("external-callback")]
+        public async Task<IActionResult> ExternalCallBack() { 
+
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+
+            if (info == null) {
+                return StatusCode(500, "Error loading external information");
+            }
+
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+
+            if (string.IsNullOrEmpty(email)) { 
+                return StatusCode(500, "An email is required from provider");
+            }
+
+            var name = info.Principal.FindFirstValue(ClaimTypes.Name);
+
+            var authDto = new ExternalAuthDto
+            {
+
+                Provider = info.LoginProvider,
+                ProviderKey = info.ProviderKey,
+                Email = email,
+                Name = name
+            };
+
+            var userDto = await _externalAuth.ProcessExternalLoginAsync(authDto);
+
+            return Ok(userDto);
+
+        }
+
+
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult<UserDto>> RefreshToken([FromBody] RefreshTokenRequestDto request)
+        {
+            try
+            {
+                var result = await _authService.RefreshTokenAsync(request);
+                return Ok(result);
+            }
+            catch (Exception ex) when (ex.Message == "Invalid refresh token.")
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while refreshing the token");
+            }
+        }
+
+        [HttpPost("revoke-token")]
+        public async Task<IActionResult> RevokeToken([FromBody] RefreshTokenRequestDto request)
+        {
+            try
+            {
+                await _authService.RevokeRefreshTokenAsync(request);
+                return NoContent();
+            }
+            catch (Exception ex) when (ex.Message == "Invalid refresh token.")
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while revoking the token");
+            }
+        }
     }
-}
+}

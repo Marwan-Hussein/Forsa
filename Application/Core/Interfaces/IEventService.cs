@@ -5,8 +5,8 @@ namespace Application.Core.Interfaces
 {
     public interface IEventService
     {
-        List<EventDetailsDto> GetAllEvents();
-        EventDetailsDto? GetEventById(int id);
-        List<EventDetailsDto> FilterEventsByParameters(EventSearchParameter parameters);
+        Task<List<EventDetailsDto>> GetAllEvents();
+        Task<EventDetailsDto?> GetEventById(int id);
+        Task<List<EventDetailsDto>> FilterEventsByParameters(EventSearchParameter parameters);
     }
 }

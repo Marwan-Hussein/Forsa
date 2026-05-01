@@ -1,3 +1,5 @@
+using Application.Authorization.Handlers;
+using Application.Authorization.Requirements;
 using Application.Core.Interfaces;
 using Application.Core.Interfaces.AttendeeInterfaces;
 using Application.Core.Interfaces.Auth;
@@ -6,6 +8,7 @@ using Application.Core.Settings;
 using Application.Services;
 using Application.Services.AttendeeServices;
 using Application.Services.Auth.OTP;
+using Application.Services.Auth;
 using Domain.Entities;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -53,7 +56,30 @@ public static class DependencyInjection
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:Key"]))
             };
         });
-        // Jwt Dependency Injection
+        
+        // Authorization Policies
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+            options.AddPolicy("AttendeeOnly", policy => policy.RequireRole("Attendee"));
+            options.AddPolicy("OwnerOnly", policy => policy.RequireRole("Owner"));
+            options.AddPolicy("OrganizerOnly", policy => policy.RequireRole("Organizer"));
+            options.AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
+
+            options.AddPolicy("BookingOwnerOrAdmin", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.AddRequirements(new ResourceOwnerRequirement());
+            });
+        });
+
+        // Register HttpContextAccessor for handlers
+        services.AddHttpContextAccessor();
+        
+        // Register Authorization Handlers
+        services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, BookingOwnerHandler>();
+
+        // Jwt & Refresh Token Dependency Injection
         services.AddScoped<IJwtService, JwtService>();
 
         // Email Settings Configuration
@@ -63,6 +89,7 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IOTPService, OTPService>();
 
+        services.AddScoped<IRefreshTokenService, RefreshTokenService>();
         return services;
     }
 }

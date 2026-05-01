@@ -26,5 +26,7 @@ namespace Application.Core.Interfaces.Auth
         /// Resend OTP to the email.
         /// </summary>
         Task<OtpResponseDto> ResendOtpAsync(ResendOtpDto resendOtpDto);
+        Task<UserDto> RefreshTokenAsync(RefreshTokenRequestDto refreshTokenRequestDto);
+        Task RevokeRefreshTokenAsync(RefreshTokenRequestDto refreshTokenRequestDto);
     }
 }
