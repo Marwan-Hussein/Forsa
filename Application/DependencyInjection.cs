@@ -79,7 +79,7 @@ public static class DependencyInjection
         // Register Authorization Handlers
         services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, BookingOwnerHandler>();
 
-        // Jwt & Refresh Token Dependency Injection
+        // Jwt Dependency Injection
         services.AddScoped<IJwtService, JwtService>();
 
         // Email Settings Configuration
@@ -89,7 +89,11 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IOTPService, OTPService>();
 
+        // Refresh Token Services
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+
+        // IAuth Services
+        services.AddScoped<IAuthService, AuthService>();
         return services;
     }
 }
