@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -31,5 +31,6 @@ namespace Application.Core.DTOs.Auth
 
         public string Location { get; set; }
 
+        public string? Role { get; set; }
     }
 }

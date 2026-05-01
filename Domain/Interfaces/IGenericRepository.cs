@@ -4,10 +4,10 @@ namespace Domain.Interfaces
 {
     public interface IGenericRepository<T> where T : IEntity<int>
     {
-        IEnumerable<T> GetAll();
-        T? GetById(int id);
-        void Add(T entity);
+        Task<List<T>> GetAllAsync();
+        Task<T?> GetByIdAsync(int id);
+        Task AddAsync(T entity);
         void Update(T entity);
-        void Delete(int id);
+        Task DeleteAsync(int id);
     }
 }

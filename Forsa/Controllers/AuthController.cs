@@ -48,7 +48,7 @@ namespace Forsa.Controllers
                 var result = await _authService.LoginAsync(request);
                 return Ok(result);
             }
-            catch (Exception ex) when (ex.Message == "Invalid Email or Password.")
+            catch (Exception ex) when (ex.Message == "Invalid email or password.")
             {
                 return Unauthorized(new { message = ex.Message });
             }
@@ -99,5 +99,41 @@ namespace Forsa.Controllers
 
         }
 
+
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult<UserDto>> RefreshToken([FromBody] RefreshTokenRequestDto request)
+        {
+            try
+            {
+                var result = await _authService.RefreshTokenAsync(request);
+                return Ok(result);
+            }
+            catch (Exception ex) when (ex.Message == "Invalid refresh token.")
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while refreshing the token");
+            }
+        }
+
+        [HttpPost("revoke-token")]
+        public async Task<IActionResult> RevokeToken([FromBody] RefreshTokenRequestDto request)
+        {
+            try
+            {
+                await _authService.RevokeRefreshTokenAsync(request);
+                return NoContent();
+            }
+            catch (Exception ex) when (ex.Message == "Invalid refresh token.")
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while revoking the token");
+            }
+        }
     }
 }

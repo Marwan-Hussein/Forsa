@@ -1,6 +1,7 @@
 
 using Application;
 using Domain.Entities;
+// using Forsa.Seed;
 using Infrastructure;
 using Infrastructure.Data.DbContexts;
 using Microsoft.AspNetCore.Identity;
@@ -8,8 +9,10 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 namespace Forsa
 {
+    // if you want to create a local admin user, you can uncomment the commented code lines and run once the program
     public class Program
     {
+        // public static async Task Main(string[] args)
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -59,6 +62,7 @@ namespace Forsa
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
+                //await LocalAdminSeeder.SeedAsync(app.Services);
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
@@ -72,6 +76,8 @@ namespace Forsa
 
             app.MapControllers();
             app.Run();
+
+
         }
     }
 }

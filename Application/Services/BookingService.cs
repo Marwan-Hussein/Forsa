@@ -88,7 +88,7 @@ namespace Application.Services
                 IsDeleted = false
             };
 
-            _bookingRepository.Add(booking);
+            await _bookingRepository.AddAsync(booking);
 
             // Update event remaining tickets
             eventEntity.RemainingTickets -= dto.NumberOfTickets;
@@ -105,7 +105,7 @@ namespace Application.Services
                 IsDeleted = false
             };
 
-            _notificationRepository.Add(notification);
+            await _notificationRepository.AddAsync(notification);
 
             // Save all changes
             await _unitOfWork.SaveChangesAsync();
@@ -148,7 +148,7 @@ namespace Application.Services
                 IsDeleted = false
             };
 
-            _notificationRepository.Add(notification);
+            await _notificationRepository.AddAsync(notification);
 
             // Save all changes
             await _unitOfWork.SaveChangesAsync();

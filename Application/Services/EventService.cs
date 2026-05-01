@@ -3,6 +3,7 @@ using Application.Core.Interfaces;
 using AutoMapper;
 using Domain.Entities.EventEntities;
 using Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,19 +20,19 @@ namespace Application.Services
             _mapper = mapper;
         }
 
-        public List<EventDetailsDto> GetAllEvents()
+        public async Task<List<EventDetailsDto>> GetAllEvents()
         {
-            var events = _repo.GetAll();
+            var events = await _repo.GetAllAsync();
             return _mapper.Map<List<EventDetailsDto>>(events);
         }
 
-        public EventDetailsDto? GetEventById(int id)
+        public async Task<EventDetailsDto?> GetEventById(int id)
         {
-            var ev = _repo.GetById(id);
+            var ev = await _repo.GetByIdAsync(id);
             return ev == null ? null : _mapper.Map<EventDetailsDto>(ev);
         }
 
-        public List<EventDetailsDto> FilterEventsByParameters(EventSearchParameter criteria)
+        public async Task<List<EventDetailsDto>> FilterEventsByParameters(EventSearchParameter criteria)
         {
             var events = _repo.GetQueryable();
 
@@ -60,7 +61,7 @@ namespace Application.Services
                 }
             }
 
-            return _mapper.Map<List<EventDetailsDto>>(events.ToList()); 
+            return _mapper.Map<List<EventDetailsDto>>(await events.ToListAsync()); 
         }
     }
 }

@@ -1131,7 +1131,7 @@ namespace Infrastructure.Migrations
                             Id = 1,
                             AccessFailedCount = 0,
                             BirthDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ConcurrencyStamp = "0b4cade8-f3e0-45a8-9fb7-afa0fdae3302",
+                            ConcurrencyStamp = "4ca38b81-4698-4d75-944b-d429d32b5b1f",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "attendee@forsa.com",
                             EmailConfirmed = true,
@@ -1150,7 +1150,7 @@ namespace Infrastructure.Migrations
                             Id = 2,
                             AccessFailedCount = 0,
                             BirthDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ConcurrencyStamp = "cc6cdb06-029a-4fd1-aadb-ee1b222e2fc9",
+                            ConcurrencyStamp = "971c6bed-fa88-4fe9-ba58-62204953db2b",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "attendee2@forsa.com",
                             EmailConfirmed = true,
@@ -1188,6 +1188,43 @@ namespace Infrastructure.Migrations
                     b.HasBaseType("Domain.Entities.ApplicationUser");
 
                     b.ToTable("Owners", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.ApplicationUser", b =>
+                {
+                    b.OwnsMany("Domain.Entities.AuthEntities.RefreshToken", "RefreshTokens", b1 =>
+                        {
+                            b1.Property<int>("ApplicationUserId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<DateTime>("CreatedOn")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<DateTime>("ExpiresOn")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<DateTime?>("RevokedOn")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<string>("Token")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("ApplicationUserId", "Id");
+
+                            b1.ToTable("RefreshToken");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ApplicationUserId");
+                        });
+
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("Domain.Entities.AttendeeEntities.AttendeeInterestesWithAttendee", b =>
