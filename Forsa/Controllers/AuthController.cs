@@ -1,6 +1,9 @@
 using Application.Core.DTOs.Auth;
 using Application.Core.Interfaces.Auth;
+using Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Forsa.Controllers
 {
@@ -9,10 +12,13 @@ namespace Forsa.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService , SignInManager<ApplicationUser> signInManager)
         {
             _authService = authService;
+            _signInManager = signInManager;
         }
 
         [HttpPost("register")]
@@ -120,15 +126,15 @@ namespace Forsa.Controllers
         }
 
 
-        // external login endpoints 
-        [HttpGet("external-login")]
-        public IActionResult ExternalLogin(string provider) {
-            var redirectUrl = Url.Action(nameof(ExternalCallBack),"Auth");
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider , redirectUrl);
-            return Challenge(properties,provider);
-        }
+        //// external login endpoints 
+        //[HttpGet("external-login")]
+        //public IActionResult ExternalLogin(string provider) {
+        //    var redirectUrl = Url.Action(nameof(ExternalCallBack),"Auth");
+        //    var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider , redirectUrl);
+        //    return Challenge(properties,provider);
+        //}
 
-        [HttpGet("external-callback")]
+        /*[HttpGet("external-callback")]
         public async Task<IActionResult> ExternalCallBack() { 
 
             var info = await _signInManager.GetExternalLoginInfoAsync();
@@ -159,7 +165,7 @@ namespace Forsa.Controllers
             return Ok(userDto);
 
         }
-
+*/
 
         [HttpPost("refresh-token")]
         public async Task<ActionResult<UserDto>> RefreshToken([FromBody] RefreshTokenRequestDto request)

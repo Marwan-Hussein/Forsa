@@ -35,7 +35,7 @@ namespace Application.Services.Auth.OTP
             var existingOtps = _otpRepository.GetQueryable().Where(o => o.Email == email).ToList();
             foreach (var existing in existingOtps)
             {
-                _otpRepository.Delete(existing.Id);
+                await _otpRepository.DeleteAsync(existing.Id);
             }
 
             var userOtp = new UserOtp
@@ -45,7 +45,7 @@ namespace Application.Services.Auth.OTP
                 ExpiryTime = DateTime.UtcNow.AddMinutes(5)
             };
 
-            _otpRepository.Add(userOtp);
+            await _otpRepository.AddAsync(userOtp);
             await _unitOfWork.SaveChangesAsync();
 
             var htmlBody = $@"
@@ -84,7 +84,7 @@ namespace Application.Services.Auth.OTP
 
             if (userOtp.ExpiryTime < DateTime.UtcNow)
             {
-                _otpRepository.Delete(userOtp.Id);
+                await _otpRepository.DeleteAsync(userOtp.Id);
                 await _unitOfWork.SaveChangesAsync();
                 return false; 
             }
@@ -93,7 +93,7 @@ namespace Application.Services.Auth.OTP
             if (userOtp.OtpHash != correctOtpHash)
                 return false; 
 
-            _otpRepository.Delete(userOtp.Id);
+            await _otpRepository.DeleteAsync(userOtp.Id);
             await _unitOfWork.SaveChangesAsync();
             return true;
         }

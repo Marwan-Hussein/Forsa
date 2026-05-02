@@ -16,29 +16,29 @@ namespace Application.Services.Auth
         IJwtService jwtService,
         IRefreshTokenService refreshTokenService,
         RoleManager<IdentityRole<int>> roleManager,
-        IOptions<JwtSettings> jwtSettings,IOTPService _otpService) : IAuthService
+        IOptions<JwtSettings> jwtSettings,IOTPService otpService) : IAuthService
     {
-        private readonly JwtSettings _jwtSettings = jwtSettings.Value;
+        private readonly JwtSettings jwtSettings = jwtSettings.Value;
 
         public async Task<UserDto> RegisterAsync(RegisterDto registerDto)
         {
-            /*var emailExist = await _userManager.FindByEmailAsync(registerDto.Email);
+            /*var emailExist = await userManager.FindByEmailAsync(registerDto.Email);
             if (emailExist != null)
             {
                 throw new Exception("Email already exists");
             }
 
-            var user = _mapper.Map<ApplicationUser>(registerDto);
+            var user = mapper.Map<ApplicationUser>(registerDto);
             user.EmailConfirmed = false;
 
-            var result = await _userManager.CreateAsync(user, registerDto.Password);
+            var result = await userManager.CreateAsync(user, registerDto.Password);
 
             if (!result.Succeeded)
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
                 throw new Exception($"User creation failed: {errors}");
             }
-            var token = _jwtService.GenerateToken(user);
+            var token = jwtService.GenerateToken(user);
             */
             var otpResult = await InitiateRegistrationAsync(registerDto);
             return new UserDto
@@ -53,7 +53,7 @@ namespace Application.Services.Auth
         public async Task<OtpResponseDto> InitiateRegistrationAsync(RegisterDto registerDto)
         {
             // Check if email is already taken
-            var emailExist = await _userManager.FindByEmailAsync(registerDto.Email);
+            var emailExist = await userManager.FindByEmailAsync(registerDto.Email);
             if (emailExist != null)
             {
                 throw new Exception("Email already exists");
@@ -86,7 +86,7 @@ namespace Application.Services.Auth
             }
 
             // Generate and send OTP to the user's email after registration
-            await _otpService.GenerateAndSendOTPAsync(registerDto.Email);
+            await otpService.GenerateAndSendOTPAsync(registerDto.Email);
 
             return new OtpResponseDto
             {
@@ -98,14 +98,14 @@ namespace Application.Services.Auth
         public async Task<UserDto> VerifyOtpAndRegisterAsync(VerifyOtpDto verifyOtpDto)
         {
             // Verify the OTP using DB
-            var isValid = await _otpService.VerifyOTPAsync(verifyOtpDto.Email, verifyOtpDto.Otp);
+            var isValid = await otpService.VerifyOTPAsync(verifyOtpDto.Email, verifyOtpDto.Otp);
             if (!isValid)
             {
                 throw new Exception("Invalid or expired OTP code.");
             }
 
             // Retrieve the user that was created
-            var user = await _userManager.FindByEmailAsync(verifyOtpDto.Email);
+            var user = await userManager.FindByEmailAsync(verifyOtpDto.Email);
             if (user == null)
             {
                 throw new Exception("User not found.");
@@ -113,35 +113,13 @@ namespace Application.Services.Auth
 
             // Mark email as confirmed
             user.EmailConfirmed = true;
-            await _userManager.UpdateAsync(user);
+            await userManager.UpdateAsync(user);
 
-            var token = _jwtService.GenerateToken(user);
+            var token = jwtService.GenerateToken(user , (IList<string>) userManager.GetRolesAsync(user));
 
+            var assignedRole = (await userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Attendee";
             if (!await roleManager.RoleExistsAsync(assignedRole))
             {
-                FullName = user.FullName,
-                Email = user.Email,
-                Token = token,
-                ExpireOn = DateTime.UtcNow.AddDays(7)
-            };
-        }
-
-        public async Task<OtpResponseDto> ResendOtpAsync(ResendOtpDto resendOtpDto)
-        {
-            var user = await _userManager.FindByEmailAsync(resendOtpDto.Email);
-            if (user == null)
-            {
-                throw new Exception("User not found.");
-            }
-
-            // Generate and send a new OTP
-            await _otpService.GenerateAndSendOTPAsync(resendOtpDto.Email);
-
-            return new OtpResponseDto
-            {
-                Email = resendOtpDto.Email,
-                Message = "A new verification code has been sent to your email address."
-            };
                 await roleManager.CreateAsync(new IdentityRole<int>(assignedRole));
             }
 
@@ -149,17 +127,38 @@ namespace Application.Services.Auth
 
             var roles = await userManager.GetRolesAsync(user);
 
-            return CreateUserDto(user, refreshToken, roles);
+            return CreateUserDto(user, token, roles);
+        }
+
+        public async Task<OtpResponseDto> ResendOtpAsync(ResendOtpDto resendOtpDto)
+        {
+            var user = await userManager.FindByEmailAsync(resendOtpDto.Email);
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            // Generate and send a new OTP
+            await otpService.GenerateAndSendOTPAsync(resendOtpDto.Email);
+
+            return new OtpResponseDto
+            {
+                Email = resendOtpDto.Email,
+                Message = "A new verification code has been sent to your email address."
+            };
+             
+
+            
             
         }
 
         public async Task<UserDto> LoginAsync(LoginDto loginDto)
         {
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            var user = await userManager.FindByEmailAsync(loginDto.Email);
             if (user == null)
                 throw new Exception("Invalid email or password.");
 
-            var passwordValid = await _userManager.CheckPasswordAsync(user, loginDto.Password);
+            var passwordValid = await userManager.CheckPasswordAsync(user, loginDto.Password);
             if (!passwordValid)
                 throw new Exception("Invalid email or password.");
 
@@ -219,7 +218,7 @@ namespace Application.Services.Auth
                 FullName = user.FullName,
                 Email = user.Email,
                 Token = jwtService.GenerateToken(user, roles),
-                ExpireOn = DateTime.UtcNow.AddMinutes(_jwtSettings.JWTDurationInMinutes),
+                ExpireOn = DateTime.UtcNow.AddMinutes(jwtSettings.JWTDurationInMinutes),
                 RefreshToken = refreshToken
             };
         }
