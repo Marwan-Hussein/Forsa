@@ -13,9 +13,9 @@ namespace Forsa.Controllers
     {
         private readonly IAuthService _authService;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        
 
-        public AuthController(IAuthService authService , SignInManager<ApplicationUser> signInManager)
+
+        public AuthController(IAuthService authService, SignInManager<ApplicationUser> signInManager)
         {
             _authService = authService;
             _signInManager = signInManager;
@@ -106,7 +106,7 @@ namespace Forsa.Controllers
             }
         }
 
-        
+
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login([FromBody] LoginDto request)
         {
@@ -200,6 +200,47 @@ namespace Forsa.Controllers
             catch (Exception)
             {
                 return StatusCode(500, "An error occurred while revoking the token");
+            }
+        }
+
+        [HttpPost("forget-password")]
+        public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordDto request)
+        {
+            try
+            {
+                var result = await _authService.ForgetPasswordAsync(request);
+                if (result != null)
+                {
+                    return Ok(new { message = "Password reset instructions have been sent to your email." });
+                }
+                else
+                {
+                    return BadRequest(new { message = "Failed to initiate password reset. Please try again." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing the request.", detail = ex.Message });
+            }
+        }
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto request)
+        {
+            try
+            {
+                var result = await _authService.ResetPasswordAsync(request);
+                if (result != null)
+                {
+                    return Ok(new { message = "Password has been reset successfully." });
+                }
+                else
+                {
+                    return BadRequest(new { message = "Failed to reset password. Please try again." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing the request.", detail = ex.Message });
             }
         }
     }
