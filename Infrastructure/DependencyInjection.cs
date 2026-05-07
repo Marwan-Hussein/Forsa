@@ -20,7 +20,7 @@ public static class DependencyInjection
         services.AddScoped(typeof(IQueryableRepository<>), typeof(QueryableRepository<>));
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IAuthService,AuthService>();
-
+        services.AddScoped<IExternalAuthService, ExternalAuthService>();
         // Attendee 
         services.AddScoped<IAttendeeRepository, AttendeeRepository>();
         services.AddScoped<IAttendeeProfileRepository,AttendeeProfileRepository>();
