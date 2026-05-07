@@ -28,6 +28,14 @@ namespace Infrastructure.Data.Configurations
             builder.HasOne(f => f.Event)
                    .WithMany(e => e.Feedbacks)
                    .HasForeignKey(f => f.EventId)
+                   .IsRequired(false)
+                   .OnDelete(DeleteBehavior.NoAction);
+
+            // Feedback & Place
+            builder.HasOne(f => f.Place)
+                   .WithMany(p => p.Feedbacks)
+                   .HasForeignKey(f => f.PlaceId)
+                   .IsRequired(false)
                    .OnDelete(DeleteBehavior.NoAction);
         }
     }

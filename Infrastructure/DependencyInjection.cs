@@ -24,6 +24,10 @@ public static class DependencyInjection
         // Attendee 
         services.AddScoped<IAttendeeRepository, AttendeeRepository>();
         services.AddScoped<IAttendeeProfileRepository,AttendeeProfileRepository>();
+
+        services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+        services.AddScoped<IPlaceRepository, PlaceRepository>();
+
         return services;
     }
 }

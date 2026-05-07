@@ -20,6 +20,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Application.Core.Interfaces.EventInterfaces;
 using Application.Services.EventServices;
+using Application.Core.Interfaces.PlaceInterfaces;
+using Application.Services.PlaceServices;
 
 namespace Application;
 
@@ -34,6 +36,9 @@ public static class DependencyInjection
         // Event Services
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IEventAdminService, EventAdminService>();
+
+        // Place Services
+        services.AddScoped<IPlaceAdminService, PlaceAdminService>();
 
         // Booking Services
         services.AddScoped<IBookingService, BookingService>();

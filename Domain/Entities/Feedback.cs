@@ -1,6 +1,7 @@
-﻿using Domain.Common.Implementation;
+using Domain.Common.Implementation;
 using Domain.Entities.AttendeeEntities;
 using Domain.Entities.EventEntities;
+using Domain.Entities.PlaceEntities;
 
 namespace Domain.Entities
 {
@@ -13,10 +14,12 @@ namespace Domain.Entities
         public int AttendeeId { get; set; }
         public Attendee Attendee { get; set; }
 
-        // we wanna add the organizer's feedback to the "place" entity as well
-
         // FK (Event)
-        public int EventId { get; set; }
-        public Event Event { get; set; }
+        public int? EventId { get; set; }
+        public Event? Event { get; set; }
+
+        // FK (Place)
+        public int? PlaceId { get; set; }
+        public Place? Place { get; set; }
     }
 }
