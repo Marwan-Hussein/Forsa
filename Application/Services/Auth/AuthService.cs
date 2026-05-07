@@ -16,7 +16,7 @@ namespace Application.Services.Auth
         IJwtService jwtService,
         IRefreshTokenService refreshTokenService,
         RoleManager<IdentityRole<int>> roleManager,
-        IOptions<JwtSettings> jwtSettings,IOTPService otpService) : IAuthService
+        IOptions<JwtSettings> jwtSettings, IOTPService otpService) : IAuthService
     {
         private readonly JwtSettings jwtSettings = jwtSettings.Value;
 
@@ -46,7 +46,7 @@ namespace Application.Services.Auth
                 FullName = registerDto.FullName,
                 Email = registerDto.Email,
                 //Token = token,
-                ExpireOn = DateTime.UtcNow.AddDays(7)   
+                ExpireOn = DateTime.UtcNow.AddDays(7)
             };
         }
 
@@ -70,7 +70,7 @@ namespace Application.Services.Auth
             HandleResult(result, "User creation failed");
             // Determine which role to assign
             string assignedRole = "Attendee"; // default
-            
+
             if (!string.IsNullOrWhiteSpace(registerDto.Role))
             {
                 var requestedRole = registerDto.Role.Trim();
@@ -78,7 +78,7 @@ namespace Application.Services.Auth
                 {
                     throw new Exception("Cannot register as an Admin.");
                 }
-                
+
                 if (Enum.TryParse(typeof(Domain.ENUMs.Roles), requestedRole, true, out var parsedRole))
                 {
                     assignedRole = parsedRole.ToString();
@@ -115,7 +115,7 @@ namespace Application.Services.Auth
             user.EmailConfirmed = true;
             await userManager.UpdateAsync(user);
 
-            var token = jwtService.GenerateToken(user , (IList<string>) userManager.GetRolesAsync(user));
+            var token = jwtService.GenerateToken(user, (IList<string>)userManager.GetRolesAsync(user));
 
             var assignedRole = (await userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Attendee";
             if (!await roleManager.RoleExistsAsync(assignedRole))
@@ -146,10 +146,10 @@ namespace Application.Services.Auth
                 Email = resendOtpDto.Email,
                 Message = "A new verification code has been sent to your email address."
             };
-             
 
-            
-            
+
+
+
         }
 
         public async Task<UserDto> LoginAsync(LoginDto loginDto)
@@ -230,6 +230,46 @@ namespace Application.Services.Auth
 
             var errors = string.Join(", ", result.Errors.Select(e => e.Description));
             throw new Exception($"{message}: {errors}");
+        }
+
+        public async Task<OtpResponseDto> ForgetPasswordAsync(ForgetPasswordDto forgetPasswordDto)
+        {
+            var user = await userManager.FindByEmailAsync(forgetPasswordDto.Email);
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+            await otpService.GenerateOTPAsync(user);
+
+            return new OtpResponseDto
+            {
+                Email = forgetPasswordDto.Email,
+                Message = "A password reset code has been sent to your email address."
+            };
+        }
+
+        public async Task<bool> ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
+        {
+            var user = await userManager.FindByEmailAsync(resetPasswordDto.Email);
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+            var otpValid = await otpService.VerifyOTPAsync(resetPasswordDto.Email, resetPasswordDto.Otp);
+            if (!otpValid)
+            {
+                throw new Exception("Invalid OTP.");
+            }
+            var resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
+
+            var result = await userManager.ResetPasswordAsync(user, resetToken, resetPasswordDto.NewPassword);
+
+            if(!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception($"Password reset failed: {errors}");
+            }
+            return result.Succeeded; 
         }
     }
 }

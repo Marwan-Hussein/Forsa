@@ -28,5 +28,7 @@ namespace Application.Core.Interfaces.Auth
         Task<OtpResponseDto> ResendOtpAsync(ResendOtpDto resendOtpDto);
         Task<UserDto> RefreshTokenAsync(RefreshTokenRequestDto refreshTokenRequestDto);
         Task RevokeRefreshTokenAsync(RefreshTokenRequestDto refreshTokenRequestDto);
+        Task<OtpResponseDto> ForgetPasswordAsync(ForgetPasswordDto forgetPasswordDto);
+        Task<bool> ResetPasswordAsync(ResetPasswordDto resetPasswordDto);
     }
 }
