@@ -1,4 +1,5 @@
-﻿using Domain.Common.Implementation;
+using Domain.Common.Implementation;
+using Domain.Entities;
 using Domain.Entities.OwnerEntities;
 using Domain.ENUMs;
 
@@ -21,10 +22,8 @@ namespace Domain.Entities.PlaceEntities
         public List<PlaceMedia> PlaceMedias { get; set; }
         public Owner Owner { get; set; }
         public int? OwnerId { get; set; }
-        // 1 to many place to booking request
-        // to do
 
-        // 1 to many place to FeedBack
-        // to do
+        // One to many Place to Feedbacks
+        public List<Feedback> Feedbacks { get; set; }
     }
 }
