@@ -16,9 +16,15 @@ namespace Forsa.Controllers
 
 
         public AuthController(IAuthService authService, SignInManager<ApplicationUser> signInManager)
+
+        private readonly IExternalAuthService _externalAuth;
+
+        public AuthController(IAuthService authService , SignInManager<ApplicationUser> signInManager, IExternalAuthService externalAuth)
+
         {
             _authService = authService;
             _signInManager = signInManager;
+            _externalAuth = externalAuth;   
         }
 
         [HttpPost("register")]
@@ -126,46 +132,54 @@ namespace Forsa.Controllers
         }
 
 
-        //// external login endpoints 
-        //[HttpGet("external-login")]
-        //public IActionResult ExternalLogin(string provider) {
-        //    var redirectUrl = Url.Action(nameof(ExternalCallBack),"Auth");
-        //    var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider , redirectUrl);
-        //    return Challenge(properties,provider);
-        //}
+        [HttpGet("external-login")]
+        public IActionResult ExternalLogin(string provider, string role = "Attendee")
+        {
+            var redirectUrl = Url.Action(nameof(ExternalCallBack), "Auth");
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            properties.Items["requestedRole"] = role;
+            return Challenge(properties, provider);
+        }
 
-        /*[HttpGet("external-callback")]
-        public async Task<IActionResult> ExternalCallBack() { 
-
+        [HttpGet("external-callback")]
+        public async Task<IActionResult> ExternalCallBack()
+        {
             var info = await _signInManager.GetExternalLoginInfoAsync();
 
-            if (info == null) {
-                return StatusCode(500, "Error loading external information");
+            if (info == null)
+            {
+                return BadRequest(new { message = "Error loading external login information from provider." });
             }
+            var requestedRole = info.AuthenticationProperties.Items.ContainsKey("requestedRole")
+                        ? info.AuthenticationProperties.Items["requestedRole"]
+                        : "Attendee";
 
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-
-            if (string.IsNullOrEmpty(email)) { 
-                return StatusCode(500, "An email is required from provider");
-            }
-
             var name = info.Principal.FindFirstValue(ClaimTypes.Name);
+
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest(new { message = "Email claim is required from the provider." });
+            }
 
             var authDto = new ExternalAuthDto
             {
-
                 Provider = info.LoginProvider,
                 ProviderKey = info.ProviderKey,
-                Email = email,
-                Name = name
+                Email = info.Principal.FindFirstValue(ClaimTypes.Email),
+                Name = info.Principal.FindFirstValue(ClaimTypes.Name),
+                RequestedRole = requestedRole 
             };
 
-            var userDto = await _externalAuth.ProcessExternalLoginAsync(authDto);
+            var result = await _externalAuth.ProcessExternalLoginAsync(authDto);
 
-            return Ok(userDto);
+            if (!result.IsSuccess)
+            {
+                return Redirect($"http://localhost:5173/login?error={Uri.EscapeDataString(result.Message)}");
+            }
 
+            return Redirect($"http://localhost:5173/login?token={result.User.Token}&refreshToken={result.User.RefreshToken}&fullName={Uri.EscapeDataString(result.User.FullName)}&email={Uri.EscapeDataString(result.User.Email)}");
         }
-*/
 
         [HttpPost("refresh-token")]
         public async Task<ActionResult<UserDto>> RefreshToken([FromBody] RefreshTokenRequestDto request)

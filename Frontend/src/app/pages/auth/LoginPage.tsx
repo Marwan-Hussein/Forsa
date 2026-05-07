@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router";
+import { useState, useEffect, type FormEvent } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { Mail, Lock, Sparkles, GraduationCap } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
@@ -10,7 +10,30 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [searchParams] = useSearchParams();
   const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = searchParams.get("token");
+    const refreshToken = searchParams.get("refreshToken");
+    const fullName = searchParams.get("fullName");
+    const emailParam = searchParams.get("email");
+    const error = searchParams.get("error");
+
+    if (error) {
+      toast.error(error);
+    }
+
+    if (token && refreshToken) {
+      localStorage.setItem("forsa_token", token);
+      localStorage.setItem("forsa_refresh_token", refreshToken);
+      if (fullName) localStorage.setItem("forsa_user_name", fullName);
+      if (emailParam) localStorage.setItem("forsa_user_email", emailParam);
+      
+      toast.success("Successfully signed in with Google!");
+      navigate("/dashboard", { replace: true });
+    }
+  }, [searchParams, navigate]);
 
   const validate = () => {
     const next: typeof errors = {};
@@ -225,7 +248,9 @@ export default function LoginPage() {
             transition={{ duration: 0.4, delay: 0.75 }}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => toast.success("Google Sign-in clicked! (Demo — connect your provider here.)")}
+            onClick={() => {
+              window.location.href = `${import.meta.env.VITE_API_BASE_URL}/api/Auth/external-login?provider=Google&role=Attendee`;
+            }}
           >
             <svg viewBox="0 0 24 24" className="mr-3 h-5 w-5">
               <path
