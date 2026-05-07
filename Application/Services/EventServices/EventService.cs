@@ -1,5 +1,5 @@
 using Application.Core.DTOs.Event;
-using Application.Core.Interfaces;
+using Application.Core.Interfaces.EventInterfaces;
 using AutoMapper;
 using Domain.Entities.EventEntities;
 using Domain.Interfaces;
@@ -7,14 +7,14 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Application.Services
+namespace Application.Services.EventServices
 {
     public class EventService : IEventService
     {
-        private readonly IQueryableRepository<Event> _repo;
+        private readonly IEventRepository _repo;
         private readonly IMapper _mapper;
 
-        public EventService(IQueryableRepository<Event> repo, IMapper mapper)
+        public EventService(IEventRepository repo, IMapper mapper)
         {
             _repo = repo;
             _mapper = mapper;
@@ -22,19 +22,25 @@ namespace Application.Services
 
         public async Task<List<EventDetailsDto>> GetAllEvents()
         {
-            var events = await _repo.GetAllAsync();
+            var events = await _repo.GetQueryable()
+                                    .Where(e => !e.IsDeleted)
+                                    .ToListAsync();
             return _mapper.Map<List<EventDetailsDto>>(events);
         }
 
         public async Task<EventDetailsDto?> GetEventById(int id)
         {
-            var ev = await _repo.GetByIdAsync(id);
+            var ev = await _repo.GetQueryable()
+                                .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
             return ev == null ? null : _mapper.Map<EventDetailsDto>(ev);
         }
 
-        public async Task<List<EventDetailsDto>> FilterEventsByParameters(EventSearchParameter criteria)
+        public async Task<List<EventDetailsDto>> FilterEventsByParameters(EventSearchParameterDto criteria)
         {
-            var events = _repo.GetQueryable();
+            criteria ??= new EventSearchParameterDto();
+
+            var events = _repo.GetQueryable()
+                              .Where(e => !e.IsDeleted);
 
             if (!string.IsNullOrWhiteSpace(criteria.EventName))
                 events = events.Where(E => E.Title.Contains(criteria.EventName));
@@ -44,6 +50,9 @@ namespace Application.Services
 
             if (!string.IsNullOrWhiteSpace(criteria.EventCategory))
                 events = events.Where(E => E.Category.Contains(criteria.EventCategory));
+
+            if (criteria.Status.HasValue)
+                events = events.Where(E => E.Status == criteria.Status.Value);
 
             if (!string.IsNullOrWhiteSpace(criteria.SortBy))
             {
@@ -59,6 +68,10 @@ namespace Application.Services
                         ? events.OrderByDescending(e => e.Place) 
                         : events.OrderBy(e => e.Place);
                 }
+            }
+            else
+            {
+                events = events.OrderBy(e => e.Id);
             }
 
             return _mapper.Map<List<EventDetailsDto>>(await events.ToListAsync()); 

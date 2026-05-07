@@ -1,15 +1,16 @@
 
 using Application;
+using Application.Core.Interfaces.Auth.OTP;
+using Application.Services.Auth.OTP;
 using Domain.Entities;
 // using Forsa.Seed;
 using Infrastructure;
 using Infrastructure.Data.DbContexts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
 using StackExchange.Redis;
-using Application.Core.Interfaces.Auth.OTP;
-using Application.Services.Auth.OTP;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Forsa
 {
@@ -67,6 +68,8 @@ namespace Forsa
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
                 });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

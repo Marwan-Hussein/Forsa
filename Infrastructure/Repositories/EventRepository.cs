@@ -4,7 +4,7 @@ using Infrastructure.Data.DbContexts;
 
 namespace Infrastructure.Repositories
 {
-    public class EventRepository : GenericRepository<Event>, IEventRepository
+    public class EventRepository : QueryableRepository<Event>, IEventRepository
     {
         public EventRepository(ForsaDbContext context) : base(context)
         {

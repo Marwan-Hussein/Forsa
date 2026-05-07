@@ -13,10 +13,13 @@ using Domain.Entities;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Application.Core.Interfaces.EventInterfaces;
+using Application.Services.EventServices;
 
 namespace Application;
 
@@ -27,9 +30,13 @@ public static class DependencyInjection
         // Add Application Layer Services here. Example: AutoMapper, MediatR, FluentValidation, domain services.
         services.AddAutoMapper(typeof(DependencyInjection).Assembly);
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
-        services.AddScoped<IEventService, EventService>();
-        services.AddScoped<IBookingService, BookingService>();
 
+        // Event Services
+        services.AddScoped<IEventService, EventService>();
+        services.AddScoped<IEventAdminService, EventAdminService>();
+
+        // Booking Services
+        services.AddScoped<IBookingService, BookingService>();
 
         // Attendee Services
         services.AddScoped<IAttendeeAdminService,AttendeeAdminService>();
@@ -77,7 +84,7 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         
         // Register Authorization Handlers
-        services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, BookingOwnerHandler>();
+        services.AddScoped<IAuthorizationHandler, BookingOwnerHandler>();
 
         // Jwt Dependency Injection
         services.AddScoped<IJwtService, JwtService>();

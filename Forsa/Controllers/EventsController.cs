@@ -1,5 +1,6 @@
 using Application.Core.DTOs.Event;
 using Application.Core.Interfaces;
+using Application.Core.Interfaces.EventInterfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Forsa.Controllers
@@ -24,7 +25,7 @@ namespace Forsa.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<ActionResult<EventDetailsDto>> SearchEvents([FromQuery] EventSearchParameter parameters)
+        public async Task<ActionResult<EventDetailsDto>> SearchEvents([FromQuery] EventSearchParameterDto parameters)
         {
           
             return Ok(await _eventService.FilterEventsByParameters(parameters));
