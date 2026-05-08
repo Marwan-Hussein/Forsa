@@ -1,9 +1,8 @@
 ﻿using Application.Core.DTOs.Admin;
-using System.Runtime.CompilerServices;
 
 namespace Application.Queries.Admin
 {
-    public static class GetPerformanceReportQuery
+    public static class GetPerformanceReportQueryHandler
     {
         public static IQueryable<PerformanceReportDTO> PerfomanceMetrics(
             this IQueryable<PerformanceReportDTO> query, Func<PerformanceReportDTO, bool> fnc)
