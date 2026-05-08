@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 using Application.Core.DTOs.AttendeeDTOs;
-using Application.Core.Interfaces.AttendeeInterfaces;
 using FluentValidation;
 
 using Microsoft.AspNetCore.Authorization;
+using Application.Core.Interfaces.AdminServices;
 
 namespace Forsa.Controllers.AdminControllers
 {
