@@ -1,22 +1,26 @@
-﻿using Application.Core.DTOs.Admin;
+using Application.Core.DTOs.Admin;
+using Application.Core.Interfaces;
+using MediatR;
 
 namespace Application.Queries.Admin
 {
-    public static class GetPerformanceReportQueryHandler
+    public class GetPerformanceReportQueryHandler
+        : IRequestHandler<GetPerformanceReportQuery, PerformanceReportDTO>
     {
-        public static IQueryable<PerformanceReportDTO> PerfomanceMetrics(
-            this IQueryable<PerformanceReportDTO> query, Func<PerformanceReportDTO, bool> fnc)
+        private readonly IReportsRepository _repo;
+        public GetPerformanceReportQueryHandler(IReportsRepository repo)
         {
-            return query
-                .Where(report => report.CompletedTasks > 0)
-                .Where(report => report.AverageRatings < 2.5)
-                .Select(report => new PerformanceReportDTO
-                {
-                    CompletedTasks = report.CompletedTasks,
-                    AverageRatings = report.AverageRatings,
-                    TotalEarnings = report.TotalEarnings
-                })
-                .OrderBy(report => fnc);
+            _repo = repo;
+        }
+
+        public async Task<PerformanceReportDTO> Handle(
+            GetPerformanceReportQuery request, 
+            CancellationToken cancellationToken)
+        {
+            return await _repo.GetPerformanceReportAsync(
+                request.From, 
+                request.To
+                );
         }
     }
 }

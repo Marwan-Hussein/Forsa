@@ -32,6 +32,7 @@ public static class DependencyInjection
         // Add Application Layer Services here. Example: AutoMapper, MediatR, FluentValidation, domain services.
         services.AddAutoMapper(typeof(DependencyInjection).Assembly);
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
 
         // Event Services
         services.AddScoped<IEventService, EventService>();
