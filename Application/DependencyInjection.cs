@@ -1,5 +1,6 @@
 using Application.Authorization.Handlers;
 using Application.Authorization.Requirements;
+using MediatR;
 using Application.Core.Interfaces;
 using Application.Core.Interfaces.AttendeeInterfaces;
 using Application.Core.Interfaces.Auth;
@@ -9,10 +10,8 @@ using Application.Services;
 using Application.Services.AttendeeServices;
 using Application.Services.Auth.OTP;
 using Application.Services.Auth;
-using Domain.Entities;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +32,7 @@ public static class DependencyInjection
         // Add Application Layer Services here. Example: AutoMapper, MediatR, FluentValidation, domain services.
         services.AddAutoMapper(typeof(DependencyInjection).Assembly);
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+        services.AddMediatR(typeof(DependencyInjection).Assembly);
 
         // Event Services
         services.AddScoped<IEventService, EventService>();

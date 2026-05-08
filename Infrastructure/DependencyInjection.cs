@@ -1,4 +1,5 @@
 using Application.Core.Interfaces.Auth;
+using Application.Core.Interfaces;
 using Application.Services.Auth;
 using Domain.Interfaces;
 using Domain.Interfaces.AttendeeInterfaces;
@@ -27,6 +28,7 @@ public static class DependencyInjection
 
         services.AddScoped<IFeedbackRepository, FeedbackRepository>();
         services.AddScoped<IPlaceRepository, PlaceRepository>();
+        services.AddScoped<IReportsRepository, ReportsRepository>();
 
         return services;
     }
