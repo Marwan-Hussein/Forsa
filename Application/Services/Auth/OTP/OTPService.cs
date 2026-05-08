@@ -42,7 +42,7 @@ namespace Application.Services.Auth.OTP
             {
                 Email = email,
                 OtpHash = otpHash,
-                ExpiryTime = DateTime.UtcNow.AddMinutes(5)
+                ExpiryTime = DateTime.Now.AddMinutes(5)
             };
 
             await _otpRepository.AddAsync(userOtp);
@@ -82,7 +82,7 @@ namespace Application.Services.Auth.OTP
             if (userOtp == null)
                 return false; 
 
-            if (userOtp.ExpiryTime < DateTime.UtcNow)
+            if (userOtp.ExpiryTime < DateTime.Now)
             {
                 await _otpRepository.DeleteAsync(userOtp.Id);
                 await _unitOfWork.SaveChangesAsync();

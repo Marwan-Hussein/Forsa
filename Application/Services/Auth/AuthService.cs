@@ -115,7 +115,7 @@ namespace Application.Services.Auth
             user.EmailConfirmed = true;
             await userManager.UpdateAsync(user);
 
-            var token = jwtService.GenerateToken(user , (IList<string>) userManager.GetRolesAsync(user));
+            var token = jwtService.GenerateToken(user , await userManager.GetRolesAsync(user));
 
             var assignedRole = (await userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Attendee";
             if (!await roleManager.RoleExistsAsync(assignedRole))
