@@ -16,12 +16,13 @@ namespace Domain.Entities
         public List<Notification> Notifications{ get; set; }
         public List<RefreshToken> RefreshTokens { get; set; } = [];
        
-        // IBaseEntity properties
+        // BaseEntity properties
         public DateTime CreatedAt { get; set; }
         public DateTime? LastModifiedAt { get; set; }
         public DateTime? DeletedAt { get; set; }
         public string? CreatedBy { get; set; }
         public string? ModifiedBy { get; set; }
         public string? DeletedBy { get; set; }
+        public bool? IsBlocked { get; set; }
     }
 }
