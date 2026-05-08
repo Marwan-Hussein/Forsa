@@ -1,4 +1,4 @@
-﻿using Application.Core.DTOs.Admin;
+using Application.Core.DTOs.Admin;
 using MediatR;
 
 namespace Application.Queries.Admin
