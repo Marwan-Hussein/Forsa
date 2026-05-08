@@ -1,7 +1,7 @@
 ﻿using Application.Core.DTOs.AttendeeDTOs;
 
 
-namespace Application.Core.Interfaces.AttendeeInterfaces
+namespace Application.Core.Interfaces.AdminServices
 {
     public interface IAttendeeAdminService
     {

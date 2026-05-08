@@ -22,7 +22,8 @@ using Application.Core.Interfaces.EventInterfaces;
 using Application.Services.EventServices;
 using Application.Core.Interfaces.PlaceInterfaces;
 using Application.Services.PlaceServices;
-
+using Application.Core.Interfaces.AdminServices;
+using AutoMapper;
 namespace Application;
 
 public static class DependencyInjection
