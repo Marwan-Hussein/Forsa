@@ -79,15 +79,14 @@ Forsa provides a centralized system where:
 
 | Layer        | Technology |
 |-------------|-----------|
-| Frontend    | React |
-| Backend     | .NET Web API |
+| Frontend    | Tailwind, Typescript |
+| Web Pattern     | .NET Web API |
+| Architecture| Clean Architure |
 | Database    | SQL (Relational Database) |
-| Architecture| RESTful APIs |
+| ORM   | Entity Framework Core |
 
----
-
-## App Settings:
-```bash
+### Required Settings:
+```json
 {
   "Logging": {
     "LogLevel": {
@@ -97,11 +96,11 @@ Forsa provides a centralized system where:
   },
   "AllowedHosts": "*",
   "ConnectionStrings": {
-    "DefaultConnection": "Server=.;Database=Forsa;Trusted_Connection=True; TrustServerCertificate=True;",
+    "DefaultConnection": "Server=server-name;Database=dbName;Trusted_Connection=True; TrustServerCertificate=True;",
     "Redis": "localhost:6379"
   },
   "JwtSettings": {
-    "Key": "ApplicationSecretKeyUsedToHashTheTokens",
+    "Key": "your-256-bit-secret-key",
     "Issuer": "https://localhost:5000",
     "Audience": "https://localhost:5173",
     "JWTDurationInMinutes": 60,
@@ -110,22 +109,22 @@ Forsa provides a centralized system where:
   "EmailSettings": {
     "SmtpServer": "smtp.gmail.com",
     "Port": 587,
-    "SenderEmail": "marwan.hussein.450@gmail.com",
-    "SenderName": "Forsa",
-    "Password": "qxht kbcp nova uplw",
+    "SenderEmail": "your-email",
+    "SenderName": "sender-name",
+    "Password": "your-password",
     "UseSsl": false
   },
   "Authentication": {
     "Google": {
-      "GoogleId": "1032527918986-5rc7o4i9pv3o6a9bfojms30593uje1v5.apps.googleusercontent.com",
-      "GoogleSecret": "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"
+      "GoogleId": "[google-id].apps.googleusercontent.com",
+      "GoogleSecret": "google-secret-key"
     }
 
   }
-
-
 }
 ```
+---
+
 
 ---
 
