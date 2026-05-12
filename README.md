@@ -79,11 +79,50 @@ Forsa provides a centralized system where:
 
 | Layer        | Technology |
 |-------------|-----------|
-| Frontend    | React |
-| Backend     | .NET Web API |
+| Frontend    | Tailwind, Typescript |
+| Web Pattern     | .NET Web API |
+| Architecture| Clean Architure |
 | Database    | SQL (Relational Database) |
-| Architecture| RESTful APIs |
+| ORM   | Entity Framework Core |
 
+### Required Settings:
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=server-name;Database=dbName;Trusted_Connection=True; TrustServerCertificate=True;",
+    "Redis": "localhost:6379"
+  },
+  "JwtSettings": {
+    "Key": "your-256-bit-secret-key",
+    "Issuer": "https://localhost:5000",
+    "Audience": "https://localhost:5173",
+    "JWTDurationInMinutes": 60,
+    "RefreshTokenDurationInDays": 7
+  },
+  "EmailSettings": {
+    "SmtpServer": "smtp.gmail.com",
+    "Port": 587,
+    "SenderEmail": "your-email",
+    "SenderName": "sender-name",
+    "Password": "your-password",
+    "UseSsl": false
+  },
+  "Authentication": {
+    "Google": {
+      "GoogleId": "[google-id].apps.googleusercontent.com",
+      "GoogleSecret": "google-secret-key"
+    }
+
+  }
+}
+```
 ---
 
 
