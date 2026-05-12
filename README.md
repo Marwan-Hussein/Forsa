@@ -86,6 +86,46 @@ Forsa provides a centralized system where:
 
 ---
 
+## App Settings:
+```bash
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=.;Database=Forsa;Trusted_Connection=True; TrustServerCertificate=True;",
+    "Redis": "localhost:6379"
+  },
+  "JwtSettings": {
+    "Key": "ApplicationSecretKeyUsedToHashTheTokens",
+    "Issuer": "https://localhost:5000",
+    "Audience": "https://localhost:5173",
+    "JWTDurationInMinutes": 60,
+    "RefreshTokenDurationInDays": 7
+  },
+  "EmailSettings": {
+    "SmtpServer": "smtp.gmail.com",
+    "Port": 587,
+    "SenderEmail": "marwan.hussein.450@gmail.com",
+    "SenderName": "Forsa",
+    "Password": "qxht kbcp nova uplw",
+    "UseSsl": false
+  },
+  "Authentication": {
+    "Google": {
+      "GoogleId": "1032527918986-5rc7o4i9pv3o6a9bfojms30593uje1v5.apps.googleusercontent.com",
+      "GoogleSecret": "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"
+    }
+
+  }
+
+
+}
+```
 
 ---
 
