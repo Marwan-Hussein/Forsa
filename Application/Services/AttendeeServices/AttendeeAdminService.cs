@@ -1,5 +1,5 @@
 ﻿using Application.Core.DTOs.AttendeeDTOs;
-using Application.Core.Interfaces.AttendeeInterfaces;
+using Application.Core.Interfaces.AdminServices;
 using Application.Queries.Attendees;
 using AutoMapper;
 using Domain.Interfaces;
