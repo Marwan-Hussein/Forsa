@@ -18,7 +18,8 @@ namespace Application.Mapping
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
                 
             CreateMap<RegisterDto, Domain.Entities.OrganizerEntities.Organizer>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.OrganizationName, opt => opt.MapFrom(src => string.IsNullOrWhiteSpace(src.OrganizationName) ? src.FullName : src.OrganizationName));
         }
     }
 }
