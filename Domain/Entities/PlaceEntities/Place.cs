@@ -20,6 +20,7 @@ namespace Domain.Entities.PlaceEntities
 
         // Relationships
         public List<PlaceMedia> PlaceMedias { get; set; }
+        public List<PlaceAvailability> PlaceAvailabilities { get; set; }
         public Owner Owner { get; set; }
         public int? OwnerId { get; set; }
 
