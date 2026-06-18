@@ -8,5 +8,6 @@ namespace Application.Core.Interfaces.EventInterfaces
         Task<List<EventDetailsDto>> GetAllEvents();
         Task<EventDetailsDto?> GetEventById(int id);
         Task<List<EventDetailsDto>> FilterEventsByParameters(EventSearchParameterDto parameters);
+        Task EvaluateEventStatusAsync(int eventId);
     }
 }

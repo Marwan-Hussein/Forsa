@@ -48,5 +48,22 @@ namespace Forsa.Controllers
                 return StatusCode(500, "An error occurred while retrieving event details");
             }
         }
+        [HttpPost("{id}/evaluate-status")]
+        public async Task<ActionResult> EvaluateEventStatus(int id)
+        {
+            try
+            {
+                await _eventService.EvaluateEventStatusAsync(id);
+                return Ok(new { Message = "Event status evaluated successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while evaluating event status");
+            }
+        }
     }
 }

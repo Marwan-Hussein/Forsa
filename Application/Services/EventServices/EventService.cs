@@ -13,11 +13,13 @@ namespace Application.Services.EventServices
     {
         private readonly IEventRepository _repo;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public EventService(IEventRepository repo, IMapper mapper)
+        public EventService(IEventRepository repo, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _repo = repo;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<EventDetailsDto>> GetAllEvents()
@@ -75,6 +77,37 @@ namespace Application.Services.EventServices
             }
 
             return _mapper.Map<List<EventDetailsDto>>(await events.ToListAsync()); 
+        }
+
+        public async Task EvaluateEventStatusAsync(int eventId)
+        {
+            var eventEntity = await _repo.GetQueryable()
+                .Include(e => e.Bookings)
+                    .ThenInclude(b => b.Attendee)
+                .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
+
+            if (eventEntity == null)
+                throw new KeyNotFoundException("Event not found");
+
+            if (eventEntity.Status == Domain.ENUMs.EventStatus.Published && eventEntity.EndDate <= DateTime.UtcNow)
+            {
+                eventEntity.Status = Domain.ENUMs.EventStatus.Completed;
+                eventEntity.RemainingTickets = 0; // Locks further bookings
+
+                if (eventEntity.Bookings != null)
+                {
+                    foreach (var booking in eventEntity.Bookings.Where(b => b.Status == Domain.ENUMs.BookingStatus.Confirmed))
+                    {
+                        if (booking.Attendee != null)
+                        {
+                            booking.Attendee.LoyaltyPoint += 10; // final calculation of attendee ratings
+                        }
+                    }
+                }
+
+                _repo.Update(eventEntity);
+                await _unitOfWork.SaveChangesAsync();
+            }
         }
     }
 }
