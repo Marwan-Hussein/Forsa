@@ -6,6 +6,7 @@ using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using Domain.ENUMs;
 
 namespace Application.Services.EventServices
 {
@@ -89,14 +90,14 @@ namespace Application.Services.EventServices
             if (eventEntity == null)
                 throw new KeyNotFoundException("Event not found");
 
-            if (eventEntity.Status == Domain.ENUMs.EventStatus.Published && eventEntity.EndDate <= DateTime.UtcNow)
+            if (eventEntity.Status == EventStatus.Published && eventEntity.EndDate <= DateTime.UtcNow)
             {
-                eventEntity.Status = Domain.ENUMs.EventStatus.Completed;
+                eventEntity.Status = EventStatus.Completed;
                 eventEntity.RemainingTickets = 0; // Locks further bookings
 
                 if (eventEntity.Bookings != null)
                 {
-                    foreach (var booking in eventEntity.Bookings.Where(b => b.Status == Domain.ENUMs.BookingStatus.Confirmed))
+                    foreach (var booking in eventEntity.Bookings.Where(b => b.Status == BookingStatus.Confirmed))
                     {
                         if (booking.Attendee != null)
                         {
@@ -108,6 +109,25 @@ namespace Application.Services.EventServices
                 _repo.Update(eventEntity);
                 await _unitOfWork.SaveChangesAsync();
             }
+        }
+
+        public async Task<bool> DeductTicketInventoryAsync(int eventId, int quantity)
+        {
+            var eventEntity = await _repo.GetQueryable()
+                .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
+
+            if (eventEntity == null || eventEntity.RemainingTickets < quantity)
+                return false;
+
+            eventEntity.RemainingTickets -= quantity;
+            
+            if (eventEntity.RemainingTickets == 0)
+                eventEntity.Status = EventStatus.SoldOut;
+
+            _repo.Update(eventEntity);
+            await _unitOfWork.SaveChangesAsync();
+
+            return true;
         }
     }
 }

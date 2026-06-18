@@ -65,5 +65,24 @@ namespace Forsa.Controllers
                 return StatusCode(500, "An error occurred while evaluating event status");
             }
         }
+
+        [HttpPost("{id}/deduct-tickets")]
+        public async Task<ActionResult> DeductTickets(int id, [FromQuery] int quantity)
+        {
+            try
+            {
+                if (quantity <= 0) return BadRequest("Quantity must be greater than 0");
+                
+                var success = await _eventService.DeductTicketInventoryAsync(id, quantity);
+                if (!success)
+                    return BadRequest("Not enough tickets available or event not found.");
+
+                return Ok(new { Message = "Tickets deducted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while deducting tickets");
+            }
+        }
     }
 }
