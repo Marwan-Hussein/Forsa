@@ -210,5 +210,28 @@ namespace Application.Services
             await _unitOfWork.SaveChangesAsync();
 
         }
+
+
+        public async Task BlockAttendeeFromEventAsync(int eventId, int attendeeId)
+        {
+            var bookingInfo = await _bookingRepository.GetQueryable()
+                .Include(b => b.Event)
+                .FirstOrDefaultAsync(b => b.EventId == eventId && b.AttendeeId == attendeeId && !b.IsDeleted);
+
+            if (bookingInfo == null)
+                throw new KeyNotFoundException("The booking information was not found.");
+            if (bookingInfo.Status == BookingStatus.Cancelled)
+                throw new InvalidOperationException("This attendee's booking is already cancelled.");
+            bookingInfo.Status = BookingStatus.Cancelled;
+            _bookingRepository.Update(bookingInfo);
+
+            if (bookingInfo.Event != null)
+            {
+                bookingInfo.Event.RemainingTickets += bookingInfo.NumberOfTickets;
+                _eventRepository.Update(bookingInfo.Event); // Explicitly updates the event row capacity count
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+        }
     }
 }
