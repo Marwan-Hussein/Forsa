@@ -22,6 +22,8 @@ using Application.Services.EventServices;
 using Application.Core.Interfaces.PlaceInterfaces;
 using Application.Services.PlaceServices;
 using Application.Core.Interfaces.AdminServices;
+using Application.Core.Interfaces.OwnerInterfaces;
+using Application.Services.OwnerServices;
 using AutoMapper;
 namespace Application;
 
@@ -40,6 +42,10 @@ public static class DependencyInjection
 
         // Place Services
         services.AddScoped<IPlaceAdminService, PlaceAdminService>();
+
+        // Owner Services
+        services.AddScoped<IOwnerService, OwnerService>();
+        services.AddScoped<IPlaceOwnerService, PlaceOwnerService>();
 
         // Booking Services
         services.AddScoped<IBookingService, BookingService>();

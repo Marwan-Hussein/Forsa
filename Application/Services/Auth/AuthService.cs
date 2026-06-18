@@ -59,15 +59,6 @@ namespace Application.Services.Auth
                 throw new Exception("Email already exists");
             }
 
-            // Create the user in the database normally
-            var user = mapper.Map<ApplicationUser>(registerDto);
-            user.EmailConfirmed = false; // Need to verify OTP
-
-            var refreshToken = refreshTokenService.GenerateToken();
-            user.RefreshTokens.Add(refreshTokenService.CreateRefreshToken(refreshToken));
-
-            var result = await userManager.CreateAsync(user, registerDto.Password);
-            HandleResult(result, "User creation failed");
             // Determine which role to assign
             string assignedRole = "Attendee"; // default
             
@@ -84,6 +75,32 @@ namespace Application.Services.Auth
                     assignedRole = parsedRole.ToString();
                 }
             }
+
+            // Create the user in the database with the correct derived type
+            ApplicationUser user;
+            if (assignedRole == "Owner")
+                user = mapper.Map<Domain.Entities.OwnerEntities.Owner>(registerDto);
+            else if (assignedRole == "Organizer")
+                user = mapper.Map<Domain.Entities.OrganizerEntities.Organizer>(registerDto);
+            else
+                user = mapper.Map<Domain.Entities.AttendeeEntities.Attendee>(registerDto);
+
+            user.EmailConfirmed = false; // Need to verify OTP
+
+            var refreshToken = refreshTokenService.GenerateToken();
+            user.RefreshTokens.Add(refreshTokenService.CreateRefreshToken(refreshToken));
+
+            var result = await userManager.CreateAsync(user, registerDto.Password);
+            HandleResult(result, "User creation failed");
+
+            // Create the role if it doesn't exist
+            if (!await roleManager.RoleExistsAsync(assignedRole))
+            {
+                await roleManager.CreateAsync(new IdentityRole<int>(assignedRole));
+            }
+
+            // Add user to the role
+            await userManager.AddToRoleAsync(user, assignedRole);
 
             // Generate and send OTP to the user's email after registration
             await otpService.GenerateAndSendOTPAsync(registerDto.Email);
