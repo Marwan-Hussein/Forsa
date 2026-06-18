@@ -7,8 +7,15 @@ namespace Domain.Entities
     {
         public string Code { get; set; }
         public decimal DiscountValue { get; set; }
+        public bool IsPercentage { get; set; }
+        public DateTime StartDate { get; set; }
         public DateTime ExpiryDate { get; set; }
-        public int UsageLimit { get; set; }
+
+        public int MaxUsageLimit { get; set; }
+        public int CurrentUsage { get; set; }
+
+        public bool IsActive { get; set; }
+        public bool IsExpired => DateTime.UtcNow > ExpiryDate;
 
         // Relationships
         public int OrganizerId { get; set; }
