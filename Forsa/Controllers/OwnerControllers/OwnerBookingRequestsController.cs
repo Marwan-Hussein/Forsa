@@ -1,5 +1,7 @@
 using Application.Core.DTOs.Booking;
+using Application.Core.DTOs.Owner;
 using Application.Core.Interfaces.OwnerInterfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -12,10 +14,17 @@ namespace Forsa.Controllers.OwnerControllers
     public class OwnerBookingRequestsController : ControllerBase
     {
         private readonly IBookingRequestOwnerService _bookingService;
+        private readonly IOwnerFeedbackService _feedbackService;
+        private readonly IValidator<OrganizerFeedbackDto> _feedbackValidator;
 
-        public OwnerBookingRequestsController(IBookingRequestOwnerService bookingService)
+        public OwnerBookingRequestsController(
+            IBookingRequestOwnerService bookingService,
+            IOwnerFeedbackService feedbackService,
+            IValidator<OrganizerFeedbackDto> feedbackValidator)
         {
             _bookingService = bookingService;
+            _feedbackService = feedbackService;
+            _feedbackValidator = feedbackValidator;
         }
 
         private int GetOwnerId() =>
@@ -52,5 +61,31 @@ namespace Forsa.Controllers.OwnerControllers
             catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
             catch (Exception) { return StatusCode(500, new { message = "An error occurred while processing the request." }); }
         }
+
+        // POST api/owner/booking-requests/{bookingRequestId}/feedback
+        [HttpPost("{bookingRequestId:int}/feedback")]
+        public async Task<ActionResult<OrganizerFeedbackResponseDto>> SubmitFeedback(
+            int bookingRequestId, [FromBody] OrganizerFeedbackDto dto)
+        {
+            var validation = await _feedbackValidator.ValidateAsync(dto);
+            if (!validation.IsValid)
+            {
+                var errors = validation.Errors
+                    .Select(e => new { field = e.PropertyName, message = e.ErrorMessage });
+                return BadRequest(new { errors });
+            }
+
+            try
+            {
+                var result = await _feedbackService.SubmitOrganizerFeedbackAsync(
+                    GetOwnerId(), bookingRequestId, dto);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (UnauthorizedAccessException ex) { return Forbid(); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+            catch (Exception) { return StatusCode(500, new { message = "An error occurred while submitting feedback." }); }
+        }
     }
 }
+
