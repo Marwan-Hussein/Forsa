@@ -11,5 +11,7 @@ namespace Domain.Interfaces
     {
         Task<PromoCode?> GetByCodeAsync(int eventId, string code);
         Task<bool> DeactivatePromoCodeAsync(int eventId , string code);
+        Task DeletePromoCode(int eventId,string Code);
+
     }
 }

@@ -8,6 +8,7 @@ namespace Application.Core.DTOs.Event
 {
     public class AttendeePromoCodeDto
     {
+        public int EventId { get; set; }
         public string Code { get; set; }
 
     }

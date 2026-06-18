@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace Infrastructure.Repositories
 {
@@ -35,5 +36,13 @@ namespace Infrastructure.Repositories
             return true;
         }
 
+        public async Task DeletePromoCode(int eventId, string Code)
+        {
+            var normalizedCode = Code.Trim().ToUpper();
+
+            await _context.Set<PromoCode>()
+                .Where(p => p.EventId == eventId && p.Code == normalizedCode)
+                .ExecuteDeleteAsync();
+        }
     }
 }
