@@ -84,5 +84,25 @@ namespace Forsa.Controllers
                 return StatusCode(500, "An error occurred while deducting tickets");
             }
         }
+
+        [HttpPost("{id}/release-tickets")]
+        public async Task<ActionResult> ReleaseTickets(int id, [FromQuery] int quantity)
+        {
+            try
+            {
+                if (quantity <= 0) return BadRequest("Quantity must be greater than 0");
+                
+                await _eventService.ReleaseTicketInventoryAsync(id, quantity);
+                return Ok(new { Message = "Tickets released successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while releasing tickets");
+            }
+        }
     }
 }

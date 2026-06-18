@@ -10,5 +10,6 @@ namespace Application.Core.Interfaces.EventInterfaces
         Task<List<EventDetailsDto>> FilterEventsByParameters(EventSearchParameterDto parameters);
         Task EvaluateEventStatusAsync(int eventId);
         Task<bool> DeductTicketInventoryAsync(int eventId, int quantity);
+        Task ReleaseTicketInventoryAsync(int eventId, int quantity);
     }
 }

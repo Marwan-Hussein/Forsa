@@ -129,5 +129,22 @@ namespace Application.Services.EventServices
 
             return true;
         }
+
+        public async Task ReleaseTicketInventoryAsync(int eventId, int quantity)
+        {
+            var eventEntity = await _repo.GetQueryable()
+                .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
+
+            if (eventEntity == null)
+                throw new KeyNotFoundException("Event not found");
+
+            eventEntity.RemainingTickets += quantity;
+
+            if (eventEntity.Status == EventStatus.SoldOut)
+                eventEntity.Status = EventStatus.Published;
+
+            _repo.Update(eventEntity);
+            await _unitOfWork.SaveChangesAsync();
+        }
     }
 }
