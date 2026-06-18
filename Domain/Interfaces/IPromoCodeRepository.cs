@@ -9,6 +9,7 @@ namespace Domain.Interfaces
 {
     public interface IPromoCodeRepository : IGenericRepository<PromoCode>
     {
-
+        Task<PromoCode?> GetByCodeAsync(int eventId, string code);
+        Task<bool> DeactivatePromoCodeAsync(int eventId , string code);
     }
 }
