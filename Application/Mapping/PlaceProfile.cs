@@ -16,6 +16,10 @@ namespace Application.Mapping
 
             CreateMap<AddPlaceDto, Place>()
                 .ForMember(d => d.FacilityName, o => o.MapFrom(s => (FacilityName)s.FacilityName));
+
+            CreateMap<PlaceMedia, PlaceMediaDto>()
+                .ForMember(d => d.MediaId, o => o.MapFrom(s => s.Id))
+                .ForMember(d => d.MediaType, o => o.MapFrom(s => s.MediaType.ToString()));
         }
     }
 }

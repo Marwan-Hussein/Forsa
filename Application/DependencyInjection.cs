@@ -42,6 +42,7 @@ public static class DependencyInjection
 
         // Place Services
         services.AddScoped<IPlaceAdminService, PlaceAdminService>();
+        services.AddScoped<IPlaceMediaService, PlaceMediaService>();
 
         // Owner Services
         services.AddScoped<IOwnerService, OwnerService>();
