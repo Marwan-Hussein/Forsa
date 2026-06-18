@@ -9,5 +9,9 @@ namespace Application.Core.Interfaces
         Task<BookingResponseDto> CreateBookingAsync(CreateBookingRequestDto dto);
         Task<BookingResponseDto> GetBookingAsync(int bookingId);
         Task CancelBookingAsync(int bookingId);
+
+
+        Task<byte[]> GetTicketFromQr(int bookingId);
+        Task VerifyAttendanceViaQrCodeAsync(int eventId, string qrCode);
     }
 }
