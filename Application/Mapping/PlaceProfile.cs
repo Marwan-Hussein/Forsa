@@ -20,6 +20,12 @@ namespace Application.Mapping
             CreateMap<PlaceMedia, PlaceMediaDto>()
                 .ForMember(d => d.MediaId, o => o.MapFrom(s => s.Id))
                 .ForMember(d => d.MediaType, o => o.MapFrom(s => s.MediaType.ToString()));
+
+            CreateMap<PlaceAvailability, PlaceAvailabilityDto>()
+                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()));
+
+            CreateMap<CalendarUpdateDto, PlaceAvailability>()
+                .ForMember(d => d.Status, o => o.MapFrom(s => (PlaceStatus)s.Status));
         }
     }
 }

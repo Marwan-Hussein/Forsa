@@ -1,0 +1,134 @@
+using Application.Core.DTOs.Place;
+using Application.Core.Interfaces.OwnerInterfaces;
+using AutoMapper;
+using Domain.Entities.PlaceEntities;
+using Domain.ENUMs;
+using Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
+
+namespace Application.Services.OwnerServices
+{
+    public class PlaceAvailabilityService : IPlaceAvailabilityService
+    {
+        private readonly IPlaceRepository _placeRepo;
+        private readonly IQueryableRepository<PlaceAvailability> _availabilityRepo;
+        private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
+
+        public PlaceAvailabilityService(
+            IPlaceRepository placeRepo,
+            IQueryableRepository<PlaceAvailability> availabilityRepo,
+            IMapper mapper,
+            IUnitOfWork unitOfWork)
+        {
+            _placeRepo = placeRepo;
+            _availabilityRepo = availabilityRepo;
+            _mapper = mapper;
+            _unitOfWork = unitOfWork;
+        }
+
+        public async Task<PlaceAvailabilityDto> UpdatePlaceAvailabilityCalendarAsync(
+            int ownerId, int placeId, CalendarUpdateDto dto)
+        {
+            // 1. Verify place ownership
+            var place = await _placeRepo.GetQueryable()
+                .FirstOrDefaultAsync(p => p.Id == placeId && p.OwnerId == ownerId && !p.IsDeleted);
+            if (place == null)
+                throw new KeyNotFoundException("Place not found or you don't own this place.");
+
+            // 2. Only allow Available (4) or Blocked (6) — Booked (5) is set by booking acceptance
+            var status = (PlaceStatus)dto.Status;
+            if (status != PlaceStatus.Available && status != PlaceStatus.Blocked)
+                throw new InvalidOperationException(
+                    "You can only set slots as Available (4) or Blocked (6). Booked status is set automatically when a booking is accepted.");
+
+            // 3. Check for conflicting existing slot on the same date
+            var conflict = await _availabilityRepo.GetQueryable()
+                .FirstOrDefaultAsync(a =>
+                    a.PlaceId == placeId &&
+                    a.Date.Date == dto.Date.Date &&
+                    !a.IsDeleted);
+
+            if (conflict != null)
+            {
+                // If a slot already exists for this date, update it instead of creating a duplicate
+                conflict.StartTime = dto.StartTime;
+                conflict.EndTime = dto.EndTime;
+                conflict.Status = status;
+                conflict.LastModifiedAt = DateTime.UtcNow;
+                _availabilityRepo.Update(conflict);
+                await _unitOfWork.SaveChangesAsync();
+                return _mapper.Map<PlaceAvailabilityDto>(conflict);
+            }
+
+            // 4. Create new availability slot
+            var slot = new PlaceAvailability
+            {
+                Date = dto.Date.Date,
+                StartTime = dto.StartTime,
+                EndTime = dto.EndTime,
+                Status = status,
+                PlaceId = placeId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _availabilityRepo.AddAsync(slot);
+            await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<PlaceAvailabilityDto>(slot);
+        }
+
+        public async Task<List<PlaceAvailabilityDto>> GetPlaceCalendarAsync(
+            int ownerId, int placeId, DateTime? fromDate, DateTime? toDate)
+        {
+            // 1. Verify place ownership
+            var place = await _placeRepo.GetQueryable()
+                .FirstOrDefaultAsync(p => p.Id == placeId && p.OwnerId == ownerId && !p.IsDeleted);
+            if (place == null)
+                throw new KeyNotFoundException("Place not found or you don't own this place.");
+
+            // 2. Query all slots (including Booked so the owner can see everything)
+            var query = _availabilityRepo.GetQueryable()
+                .Where(a => a.PlaceId == placeId && !a.IsDeleted);
+
+            // 3. Optional date range filter
+            if (fromDate.HasValue)
+                query = query.Where(a => a.Date >= fromDate.Value.Date);
+            if (toDate.HasValue)
+                query = query.Where(a => a.Date <= toDate.Value.Date);
+
+            var slots = await query.OrderBy(a => a.Date)
+                                   .ThenBy(a => a.StartTime)
+                                   .ToListAsync();
+
+            return _mapper.Map<List<PlaceAvailabilityDto>>(slots);
+        }
+
+        public async Task<bool> RemoveAvailabilitySlotAsync(int ownerId, int placeId, int slotId)
+        {
+            // 1. Verify place ownership
+            var place = await _placeRepo.GetQueryable()
+                .FirstOrDefaultAsync(p => p.Id == placeId && p.OwnerId == ownerId && !p.IsDeleted);
+            if (place == null)
+                throw new KeyNotFoundException("Place not found or you don't own this place.");
+
+            // 2. Find the slot
+            var slot = await _availabilityRepo.GetQueryable()
+                .FirstOrDefaultAsync(a => a.Id == slotId && a.PlaceId == placeId && !a.IsDeleted);
+            if (slot == null) return false;
+
+            // 3. Only allow removing Available or Blocked — NOT Booked
+            if (slot.Status == PlaceStatus.Booked)
+                throw new InvalidOperationException(
+                    "Cannot remove a Booked slot. Cancel the booking first.");
+
+            // 4. Soft-delete
+            slot.IsDeleted = true;
+            slot.DeletedAt = DateTime.UtcNow;
+            _availabilityRepo.Update(slot);
+            await _unitOfWork.SaveChangesAsync();
+
+            return true;
+        }
+    }
+}

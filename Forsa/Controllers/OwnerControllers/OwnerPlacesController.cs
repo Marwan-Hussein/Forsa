@@ -13,13 +13,16 @@ namespace Forsa.Controllers.OwnerControllers
     public class OwnerPlacesController : ControllerBase
     {
         private readonly IPlaceOwnerService _placeOwnerService;
+        private readonly IPlaceAvailabilityService _availabilityService;
         private readonly IValidator<AddPlaceDto> _addPlaceValidator;
 
         public OwnerPlacesController(
             IPlaceOwnerService placeOwnerService,
+            IPlaceAvailabilityService availabilityService,
             IValidator<AddPlaceDto> validator)
         {
             _placeOwnerService = placeOwnerService;
+            _availabilityService = availabilityService;
             _addPlaceValidator = validator;
         }
 
@@ -115,5 +118,53 @@ namespace Forsa.Controllers.OwnerControllers
                 return StatusCode(500, new { message = "An error occurred while deleting the place." });
             }
         }
+
+        // POST api/owner/places/{placeId}/calendar
+        [HttpPost("{placeId:int}/calendar")]
+        public async Task<ActionResult<PlaceAvailabilityDto>> SetAvailability(
+            int placeId, [FromBody] CalendarUpdateDto dto)
+        {
+            try
+            {
+                var result = await _availabilityService.UpdatePlaceAvailabilityCalendarAsync(
+                    GetOwnerId(), placeId, dto);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+            catch (Exception) { return StatusCode(500, new { message = "An error occurred while updating availability." }); }
+        }
+
+        // GET api/owner/places/{placeId}/calendar?fromDate=2025-01-01&toDate=2025-01-31 (to filter results by date range)
+        [HttpGet("{placeId:int}/calendar")]
+        public async Task<ActionResult<List<PlaceAvailabilityDto>>> GetCalendar(
+            int placeId, [FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate)
+        {
+            try
+            {
+                var result = await _availabilityService.GetPlaceCalendarAsync(
+                    GetOwnerId(), placeId, fromDate, toDate);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (Exception) { return StatusCode(500, new { message = "An error occurred." }); }
+        }
+
+        // DELETE api/owner/places/{placeId}/calendar/{slotId}
+        [HttpDelete("{placeId:int}/calendar/{slotId:int}")]
+        public async Task<IActionResult> RemoveSlot(int placeId, int slotId)
+        {
+            try
+            {
+                var removed = await _availabilityService.RemoveAvailabilitySlotAsync(
+                    GetOwnerId(), placeId, slotId);
+                if (!removed) return NotFound(new { message = "Slot not found." });
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+            catch (Exception) { return StatusCode(500, new { message = "An error occurred while removing the slot." }); }
+        }
     }
 }
+
