@@ -62,7 +62,7 @@ namespace Forsa.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while evaluating event status");
+                return StatusCode(500, $"An error occurred while evaluating event status: {ex.ToString()}\n{ex.Message}");
             }
         }
 
@@ -81,7 +81,7 @@ namespace Forsa.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while deducting tickets");
+                return StatusCode(500, $"An error occurred while deducting tickets: {ex.ToString()}\n{ex.Message}");
             }
         }
 
@@ -101,7 +101,7 @@ namespace Forsa.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while releasing tickets");
+                return StatusCode(500, $"An error occurred while releasing tickets: {ex.ToString()}\n{ex.Message}");
             }
         }
     }

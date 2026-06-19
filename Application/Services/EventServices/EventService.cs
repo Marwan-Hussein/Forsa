@@ -96,15 +96,9 @@ namespace Application.Services.EventServices
                 eventEntity.RemainingTickets = 0; // Locks further bookings
 
                 if (eventEntity.Bookings != null)
-                {
                     foreach (var booking in eventEntity.Bookings.Where(b => b.Status == BookingStatus.Confirmed))
-                    {
                         if (booking.Attendee != null)
-                        {
                             booking.Attendee.LoyaltyPoint += 10; // final calculation of attendee ratings
-                        }
-                    }
-                }
 
                 _repo.Update(eventEntity);
                 await _unitOfWork.SaveChangesAsync();
@@ -137,6 +131,8 @@ namespace Application.Services.EventServices
 
             if (eventEntity == null)
                 throw new KeyNotFoundException("Event not found");
+            if(quantity == 0 || quantity + eventEntity.RemainingTickets > eventEntity.TotalTickets)
+                throw new InvalidOperationException("Invalid quantity to release");
 
             eventEntity.RemainingTickets += quantity;
 
