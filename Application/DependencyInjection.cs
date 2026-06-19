@@ -24,6 +24,8 @@ using Application.Services.PlaceServices;
 using Application.Core.Interfaces.AdminServices;
 using Application.Core.Interfaces.OwnerInterfaces;
 using Application.Services.OwnerServices;
+using Application.Core.Interfaces.OrganizerInterfaces;
+using Application.Services.OrganizerServices;
 using AutoMapper;
 namespace Application;
 
@@ -53,10 +55,14 @@ public static class DependencyInjection
 
         // Booking Services
         services.AddScoped<IBookingService, BookingService>();
+        services.AddScoped<IQrService, QrService>();
 
         // Attendee Services
         services.AddScoped<IAttendeeAdminService,AttendeeAdminService>();
         services.AddScoped<IAttendeeProfileService,AttendeeProfileService>();
+
+        // Promo Services
+        services.AddScoped<IPromoService, PromoCodeService>();
 
         // Jwt Configuration
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
