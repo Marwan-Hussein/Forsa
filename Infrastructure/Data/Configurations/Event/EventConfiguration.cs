@@ -78,6 +78,24 @@ namespace Infrastructure.Data.Configurations
                     IsDeleted = false,
                     CreatedAt = new DateTime(2026, 1, 2),
                     Status = Domain.ENUMs.EventStatus.Draft
+                },
+
+                new Event
+                {
+                    Id = 3,
+                    Title = "Fullstack .NET",
+                    Description = "A greatful session with Abdelrahman El-Wakeel.",
+                    Category = "Technology",
+                    TicketPrice = 0.5e3,
+                    TotalTickets = 500,
+                    RemainingTickets = 500,
+                    StartDate = new DateTime(2026, 6, 19, 9, 0, 0),
+                    EndDate = new DateTime(2026, 7, 18, 17, 0, 0),
+                    PlaceId = 1,
+                    Place = "DEPI, Azamalik",
+                    IsDeleted = false,
+                    CreatedAt = new DateTime(2026, 6, 19),
+                    Status = Domain.ENUMs.EventStatus.Published
                 }
             );
 
