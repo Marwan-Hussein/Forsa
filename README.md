@@ -31,18 +31,23 @@ Forsa provides a centralized system where:
 ## 🧠 User Roles & Guarantees
 
 ### 😶‍🌫️ Guest
+
 **Responsibilities:**
+
 - Browse availble events
-  
+
 ---
 
 ### 👤 Attendee
+
 **Responsibilities:**
+
 - Browse available events
 - Book tickets
 - Rate and review events
 
 **Guarantees:**
+
 - Easy and fast booking experience
 - Accurate and updated event information
 - Secure data handling
@@ -50,12 +55,15 @@ Forsa provides a centralized system where:
 ---
 
 ### 🧑‍💼 Organizer
+
 **Responsibilities:**
+
 - Create and manage events
 - Monitor bookings and attendees
 - Update event details
 
 **Guarantees:**
+
 - Efficient event management tools
 - Real-time updates
 - Reliable attendee tracking
@@ -63,12 +71,15 @@ Forsa provides a centralized system where:
 ---
 
 ### 🏢 Venue Owner
+
 **Responsibilities:**
+
 - List venues and availability
 - Handle booking requests
 - Manage schedules
 
 **Guarantees:**
+
 - Clear booking workflow
 - Optimized scheduling system
 - Increased exposure for venues
@@ -77,15 +88,16 @@ Forsa provides a centralized system where:
 
 ## 🛠️ Tech Stack
 
-| Layer        | Technology |
-|-------------|-----------|
-| Frontend    | Tailwind, Typescript |
-| Web Pattern     | .NET Web API |
-| Architecture| Clean Architure |
-| Database    | SQL (Relational Database) |
-| ORM   | Entity Framework Core |
+| Layer        | Technology                |
+| ------------ | ------------------------- |
+| Frontend     | Tailwind, Typescript      |
+| Web Pattern  | .NET Web API              |
+| Architecture | Clean Architure           |
+| Database     | SQL (Relational Database) |
+| ORM          | Entity Framework Core     |
 
 ### Required Settings:
+
 ```json
 {
   "Logging": {
@@ -119,25 +131,24 @@ Forsa provides a centralized system where:
       "GoogleId": "[google-id].apps.googleusercontent.com",
       "GoogleSecret": "google-secret-key"
     }
-
   }
 }
 ```
----
 
+---
 
 ---
 
 ## 🤝 Contributions
 
-| Contributor | LinkedIn| Tasks and Lifecycles |
-|-------------|-------------|-------------|
-| 1. [Marwan Hussein](https://github.com/Marwan-Hussein) | [LinkedIn](https://linkedin.com/in/marwanhussein9) |  - Forsa Logo<br>- OTP Service<br>- Admin Reports<br>  |
-| 2. [Mariam Ehab](https://github.com/Marria-m) | [LinkedIn](https://www.linkedin.com/in/mariamehab1305) |  - Tas1<br>- Task2<br>- Task3<br>  |
-| 3. [Mohamed Kotb](https://github.com/kotbb) | [LinkedIn](https://www.linkedin.com/in/mohamedkotbb) |  - Tas1<br>- Task2<br>- Task3<br>  |
-| 4. [Mohamed Nagy](https://github.com/Nagy101) | [LinkedIn](https://www.linkedin.com/in/mohamed-nagy-36aa4b318 ) |  - Tas1<br>- Task2<br>- Task3<br>  |
-| 5. [Zeyad Azzap](https://github.com/user5) | [LinkedIn](https://www.linkedin.com/in/zeyad-azab) |  - Tas1<br>- Task2<br>- Task3<br>  |
-| 6. [Mazen Abdellatief](https://github.com/MazenAdelatee) | [LinkedIn](https://www.linkedin.com/in/mazen-abdellateef-3b37172b6) |  - Tas1<br>- Task2<br>- Task3<br>  |
+| Contributor                                              | LinkedIn                                                            | Tasks and Lifecycles                                                                                                                            |
+| -------------------------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. [Marwan Hussein](https://github.com/Marwan-Hussein)   | [LinkedIn](https://linkedin.com/in/marwanhussein9)                  | - Forsa Logo<br>- OTP Service<br>- Admin Reports<br>- Event Services \[EvaluateEventStatus, DeductTicketInventory, ReleaseTicketInventory\]<br> |
+| 2. [Mariam Ehab](https://github.com/Marria-m)            | [LinkedIn](https://www.linkedin.com/in/mariamehab1305)              | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
+| 3. [Mohamed Kotb](https://github.com/kotbb)              | [LinkedIn](https://www.linkedin.com/in/mohamedkotbb)                | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
+| 4. [Mohamed Nagy](https://github.com/Nagy101)            | [LinkedIn](https://www.linkedin.com/in/mohamed-nagy-36aa4b318)      | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
+| 5. [Zeyad Azzap](https://github.com/user5)               | [LinkedIn](https://www.linkedin.com/in/zeyad-azab)                  | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
+| 6. [Mazen Abdellatief](https://github.com/MazenAdelatee) | [LinkedIn](https://www.linkedin.com/in/mazen-abdellateef-3b37172b6) | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
 
 ---
 

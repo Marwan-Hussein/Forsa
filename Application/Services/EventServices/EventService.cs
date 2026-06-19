@@ -90,7 +90,8 @@ namespace Application.Services.EventServices
             if (eventEntity == null)
                 throw new KeyNotFoundException("Event not found");
 
-            if (eventEntity.Status == EventStatus.Published && eventEntity.EndDate <= DateTime.UtcNow)
+            if ((eventEntity.Status == EventStatus.Published || eventEntity.Status == EventStatus.SoldOut) 
+                && eventEntity.EndDate <= DateTime.UtcNow)
             {
                 eventEntity.Status = EventStatus.Completed;
                 eventEntity.RemainingTickets = 0; // Locks further bookings
