@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
+import { apiPost } from "../../api/api";
 import {
   ArrowLeft,
   Calendar,
@@ -56,11 +57,18 @@ export default function EventDetailsPage() {
   const organization = mockOrganizations.find((org) => org.id === event.organizerId);
   const totalPrice = event.price === "Free" ? 0 : (event.price as number) * ticketCount;
 
-  const handleBooking = () => {
-    setShowBookingModal(false);
-    toast.success("Booking confirmed", {
-      description: `${ticketCount} ticket(s) for ${event.title} (demo).`,
-    });
+  const handleBooking = async () => {
+    try {
+      await apiPost(`/api/Events/${eventId}/deduct-tickets?quantity=${ticketCount}`, {});
+      setShowBookingModal(false);
+      toast.success("Booking confirmed", {
+        description: `${ticketCount} ticket(s) for ${event.title}.`,
+      });
+    } catch (error) {
+      toast.error("Booking failed", {
+        description: "Not enough tickets available or event not found.",
+      });
+    }
   };
 
   const handleShare = (platform: string) => {

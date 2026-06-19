@@ -6,6 +6,7 @@ using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using Domain.ENUMs;
 
 namespace Application.Services.EventServices
 {
@@ -13,11 +14,13 @@ namespace Application.Services.EventServices
     {
         private readonly IEventRepository _repo;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public EventService(IEventRepository repo, IMapper mapper)
+        public EventService(IEventRepository repo, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _repo = repo;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<EventDetailsDto>> GetAllEvents()
@@ -75,6 +78,69 @@ namespace Application.Services.EventServices
             }
 
             return _mapper.Map<List<EventDetailsDto>>(await events.ToListAsync()); 
+        }
+
+        public async Task EvaluateEventStatusAsync(int eventId)
+        {
+            var eventEntity = await _repo.GetQueryable()
+                .Include(e => e.Bookings)
+                    .ThenInclude(b => b.Attendee)
+                .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
+
+            if (eventEntity == null)
+                throw new KeyNotFoundException("Event not found");
+
+            if (eventEntity.Status == EventStatus.Published && eventEntity.EndDate <= DateTime.UtcNow)
+            {
+                eventEntity.Status = EventStatus.Completed;
+                eventEntity.RemainingTickets = 0; // Locks further bookings
+
+                if (eventEntity.Bookings != null)
+                    foreach (var booking in eventEntity.Bookings.Where(b => b.Status == BookingStatus.Confirmed))
+                        if (booking.Attendee != null)
+                            booking.Attendee.LoyaltyPoint += 10; // final calculation of attendee ratings
+
+                _repo.Update(eventEntity);
+                await _unitOfWork.SaveChangesAsync();
+            }
+        }
+
+        public async Task<bool> DeductTicketInventoryAsync(int eventId, int quantity)
+        {
+            var eventEntity = await _repo.GetQueryable()
+                .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
+
+            if (eventEntity == null || eventEntity.RemainingTickets < quantity)
+                return false;
+
+            eventEntity.RemainingTickets -= quantity;
+            
+            if (eventEntity.RemainingTickets == 0)
+                eventEntity.Status = EventStatus.SoldOut;
+
+            _repo.Update(eventEntity);
+            await _unitOfWork.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task ReleaseTicketInventoryAsync(int eventId, int quantity)
+        {
+            var eventEntity = await _repo.GetQueryable()
+                .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
+
+            if (eventEntity == null)
+                throw new KeyNotFoundException("Event not found");
+            if(quantity == 0 || quantity + eventEntity.RemainingTickets > eventEntity.TotalTickets)
+                throw new InvalidOperationException("Invalid quantity to release");
+
+            eventEntity.RemainingTickets += quantity;
+
+            if (eventEntity.Status == EventStatus.SoldOut)
+                eventEntity.Status = EventStatus.Published;
+
+            _repo.Update(eventEntity);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }
