@@ -7,6 +7,10 @@ namespace Domain.Entities.BookingEntities
     public class BookingRequest : BaseEntity
     {
         public RequestStatus Status{ get; set; }
+        public DateTime RequestedDate { get; set; }
+        public TimeSpan? StartTime { get; set; }
+        public TimeSpan? EndTime { get; set; }
+        public string? RejectionReason { get; set; }
 
         // Foreign keys
         public int OrganizerId { get; set; }

@@ -22,6 +22,28 @@ namespace Infrastructure.Data.Configurations
             builder.HasOne(f => f.Attendee)
                    .WithMany(a => a.Feedbacks)
                    .HasForeignKey(f => f.AttendeeId)
+                   .IsRequired(false)
+                   .OnDelete(DeleteBehavior.NoAction);
+
+            // Feedback & Owner (owner submitting feedback)
+            builder.HasOne(f => f.Owner)
+                   .WithMany()
+                   .HasForeignKey(f => f.OwnerId)
+                   .IsRequired(false)
+                   .OnDelete(DeleteBehavior.NoAction);
+
+            // Feedback & Organizer (organizer being reviewed)
+            builder.HasOne(f => f.Organizer)
+                   .WithMany()
+                   .HasForeignKey(f => f.OrganizerId)
+                   .IsRequired(false)
+                   .OnDelete(DeleteBehavior.NoAction);
+
+            // Feedback & BookingRequest
+            builder.HasOne(f => f.BookingRequest)
+                   .WithMany()
+                   .HasForeignKey(f => f.BookingRequestId)
+                   .IsRequired(false)
                    .OnDelete(DeleteBehavior.NoAction);
 
             // Feedback & Event

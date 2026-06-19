@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Application.Core.DTOs.Organizer;
+using Domain.Entities.OwnerEntities;
 
 namespace Application.Core.Interfaces.OwnerInterfaces
 {
     public interface IOwnerService
     {
+        Task<List<Owner>> FilterOwners(OrganizerSearchParameters searchParameter);
     }
 }

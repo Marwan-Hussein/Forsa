@@ -1,4 +1,5 @@
-﻿using Application.Core.DTOs.Organizer;
+using Application.Core.DTOs.Organizer;
+using Application.Core.Interfaces.OwnerInterfaces;
 using Domain.Entities.OrganizerEntities;
 using Domain.Entities.OwnerEntities;
 using Domain.Interfaces.OrganizerInterfaces;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Application.Services.OwnerServices
 {
-    public class OwnerService
+    public class OwnerService : IOwnerService
     {
         private readonly IOwnerRepository _ownerrepo;
         public OwnerService(IOwnerRepository ownerrepo)
