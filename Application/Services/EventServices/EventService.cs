@@ -79,7 +79,17 @@ namespace Application.Services.EventServices
 
             return _mapper.Map<List<EventDetailsDto>>(await events.ToListAsync()); 
         }
+        private async Task CalculateAttendeeRatings(Event eventEntity)
+        {
+            if (eventEntity.Bookings == null)
+                return;
 
+            foreach (var booking in eventEntity.Bookings
+                .Where(b => 
+                    b.Status == BookingStatus.Confirmed && 
+                    b.Attendee != null))
+                booking.Attendee.LoyaltyPoint += 10; // final calculation of attendee ratings
+        }
         public async Task EvaluateEventStatusAsync(int eventId)
         {
             var eventEntity = await _repo.GetQueryable()
@@ -95,11 +105,8 @@ namespace Application.Services.EventServices
             {
                 eventEntity.Status = EventStatus.Completed;
                 eventEntity.RemainingTickets = 0; // Locks further bookings
+                CalculateAttendeeRatings(eventEntity).Wait(); // Update attendee ratings based on bookings
 
-                if (eventEntity.Bookings != null)
-                    foreach (var booking in eventEntity.Bookings.Where(b => b.Status == BookingStatus.Confirmed))
-                        if (booking.Attendee != null)
-                            booking.Attendee.LoyaltyPoint += 10; // final calculation of attendee ratings
 
                 _repo.Update(eventEntity);
                 await _unitOfWork.SaveChangesAsync();
