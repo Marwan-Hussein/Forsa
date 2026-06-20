@@ -83,12 +83,12 @@ namespace Application.Services.EventServices
         {
             if (eventEntity.Bookings == null)
                 return;
-
+            int points = (int)(10 + eventEntity.TicketPrice / 10);
             foreach (var booking in eventEntity.Bookings
                 .Where(b => 
                     b.Status == BookingStatus.Confirmed && 
                     b.Attendee != null))
-                booking.Attendee.LoyaltyPoint += 10; // final calculation of attendee ratings
+                booking.Attendee.LoyaltyPoint += points; // final calculation of attendee ratings
         }
         public async Task EvaluateEventStatusAsync(int eventId)
         {
