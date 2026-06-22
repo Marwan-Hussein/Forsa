@@ -129,17 +129,33 @@ export default function PlacesPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="px-6 py-8 max-w-7xl mx-auto w-full">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Browse Venues</h1>
-          <p className="text-muted-foreground">Find the perfect venue for your next event</p>
+    <div className="min-h-screen bg-slate-50">
+      {/* Hero Section */}
+      <div className="relative bg-[#0B1120] pt-36 pb-28 px-4 overflow-hidden">
+        <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E3D61 100%)" }} />
+        <div className="absolute inset-0 z-0 overflow-hidden mix-blend-screen pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full filter blur-[100px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#3b82f6]/20 rounded-full filter blur-[100px]" />
+          <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px]" />
         </div>
+        
+        <div className="relative max-w-7xl mx-auto text-center">
+          <span className="inline-block py-1 px-3 rounded-full bg-white/10 text-white/90 text-xs font-bold tracking-widest uppercase mb-6 backdrop-blur-md border border-white/20">
+            Premium Spaces
+          </span>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tight">
+            Browse <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-blue-400">Venues</span>
+          </h1>
+          <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-8 leading-relaxed font-light">
+            Find the perfect venue for your next event. From grand conference halls to intimate garden spaces.
+          </p>
+        </div>
+      </div>
 
-        {/* Search and Filters */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)] mb-8">
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
+      <div className="max-w-7xl mx-auto px-4 -mt-12 relative z-10 pb-20">
+        {/* Search and Filter Bar */}
+        <div className="bg-white rounded-2xl shadow-xl shadow-[#1E3D61]/5 border border-slate-100 p-6 mb-8">
+          <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
               <input
@@ -210,9 +226,10 @@ export default function PlacesPage() {
         </div>
 
         {/* Results Count */}
-        <div className="mb-6">
-          <p className="text-muted-foreground">
-            Showing {filteredPlaces.length} {filteredPlaces.length === 1 ? "venue" : "venues"}
+        <div className="mb-8 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-slate-800">Available Venues</h2>
+          <p className="font-medium text-sm text-slate-500 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
+            Found <span className="text-[#1E3D61] font-bold">{filteredPlaces.length}</span> venue{filteredPlaces.length !== 1 ? "s" : ""}
           </p>
         </div>
 
@@ -294,7 +311,7 @@ export default function PlacesPage() {
             ))}
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

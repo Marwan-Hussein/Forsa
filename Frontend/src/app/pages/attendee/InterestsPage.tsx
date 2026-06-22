@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { ArrowLeft, Save, Sparkles } from "lucide-react";
+import { ArrowLeft, Save, Sparkles, Check, Flame } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "../../api/api";
 import {
@@ -10,44 +10,44 @@ import {
   updateAttendeeInterests,
   type InterestDto,
 } from "../../lib/attendee-api";
+import { motion, AnimatePresence } from "motion/react";
 
 interface Interest extends InterestDto {
   icon: string;
   color: string;
+  bgGrad: string;
 }
 
-const interestStyles: Record<string, { icon: string; color: string }> = {
-  business: { icon: "💼", color: "#155dfc" },
-  music: { icon: "🎵", color: "#9810fa" },
-  technology: { icon: "💻", color: "#0ea5e9" },
-  sports: { icon: "⚽", color: "#16a34a" },
-  art: { icon: "🎨", color: "#ec4899" },
-  health: { icon: "🧘", color: "#8b5cf6" },
-  education: { icon: "📚", color: "#eab308" },
-  travel: { icon: "✈️", color: "#06b6d4" },
+const interestStyles: Record<string, { icon: string; color: string; bgGrad: string }> = {
+  business: { icon: "💼", color: "text-blue-600", bgGrad: "from-blue-500 to-indigo-600" },
+  music: { icon: "🎵", color: "text-violet-600", bgGrad: "from-violet-500 to-purple-600" },
+  technology: { icon: "💻", color: "text-cyan-600", bgGrad: "from-cyan-500 to-blue-600" },
+  sports: { icon: "⚽", color: "text-emerald-600", bgGrad: "from-emerald-500 to-teal-600" },
+  art: { icon: "🎨", color: "text-rose-600", bgGrad: "from-rose-400 to-pink-600" },
+  health: { icon: "🧘", color: "text-fuchsia-600", bgGrad: "from-fuchsia-500 to-rose-600" },
+  education: { icon: "📚", color: "text-amber-600", bgGrad: "from-amber-400 to-orange-500" },
+  travel: { icon: "✈️", color: "text-sky-600", bgGrad: "from-sky-400 to-blue-500" },
 };
 
 function mapInterest(interest: InterestDto): Interest {
   const style = interestStyles[interest.name.toLowerCase()] ?? {
     icon: "✨",
-    color: "#526d82",
+    color: "text-slate-600",
+    bgGrad: "from-slate-500 to-slate-700"
   };
 
   return {
     ...interest,
     icon: style.icon,
     color: style.color,
+    bgGrad: style.bgGrad,
   };
 }
 
 function haveSameInterests(first: number[], second: number[]) {
-  if (first.length !== second.length) {
-    return false;
-  }
-
+  if (first.length !== second.length) return false;
   const sortedFirst = [...first].sort((a, b) => a - b);
   const sortedSecond = [...second].sort((a, b) => a - b);
-
   return sortedFirst.every((value, index) => value === sortedSecond[index]);
 }
 
@@ -56,18 +56,11 @@ function getErrorMessage(error: unknown, fallback: string) {
     if (typeof error.data === "object" && error.data !== null && "errors" in error.data) {
       const errors = (error.data as { errors?: Record<string, string[]> }).errors;
       const firstMessage = errors && Object.values(errors)[0]?.[0];
-      if (firstMessage) {
-        return firstMessage;
-      }
+      if (firstMessage) return firstMessage;
     }
-
     return error.message;
   }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
+  if (error instanceof Error) return error.message;
   return fallback;
 }
 
@@ -95,32 +88,22 @@ export default function InterestsPage() {
           getAttendeeInterests(attendeeId),
         ]);
 
-        if (!isActive) {
-          return;
-        }
+        if (!isActive) return;
 
         const nextSelectedInterests = attendeeInterests.map((interest) => interest.id);
         setAvailableInterests(allInterests.map(mapInterest));
         setSelectedInterests(nextSelectedInterests);
         setOriginalInterests(nextSelectedInterests);
       } catch (error) {
-        if (!isActive) {
-          return;
-        }
-
+        if (!isActive) return;
         setLoadError(getErrorMessage(error, "Failed to load interests."));
       } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
+        if (isActive) setIsLoading(false);
       }
     }
 
     loadInterests();
-
-    return () => {
-      isActive = false;
-    };
+    return () => { isActive = false; };
   }, [attendeeId]);
 
   const toggleInterest = (interestId: number) => {
@@ -134,7 +117,6 @@ export default function InterestsPage() {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-
       const updatedProfile = await updateAttendeeInterests(attendeeId, selectedInterests);
       const nextSelectedInterests = updatedProfile.interests.map((interest) => interest.id);
 
@@ -154,16 +136,10 @@ export default function InterestsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background py-12 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8 text-center">
-            <h1 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-2">
-              Loading interests...
-            </h1>
-            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
-              Fetching your saved interests from the API.
-            </p>
-          </div>
+      <div className="min-h-screen bg-slate-50 pt-24 pb-12 flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-16 h-16 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-slate-500 font-['Inter:Medium',sans-serif]">Curating your interests...</p>
         </div>
       </div>
     );
@@ -171,189 +147,134 @@ export default function InterestsPage() {
 
   if (loadError) {
     return (
-      <div className="min-h-screen bg-background py-12 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8 text-center">
-            <h1 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-2">
-              Could not load interests
-            </h1>
-            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-4">
-              {loadError}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors cursor-pointer"
-            >
-              Retry
-            </button>
-          </div>
+      <div className="min-h-screen bg-slate-50 pt-24 pb-12 px-4 flex items-center justify-center">
+        <div className="bg-white rounded-3xl p-10 max-w-md w-full text-center shadow-xl shadow-slate-200/50">
+          <Flame className="w-16 h-16 text-rose-500 mx-auto mb-4 opacity-50" />
+          <h1 className="font-['Inter:Bold',sans-serif] text-2xl text-slate-800 mb-2">Oops! Couldn't load interests</h1>
+          <p className="font-['Inter:Medium',sans-serif] text-slate-500 mb-8">{loadError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full bg-blue-600 text-white px-6 py-3 rounded-xl font-['Inter:Bold',sans-serif] hover:bg-blue-700 transition-colors"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4">
+    <div className="min-h-screen bg-slate-50 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
+        
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-10 text-center sm:text-left">
           <Link
             to="/profile"
-            className="inline-flex cursor-pointer items-center gap-2 mb-4 text-muted-foreground hover:text-foreground transition-colors font-['Inter:Regular',sans-serif] text-[14px]"
+            className="inline-flex items-center gap-2 mb-6 text-slate-500 hover:text-blue-600 transition-colors font-['Inter:Medium',sans-serif] text-sm group"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Back to Profile
           </Link>
-          <div className="flex items-center gap-3 mb-2">
-            <Sparkles className="w-8 h-8 text-accent" />
-            <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-foreground">
-              Manage Your Interests
-            </h1>
-          </div>
-          <p className="font-['Inter:Regular',sans-serif] text-[16px] text-muted-foreground">
-            Select your interests to receive personalized event recommendations
-          </p>
-        </div>
-
-        {/* Info Card */}
-        <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-6 mb-6">
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 w-12 h-12 bg-background rounded-full flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-foreground" />
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
             <div>
-              <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground mb-2">
-                Why select interests?
-              </h3>
-              <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-2">
-                We use your interests to:
-              </p>
-              <ul className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground space-y-1 ml-4">
-                <li className="flex items-start gap-2">
-                  <span className="text-accent mt-1">•</span>
-                  <span>Recommend events you'll love</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-accent mt-1">•</span>
-                  <span>Send you personalized notifications</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-accent mt-1">•</span>
-                  <span>Help you discover new experiences</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* Interests Selection */}
-        <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-1">
-                Select Your Interests
-              </h2>
-              <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
-                {selectedInterests.length} interest
-                {selectedInterests.length !== 1 ? "s" : ""} selected
+              <h1 className="font-['Inter:Bold',sans-serif] text-4xl text-slate-800 mb-3 tracking-tight flex items-center justify-center sm:justify-start gap-3">
+                <Sparkles className="w-8 h-8 text-amber-500" />
+                Personalize Your Feed
+              </h1>
+              <p className="font-['Inter:Medium',sans-serif] text-slate-500 text-lg max-w-xl">
+                Tell us what you love, and we'll curate the best events and experiences specifically for you.
               </p>
             </div>
-            {isModified && (
-              <div className="flex gap-2">
-                <button
-                  onClick={handleReset}
-                  className="bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors cursor-pointer"
+            
+            <AnimatePresence>
+              {isModified && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="flex items-center gap-3 justify-center sm:justify-end"
                 >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors flex items-center gap-2 cursor-pointer"
-                >
-                  <Save className="w-4 h-4" />
-                  {isSaving ? "Saving..." : "Save Changes"}
-                </button>
-              </div>
-            )}
+                  <button
+                    onClick={handleReset}
+                    className="bg-white border border-slate-200 text-slate-600 px-6 py-3 rounded-xl font-['Inter:Bold',sans-serif] text-sm hover:bg-slate-50 transition-colors"
+                  >
+                    Discard
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="bg-blue-600 text-white px-8 py-3 rounded-xl font-['Inter:Bold',sans-serif] text-sm hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg shadow-blue-500/30 disabled:opacity-70"
+                  >
+                    {isSaving ? (
+                      "Saving..."
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" /> Save Changes
+                      </>
+                    )}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
+        </div>
 
-          {/* Interest Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {availableInterests.map((interest) => {
-              const isSelected = selectedInterests.includes(interest.id);
-              return (
-                <button
-                  key={interest.id}
-                  onClick={() => toggleInterest(interest.id)}
-                  className={`relative p-4 rounded-[12px] border-[0.8px] transition-all cursor-pointer ${
-                    isSelected
-                      ? "border-primary bg-primary shadow-md hover:brightness-110"
-                      : "border-[rgba(82,109,130,0.2)] bg-white hover:border-muted hover:shadow-sm"
-                  }`}
-                >
-                  <div className="flex flex-col items-center text-center gap-2">
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
-                        isSelected ? "bg-white/10" : "bg-background"
-                      }`}
-                    >
-                      {interest.icon}
-                    </div>
-                    <span
-                      className={`font-['Inter:Medium',sans-serif] font-medium text-[14px] ${
-                        isSelected ? "text-[#dde6ed]" : "text-foreground"
-                      }`}
-                    >
-                      {interest.name}
-                    </span>
+        {/* Selected Counter */}
+        <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-200">
+          <h2 className="font-['Inter:Bold',sans-serif] text-xl text-slate-800">
+            Select Interests
+          </h2>
+          <span className="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full font-['Inter:Bold',sans-serif] text-sm border border-blue-100">
+            {selectedInterests.length} Selected
+          </span>
+        </div>
+
+        {/* Interest Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          {availableInterests.map((interest) => {
+            const isSelected = selectedInterests.includes(interest.id);
+            return (
+              <motion.button
+                key={interest.id}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => toggleInterest(interest.id)}
+                className={`relative overflow-hidden p-6 rounded-3xl border-2 transition-all cursor-pointer text-left h-40 flex flex-col justify-end group ${
+                  isSelected
+                    ? "border-transparent shadow-xl shadow-blue-500/20"
+                    : "border-slate-200 bg-white hover:border-blue-200 hover:shadow-md"
+                }`}
+              >
+                {/* Background Gradient for Selected */}
+                <div 
+                  className={`absolute inset-0 bg-gradient-to-br ${interest.bgGrad} transition-opacity duration-300 ${
+                    isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-5"
+                  }`} 
+                />
+                
+                <div className="relative z-10">
+                  <div className={`text-4xl mb-3 transition-transform duration-300 ${isSelected ? "scale-110" : ""}`}>
+                    {interest.icon}
                   </div>
-                  {isSelected && (
-                    <div className="absolute top-2 right-2 w-5 h-5 bg-accent rounded-full flex items-center justify-center">
-                      <svg
-                        className="w-3 h-3 text-white"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                  <span className={`font-['Inter:Bold',sans-serif] text-lg transition-colors ${
+                    isSelected ? "text-white" : "text-slate-800"
+                  }`}>
+                    {interest.name}
+                  </span>
+                </div>
 
-          {/* Selected Interests Summary */}
-          {selectedInterests.length > 0 && (
-            <div className="mt-8 pt-6 border-t border-[rgba(82,109,130,0.2)]">
-              <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground mb-3">
-                Your Selected Interests
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {selectedInterests.map((id) => {
-                  const interest = availableInterests.find((i) => i.id === id);
-                  if (!interest) return null;
-                  return (
-                    <div
-                      key={id}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-background rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)]"
-                    >
-                      <span>{interest.icon}</span>
-                      <span className="font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground">
-                        {interest.name}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+                {/* Checkmark Badge */}
+                <div className={`absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  isSelected ? "bg-white scale-100" : "bg-slate-100 scale-0"
+                }`}>
+                  <Check className={`w-3.5 h-3.5 ${interest.color}`} />
+                </div>
+              </motion.button>
+            );
+          })}
         </div>
+
       </div>
     </div>
   );

@@ -1,96 +1,45 @@
 import { Link } from "react-router";
-import { brandNavy } from "../lib/brand";
 import { ForSaLogo } from "./ForSaLogo";
-
-const linkClass =
-  "font-['Inter:Regular',sans-serif] text-[14px] leading-[20px] text-primary-foreground/80 hover:text-primary-foreground transition-colors";
-const headingClass =
-  "font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-primary-foreground mb-4";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto w-full text-primary-foreground" style={{ backgroundColor: brandNavy }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-14">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
-          <div className="sm:col-span-2 lg:col-span-1">
-            <Link to="/dashboard" className="mb-4 inline-block transition-opacity duration-300 ease-in-out hover:opacity-80">
-              <ForSaLogo className="h-14 sm:h-16" />
+    <footer className="mt-auto w-full bg-[#0B1120] border-t border-white/10 pt-20 pb-10 px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+          <div className="col-span-1 md:col-span-2">
+            <Link to="/" className="inline-block transition-opacity duration-300 ease-in-out hover:opacity-80">
+              <ForSaLogo className="h-10 text-white mb-6" />
             </Link>
-            <p className="font-['Inter:Regular',sans-serif] text-[14px] leading-[22px] text-primary-foreground/80 max-w-[280px]">
-              Your one-stop platform for discovering and managing events.
+            <p className="text-slate-400 font-light max-w-sm leading-relaxed text-base">
+              The ultimate platform for discovering, organizing, and experiencing the world's most premium events and gatherings.
             </p>
           </div>
-
           <div>
-            <h4 className={headingClass}>Explore</h4>
-            <ul className="flex flex-col gap-2">
-              <li>
-                <Link to="/events" className={linkClass}>
-                  Browse Events
-                </Link>
-              </li>
-              <li>
-                <Link to="/events" className={linkClass}>
-                  Categories
-                </Link>
-              </li>
-              <li>
-                <Link to="/recommendations" className={linkClass}>
-                  Featured Events
-                </Link>
-              </li>
-              <li>
-                <Link to="/events" className={linkClass}>
-                  Near Me
-                </Link>
-              </li>
+            <h4 className="text-white font-semibold mb-6">Platform</h4>
+            <ul className="space-y-4 text-slate-400 font-light">
+              <li><Link to="/events" className="hover:text-white transition-colors">Browse Events</Link></li>
+              <li><Link to="/places" className="hover:text-white transition-colors">Venues</Link></li>
+              <li><Link to="/organizations" className="hover:text-white transition-colors">Organizers</Link></li>
+              <li><Link to="/login" className="hover:text-white transition-colors">Sign In</Link></li>
             </ul>
           </div>
-
           <div>
-            <h4 className={headingClass}>Organizers</h4>
-            <ul className="flex flex-col gap-2">
-              <li>
-                <Link to="/organization-dashboard" className={linkClass}>
-                  Create Event
-                </Link>
-              </li>
-              <li>
-                <span className={linkClass + " cursor-default"}>Pricing</span>
-              </li>
-              <li>
-                <span className={linkClass + " cursor-default"}>Resources</span>
-              </li>
-              <li>
-                <span className={linkClass + " cursor-default"}>Help Center</span>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className={headingClass}>Company</h4>
-            <ul className="flex flex-col gap-2">
-              <li>
-                <span className={linkClass + " cursor-default"}>About Us</span>
-              </li>
-              <li>
-                <span className={linkClass + " cursor-default"}>Contact</span>
-              </li>
-              <li>
-                <span className={linkClass + " cursor-default"}>Privacy Policy</span>
-              </li>
-              <li>
-                <span className={linkClass + " cursor-default"}>Terms of Service</span>
-              </li>
+            <h4 className="text-white font-semibold mb-6">Legal</h4>
+            <ul className="space-y-4 text-slate-400 font-light">
+              <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Cookie Policy</a></li>
             </ul>
           </div>
         </div>
-      </div>
-
-      <div className="border-t border-primary-foreground/20">
-        <p className="font-['Inter:Regular',sans-serif] text-[14px] text-primary-foreground/80 text-center py-6 px-4">
-          © 2026 ForSa. All rights reserved.
-        </p>
+        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-slate-500 text-sm">© 2026 ForSa Platform. All rights reserved.</p>
+          <div className="flex items-center gap-6">
+            {['Twitter', 'LinkedIn', 'Instagram'].map((social) => (
+              <a key={social} href="#" className="text-slate-500 hover:text-white text-sm transition-colors">{social}</a>
+            ))}
+          </div>
+        </div>
       </div>
     </footer>
   );

@@ -4,6 +4,7 @@ import { User, Mail, Lock, Phone, MapPin, Calendar, Building2, Home, CheckCircle
 import { motion, AnimatePresence } from "motion/react";
 import { apiPost, ApiError } from "../../api/api";
 import { toast } from "sonner";
+import { ForSaLogo } from "../../components/ForSaLogo";
 
 interface OtpResponse {
   email: string;
@@ -102,7 +103,6 @@ export default function RegistrationPage() {
       });
 
       toast.success(result.message || "Verification code sent to your email!");
-      // Navigate to OTP page with the email in state
       navigate("/verify-otp", { state: { email: result.email } });
     } catch (err) {
       if (err instanceof ApiError) {
@@ -120,19 +120,19 @@ export default function RegistrationPage() {
       title: "Register as Attendee",
       description: "Join thousands of event-goers and start your journey today",
       icon: User,
-      accentColor: "var(--accent)",
+      accentColor: "#3b82f6",
     },
     organization: {
       title: "Register as Organization",
       description: "Create events and manage your organization's profile",
       icon: Building2,
-      accentColor: "var(--Business)",
+      accentColor: "#10b981",
     },
     place: {
       title: "Register as Place Owner",
       description: "List your venue and connect with event organizers",
       icon: Home,
-      accentColor: "var(--Entertainment)",
+      accentColor: "#f59e0b",
     },
   };
 
@@ -140,9 +140,9 @@ export default function RegistrationPage() {
   const TypeIcon = config.icon;
 
   const registrationTypes = [
-    { id: "attendee", label: "Attendee", icon: User, color: "var(--accent)" },
-    { id: "organization", label: "Organization", icon: Building2, color: "var(--Business)" },
-    { id: "place", label: "Place Owner", icon: Home, color: "var(--Entertainment)" },
+    { id: "attendee", label: "Attendee", icon: User, color: "#3b82f6" },
+    { id: "organization", label: "Organization", icon: Building2, color: "#10b981" },
+    { id: "place", label: "Place Owner", icon: Home, color: "#f59e0b" },
   ];
 
   const formFields = [
@@ -156,26 +156,17 @@ export default function RegistrationPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4 relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div
-        className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full opacity-[0.06] blur-3xl"
-        style={{ background: config.accentColor }}
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute top-1/2 -left-32 h-96 w-96 rounded-full opacity-[0.04] blur-3xl"
-        style={{ background: "var(--primary)" }}
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -bottom-32 right-1/4 h-80 w-80 rounded-full opacity-[0.05] blur-3xl"
-        style={{ background: "var(--Education)" }}
-        aria-hidden
-      />
+    <div className="min-h-screen bg-[#0B1120] py-12 px-4 relative overflow-hidden flex flex-col justify-center">
+      {/* Premium Background */}
+      <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E3D61 100%)" }} />
+      <div className="absolute inset-0 z-0 overflow-hidden mix-blend-screen pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full filter blur-[100px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#3b82f6]/20 rounded-full filter blur-[100px]" />
+        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px]" />
+      </div>
 
       <motion.div
-        className="max-w-2xl mx-auto relative z-10"
+        className="max-w-2xl mx-auto w-full relative z-10"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -184,29 +175,15 @@ export default function RegistrationPage() {
         <div className="text-center mb-8">
           <Link
             to="/"
-            className="inline-block mb-4 text-muted-foreground hover:text-accent transition-colors duration-300 font-['Inter:Regular',sans-serif] text-[14px]"
+            className="mb-8 inline-block"
           >
-            ← Back to Home
+            <ForSaLogo className="h-12 text-white" />
           </Link>
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={registrationType}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl"
-              style={{ backgroundColor: `color-mix(in srgb, ${config.accentColor} 12%, transparent)` }}
-            >
-              <TypeIcon className="h-8 w-8" style={{ color: config.accentColor }} />
-            </motion.div>
-          </AnimatePresence>
 
           <AnimatePresence mode="wait">
             <motion.h1
               key={`title-${registrationType}`}
-              className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-foreground mb-2"
+              className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-white mb-2 tracking-tight"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
@@ -217,7 +194,7 @@ export default function RegistrationPage() {
           </AnimatePresence>
 
           <motion.p
-            className="font-['Inter:Regular',sans-serif] text-[16px] text-muted-foreground mb-8"
+            className="font-['Inter:Regular',sans-serif] text-[16px] text-slate-300 mb-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
@@ -237,7 +214,7 @@ export default function RegistrationPage() {
                   className={`relative flex-1 flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 ease-out border ${
                     isActive
                       ? "text-white shadow-md border-transparent"
-                      : "bg-card border-border text-foreground hover:border-muted-foreground/30 hover:shadow-sm"
+                      : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
                   }`}
                   style={isActive ? { backgroundColor: type.color, borderColor: type.color } : undefined}
                 >
@@ -259,7 +236,7 @@ export default function RegistrationPage() {
 
         {/* Registration Form */}
         <motion.div
-          className="bg-card rounded-2xl border border-border p-8 shadow-lg shadow-primary/[0.04] relative overflow-hidden"
+          className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 shadow-2xl sm:p-10 relative overflow-hidden"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -269,11 +246,11 @@ export default function RegistrationPage() {
             className="absolute top-0 left-0 right-0 h-[3px]"
             style={{ background: `linear-gradient(to right, transparent, ${config.accentColor}, transparent)` }}
             initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 0.6, scaleX: 1 }}
+            animate={{ opacity: 0.8, scaleX: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           />
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {formFields.map((field, index) => {
               const Icon = field.icon;
               const isFocused = focusedField === field.name;
@@ -286,14 +263,14 @@ export default function RegistrationPage() {
                 >
                   <label
                     htmlFor={field.name}
-                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2"
+                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-slate-200 mb-2"
                   >
                     {field.label}
                   </label>
                   <div className="relative">
                     <Icon
-                      className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${
-                        isFocused ? "text-accent" : "text-muted-foreground"
+                      className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${
+                        isFocused ? "text-white" : "text-slate-400"
                       }`}
                     />
                     <input
@@ -304,13 +281,13 @@ export default function RegistrationPage() {
                       onChange={handleChange}
                       onFocus={() => setFocusedField(field.name)}
                       onBlur={() => setFocusedField(null)}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 font-['Inter:Regular',sans-serif] text-[14px] text-foreground transition-all duration-300"
+                      className="w-full pl-12 pr-4 py-4 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:border-[#3b82f6] focus:bg-white/10 focus:ring-1 focus:ring-[#3b82f6]/50 font-['Inter:Regular',sans-serif] text-[15px] text-white placeholder:text-slate-500 transition-all duration-300"
                       placeholder={field.placeholder}
                     />
                   </div>
                   {errors[field.name] && (
                     <motion.p
-                      className="mt-1.5 text-[12px] text-destructive"
+                      className="mt-1.5 text-[12px] text-red-400"
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.2 }}
@@ -333,14 +310,14 @@ export default function RegistrationPage() {
                 >
                   <label
                     htmlFor="birthdate"
-                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2"
+                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-slate-200 mb-2"
                   >
                     Date of Birth *
                   </label>
                   <div className="relative">
                     <Calendar
-                      className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${
-                        focusedField === "birthdate" ? "text-accent" : "text-muted-foreground"
+                      className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${
+                        focusedField === "birthdate" ? "text-white" : "text-slate-400"
                       }`}
                     />
                     <input
@@ -351,11 +328,11 @@ export default function RegistrationPage() {
                       onChange={handleChange}
                       onFocus={() => setFocusedField("birthdate")}
                       onBlur={() => setFocusedField(null)}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 font-['Inter:Regular',sans-serif] text-[14px] text-foreground transition-all duration-300"
+                      className="w-full pl-12 pr-4 py-4 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:border-[#3b82f6] focus:bg-white/10 focus:ring-1 focus:ring-[#3b82f6]/50 font-['Inter:Regular',sans-serif] text-[15px] text-white placeholder:text-slate-500 transition-all duration-300"
                     />
                   </div>
                   {errors.birthdate && (
-                    <p className="mt-1.5 text-[12px] text-destructive">{errors.birthdate}</p>
+                    <p className="mt-1.5 text-[12px] text-red-400">{errors.birthdate}</p>
                   )}
                 </motion.div>
               )}
@@ -363,7 +340,7 @@ export default function RegistrationPage() {
 
             {/* Terms and Conditions */}
             <motion.div
-              className="flex items-start gap-3 pt-2"
+              className="flex items-start gap-3 pt-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
@@ -371,12 +348,12 @@ export default function RegistrationPage() {
               <input
                 type="checkbox"
                 id="terms"
-                className="mt-1 w-4 h-4 rounded border-border text-accent focus:ring-accent/30"
+                className="mt-1 w-4 h-4 rounded border-white/20 bg-white/10 text-[#3b82f6] focus:ring-[#3b82f6]/30"
                 required
               />
               <label
                 htmlFor="terms"
-                className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground"
+                className="font-['Inter:Regular',sans-serif] text-[14px] text-slate-300"
               >
                 I agree to the Terms of Service and Privacy Policy
               </label>
@@ -386,11 +363,11 @@ export default function RegistrationPage() {
             <motion.button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-['Inter:Medium',sans-serif] font-medium text-[16px] shadow-md shadow-primary/20 transition-all duration-300 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`w-full bg-white text-[#0B1120] py-4 mt-2 rounded-xl font-['Inter:Bold',sans-serif] font-bold text-[16px] shadow-lg transition-all duration-300 hover:bg-slate-100 hover:shadow-xl active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.85 }}
-              whileHover={isSubmitting ? {} : { scale: 1.01 }}
+              whileHover={isSubmitting ? {} : { scale: 1.02 }}
               whileTap={isSubmitting ? {} : { scale: 0.98 }}
             >
               {isSubmitting ? (
@@ -406,16 +383,16 @@ export default function RegistrationPage() {
 
           {/* Already have an account */}
           <motion.div
-            className="mt-6 text-center"
+            className="mt-8 text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.95 }}
           >
-            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
+            <p className="font-['Inter:Regular',sans-serif] text-[15px] text-slate-400">
               Already have an account?{" "}
               <Link
                 to="/login"
-                className="font-['Inter:Medium',sans-serif] font-medium text-accent underline-offset-2 transition-colors duration-300 hover:underline"
+                className="font-['Inter:Medium',sans-serif] font-medium text-white hover:text-[#3b82f6] transition-colors duration-300"
               >
                 Sign In
               </Link>
@@ -425,21 +402,21 @@ export default function RegistrationPage() {
 
         {/* Trust indicators */}
         <motion.div
-          className="mt-8 flex flex-wrap items-center justify-center gap-6 text-[13px] text-muted-foreground"
+          className="mt-8 flex flex-wrap items-center justify-center gap-6 text-[13px] text-slate-400"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 1 }}
         >
           <span className="flex items-center gap-1.5">
-            <CheckCircle className="h-3.5 w-3.5 text-accent" />
+            <CheckCircle className="h-3.5 w-3.5 text-[#10b981]" />
             Free to join
           </span>
           <span className="flex items-center gap-1.5">
-            <Shield className="h-3.5 w-3.5 text-accent" />
+            <Shield className="h-3.5 w-3.5 text-[#3b82f6]" />
             Secure & Private
           </span>
           <span className="flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-accent" />
+            <Sparkles className="h-3.5 w-3.5 text-[#f59e0b]" />
             Personalized experience
           </span>
         </motion.div>

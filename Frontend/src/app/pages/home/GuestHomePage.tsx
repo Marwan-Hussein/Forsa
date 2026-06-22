@@ -1,58 +1,62 @@
 import type { MouseEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
-import { motion, useScroll, useSpring, useTransform } from "motion/react";
+import { motion, useScroll, useTransform, AnimatePresence } from "motion/react";
 import { ForSaLogo } from "../../components/ForSaLogo";
 import { ScrollReveal } from "../../components/ScrollReveal";
-import { brandCtaBlue, brandNavy, brandNavyElevated } from "../../lib/brand";
-import { EASE_SCROLL } from "../../lib/motion";
 import {
   Calendar,
   MapPin,
   Users,
-  Sparkles,
   Search,
   Ticket,
-  Building2,
   ArrowRight,
   Star,
-  Shield,
-  Bell,
-  CheckCircle,
-  Briefcase,
   Music,
   Palette,
   Dumbbell,
   UtensilsCrossed,
   GraduationCap,
-  Zap,
+  Briefcase,
+  Play
 } from "lucide-react";
 import { EventCard } from "../../components/EventCard";
 import { mockEvents } from "../../data/mockData";
 
-const SKY_BLUE = "#f8fafc";
-const DEEP_NAVY = "#1e3a5f";
-const ACCENT_ORANGE = "#0891b2";
-const MUTED_TEXT = "#64748b";
+// Premium Color Palette Constants
+const DEEP_NAVY = "#1E3D61";
 
-const HERO_BG = `linear-gradient(180deg, #0f2440 0%, ${DEEP_NAVY} 28%, #1a6b8a 62%, #f8fafc 100%)`;
+const HERO_GRADIENT = `linear-gradient(135deg, #0B1120 0%, ${DEEP_NAVY} 100%)`;
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1
+    }
+  }
+};
 
-const CTA_SECTION_BG = `
-  radial-gradient(ellipse 90% 75% at 50% 22%, rgba(30, 58, 95, 0.15) 0%, rgba(15, 23, 42, 0.05) 42%, transparent 70%),
-  linear-gradient(180deg, ${SKY_BLUE} 7%, ${DEEP_NAVY} 48%, #0f172a 100%)
-`;
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { type: "spring", stiffness: 300, damping: 24 }
+  }
+};
 
 export default function GuestHomePage() {
-  const [eventFilter, setEventFilter] = useState<"all" | "week" | "month" | "featured">("all");
+  const [eventFilter, setEventFilter] = useState<"all" | "week" | "month" | "featured">("featured");
   const [navElevated, setNavElevated] = useState(false);
   const { scrollY } = useScroll();
-  /** Subtle parallax, spring-smoothed so it tracks scroll without jitter. */
-  const heroParallaxRaw = useTransform(scrollY, [0, 640], [0, 22]);
-  const heroParallax = useSpring(heroParallaxRaw, { stiffness: 88, damping: 32, mass: 0.45 });
+  const heroY = useTransform(scrollY, [0, 500], [0, 100]);
+  const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
 
   useEffect(() => {
-    const onScroll = () => setNavElevated(window.scrollY > 12);
+    const onScroll = () => setNavElevated(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
@@ -63,59 +67,20 @@ export default function GuestHomePage() {
     window.location.href = "/login";
   };
 
-  const features = [
-    {
-      icon: Sparkles,
-      title: "Smart Recommendations",
-      description: "AI-powered suggestions tailored to your interests and location",
-      color: "var(--accent)",
-    },
-    {
-      icon: Search,
-      title: "Advanced Search",
-      description: "Find exactly what you're looking for with powerful filters",
-      color: "var(--primary)",
-    },
-    {
-      icon: Calendar,
-      title: "Calendar Integration",
-      description: "Never miss an event with calendar sync and reminders",
-      color: "var(--Education)",
-    },
-    {
-      icon: Ticket,
-      title: "Instant Booking",
-      description: "Secure your spot in seconds with seamless checkout",
-      color: "var(--Technology)",
-    },
-    {
-      icon: Bell,
-      title: "Real-time Notifications",
-      description: "Stay updated with personalized event alerts",
-      color: "var(--accent)",
-    },
-    {
-      icon: Shield,
-      title: "Secure & Safe",
-      description: "Your data and payments are protected with bank-level security",
-      color: "var(--Entertainment)",
-    },
-  ];
-
   const stats = [
-    { label: "Active Events", value: "10,000+", icon: Calendar },
-    { label: "Happy Attendees", value: "50,000+", icon: Users },
-    { label: "Event Organizers", value: "500+", icon: Building2 },
-    { label: "Cities Worldwide", value: "100+", icon: MapPin },
+    { label: "Successful Events Hosted", value: "10K+", icon: Calendar },
+    { label: "Community Members", value: "50K+", icon: Users },
+    { label: "Verified Premium Venues", value: "500+", icon: MapPin },
+    { label: "Secure Ticket Bookings", value: "1M+", icon: Ticket },
   ];
 
   const eventCategories = [
-    { name: "Business", icon: Briefcase, color: "var(--Business)", count: "2,340" },
-    { name: "Music", icon: Music, color: "var(--Music)", count: "1,856" },
-    { name: "Art & Culture", icon: Palette, color: "var(--Art)", count: "1,203" },
-    { name: "Sports", icon: Dumbbell, color: "var(--Sports)", count: "987" },
-    { name: "Food & Drink", icon: UtensilsCrossed, color: "var(--Food)", count: "1,456" },
-    { name: "Education", icon: GraduationCap, color: "var(--Education)", count: "2,109" },
+    { name: "Business & Tech", icon: Briefcase, count: "2.3k Events" },
+    { name: "Live Music", icon: Music, count: "1.8k Events" },
+    { name: "Arts & Culture", icon: Palette, count: "1.2k Events" },
+    { name: "Sports & Wellness", icon: Dumbbell, count: "980 Events" },
+    { name: "Food & Dining", icon: UtensilsCrossed, count: "1.4k Events" },
+    { name: "Education & Workshops", icon: GraduationCap, count: "2.1k Events" },
   ];
 
   const filteredEvents = useMemo(() => {
@@ -128,474 +93,261 @@ export default function GuestHomePage() {
   }, [eventFilter]);
 
   const eventTabs: { id: typeof eventFilter; label: string }[] = [
+    { id: "featured", label: "✨ Featured" },
     { id: "all", label: "All Events" },
     { id: "week", label: "This Week" },
     { id: "month", label: "This Month" },
-    { id: "featured", label: "Featured" },
   ];
 
   return (
-    <div className="min-h-screen bg-background text-[#1e293b]">
-      {/* —— Navigation (flush with hero) —— */}
-      <nav
-        className={`fixed left-0 right-0 top-0 z-50 border-b transition-[background-color,box-shadow,backdrop-filter,border-color] duration-300 ease-in-out ${
-          navElevated
-            ? "border-white/10 shadow-lg shadow-black/20 backdrop-blur-md backdrop-saturate-150"
-            : "border-transparent"
-        }`}
-        style={{ backgroundColor: navElevated ? brandNavyElevated : brandNavy }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between min-h-[72px] h-[72px] sm:min-h-[76px] sm:h-[76px]">
-            <Link to="/" className="flex items-center rounded-lg py-1 transition-opacity duration-300 ease-in-out hover:opacity-90">
-              <ForSaLogo className="h-14 sm:h-16 max-h-[4.5rem]" />
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link
-                to="/login"
-                className="font-['Inter:Medium',sans-serif] text-[13px] font-medium text-white/90 transition-all duration-300 ease-in-out hover:text-white sm:text-[14px]"
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#1E3D61] selection:text-white overflow-x-hidden">
+      
+
+
+      {/* Hero Section */}
+      <section className="relative min-h-[85vh] flex items-center pt-24 pb-32 overflow-hidden bg-[#0B1120]">
+        <div className="absolute inset-0 z-0" style={{ background: HERO_GRADIENT }} />
+        
+        {/* Elegant Animated Background Elements (Adding 'حركات') */}
+        <div className="absolute inset-0 z-0 overflow-hidden mix-blend-screen pointer-events-none">
+           <motion.div 
+             animate={{ 
+               x: [0, 50, -20, 0], 
+               y: [0, 30, -40, 0],
+               scale: [1, 1.2, 0.9, 1],
+               opacity: [0.1, 0.15, 0.1]
+             }}
+             transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+             className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-white rounded-full filter blur-[120px]" 
+           />
+           <motion.div 
+             animate={{ 
+               x: [0, -30, 40, 0], 
+               y: [0, -50, 20, 0],
+               scale: [1, 1.1, 0.8, 1],
+               opacity: [0.05, 0.1, 0.05]
+             }}
+             transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+             className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[#3b82f6] rounded-full filter blur-[100px]" 
+           />
+           {/* Subtle moving grid */}
+           <motion.div 
+             animate={{ backgroundPosition: ["0px 0px", "40px 40px"] }}
+             transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+             className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px]"
+           />
+        </div>
+
+        <motion.div 
+          className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8 flex flex-col items-center text-center"
+          style={{ y: heroY, opacity: heroOpacity }}
+        >
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-8 hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+            </span>
+            <span className="text-sm font-semibold text-white tracking-wide opacity-90 uppercase">The Premier Event Platform in 2026</span>
+          </motion.div>
+
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="text-5xl md:text-7xl lg:text-[84px] font-extrabold text-white tracking-tight leading-[1.05] max-w-5xl"
+          >
+            Discover & Book <br/>
+            <motion.span 
+              animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+              className="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-300 to-white bg-[length:200%_auto]"
+            >
+              Exceptional Events
+            </motion.span>
+          </motion.h1>
+
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-8 text-lg md:text-xl text-slate-300 max-w-2xl font-light leading-relaxed"
+          >
+            Elevate your experiences. Gain access to exclusive gatherings, professional summits, and vibrant festivals all in one beautifully curated platform.
+          </motion.p>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3, type: "spring", stiffness: 200, damping: 20 }}
+            className="mt-14 w-full max-w-3xl relative group"
+          >
+            <div className="absolute -inset-1 bg-gradient-to-r from-white/10 to-white/5 rounded-full blur-md group-hover:blur-lg transition-all duration-500 opacity-50 group-hover:opacity-100"></div>
+            <div className="relative flex flex-col sm:flex-row items-center p-2.5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl md:rounded-full shadow-2xl transition-all duration-300">
+              <div className="flex-1 flex items-center w-full px-5 py-3 sm:py-0 border-b sm:border-b-0 sm:border-r border-white/10">
+                <Search className="w-6 h-6 text-white/80" />
+                <input 
+                  type="text" 
+                  placeholder="What are you looking for?" 
+                  className="w-full bg-transparent border-none text-white placeholder-slate-300 focus:outline-none focus:ring-0 px-4 py-2 text-base md:text-lg font-medium"
+                />
+              </div>
+              <div className="flex-1 flex items-center w-full px-5 py-3 sm:py-0">
+                <MapPin className="w-6 h-6 text-white/80" />
+                <input 
+                  type="text" 
+                  placeholder="Location" 
+                  className="w-full bg-transparent border-none text-white placeholder-slate-300 focus:outline-none focus:ring-0 px-4 py-2 text-base md:text-lg font-medium"
+                />
+              </div>
+              <button 
+                className="w-full sm:w-auto px-10 py-4 rounded-2xl md:rounded-full font-bold text-[#1E3D61] bg-white transition-all duration-300 hover:bg-slate-50 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] active:scale-[0.98] mt-3 sm:mt-0 flex items-center justify-center gap-2"
               >
-                Sign In
-              </Link>
+                Search <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* Stats Section with Overlapping Cards (No Skew, Clean overlap) */}
+      <section className="relative z-20 px-6 lg:px-8 transform -translate-y-16">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="max-w-7xl mx-auto"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {stats.map((stat, idx) => (
+              <motion.div key={idx} variants={itemVariants} className="bg-white rounded-2xl p-8 shadow-[0_10px_40px_rgb(0,0,0,0.08)] border border-slate-100 flex flex-col items-center text-center group transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgb(30,61,97,0.12)]">
+                <div className="w-14 h-14 rounded-2xl bg-[#F8FAFC] flex items-center justify-center mb-5 group-hover:bg-[#1E3D61] transition-colors duration-500">
+                  <stat.icon className="w-7 h-7 text-[#1E3D61] group-hover:text-white transition-colors duration-500" strokeWidth={1.5} />
+                </div>
+                <h3 className="text-3xl font-bold text-[#0F172A] mb-2 tracking-tight">{stat.value}</h3>
+                <p className="text-sm font-medium text-slate-500">{stat.label}</p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Elegant Categories Section */}
+      <section className="py-16 px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <ScrollReveal y={20} className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-8 h-1 bg-[#1E3D61] rounded-full"></span>
+                <span className="text-[#1E3D61] font-semibold tracking-wider text-sm uppercase">Browse By Category</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-[#0F172A] tracking-tight mb-2">Explore Experiences</h2>
+            </div>
+            <Link to="/events" className="group text-[#1E3D61] font-semibold flex items-center gap-2 hover:opacity-80 transition-opacity">
+              View All Categories 
+              <span className="bg-[#1E3D61]/10 group-hover:bg-[#1E3D61]/20 p-1.5 rounded-full transition-colors">
+                <ArrowRight className="w-4 h-4" />
+              </span>
+            </Link>
+          </ScrollReveal>
+
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {eventCategories.map((cat, idx) => (
+              <motion.button 
+                key={cat.name}
+                variants={itemVariants}
+                onClick={handleProtectedAction}
+                className="w-full bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-[#1E3D61]/30 hover:-translate-y-1 transition-all duration-300 flex items-center gap-5 group text-left"
+              >
+                <div className="w-14 h-14 rounded-xl bg-[#F8FAFC] flex items-center justify-center group-hover:bg-[#1E3D61] transition-colors duration-300 shrink-0">
+                  <cat.icon className="w-6 h-6 text-[#1E3D61] group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-800 text-lg mb-1 group-hover:text-[#1E3D61] transition-colors">{cat.name}</h3>
+                  <p className="text-sm font-medium text-slate-500">{cat.count}</p>
+                </div>
+              </motion.button>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Featured Events */}
+      <section className="py-24 px-6 lg:px-8 bg-white border-y border-slate-100">
+        <div className="max-w-7xl mx-auto">
+          <ScrollReveal y={20} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-8 h-1 bg-[#1E3D61] rounded-full"></span>
+                <span className="text-[#1E3D61] font-semibold tracking-wider text-sm uppercase">Trending</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-[#0F172A] tracking-tight">Curated For You</h2>
+            </div>
+          </ScrollReveal>
+
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <AnimatePresence>
+              {filteredEvents.slice(0, 3).map((event, index) => (
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  showActions={false}
+                  animationIndex={index}
+                  reveal="scroll"
+                />
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Premium CTA Section */}
+      <section className="py-32 px-6 lg:px-8 relative overflow-hidden bg-[#0B1120]">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiLz48L3N2Zz4=')] opacity-30" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#1E3D61] rounded-full mix-blend-screen filter blur-[150px] opacity-40 pointer-events-none" />
+        
+        <div className="relative z-10 max-w-4xl mx-auto text-center">
+          <ScrollReveal y={30} className="flex flex-col items-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8 shadow-lg">
+              <Play className="w-6 h-6 text-white ml-1" />
+            </div>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-6 leading-tight">
+              Ready to create your <br/> 
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-200 to-slate-400">unforgettable moment?</span>
+            </h2>
+            <p className="text-xl text-slate-300 font-light mb-12 max-w-2xl mx-auto leading-relaxed">
+              Join thousands of professionals, enthusiasts, and creators on ForSa. Elevate your event experience today.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
               <Link
                 to="/register"
-                className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] text-white px-5 py-2.5 rounded-[10px] shadow-md transition-all duration-300 ease-in-out hover:brightness-110 hover:shadow-lg active:scale-[0.97]"
-                style={{ backgroundColor: brandCtaBlue }}
+                className="w-full sm:w-auto px-10 py-4 rounded-full text-[#1E3D61] bg-white font-bold text-lg shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300 hover:-translate-y-1"
               >
-                Get Started
+                Join ForSa Now
+              </Link>
+              <Link
+                to="/register?type=organization"
+                className="w-full sm:w-auto px-10 py-4 rounded-full text-white font-bold text-lg bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all duration-300"
+              >
+                Become an Organizer
               </Link>
             </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* —— Hero (below nav): dark navy → sky blue —— */}
-      <section className="relative pt-24 pb-12 md:pb-16 px-4 overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none" style={{ background: HERO_BG }} aria-hidden />
-        <motion.div
-          className="pointer-events-none absolute inset-0 will-change-transform bg-[radial-gradient(ellipse_100%_60%_at_50%_0%,rgba(255,255,255,0.08),transparent_55%)]"
-          style={{ y: heroParallax }}
-          aria-hidden
-        />
-
-        <div className="max-w-7xl mx-auto relative z-10 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-14 xl:gap-20 items-center">
-            <div>
-              <motion.h1
-                className="mb-6 font-['Inter:Bold',sans-serif] text-[40px] font-bold leading-[1.08] text-white sm:text-[48px] md:text-[52px]"
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.58, ease: EASE_SCROLL }}
-              >
-                Discover &amp; Manage Your Events
-              </motion.h1>
-              <motion.p
-                className="mb-8 max-w-xl font-['Inter:Regular',sans-serif] text-[17px] leading-relaxed text-[rgba(255,255,255,0.9)] sm:text-[18px]"
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55, delay: 0.06, ease: EASE_SCROLL }}
-              >
-                Create, organize, and attend amazing events. Connect with people who share your interests and
-                make every moment count. Join thousands of people finding and attending amazing events.
-              </motion.p>
-              <motion.div
-                className="mb-10 flex flex-col gap-3 sm:flex-row sm:gap-4"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.52, delay: 0.12, ease: EASE_SCROLL }}
-              >
-                <Link
-                  to="/register"
-                  className="inline-flex items-center justify-center gap-2 rounded-[12px] px-7 py-3.5 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-white shadow-lg transition-opacity duration-300 ease-out hover:opacity-95"
-                  style={{ backgroundColor: DEEP_NAVY }}
-                >
-                  Start Exploring
-                  <ArrowRight className="h-5 w-5" />
-                </Link>
-                <Link
-                  to="/events"
-                  className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-white px-7 py-3.5 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold shadow-md transition-colors duration-300 ease-out hover:bg-slate-50"
-                  style={{ color: brandNavy }}
-                >
-                  <Search className="h-5 w-5" />
-                  Browse Events
-                </Link>
-              </motion.div>
-              <div className="flex flex-wrap items-center gap-5">
-                <div className="flex -space-x-2">
-                  {["A", "B", "C", "D"].map((letter) => (
-                    <div
-                      key={letter}
-                      className="w-10 h-10 rounded-full border-2 border-white bg-slate-700/90 flex items-center justify-center text-white text-[13px] font-semibold"
-                    >
-                      {letter}
-                    </div>
-                  ))}
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                  <div className="flex items-center gap-0.5">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Star key={i} className="w-4 h-4 fill-accent text-accent" />
-                    ))}
-                  </div>
-                  <p
-                    className="font-['Inter:Medium',sans-serif] text-[14px]"
-                    style={{ color: MUTED_TEXT }}
-                  >
-                    Trusted by 50,000+ users
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Three staggered preview cards (reference layout) */}
-            <div className="relative flex min-h-[380px] items-center justify-center lg:min-h-[420px] lg:justify-end">
-              <div className="relative w-full max-w-[340px] space-y-5">
-                <motion.div
-                  initial={{ opacity: 0, y: 22, scale: 0.98 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  viewport={{ once: true, amount: 0.25, margin: "0px 0px -8% 0px" }}
-                  transition={{ duration: 0.58, ease: EASE_SCROLL }}
-                >
-                <button
-                  type="button"
-                  onClick={handleProtectedAction}
-                  className="block w-full rounded-[14px] border border-white/70 bg-white p-4 text-left shadow-xl shadow-black/25 transition-transform duration-300 ease-out hover:-translate-y-0.5"
-                >
-                  <div
-                    className="h-[118px] rounded-[10px] mb-3 flex items-center justify-center bg-gradient-to-r from-[#4158f2] to-[#9d1cf2]"
-                  >
-                    <Calendar className="w-10 h-10 text-white" strokeWidth={1.75} />
-                  </div>
-                  <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[15px] mb-1" style={{ color: brandNavy }}>
-                    Tech Summit 2026
-                  </p>
-                  <p className="flex items-center gap-1.5 text-[13px]" style={{ color: MUTED_TEXT }}>
-                    <MapPin className="w-3.5 h-3.5 shrink-0" /> San Francisco
-                  </p>
-                </button>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 22, scale: 0.98 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  viewport={{ once: true, amount: 0.25, margin: "0px 0px -8% 0px" }}
-                  transition={{ duration: 0.58, delay: 0.08, ease: EASE_SCROLL }}
-                >
-                <button
-                  type="button"
-                  onClick={handleProtectedAction}
-                  className="ml-auto block w-full max-w-[92%] rounded-[14px] border border-white/70 bg-white p-4 text-left shadow-xl shadow-black/25 transition-transform duration-300 ease-out hover:-translate-y-0.5 lg:translate-x-2"
-                >
-                  <div
-                    className="h-[118px] rounded-[10px] mb-3 flex items-center justify-center bg-gradient-to-r from-[#d81bf2] to-[#a83ff2]"
-                  >
-                    <Ticket className="w-10 h-10 text-white" strokeWidth={1.75} />
-                  </div>
-                  <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[15px] mb-1" style={{ color: brandNavy }}>
-                    Music Festival
-                  </p>
-                  <p className="flex items-center gap-1.5 text-[13px]" style={{ color: MUTED_TEXT }}>
-                    <Users className="w-3.5 h-3.5 shrink-0" /> 5K Attending
-                  </p>
-                </button>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 22, scale: 0.98 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  viewport={{ once: true, amount: 0.25, margin: "0px 0px -8% 0px" }}
-                  transition={{ duration: 0.58, delay: 0.16, ease: EASE_SCROLL }}
-                >
-                <button
-                  type="button"
-                  onClick={handleProtectedAction}
-                  className="block w-full max-w-[88%] rounded-[14px] border border-white/70 bg-white p-4 text-left shadow-xl shadow-black/25 transition-transform duration-300 ease-out hover:-translate-y-0.5 lg:-translate-x-1"
-                >
-                  <div
-                    className="h-[118px] rounded-[10px] mb-3 flex items-center justify-center bg-gradient-to-r from-[#f58220] to-[#f9a64a]"
-                  >
-                    <Sparkles className="w-10 h-10 text-white" strokeWidth={1.75} />
-                  </div>
-                  <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[15px] mb-1" style={{ color: brandNavy }}>
-                    Food &amp; Wine
-                  </p>
-                  <p className="flex items-center gap-1.5 text-[13px]" style={{ color: MUTED_TEXT }}>
-                    <Star className="w-3.5 h-3.5 shrink-0" /> Top Rated
-                  </p>
-                </button>
-                </motion.div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* —— Statistics (full-width white band, reads as one strip with page) —— */}
-      <section className="relative z-10 border-t border-slate-100 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-12 md:py-14">
-          <div className="grid grid-cols-2 gap-4 md:gap-6 lg:grid-cols-4">
-            {stats.map((stat, index) => (
-              <ScrollReveal key={index} className="flex flex-col items-center px-2 py-2 text-center md:py-4" delay={index * 0.07} y={20}>
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-[10px] bg-slate-100 mb-4">
-                  <stat.icon className="w-6 h-6 text-accent" strokeWidth={2} />
-                </div>
-                <p className="font-['Inter:Bold',sans-serif] font-bold text-[26px] md:text-[30px] text-foreground mb-1">
-                  {stat.value}
-                </p>
-                <p
-                  className="font-['Inter:Medium',sans-serif] font-medium text-[13px] md:text-[14px]"
-                  style={{ color: MUTED_TEXT }}
-                >
-                  {stat.label}
-                </p>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* —— Upcoming Events —— */}
-      <section className="border-t border-slate-100 bg-muted px-4 py-14 md:py-20">
-        <div className="mx-auto max-w-7xl">
-          <ScrollReveal className="mb-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between" y={22}>
-            <div>
-              <h2 className="mb-2 font-['Inter:Bold',sans-serif] text-[30px] font-bold text-foreground md:text-[38px]">
-                Upcoming Events
-              </h2>
-              <p className="font-['Inter:Regular',sans-serif] text-[16px] text-[#64748b]">
-                Discover events happening near you
-              </p>
-            </div>
-            <Link
-              to="/events"
-              className="inline-flex items-center justify-center self-start rounded-[10px] border border-slate-200 bg-white px-5 py-2.5 font-['Inter:Semi_Bold',sans-serif] text-[14px] font-semibold text-foreground shadow-sm transition-colors duration-300 ease-out hover:border-slate-300 hover:bg-slate-50 lg:self-auto"
-            >
-              View All Events
-            </Link>
-          </ScrollReveal>
-
-          <ScrollReveal className="mb-10 flex flex-wrap gap-2" delay={0.06} y={16}>
-            {eventTabs.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setEventFilter(tab.id)}
-                className={`rounded-full px-4 py-2 font-['Inter:Medium',sans-serif] text-[13px] font-medium transition-colors duration-300 ease-out md:text-[14px] ${
-                  eventFilter === tab.id
-                    ? "bg-primary text-white shadow-md hover:bg-[#1e2936]"
-                    : "border border-slate-200 bg-white text-[#475569] hover:border-slate-300 hover:bg-slate-50"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </ScrollReveal>
-
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
-            {filteredEvents.map((event, index) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                showActions={false}
-                animationIndex={index}
-                reveal="scroll"
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* —— Explore by Category —— */}
-      <section className="border-t border-sky-100/80 bg-background px-4 py-16 md:py-20">
-        <div className="mx-auto max-w-7xl">
-          <ScrollReveal className="mb-12 text-center md:mb-14" y={24}>
-            <h2 className="mb-3 font-['Inter:Bold',sans-serif] text-[30px] font-bold text-foreground md:text-[38px]">
-              Explore by Category
-            </h2>
-            <p className="font-['Inter:Regular',sans-serif] text-[17px] text-[#64748b]">
-              Find events that match your interests
-            </p>
-          </ScrollReveal>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-6">
-            {eventCategories.map((category, index) => {
-              const Icon = category.icon;
-              return (
-                <ScrollReveal key={category.name} delay={index * 0.06} y={20}>
-                <button
-                  type="button"
-                  onClick={handleProtectedAction}
-                  className="flex w-full flex-col items-center rounded-[14px] border border-slate-100/80 bg-white p-5 text-center shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md md:p-6"
-                >
-                  <div
-                    className="w-14 h-14 rounded-full flex items-center justify-center mb-3"
-                    style={{ backgroundColor: `${category.color}20` }}
-                  >
-                    <Icon className="w-7 h-7" style={{ color: category.color }} strokeWidth={2} />
-                  </div>
-                  <span className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] md:text-[15px] text-foreground mb-1">
-                    {category.name}
-                  </span>
-                  <span className="font-['Inter:Regular',sans-serif] text-[12px] text-[#64748b]">
-                    {category.count} events
-                  </span>
-                </button>
-                </ScrollReveal>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* —— Everything You Need —— */}
-      <section className="border-t border-slate-100 bg-white px-4 py-16 md:py-24">
-        <div className="mx-auto max-w-7xl">
-          <ScrollReveal className="mx-auto mb-12 max-w-2xl text-center md:mb-14" y={26}>
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-100 bg-sky-50 px-3 py-1.5">
-              <Zap className="h-4 w-4 text-accent" />
-              <span className="font-['Inter:Medium',sans-serif] text-[13px] font-medium text-foreground">
-                Powerful Features
-              </span>
-            </div>
-            <h2 className="mb-4 font-['Inter:Bold',sans-serif] text-[30px] font-bold text-foreground md:text-[40px]">
-              Everything You Need
-            </h2>
-            <p className="font-['Inter:Regular',sans-serif] text-[16px] leading-relaxed text-[#64748b] md:text-[17px]">
-              Discover why ForSa is the preferred choice for event enthusiasts worldwide
-            </p>
-          </ScrollReveal>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-            {features.map((feature, index) => (
-              <ScrollReveal key={index} delay={index * 0.08} y={24}>
-              <div
-                className="rounded-[16px] border border-slate-100 bg-white p-7 shadow-sm transition-shadow duration-300 ease-out hover:shadow-md md:p-8"
-              >
-                <div
-                  className="w-14 h-14 rounded-[14px] flex items-center justify-center mb-6"
-                  style={{ backgroundColor: `${feature.color}18` }}
-                >
-                  <feature.icon className="w-7 h-7" style={{ color: feature.color }} />
-                </div>
-                <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-3">
-                  {feature.title}
-                </h3>
-                <p className="font-['Inter:Regular',sans-serif] text-[14px] leading-relaxed text-[#64748b]">
-                  {feature.description}
-                </p>
-              </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* —— CTA (above footer): spotlight + #4C8ABB → #27374D, accent #EC9B3B —— */}
-      <section
-        className="relative overflow-hidden border-t border-white/10 px-4 py-20 md:py-28"
-        style={{ background: CTA_SECTION_BG }}
-      >
-        <div className="relative z-10 mx-auto max-w-3xl text-center">
-          <ScrollReveal y={22}>
-          <h2 className="mb-4 font-['Inter:Bold',sans-serif] text-[30px] font-bold text-white md:text-[40px]">
-            Ready to Start Your Journey?
-          </h2>
-          <p className="mx-auto mb-10 max-w-xl font-['Inter:Regular',sans-serif] text-[17px] text-[rgba(255,255,255,0.8)]">
-            Join ForSa today and discover amazing events happening around you
-          </p>
-          <div className="mb-12 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4">
-            <Link
-              to="/register"
-              className="inline-flex items-center justify-center gap-2 rounded-[12px] px-8 py-3.5 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-white shadow-lg transition-all duration-300 ease-in-out hover:brightness-110 hover:shadow-xl active:scale-[0.98]"
-              style={{ backgroundColor: ACCENT_ORANGE }}
-            >
-              Register as Attendee
-              <ArrowRight className="h-5 w-5" />
-            </Link>
-            <Link
-              to="/register?type=organization"
-              className="inline-flex items-center justify-center gap-2 rounded-[12px] border border-[rgba(255,255,255,0.5)] bg-transparent px-8 py-3.5 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-white transition-all duration-300 ease-in-out hover:border-white/70 hover:bg-[rgba(255,255,255,0.12)] active:scale-[0.98]"
-            >
-              <Building2 className="h-5 w-5" />
-              Register as Organization
-            </Link>
-            <Link
-              to="/register?type=place_owner"
-              className="inline-flex items-center justify-center gap-2 rounded-[12px] border border-[rgba(255,255,255,0.5)] bg-transparent px-8 py-3.5 font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-white transition-all duration-300 ease-in-out hover:border-white/70 hover:bg-[rgba(255,255,255,0.12)] active:scale-[0.98]"
-            >
-              <MapPin className="h-5 w-5" />
-              Register as Place Owner
-            </Link>
-          </div>
-          <div className="flex flex-wrap justify-center gap-x-10 gap-y-4 text-[13px] md:text-[14px] text-[rgba(255,255,255,0.95)]">
-            <span className="inline-flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 shrink-0 text-white" strokeWidth={2} />
-              Free to join
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 shrink-0 text-white" strokeWidth={2} />
-              Easy to use all the time
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 shrink-0 text-white" strokeWidth={2} />
-              Cancel anytime
-            </span>
-          </div>
           </ScrollReveal>
         </div>
       </section>
 
-      {/* —— Footer (aligned with reference: logo + 2 link columns) —— */}
-      <footer className="px-4 py-12 md:py-14" style={{ backgroundColor: brandNavy }}>
-        <div className="mx-auto max-w-7xl text-white">
-          <ScrollReveal className="mb-10 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-12" y={18}>
-            <div>
-              <div className="mb-4">
-                <ForSaLogo className="h-14 sm:h-16" />
-              </div>
-              <p className="font-['Inter:Regular',sans-serif] text-[14px] leading-relaxed max-w-sm">
-                Discover and attend amazing events happening around you.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[15px] mb-4">
-                Company
-              </h3>
-              <ul className="space-y-2.5">
-                <li>
-                  <span className="font-['Inter:Regular',sans-serif] text-[14px]">About Us</span>
-                </li>
-                <li>
-                  <span className="font-['Inter:Regular',sans-serif] text-[14px]">Contact Support</span>
-                </li>
-                <li>
-                  <span className="font-['Inter:Regular',sans-serif] text-[14px]">Terms of Service</span>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[15px] mb-4">
-                Legal
-              </h3>
-              <ul className="space-y-2.5">
-                <li>
-                  <span className="font-['Inter:Regular',sans-serif] text-[14px]">Privacy Policy</span>
-                </li>
-                <li>
-                  <span className="font-['Inter:Regular',sans-serif] text-[14px]">Terms of Service</span>
-                </li>
-                <li>
-                  <span className="font-['Inter:Regular',sans-serif] text-[14px]">Cookie Policy</span>
-                </li>
-              </ul>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={0.1} y={12}>
-          <div className="border-t border-white/20 pt-8 text-center">
-            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-white/90">
-              © {new Date().getFullYear()} ForSa. All rights reserved.
-            </p>
-          </div>
-          </ScrollReveal>
-        </div>
-      </footer>
+
     </div>
   );
 }
