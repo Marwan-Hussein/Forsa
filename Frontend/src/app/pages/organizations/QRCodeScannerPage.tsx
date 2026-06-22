@@ -12,9 +12,10 @@ import {
   UserCheck,
   Clock,
   Smartphone,
+  MapPin
 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 
-// Mock scan results
 const mockScanResults = [
   {
     id: "1",
@@ -64,9 +65,7 @@ export default function QRCodeScannerPage() {
 
   const handleStartScanning = () => {
     setIsScanning(true);
-    // Simulate camera activation
     setTimeout(() => {
-      // Simulate a successful scan after 2 seconds
       const newScan = {
         id: String(scanResults.length + 1),
         attendeeName: "Emily Rodriguez",
@@ -89,279 +88,208 @@ export default function QRCodeScannerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <main className="flex-1 px-6 py-8 max-w-7xl mx-auto w-full">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-          <Link to="/organization-dashboard" className="hover:text-accent cursor-pointer">Dashboard</Link>
-          <ChevronRight className="size-4" />
-          <Link to={`/manage-attendees/${eventId}`} className="hover:text-accent cursor-pointer">Manage Attendees</Link>
-          <ChevronRight className="size-4" />
-          <span className="text-foreground">QR Scanner</span>
-        </div>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-6"
+    >
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm font-['Inter:Medium',sans-serif] text-slate-400 mb-2">
+        <Link to="/organizer" className="hover:text-violet-500 transition-colors">Dashboard</Link>
+        <ChevronRight className="w-4 h-4" />
+        <Link to={`/organizer/events/${eventId}/attendees`} className="hover:text-violet-500 transition-colors">Manage Attendees</Link>
+        <ChevronRight className="w-4 h-4" />
+        <span className="text-slate-700">QR Scanner</span>
+      </div>
 
-        {/* Event Header */}
-        <div className="bg-gradient-to-br from-primary to-primary/80 rounded-xl p-6 text-white mb-8">
-          <h1 className="text-3xl font-bold mb-4 flex items-center gap-3">
-            <QrCode className="size-8" />
-            QR Code Scanner
-          </h1>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-2">
-              <Calendar className="size-5" />
-              <div>
-                <p className="text-sm text-white/80">Event</p>
-                <p className="font-semibold">{mockEvent.title}</p>
+      {/* Header Card */}
+      <div className="bg-gradient-to-br from-[#0B1120] to-[#1E3D61] rounded-2xl p-8 text-white relative overflow-hidden shadow-lg shadow-[#1E3D61]/20">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-violet-500/30 rounded-full filter blur-[80px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-fuchsia-500/20 rounded-full filter blur-[80px] pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <h1 className="text-3xl font-['Inter:Bold',sans-serif] font-bold mb-4 flex items-center gap-3">
+              <QrCode className="w-8 h-8 text-violet-400" />
+              Check-in Scanner
+            </h1>
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-3 font-['Inter:Medium',sans-serif] text-slate-300">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-violet-400" />
+                <span>{mockEvent.title} - {new Date(mockEvent.date).toLocaleDateString()}</span>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Calendar className="size-5" />
-              <div>
-                <p className="text-sm text-white/80">Date</p>
-                <p className="font-semibold">{new Date(mockEvent.date).toLocaleDateString()}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="size-5" />
-              <div>
-                <p className="text-sm text-white/80">Location</p>
-                <p className="font-semibold">{mockEvent.location}</p>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-emerald-400" />
+                <span>{mockEvent.location}</span>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Successfully Scanned</p>
-                <p className="text-3xl font-bold text-green-600">{stats.totalScanned}</p>
-              </div>
-              <div className="p-3 bg-green-100 rounded-lg">
-                <CheckCircle className="size-6 text-green-600" />
-              </div>
-            </div>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)] flex items-center justify-between group hover:border-emerald-500/30 transition-all">
+          <div>
+            <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-500 mb-1">Successfully Scanned</p>
+            <p className="text-3xl font-['Inter:Bold',sans-serif] font-bold text-emerald-600">{stats.totalScanned}</p>
           </div>
-
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Failed Scans</p>
-                <p className="text-3xl font-bold text-red-600">{stats.failedScans}</p>
-              </div>
-              <div className="p-3 bg-red-100 rounded-lg">
-                <XCircle className="size-6 text-red-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Last Scan</p>
-                <p className="text-lg font-bold text-foreground">
-                  {stats.lastScanTime
-                    ? new Date(stats.lastScanTime).toLocaleTimeString()
-                    : "N/A"}
-                </p>
-              </div>
-              <div className="p-3 bg-gradient-to-br from-accent to-accent/80 rounded-lg">
-                <Clock className="size-6 text-white" />
-              </div>
-            </div>
+          <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-xl flex items-center justify-center transition-colors">
+            <CheckCircle className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Scanner Section */}
-          <div className="space-y-6">
-            {/* Scanner Card */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
-              <h2 className="text-xl font-bold text-foreground mb-4">Scan QR Code</h2>
-              
-              {/* Scanner Area */}
-              <div className="relative aspect-square bg-background rounded-xl border-2 border-dashed border-primary flex items-center justify-center mb-6">
-                {isScanning ? (
-                  <div className="text-center">
-                    <div className="relative size-48 mx-auto mb-4">
-                      <div className="absolute inset-0 border-4 border-accent rounded-lg animate-pulse" />
-                      <div className="absolute inset-4 border-4 border-accent/50 rounded-lg animate-pulse" style={{ animationDelay: "0.2s" }} />
-                      <div className="absolute inset-8 border-4 border-accent/25 rounded-lg animate-pulse" style={{ animationDelay: "0.4s" }} />
-                      <Camera className="absolute inset-0 m-auto size-16 text-foreground opacity-50" />
-                    </div>
-                    <p className="text-foreground font-semibold">Scanning...</p>
-                    <p className="text-sm text-muted-foreground">Point camera at QR code</p>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <QrCode className="size-24 text-muted-foreground opacity-50 mx-auto mb-4" />
-                    <p className="text-foreground font-semibold mb-2">Ready to Scan</p>
-                    <p className="text-sm text-muted-foreground mb-4">Click the button below to start scanning</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Scanner Controls */}
-              <div className="space-y-3">
-                <button
-                  onClick={handleStartScanning}
-                  disabled={isScanning}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-accent to-accent/80 text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Camera className="size-5" />
-                  {isScanning ? "Scanning..." : "Start Scanning"}
-                </button>
-                <button
-                  onClick={handleManualEntry}
-                  className="w-full px-6 py-3 border border-primary text-foreground rounded-lg hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Smartphone className="size-5" />
-                  Manual Ticket Entry
-                </button>
-              </div>
-            </div>
-
-            {/* Last Scanned Result */}
-            {lastScannedResult && (
-              <div className={`bg-white rounded-xl p-6 shadow-sm border-2 ${
-                lastScannedResult.status === "success"
-                  ? "border-green-500"
-                  : "border-red-500"
-              }`}>
-                <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-lg ${
-                    lastScannedResult.status === "success"
-                      ? "bg-green-100"
-                      : "bg-red-100"
-                  }`}>
-                    {lastScannedResult.status === "success" ? (
-                      <CheckCircle className="size-8 text-green-600" />
-                    ) : (
-                      <XCircle className="size-8 text-red-600" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className={`text-xl font-bold mb-2 ${
-                      lastScannedResult.status === "success"
-                        ? "text-green-700"
-                        : "text-red-700"
-                    }`}>
-                      {lastScannedResult.status === "success"
-                        ? "Check-in Successful!"
-                        : "Check-in Failed"}
-                    </h3>
-                    <div className="space-y-1 text-sm text-muted-foreground">
-                      <p><strong className="text-foreground">Name:</strong> {lastScannedResult.attendeeName}</p>
-                      {lastScannedResult.status === "success" && (
-                        <>
-                          <p><strong className="text-foreground">Ticket Type:</strong> {lastScannedResult.ticketType}</p>
-                          <p><strong className="text-foreground">Tickets:</strong> {lastScannedResult.ticketCount}</p>
-                        </>
-                      )}
-                      <p><strong className="text-foreground">Time:</strong> {new Date(lastScannedResult.scanTime).toLocaleTimeString()}</p>
-                      {lastScannedResult.status === "error" && lastScannedResult.errorMessage && (
-                        <p className="text-red-600 mt-2">
-                          <strong>Error:</strong> {lastScannedResult.errorMessage}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Instructions */}
-            <div className="bg-gradient-to-br from-primary/80 to-primary/60 rounded-xl p-6 text-white">
-              <h3 className="font-bold mb-3 flex items-center gap-2">
-                <AlertCircle className="size-5" />
-                Scanning Instructions
-              </h3>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-start gap-2">
-                  <span className="font-bold">1.</span>
-                  <span>Click "Start Scanning" to activate the camera</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="font-bold">2.</span>
-                  <span>Point your camera at the attendee's QR code ticket</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="font-bold">3.</span>
-                  <span>Wait for automatic check-in confirmation</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="font-bold">4.</span>
-                  <span>Use manual entry if QR code is not working</span>
-                </li>
-              </ul>
-            </div>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)] flex items-center justify-between group hover:border-rose-500/30 transition-all">
+          <div>
+            <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-500 mb-1">Failed Scans</p>
+            <p className="text-3xl font-['Inter:Bold',sans-serif] font-bold text-rose-600">{stats.failedScans}</p>
           </div>
+          <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center transition-colors">
+            <XCircle className="w-6 h-6" />
+          </div>
+        </div>
 
-          {/* Recent Scans */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-border/10">
-            <h2 className="text-xl font-bold text-foreground mb-4">Recent Scans</h2>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)] flex items-center justify-between group hover:border-violet-500/30 transition-all">
+          <div>
+            <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-500 mb-1">Last Scan</p>
+            <p className="text-2xl font-['Inter:Bold',sans-serif] font-bold text-slate-800">
+              {stats.lastScanTime ? new Date(stats.lastScanTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "--:--"}
+            </p>
+          </div>
+          <div className="w-12 h-12 bg-violet-50 text-violet-500 rounded-xl flex items-center justify-center transition-colors">
+            <Clock className="w-6 h-6" />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* Left Col: Scanner Area */}
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-[rgba(39,55,77,0.1)] text-center relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-b from-violet-50/50 to-white pointer-events-none" />
+            <h2 className="text-xl font-['Inter:Bold',sans-serif] font-bold text-slate-800 mb-6 relative z-10">Scan QR Code</h2>
             
-            <div className="space-y-3 max-h-[600px] overflow-y-auto">
+            <div className="relative aspect-square max-w-sm mx-auto bg-slate-50 rounded-3xl border-4 border-dashed border-violet-200 flex flex-col items-center justify-center mb-8 relative z-10">
+              {isScanning ? (
+                <div className="text-center">
+                  <div className="relative w-32 h-32 mx-auto mb-6">
+                    <div className="absolute inset-0 border-4 border-violet-500 rounded-2xl animate-ping opacity-75" />
+                    <div className="absolute inset-0 bg-violet-100 rounded-2xl flex items-center justify-center">
+                      <Camera className="w-12 h-12 text-violet-600 animate-pulse" />
+                    </div>
+                  </div>
+                  <p className="font-['Inter:Bold',sans-serif] text-violet-600 text-lg">Scanning...</p>
+                  <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-500 mt-1">Point camera at QR code</p>
+                </div>
+              ) : (
+                <div className="text-center p-6">
+                  <QrCode className="w-24 h-24 text-slate-300 mx-auto mb-6 group-hover:text-violet-300 transition-colors" />
+                  <p className="font-['Inter:Bold',sans-serif] text-slate-700 text-lg mb-1">Ready to Scan</p>
+                  <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-500">Tap below to activate camera</p>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-3 relative z-10 max-w-sm mx-auto">
+              <button
+                onClick={handleStartScanning}
+                disabled={isScanning}
+                className="w-full px-6 py-4 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white font-['Inter:Bold',sans-serif] font-bold rounded-xl hover:shadow-lg hover:shadow-violet-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <Camera className="w-5 h-5" />
+                {isScanning ? "Scanning..." : "Start Camera"}
+              </button>
+              <button
+                onClick={handleManualEntry}
+                className="w-full px-6 py-4 bg-white border-2 border-slate-200 text-slate-700 font-['Inter:Bold',sans-serif] font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center justify-center gap-2"
+              >
+                <Smartphone className="w-5 h-5" />
+                Manual Entry
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-amber-50 rounded-2xl p-6 border border-amber-100">
+            <h3 className="font-['Inter:Bold',sans-serif] font-bold text-amber-800 mb-3 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" />
+              Scanning Instructions
+            </h3>
+            <ul className="space-y-2 text-sm font-['Inter:Medium',sans-serif] text-amber-700">
+              <li className="flex gap-2"><span className="font-bold opacity-50">1.</span> Tap "Start Camera" and allow browser permissions.</li>
+              <li className="flex gap-2"><span className="font-bold opacity-50">2.</span> Hold the attendee's QR ticket steady in the frame.</li>
+              <li className="flex gap-2"><span className="font-bold opacity-50">3.</span> Wait for the green success confirmation sound/alert.</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Right Col: Scan Results */}
+        <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-[rgba(39,55,77,0.1)] h-[800px] flex flex-col">
+          <h2 className="text-xl font-['Inter:Bold',sans-serif] font-bold text-slate-800 mb-6">Recent Scans</h2>
+          
+          <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
+            <AnimatePresence>
               {scanResults.map((result) => (
-                <div
+                <motion.div
                   key={result.id}
-                  className={`p-4 rounded-lg border-2 ${
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className={`p-5 rounded-2xl border-2 ${
                     result.status === "success"
-                      ? "bg-green-50 border-green-200"
-                      : "bg-red-50 border-red-200"
+                      ? "bg-emerald-50/50 border-emerald-100"
+                      : "bg-rose-50/50 border-rose-100"
                   }`}
                 >
-                  <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg ${
-                      result.status === "success" ? "bg-green-100" : "bg-red-100"
+                  <div className="flex items-start gap-4">
+                    <div className={`p-3 rounded-xl shrink-0 ${
+                      result.status === "success" ? "bg-emerald-100" : "bg-rose-100"
                     }`}>
                       {result.status === "success" ? (
-                        <UserCheck className="size-5 text-green-600" />
+                        <UserCheck className="w-6 h-6 text-emerald-600" />
                       ) : (
-                        <XCircle className="size-5 text-red-600" />
+                        <XCircle className="w-6 h-6 text-rose-600" />
                       )}
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-semibold text-foreground">{result.attendeeName}</h4>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(result.scanTime).toLocaleTimeString()}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <h4 className="font-['Inter:Bold',sans-serif] font-bold text-slate-800 truncate">{result.attendeeName}</h4>
+                        <span className="text-xs font-['Inter:Medium',sans-serif] text-slate-400 shrink-0">
+                          {new Date(result.scanTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}
                         </span>
                       </div>
+                      
                       {result.status === "success" ? (
-                        <div className="space-y-1 text-sm text-muted-foreground">
-                          <p>
-                            <span className="font-medium">Ticket:</span> {result.ticketType} × {result.ticketCount}
+                        <div className="mt-2">
+                          <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-600 mb-2">
+                            <span className="text-slate-400">Ticket:</span> {result.ticketType} × {result.ticketCount}
                           </p>
-                          <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                            ✓ Checked In
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-['Inter:Bold',sans-serif] font-bold rounded-md">
+                            <CheckCircle className="w-3.5 h-3.5" /> Checked In
                           </span>
                         </div>
                       ) : (
-                        <div className="text-sm">
-                          <p className="text-red-600">{result.errorMessage}</p>
-                          <span className="inline-block px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full mt-1">
-                            ✗ Failed
+                        <div className="mt-2">
+                          <p className="text-sm font-['Inter:Medium',sans-serif] text-rose-600 mb-2">{result.errorMessage}</p>
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-rose-100 text-rose-700 text-xs font-['Inter:Bold',sans-serif] font-bold rounded-md">
+                            <XCircle className="w-3.5 h-3.5" /> Entry Denied
                           </span>
                         </div>
                       )}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </AnimatePresence>
 
             {scanResults.length === 0 && (
-              <div className="text-center py-12">
-                <QrCode className="size-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <p className="text-muted-foreground">No scans yet. Start scanning to see results here.</p>
+              <div className="text-center py-20 text-slate-400 h-full flex flex-col items-center justify-center">
+                <QrCode className="w-16 h-16 mb-4 opacity-20" />
+                <p className="font-['Inter:Medium',sans-serif] text-lg">No scans yet. Start scanning to see results.</p>
               </div>
             )}
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </motion.div>
   );
 }

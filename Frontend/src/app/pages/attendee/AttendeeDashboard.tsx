@@ -13,21 +13,16 @@ import {
   Zap,
   Users,
   Search,
-  Bell,
   ChevronRight,
   MapPin,
   Clock as ClockIcon,
-  DollarSign,
-  User,
 } from "lucide-react";
 
-// ----------------------------------------------------------------------
-// Mock Data (inline)
-// ----------------------------------------------------------------------
+// Mock Data
 const mockEvents = [
   {
     id: "1",
-    title: "Tech Conference 2025",
+    title: "Tech Conference 2026",
     description: "Join the biggest tech conference of the year with industry leaders.",
     date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
     location: "San Francisco, CA",
@@ -81,39 +76,8 @@ const mockEvents = [
     organizer: "AI Alliance",
     tags: ["Technology", "AI", "Machine Learning"],
   },
-  {
-    id: "5",
-    title: "Marketing Masterclass",
-    description: "Learn modern marketing strategies from experts.",
-    date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
-    location: "Chicago, IL",
-    category: "Business",
-    price: 149,
-    imageUrl: "https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    capacity: 150,
-    attendees: 98,
-    organizer: "Marketing Pros",
-    tags: ["Business", "Marketing"],
-  },
-  {
-    id: "6",
-    title: "Rock the Night",
-    description: "Live rock concert with multiple bands.",
-    date: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString(),
-    location: "Los Angeles, CA",
-    category: "Music",
-    price: 45,
-    imageUrl: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    capacity: 800,
-    attendees: 523,
-    organizer: "Live Nation",
-    tags: ["Music", "Rock", "Concert"],
-  },
 ];
 
-// ----------------------------------------------------------------------
-// Event Card Components (inline)
-// ----------------------------------------------------------------------
 interface Event {
   id: string;
   title: string;
@@ -129,7 +93,6 @@ interface Event {
   tags: string[];
 }
 
-// Vertical Card (for grids)
 function EventCardVertical({ event, onToggleWishlist, isInWishlist }: { event: Event; onToggleWishlist: (id: string) => void; isInWishlist: boolean }) {
   const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
     month: 'short',
@@ -144,35 +107,36 @@ function EventCardVertical({ event, onToggleWishlist, isInWishlist }: { event: E
 
   return (
     <Link to={`/events/${event.id}`} className="group block cursor-pointer">
-      <div className="bg-card rounded-2xl border border-border overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-        <div className="relative h-40">
-          <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+      <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 transition-all duration-300">
+        <div className="relative h-48">
+          <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <button
             onClick={handleWishlistClick}
-            className="absolute top-3 right-3 w-8 h-8 cursor-pointer bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors"
+            className="absolute top-4 right-4 w-10 h-10 cursor-pointer bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-white hover:scale-110 shadow-sm transition-all z-10"
           >
-            <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-[#ec4899] text-[#ec4899]' : 'text-muted-foreground'}`} />
+            <Heart className={`w-5 h-5 ${isInWishlist ? 'fill-rose-500 text-rose-500' : 'text-slate-400'}`} />
           </button>
-          <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-primary text-xs font-medium px-2.5 py-1 rounded-full">
+          <span className="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-slate-800 text-xs font-['Inter:Bold',sans-serif] font-bold px-3 py-1.5 rounded-full shadow-sm">
             {event.category}
           </span>
         </div>
-        <div className="p-4">
-          <h3 className="font-semibold text-primary line-clamp-1">{event.title}</h3>
-          <p className="text-xs text-muted-foreground line-clamp-2 mt-1 mb-2">{event.description}</p>
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <ClockIcon className="w-3 h-3" />
+        <div className="p-5">
+          <h3 className="font-['Inter:Bold',sans-serif] font-bold text-slate-800 text-lg line-clamp-1 mb-1 group-hover:text-blue-600 transition-colors">{event.title}</h3>
+          <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-500 line-clamp-2 mb-4">{event.description}</p>
+          <div className="flex items-center gap-4 text-xs font-['Inter:Medium',sans-serif] text-slate-500 mb-4">
+            <div className="flex items-center gap-1.5">
+              <ClockIcon className="w-4 h-4 text-blue-500" />
               <span>{formattedDate}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
+            <div className="flex items-center gap-1.5">
+              <MapPin className="w-4 h-4 text-rose-500" />
               <span className="truncate max-w-[100px]">{event.location}</span>
             </div>
           </div>
-          <div className="flex items-center justify-between mt-3">
-            <span className="font-bold text-primary">${event.price}</span>
-            <span className="text-xs text-muted-foreground">{event.attendees} going</span>
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+            <span className="font-['Inter:Bold',sans-serif] font-bold text-slate-800 text-lg">${event.price}</span>
+            <span className="text-xs font-['Inter:Bold',sans-serif] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md">{event.attendees} going</span>
           </div>
         </div>
       </div>
@@ -180,14 +144,11 @@ function EventCardVertical({ event, onToggleWishlist, isInWishlist }: { event: E
   );
 }
 
-// Horizontal Card (for list view)
 function EventCardHorizontal({ event, onToggleWishlist, isInWishlist }: { event: Event; onToggleWishlist: (id: string) => void; isInWishlist: boolean }) {
   const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
   });
 
   const handleWishlistClick = (e: React.MouseEvent) => {
@@ -198,33 +159,25 @@ function EventCardHorizontal({ event, onToggleWishlist, isInWishlist }: { event:
 
   return (
     <Link to={`/events/${event.id}`} className="group block cursor-pointer">
-      <div className="bg-card rounded-xl border border-border p-3 flex gap-3 hover:shadow-md transition-all">
-        <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
-          <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
+      <div className="bg-white rounded-2xl border border-slate-100 p-3 flex gap-4 hover:shadow-lg hover:shadow-blue-500/5 hover:border-blue-100 transition-all duration-300">
+        <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 relative">
+          <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0 py-1 flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-2">
             <div>
-              <h3 className="font-semibold text-primary text-sm line-clamp-1">{event.title}</h3>
-              <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{event.description}</p>
+              <h3 className="font-['Inter:Bold',sans-serif] font-bold text-slate-800 text-base line-clamp-1 group-hover:text-blue-600 transition-colors">{event.title}</h3>
+              <div className="flex items-center gap-3 mt-1.5 text-xs font-['Inter:Medium',sans-serif] text-slate-500">
+                <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-blue-500" />{formattedDate}</span>
+                <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-rose-500" /><span className="truncate max-w-[120px]">{event.location}</span></span>
+              </div>
             </div>
-            <button onClick={handleWishlistClick} className="ml-2 flex-shrink-0 cursor-pointer hover:text-[#ec4899] transition-all duration-300 ease-in-out">
-              <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-[#ec4899] text-[#ec4899]' : 'text-muted-foreground'}`} />
+            <button onClick={handleWishlistClick} className="flex-shrink-0 cursor-pointer p-1.5 hover:bg-rose-50 rounded-full transition-all">
+              <Heart className={`w-5 h-5 ${isInWishlist ? 'fill-rose-500 text-rose-500' : 'text-slate-300 hover:text-rose-400'}`} />
             </button>
           </div>
-          <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <ClockIcon className="w-3 h-3" />
-              <span>{formattedDate}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              <span className="truncate max-w-[120px]">{event.location}</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between mt-1">
-            <span className="font-semibold text-primary text-sm">${event.price}</span>
-            <span className="text-xs text-muted-foreground">{event.attendees} going</span>
+          <div className="flex items-center justify-between mt-2">
+            <span className="font-['Inter:Bold',sans-serif] font-bold text-slate-800">${event.price}</span>
           </div>
         </div>
       </div>
@@ -232,34 +185,13 @@ function EventCardHorizontal({ event, onToggleWishlist, isInWishlist }: { event:
   );
 }
 
-// ----------------------------------------------------------------------
-// Main Dashboard Component
-// ----------------------------------------------------------------------
 export default function AttendeeDashboard() {
   const [wishlist, setWishlist] = useState<string[]>([]);
   const userName = "Alex";
-  const userInterests = ["Business", "Technology", "Music"];
 
-  const recommendedEvents = mockEvents
-    .filter((event) => {
-      const categoryMatch = userInterests.some((interest) =>
-        event.category.toLowerCase().includes(interest.toLowerCase())
-      );
-      const tagMatch = event.tags.some((tag) =>
-        userInterests.some((interest) => tag.toLowerCase().includes(interest.toLowerCase()))
-      );
-      return categoryMatch || tagMatch;
-    })
-    .slice(0, 4);
-
-  const today = new Date();
-  const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-  const thisWeekEvents = mockEvents
-    .filter((event) => {
-      const eventDate = new Date(event.date);
-      return eventDate >= today && eventDate <= weekFromNow;
-    })
-    .slice(0, 4);
+  const recommendedEvents = mockEvents.slice(0, 4);
+  const thisWeekEvents = mockEvents.slice(0, 3);
+  const featuredEvent = mockEvents[0];
 
   const toggleWishlist = (eventId: string) => {
     setWishlist((prev) =>
@@ -268,76 +200,107 @@ export default function AttendeeDashboard() {
   };
 
   const quickStats = [
-    { label: "Upcoming", value: "3", icon: Calendar, color: "#155dfc", link: "/my-events" },
-    { label: "Wishlist", value: wishlist.length.toString(), icon: Heart, color: "#ec4899", link: "/wishlist" },
-    { label: "Attended", value: "12", icon: Star, color: "#eab308", link: "/my-events" },
-    { label: "Following", value: "2", icon: Zap, color: "#9810fa", link: "/organizations" },
+    { label: "Upcoming", value: "3", icon: Calendar, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100", link: "/my-events" },
+    { label: "Wishlist", value: wishlist.length.toString(), icon: Heart, color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-100", link: "/wishlist" },
+    { label: "Attended", value: "12", icon: Star, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-100", link: "/my-events" },
+    { label: "Following", value: "2", icon: Zap, color: "text-violet-600", bg: "bg-violet-50", border: "border-violet-100", link: "/organizations" },
   ];
 
-  // Featured event (first in recommended)
-  const featuredEvent = recommendedEvents[0] || mockEvents[0];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-accent via-card to-accent">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Header with avatar and search */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white font-bold text-xl">
-              {userName[0]}
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-primary">Welcome back, {userName}!</h1>
-              <p className="text-sm text-muted-foreground">
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-              </p>
-            </div>
+    <div className="min-h-screen bg-slate-50 pt-24 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Welcome Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-['Inter:Bold',sans-serif] font-bold text-slate-800 tracking-tight">
+              Ready for your next experience, {userName}? 🚀
+            </h1>
+            <p className="text-slate-500 font-['Inter:Medium',sans-serif] mt-2 text-lg">
+              Discover amazing events tailored just for you.
+            </p>
           </div>
-          <div className="flex items-center gap-3">
-            <button className="p-2 cursor-pointer text-muted-foreground hover:text-primary hover:bg-card rounded-xl transition-all">
-              <Bell className="w-5 h-5" />
-            </button>
-            <div className="relative hidden sm:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search events..."
-                className="pl-9 pr-4 py-2 bg-card border border-border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all w-64"
-              />
-            </div>
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search events, venues..."
+              className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-['Inter:Medium',sans-serif] focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all shadow-sm"
+            />
           </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+          {quickStats.map((stat, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05, duration: 0.3, ease: EASE_IN_OUT }}
+            >
+              <Link
+                to={stat.link}
+                className={`flex items-center gap-4 p-4 rounded-2xl bg-white border ${stat.border} hover:shadow-md transition-all group`}
+              >
+                <div className={`w-12 h-12 rounded-xl ${stat.bg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                </div>
+                <div>
+                  <p className="text-2xl font-['Inter:Bold',sans-serif] font-bold text-slate-800 leading-tight">{stat.value}</p>
+                  <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-500">{stat.label}</p>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
         </div>
 
         {/* Hero Featured Event */}
         {featuredEvent && (
           <motion.div
-            className="mb-10"
+            className="mb-16"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: EASE_IN_OUT }}
           >
             <Link to={`/events/${featuredEvent.id}`} className="group block cursor-pointer">
-              <div className="relative h-64 overflow-hidden rounded-3xl shadow-[0_20px_50px_-20px_rgb(var(--color-primary)/0.35)] ring-1 ring-white/10 transition-[transform,box-shadow] duration-300 ease-in-out group-hover:-translate-y-1 group-hover:shadow-[0_28px_60px_-18px_rgb(var(--color-primary)/0.45)] md:h-80">
-                <img src={featuredEvent.imageUrl} alt={featuredEvent.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent" />
-                <div className="absolute bottom-0 left-0 p-6 text-white">
-                  <span className="bg-accent text-white text-xs font-semibold px-3 py-1 rounded-full mb-3 inline-block">
-                    Featured
-                  </span>
-                  <h2 className="text-2xl md:text-3xl font-bold mb-2">{featuredEvent.title}</h2>
-                  <p className="text-sm text-white/80 mb-3 line-clamp-2">{featuredEvent.description}</p>
-                  <div className="flex items-center gap-4 text-sm">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      {new Date(featuredEvent.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              <div className="relative h-80 sm:h-96 md:h-[450px] overflow-hidden rounded-[2.5rem] shadow-2xl shadow-blue-900/10 transition-transform duration-500 hover:scale-[1.01]">
+                <img src={featuredEvent.imageUrl} alt={featuredEvent.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-900/40 to-transparent mix-blend-overlay" />
+                
+                <div className="absolute bottom-0 left-0 p-8 sm:p-12 w-full md:w-2/3">
+                  <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <span className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-['Inter:Bold',sans-serif] font-bold px-4 py-1.5 rounded-full shadow-lg">
+                      Featured Event
+                    </span>
+                    <span className="bg-white/20 backdrop-blur-md text-white border border-white/20 text-xs font-['Inter:Bold',sans-serif] font-bold px-4 py-1.5 rounded-full">
+                      {featuredEvent.category}
+                    </span>
+                  </div>
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-['Inter:Bold',sans-serif] font-bold text-white mb-3 leading-tight text-balance group-hover:text-blue-200 transition-colors">
+                    {featuredEvent.title}
+                  </h2>
+                  <p className="text-base sm:text-lg font-['Inter:Medium',sans-serif] text-white/80 mb-6 line-clamp-2 max-w-2xl">
+                    {featuredEvent.description}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-6 text-sm font-['Inter:Medium',sans-serif] text-white/90">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md">
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      {new Date(featuredEvent.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </div>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md">
+                        <MapPin className="w-4 h-4" />
+                      </div>
                       {featuredEvent.location}
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      {featuredEvent.attendees} going
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md">
+                        <Users className="w-4 h-4" />
+                      </div>
+                      {featuredEvent.attendees} Attending
                     </div>
                   </div>
                 </div>
@@ -346,64 +309,21 @@ export default function AttendeeDashboard() {
           </motion.div>
         )}
 
-        {/* Quick Stats as Pills */}
-        <div className="mb-10 flex flex-wrap gap-3">
-          {quickStats.map((stat, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05, duration: 0.3, ease: EASE_IN_OUT }}
-              whileHover={{ y: -2, scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Link
-                to={stat.link}
-                className="flex items-center gap-2 rounded-full border border-border bg-card/95 px-4 py-2 shadow-sm backdrop-blur-sm transition-shadow duration-300 ease-in-out hover:border-border/80 hover:shadow-md cursor-pointer"
-              >
-                <stat.icon className="h-4 w-4" style={{ color: stat.color }} />
-                <span className="text-sm font-medium text-primary">
-                  {stat.value} {stat.label}
-                </span>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Two-column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left column: Your upcoming events (list) */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-primary">Your upcoming</h2>
-              <Link to="/my-events" className="text-sm text-[#155dfc] hover:text-[#0f4ac0] flex items-center gap-1 cursor-pointer">
-                View all <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <div className="space-y-3">
-              {thisWeekEvents.slice(0, 3).map((event) => (
-                <EventCardHorizontal
-                  key={event.id}
-                  event={event}
-                  onToggleWishlist={toggleWishlist}
-                  isInWishlist={wishlist.includes(event.id)}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Right column: Recommended for you (grid) */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-accent" />
-                <h2 className="text-lg font-semibold text-primary">Recommended for you</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Right column: Recommended for you (Grid) - Order flipped on desktop */}
+          <div className="lg:col-span-2 lg:order-2">
+            <div className="flex items-end justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-['Inter:Bold',sans-serif] font-bold text-slate-800 flex items-center gap-2">
+                  <Sparkles className="w-6 h-6 text-amber-500" /> For You
+                </h2>
+                <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-500 mt-1">Curated based on your interests</p>
               </div>
-              <Link to="/recommendations" className="text-sm text-[#155dfc] hover:text-[#0f4ac0] flex items-center gap-1 cursor-pointer">
-                View all <ChevronRight className="w-4 h-4" />
+              <Link to="/recommendations" className="text-sm font-['Inter:Bold',sans-serif] text-blue-600 hover:text-blue-700 flex items-center gap-1 group">
+                See all <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {recommendedEvents.map((event) => (
                 <EventCardVertical
                   key={event.id}
@@ -414,74 +334,51 @@ export default function AttendeeDashboard() {
               ))}
             </div>
           </div>
+
+          {/* Left column: Upcoming events (List) */}
+          <div className="lg:col-span-1 lg:order-1">
+            <div className="flex items-end justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-['Inter:Bold',sans-serif] font-bold text-slate-800 flex items-center gap-2">
+                  <TrendingUp className="w-6 h-6 text-rose-500" /> Trending
+                </h2>
+                <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-500 mt-1">Popular right now</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-3xl p-4 border border-slate-100 shadow-sm space-y-3">
+              {thisWeekEvents.map((event) => (
+                <EventCardHorizontal
+                  key={event.id}
+                  event={event}
+                  onToggleWishlist={toggleWishlist}
+                  isInWishlist={wishlist.includes(event.id)}
+                />
+              ))}
+              <Link to="/events" className="block w-full py-3 mt-4 bg-slate-50 hover:bg-slate-100 text-slate-600 font-['Inter:Bold',sans-serif] text-center rounded-xl transition-colors">
+                Explore More Events
+              </Link>
+            </div>
+          </div>
         </div>
 
-        {/* Trending this week */}
-        <div className="mt-12">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-[#155dfc]" />
-              <h2 className="text-lg font-semibold text-primary">Trending this week</h2>
-            </div>
-            <Link to="/events" className="text-sm text-[#155dfc] hover:text-[#0f4ac0] flex items-center gap-1 cursor-pointer">
-              See all <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {thisWeekEvents.map((event) => (
-              <EventCardVertical
-                key={event.id}
-                event={event}
-                onToggleWishlist={toggleWishlist}
-                isInWishlist={wishlist.includes(event.id)}
-              />
+        {/* Categories Section */}
+        <div className="mt-16">
+          <h2 className="text-2xl font-['Inter:Bold',sans-serif] font-bold text-slate-800 mb-6">Browse by Category</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {['Technology', 'Music', 'Business', 'Arts'].map((cat, i) => (
+              <Link key={cat} to="/events" className={`relative h-32 rounded-2xl overflow-hidden group border border-slate-100 shadow-sm cursor-pointer`}>
+                <div className={`absolute inset-0 bg-gradient-to-br ${
+                  i === 0 ? 'from-blue-500 to-indigo-600' :
+                  i === 1 ? 'from-rose-400 to-pink-600' :
+                  i === 2 ? 'from-emerald-400 to-teal-600' :
+                  'from-amber-400 to-orange-500'
+                } opacity-90 group-hover:opacity-100 transition-opacity`} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <h3 className="font-['Inter:Bold',sans-serif] font-bold text-white text-xl group-hover:scale-110 transition-transform">{cat}</h3>
+                </div>
+              </Link>
             ))}
           </div>
-        </div>
-
-        {/* Quick Links */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-12">
-          <Link
-            to="/organizations"
-            className="bg-white rounded-xl border border-muted/10 p-5 hover:shadow-md transition-all flex items-center gap-4 cursor-pointer"
-          >
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#9810fa]/10 to-[#9810fa]/5 flex items-center justify-center">
-              <Users className="w-5 h-5 text-[#9810fa]" />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-primary">Organizations</p>
-              <p className="text-xs text-muted-foreground">Follow your favorites</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          </Link>
-
-          <Link
-            to="/wishlist"
-            className="bg-white rounded-xl border border-muted/10 p-5 hover:shadow-md transition-all flex items-center gap-4 cursor-pointer"
-          >
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#ec4899]/10 to-[#ec4899]/5 flex items-center justify-center">
-              <Heart className="w-5 h-5 text-[#ec4899]" />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-foreground">Wishlist</p>
-              <p className="text-xs text-muted-foreground">{wishlist.length} saved events</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          </Link>
-
-          <Link
-            to="/my-events"
-            className="bg-white rounded-xl border border-muted/10 p-5 hover:shadow-md transition-all flex items-center gap-4 cursor-pointer"
-          >
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#155dfc]/10 to-[#155dfc]/5 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-[#155dfc]" />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-foreground">My events</p>
-              <p className="text-xs text-muted-foreground">View your bookings</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          </Link>
         </div>
       </div>
     </div>

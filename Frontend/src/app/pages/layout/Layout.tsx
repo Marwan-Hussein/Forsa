@@ -7,7 +7,9 @@ import { Toaster } from "../../components/ui/sonner";
 
 export default function Layout() {
   const { pathname } = useLocation();
-  const showAppChrome = pathname !== "/";
+  const isAuthPage = pathname === "/login" || pathname === "/register";
+  const showAppChrome = !isAuthPage && pathname !== "/";
+  const showNavigation = !isAuthPage;
 
   useEffect(() => {
     function setupScrollToTop(elementId: string) {
@@ -111,7 +113,7 @@ export default function Layout() {
         }
       `}</style>
       
-      <Navigation />
+      {showNavigation && <Navigation />}
       <main className="flex min-h-0 flex-1 flex-col w-full">
         <AnimatedOutlet />
       </main>

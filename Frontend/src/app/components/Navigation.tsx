@@ -1,204 +1,181 @@
 import type { CSSProperties } from "react";
 import { Link, useLocation } from "react-router";
-import { Bell, User, Menu, X } from "lucide-react";
+import { Menu, X, ArrowRight, Bell, User, Heart, Calendar, LogOut, LayoutDashboard } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ForSaLogo } from "./ForSaLogo";
-import { brandNavy, brandNavyElevated } from "../lib/brand";
 import { EASE_IN_OUT } from "../lib/motion";
-
-const linkBase =
-  "font-['Inter:Medium',sans-serif] font-medium text-[14px] px-3 py-2 rounded-[8px] transition-colors duration-300 ease-in-out";
-const linkInactive = "text-white/90 hover:bg-white/10 hover:text-white";
-const linkActive = "text-white bg-white/15";
-const roleTabBase =
-  "rounded-[8px] px-3 py-1.5 text-[13px] font-['Inter:Medium',sans-serif] transition-colors duration-300 ease-in-out";
-const roleTabInactive = "text-white/80 hover:bg-white/10 hover:text-white";
-const roleTabActive = "bg-white/15 text-white";
-
-type NavRole = "attendee" | "organization" | "placeOwner";
-
-const roleConfig: Record<
-  NavRole,
-  { label: string; defaultPath: string; links: Array<{ path: string; label: string }> }
-> = {
-  attendee: {
-    label: "Attendee",
-    defaultPath: "/events",
-    links: [
-      { path: "/events", label: "Browse Events" },
-      { path: "/my-events", label: "My Events" },
-      { path: "/wishlist", label: "Wishlist" },
-      { path: "/calendar", label: "Calendar" },
-    ],
-  },
-  organization: {
-    label: "Organization",
-    defaultPath: "/organization-dashboard",
-    links: [
-      { path: "/organization-dashboard", label: "Dashboard" },
-      { path: "/booking-requests", label: "Booking Requests" },
-      { path: "/events", label: "Browse Events" },
-    ],
-  },
-  placeOwner: {
-    label: "Place Owner",
-    defaultPath: "/places",
-    links: [
-      { path: "/places", label: "My Places" },
-      { path: "/my-booking-requests", label: "My Booking Requests" },
-    ],
-  },
-};
-
-function detectRole(pathname: string): NavRole | null {
-  if (
-    pathname.startsWith("/profile") ||
-    pathname.startsWith("/notifications")
-  ) {
-    // Shared pages: keep whatever role the user selected previously.
-    return null;
-  }
-  if (
-    pathname.startsWith("/organization-dashboard") ||
-    pathname.startsWith("/booking-requests") ||
-    pathname.startsWith("/manage-attendees") ||
-    pathname.startsWith("/qr-scanner")
-  ) {
-    return "organization";
-  }
-  if (
-    pathname.startsWith("/places") ||
-    pathname.startsWith("/my-booking-requests")
-  ) {
-    return "placeOwner";
-  }
-  return "attendee";
-}
-
-function pathMatches(pathname: string, path: string): boolean {
-  return pathname === path || pathname.startsWith(`${path}/`);
-}
-
-const navShell = (elevated: boolean) =>
-  [
-    "sticky top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-300 ease-in-out",
-    elevated
-      ? "border-b border-white/10 shadow-lg shadow-black/15 backdrop-blur-md backdrop-saturate-150"
-      : "border-b border-transparent shadow-[0_4px_6px_-1px_rgb(0,0,0/0.15)]",
-  ].join(" ");
-
-const navBarStyle = (elevated: boolean): CSSProperties => ({
-  backgroundColor: elevated ? brandNavyElevated : brandNavy,
-});
 
 export function Navigation() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [elevated, setElevated] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<NavRole>(() => detectRole(location.pathname) ?? "attendee");
+  const [navElevated, setNavElevated] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Mock authentication state (Assume logged in for attendee redesign)
+  const isLoggedIn = true;
+  const userName = "Alex";
 
   useEffect(() => {
-    const onScroll = () => setElevated(window.scrollY > 10);
+    const onScroll = () => setNavElevated(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Close user menu when clicking outside
   useEffect(() => {
-    const inferredRole = detectRole(location.pathname);
-    if (inferredRole) {
-      setSelectedRole(inferredRole);
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
     }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Close menus on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setUserMenuOpen(false);
   }, [location.pathname]);
 
-  if (location.pathname === "/") {
-    return null;
-  }
-
-  const isActive = (path: string) => pathMatches(location.pathname, path);
-  const roleLinks = roleConfig[selectedRole].links;
-  const roleOrder: NavRole[] = ["attendee", "organization", "placeOwner"];
+  const links = [
+    { path: "/events", label: "Events" },
+    { path: "/places", label: "Venues" },
+    { path: "/organizations", label: "Organizers" },
+  ];
 
   return (
     <>
-      <nav className={`${navShell(elevated)} hidden lg:block`} style={navBarStyle(elevated)}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-[84px]">
-            <Link
-              to="/dashboard"
-              className="flex shrink-0 items-center rounded-lg py-1 outline-none ring-white/0 transition-[transform,box-shadow] duration-300 ease-in-out hover:opacity-95 focus-visible:ring-2 focus-visible:ring-white/40"
-            >
-              <ForSaLogo className="h-14 sm:h-16 max-h-[4.5rem]" />
-            </Link>
+      <nav
+        className={`fixed left-0 right-0 top-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          navElevated
+            ? "bg-white/95 backdrop-blur-2xl border-b border-slate-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] py-3"
+            : "bg-transparent py-6"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-3 group outline-none">
+            <ForSaLogo className={`h-8 md:h-10 w-auto transition-all duration-500 ${navElevated ? 'text-blue-600' : 'text-white drop-shadow-md'}`} fill={navElevated ? '#2563eb' : '#ffffff'} />
+            <span className={`text-2xl font-['Inter:Bold',sans-serif] font-bold tracking-tight transition-colors duration-500 ${navElevated ? 'text-slate-800' : 'text-white drop-shadow-md'}`}>
+              ForSa
+            </span>
+          </Link>
+          
+          <div className="hidden md:flex items-center gap-8">
+            {links.map((item) => (
+              <Link 
+                key={item.path}
+                to={item.path} 
+                className={`relative font-['Inter:Medium',sans-serif] text-sm transition-colors group ${
+                  navElevated ? 'text-slate-600 hover:text-blue-600' : 'text-white/90 hover:text-white drop-shadow-sm'
+                }`}
+              >
+                {item.label}
+                <span className={`absolute -bottom-1 left-0 w-0 h-0.5 rounded-full transition-all duration-300 group-hover:w-full ${navElevated ? 'bg-blue-600' : 'bg-white'}`}></span>
+              </Link>
+            ))}
+          </div>
 
-            <div className="flex flex-1 items-center justify-center gap-4 px-4">
-              <div className="flex items-center gap-1 rounded-[10px] bg-white/5 p-1">
-                {roleOrder.map((role) => (
-                  <Link
-                    key={role}
-                    to={roleConfig[role].defaultPath}
-                    onClick={() => setSelectedRole(role)}
-                    className={`${roleTabBase} ${
-                      selectedRole === role ? roleTabActive : roleTabInactive
+          <div className="hidden md:flex items-center gap-6">
+            {isLoggedIn ? (
+              <>
+                <Link 
+                  to="/notifications" 
+                  className={`relative p-2 rounded-full transition-colors ${
+                    navElevated ? 'text-slate-500 hover:bg-slate-100' : 'text-white hover:bg-white/10'
+                  }`}
+                >
+                  <Bell className="w-5 h-5" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white shadow-sm"></span>
+                </Link>
+
+                <div className="relative" ref={userMenuRef}>
+                  <button 
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full transition-all ${
+                      navElevated ? 'hover:bg-slate-100 border border-transparent' : 'bg-white/10 hover:bg-white/20 border border-white/20'
                     }`}
                   >
-                    {roleConfig[role].label}
-                  </Link>
-                ))}
-              </div>
-              <div className="flex items-center gap-1">
-                {roleLinks.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`${linkBase} ${isActive(item.path) ? linkActive : linkInactive}`}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-['Inter:Bold',sans-serif] text-sm ${
+                      navElevated ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white' : 'bg-white text-blue-600'
+                    }`}>
+                      {userName.charAt(0)}
+                    </div>
+                    <span className={`text-sm font-['Inter:Medium',sans-serif] ${navElevated ? 'text-slate-700' : 'text-white'}`}>
+                      {userName}
+                    </span>
+                  </button>
 
-            <div className="flex shrink-0 items-center gap-1">
+                  <AnimatePresence>
+                    {userMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
+                      >
+                        <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                          <p className="font-['Inter:Bold',sans-serif] text-slate-800">{userName}</p>
+                          <p className="text-xs font-['Inter:Medium',sans-serif] text-slate-500 truncate">alex@example.com</p>
+                        </div>
+                        <div className="p-2">
+                          <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                            <LayoutDashboard className="w-4 h-4" /> Dashboard
+                          </Link>
+                          <Link to="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                            <User className="w-4 h-4" /> My Profile
+                          </Link>
+                          <Link to="/my-events" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                            <Calendar className="w-4 h-4" /> My Tickets
+                          </Link>
+                          <Link to="/wishlist" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-rose-500 transition-colors">
+                            <Heart className="w-4 h-4" /> Wishlist
+                          </Link>
+                        </div>
+                        <div className="p-2 border-t border-slate-100">
+                          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-rose-600 hover:bg-rose-50 transition-colors">
+                            <LogOut className="w-4 h-4" /> Sign Out
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </>
+            ) : (
               <Link
-                to="/notifications"
-                className={`flex h-10 w-10 items-center justify-center rounded-[8px] text-white transition-all duration-300 ease-in-out hover:scale-105 active:scale-95 ${
-                  isActive("/notifications") ? "bg-white/15" : "hover:bg-white/10"
+                to="/login"
+                className={`relative overflow-hidden text-sm font-['Inter:Bold',sans-serif] font-bold px-8 py-2.5 rounded-full shadow-lg transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 group ${
+                  navElevated 
+                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/20' 
+                    : 'bg-white text-blue-600 hover:bg-slate-50'
                 }`}
-                aria-label="Notifications"
               >
-                <Bell className="h-5 w-5" />
+                <span className="relative z-10 flex items-center gap-2">Sign In <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
               </Link>
-              <Link
-                to="/profile"
-                className={`flex h-10 w-10 items-center justify-center rounded-[8px] text-white transition-all duration-300 ease-in-out hover:scale-105 active:scale-95 ${
-                  isActive("/profile") ? "bg-white/15" : "hover:bg-white/10"
-                }`}
-                aria-label="Profile"
-              >
-                <User className="h-5 w-5" />
-              </Link>
-            </div>
+            )}
           </div>
-        </div>
-      </nav>
 
-      <nav className={`${navShell(elevated)} lg:hidden`} style={navBarStyle(elevated)}>
-        <div className="px-4">
-          <div className="flex h-[72px] items-center justify-between">
-            <Link
-              to="/dashboard"
-              className="flex items-center rounded-lg py-1 outline-none transition-opacity duration-300 ease-in-out hover:opacity-95 focus-visible:ring-2 focus-visible:ring-white/40"
-            >
-              <ForSaLogo className="h-12 sm:h-14 max-h-16" />
-            </Link>
+          <div className="md:hidden flex items-center gap-4">
+            {isLoggedIn && (
+              <Link 
+                to="/notifications" 
+                className={`relative p-2 rounded-full transition-colors ${
+                  navElevated ? 'text-slate-500' : 'text-white'
+                }`}
+              >
+                <Bell className="w-5 h-5" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white shadow-sm"></span>
+              </Link>
+            )}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex h-10 w-10 items-center justify-center rounded-[8px] text-white transition-all duration-300 ease-in-out hover:bg-white/10 active:scale-95"
-              aria-expanded={mobileMenuOpen}
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${navElevated ? 'text-slate-800' : 'text-white'}`}
             >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -213,56 +190,48 @@ export function Navigation() {
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.28, ease: EASE_IN_OUT }}
-              className="overflow-hidden border-t border-white/10"
+              className="overflow-hidden bg-white md:hidden border-t border-slate-100 shadow-xl absolute top-full left-0 w-full"
             >
-              <div className="space-y-1 px-4 py-4">
-                <div className="mb-2 flex items-center gap-1 rounded-[10px] bg-white/5 p-1">
-                  {roleOrder.map((role) => (
-                    <Link
-                      key={role}
-                      to={roleConfig[role].defaultPath}
-                      onClick={() => {
-                        setSelectedRole(role);
-                        setMobileMenuOpen(false);
-                      }}
-                      className={`${roleTabBase} text-center ${
-                        selectedRole === role ? roleTabActive : roleTabInactive
-                      }`}
-                    >
-                      {roleConfig[role].label}
-                    </Link>
-                  ))}
-                </div>
-                {roleLinks.map((item) => (
+              <div className="space-y-1 px-4 py-4 flex flex-col gap-2">
+                {links.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`block rounded-[8px] px-4 py-3 font-['Inter:Medium',sans-serif] text-[15px] font-medium transition-colors duration-300 ease-in-out ${
-                      isActive(item.path)
-                        ? "bg-white/15 text-white"
-                        : "text-white/90 hover:bg-white/10"
-                    }`}
+                    className="block rounded-xl px-4 py-3 font-['Inter:Bold',sans-serif] text-slate-700 hover:bg-slate-50"
                   >
                     {item.label}
                   </Link>
                 ))}
-                <Link
-                  to="/notifications"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 rounded-[8px] px-4 py-3 text-white/90 transition-colors duration-300 ease-in-out hover:bg-white/10"
-                >
-                  <Bell className="h-5 w-5" />
-                  Notifications
-                </Link>
-                <Link
-                  to="/profile"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 rounded-[8px] px-4 py-3 text-white/90 transition-colors duration-300 ease-in-out hover:bg-white/10"
-                >
-                  <User className="h-5 w-5" />
-                  Profile
-                </Link>
+                
+                {isLoggedIn ? (
+                  <>
+                    <div className="my-2 border-t border-slate-100"></div>
+                    <Link to="/dashboard" className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50">
+                      <LayoutDashboard className="w-5 h-5" /> Dashboard
+                    </Link>
+                    <Link to="/profile" className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50">
+                      <User className="w-5 h-5" /> My Profile
+                    </Link>
+                    <Link to="/my-events" className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50">
+                      <Calendar className="w-5 h-5" /> My Tickets
+                    </Link>
+                    <Link to="/wishlist" className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50">
+                      <Heart className="w-5 h-5" /> Wishlist
+                    </Link>
+                    <button className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Bold',sans-serif] text-rose-600 hover:bg-rose-50 w-full text-left mt-2 border-t border-slate-100 pt-4">
+                      <LogOut className="w-5 h-5" /> Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <div className="pt-4 mt-2 border-t border-slate-100">
+                    <Link
+                      to="/login"
+                      className="flex justify-center items-center gap-2 rounded-xl px-4 py-3 font-['Inter:Bold',sans-serif] text-white bg-blue-600"
+                    >
+                      Sign In <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}

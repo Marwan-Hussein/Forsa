@@ -86,21 +86,33 @@ export default function EventDetailsPage() {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-b from-[#eff6ff] via-[#f0f7ff] to-[#e8f0fa] py-8 px-4"
+      className="min-h-screen bg-slate-50"
       initial="initial"
       animate="animate"
       variants={pageVariants}
       transition={pageTransition}
     >
-      <div className="max-w-6xl mx-auto">
-        {/* Back Button */}
-        <Link
-          to="/events"
-          className="inline-flex items-center gap-2 mb-6 text-muted-foreground transition-all duration-300 ease-in-out hover:gap-3 hover:text-foreground font-['Inter:Regular',sans-serif] text-[14px] cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Events
-        </Link>
+      {/* Dark Header Background for Navbar */}
+      <div className="bg-[#0B1120] pt-32 pb-24 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E3D61 100%)" }} />
+        <div className="absolute inset-0 z-0 overflow-hidden mix-blend-screen pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full filter blur-[100px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#3b82f6]/20 rounded-full filter blur-[100px]" />
+          <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px]" />
+        </div>
+        <div className="relative max-w-6xl mx-auto">
+          {/* Back Button */}
+          <Link
+            to="/events"
+            className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors font-medium text-sm backdrop-blur-md bg-white/5 px-4 py-2 rounded-full border border-white/10"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Events
+          </Link>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 -mt-16 relative z-10 pb-20">
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
