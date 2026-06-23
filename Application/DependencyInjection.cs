@@ -27,6 +27,8 @@ using Application.Services.OwnerServices;
 using Application.Core.Interfaces.OrganizerInterfaces;
 using Application.Services.OrganizerServices;
 using AutoMapper;
+using Application.Core.Interfaces.OrganizerInterfaces;
+using Application.Services.OrganizerServices;
 namespace Application;
 
 public static class DependencyInjection
@@ -61,8 +63,12 @@ public static class DependencyInjection
         services.AddScoped<IAttendeeAdminService,AttendeeAdminService>();
         services.AddScoped<IAttendeeProfileService,AttendeeProfileService>();
 
+        // Organizer Services
+        services.AddScoped<IOrganizerService, OrganizerService>();
+
         // Promo Services
         services.AddScoped<IPromoService, PromoCodeService>();
+        
 
         // Jwt Configuration
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
