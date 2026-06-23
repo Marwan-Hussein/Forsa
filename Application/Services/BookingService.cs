@@ -18,19 +18,22 @@ namespace Application.Services
         private readonly IGenericRepository<Notification> _notificationRepository;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IQrService _qrService;
 
         public BookingService(
             IQueryableRepository<Event> eventRepository,
             IQueryableRepository<Booking> bookingRepository,
             IGenericRepository<Notification> notificationRepository,
             IMapper mapper,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IQrService qrService)
         {
             _eventRepository = eventRepository;
             _bookingRepository = bookingRepository;
             _notificationRepository = notificationRepository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _qrService = qrService;
         }
 
         public async Task<EventDetailsDto> GetEventDetailsAsync(int eventId)
@@ -164,6 +167,71 @@ namespace Application.Services
                 throw new KeyNotFoundException("Booking not found");
 
             return _mapper.Map<BookingResponseDto>(booking);
+        }
+
+        public async Task<byte[]> GetTicketFromQr(int bookingId) { 
+            var bookingInfo = await _bookingRepository.GetQueryable()
+                .Include(b => b.Event)
+                .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
+            if(bookingInfo == null)
+                throw new KeyNotFoundException("Booking not found");
+            string qrPayload = bookingInfo.QRCode; 
+            byte[] qrImage = _qrService.GenerateQrImage(qrPayload);
+            return qrImage; 
+        }
+
+        public async Task VerifyAttendanceViaQrCodeAsync(int eventId, string qrCode)
+        {
+            if(string.IsNullOrWhiteSpace(qrCode))
+                throw new ArgumentException("Scanned token cannot be empty.", nameof(qrCode));
+
+            string finalToken = qrCode;
+
+            if (qrCode.Contains("token="))
+            {
+                var uri = new Uri(qrCode);
+                var queryDictionary = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+                finalToken = queryDictionary["token"].ToString();
+            }
+
+            var bookingInfo = await _bookingRepository.GetQueryable()
+                .Include(b => b.Event)
+                .FirstOrDefaultAsync(b => b.EventId == eventId && b.QRCode == finalToken && !b.IsDeleted);
+
+            if (bookingInfo == null)
+                throw new KeyNotFoundException("Invalid ticket. This QR code does not match any bookings for this event.");
+
+            if(bookingInfo.Status == BookingStatus.Cancelled)
+                throw new InvalidOperationException("This booking has been cancelled and cannot be used for attendance.");
+
+            bookingInfo.Status = BookingStatus.Confirmed;
+            _bookingRepository.Update(bookingInfo);
+
+            await _unitOfWork.SaveChangesAsync();
+
+        }
+
+
+        public async Task BlockAttendeeFromEventAsync(int eventId, int attendeeId)
+        {
+            var bookingInfo = await _bookingRepository.GetQueryable()
+                .Include(b => b.Event)
+                .FirstOrDefaultAsync(b => b.EventId == eventId && b.AttendeeId == attendeeId && !b.IsDeleted);
+
+            if (bookingInfo == null)
+                throw new KeyNotFoundException("The booking information was not found.");
+            if (bookingInfo.Status == BookingStatus.Cancelled)
+                throw new InvalidOperationException("This attendee's booking is already cancelled.");
+            bookingInfo.Status = BookingStatus.Cancelled;
+            _bookingRepository.Update(bookingInfo);
+
+            if (bookingInfo.Event != null)
+            {
+                bookingInfo.Event.RemainingTickets += bookingInfo.NumberOfTickets;
+                _eventRepository.Update(bookingInfo.Event); // Explicitly updates the event row capacity count
+            }
+
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

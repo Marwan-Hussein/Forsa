@@ -4,6 +4,7 @@ import { ShieldCheck, Mail, ArrowLeft, RefreshCw, Loader2, CheckCircle } from "l
 import { motion, AnimatePresence } from "motion/react";
 import { apiPost, ApiError } from "../../api/api";
 import { toast } from "sonner";
+import { ForSaLogo } from "../../components/ForSaLogo";
 
 interface VerifyResponse {
   fullName: string;
@@ -175,23 +176,14 @@ export default function OTPPage() {
   const formattedTime = `${Math.floor(timer / 60).toString().padStart(2, "0")}:${(timer % 60).toString().padStart(2, "0")}`;
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4 relative overflow-hidden flex flex-col justify-center">
-      {/* Decorative background elements */}
-      <div
-        className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full opacity-[0.06] blur-3xl"
-        style={{ background: "var(--accent)" }}
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute top-1/2 -left-32 h-96 w-96 rounded-full opacity-[0.04] blur-3xl"
-        style={{ background: "var(--primary)" }}
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -bottom-32 right-1/4 h-80 w-80 rounded-full opacity-[0.05] blur-3xl"
-        style={{ background: "var(--Education)" }}
-        aria-hidden
-      />
+    <div className="min-h-screen bg-[#0B1120] py-12 px-4 relative overflow-hidden flex flex-col justify-center">
+      {/* Premium Background */}
+      <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E3D61 100%)" }} />
+      <div className="absolute inset-0 z-0 overflow-hidden mix-blend-screen pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full filter blur-[100px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#3b82f6]/20 rounded-full filter blur-[100px]" />
+        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px]" />
+      </div>
 
       <motion.div
         className="max-w-md w-full mx-auto relative z-10"
@@ -203,7 +195,7 @@ export default function OTPPage() {
         <div className="text-center mb-8">
           <Link
             to="/register"
-            className="inline-flex items-center gap-2 mb-6 text-muted-foreground hover:text-accent transition-colors duration-300 font-['Inter:Regular',sans-serif] text-[14px]"
+            className="inline-flex items-center gap-2 mb-8 text-slate-400 hover:text-white transition-colors duration-300 font-['Inter:Regular',sans-serif] text-[14px]"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Registration
@@ -214,17 +206,17 @@ export default function OTPPage() {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.35, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl"
-            style={{ backgroundColor: isSuccess ? "color-mix(in srgb, #22c55e 12%, transparent)" : "color-mix(in srgb, var(--accent) 12%, transparent)" }}
+            style={{ backgroundColor: isSuccess ? "color-mix(in srgb, #22c55e 20%, transparent)" : "color-mix(in srgb, #3b82f6 20%, transparent)" }}
           >
             {isSuccess ? (
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <CheckCircle className="h-8 w-8 text-green-400" />
             ) : (
-              <ShieldCheck className="h-8 w-8 text-accent" />
+              <ShieldCheck className="h-8 w-8 text-[#3b82f6]" />
             )}
           </motion.div>
 
           <motion.h1
-            className="font-['Inter:Bold',sans-serif] font-bold text-[32px] sm:text-[36px] text-foreground mb-3 tracking-tight"
+            className="font-['Inter:Bold',sans-serif] font-bold text-[32px] sm:text-[36px] text-white mb-3 tracking-tight"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
@@ -238,16 +230,16 @@ export default function OTPPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.25 }}
           >
-            <p className="font-['Inter:Regular',sans-serif] text-[16px] text-muted-foreground">
+            <p className="font-['Inter:Regular',sans-serif] text-[16px] text-slate-300">
               {isSuccess
                 ? "Your account has been created successfully."
                 : "We've sent a 6-digit verification code to"
               }
             </p>
             {!isSuccess && (
-              <div className="flex items-center gap-2 bg-muted/30 px-3 py-1.5 rounded-full border border-border">
-                <Mail className="w-4 h-4 text-accent" />
-                <span className="font-['Inter:Medium',sans-serif] text-[14px] text-foreground">
+              <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/10 mt-1">
+                <Mail className="w-4 h-4 text-[#3b82f6]" />
+                <span className="font-['Inter:Medium',sans-serif] text-[14px] text-white">
                   {maskedEmail}
                 </span>
               </div>
@@ -258,15 +250,15 @@ export default function OTPPage() {
         {/* OTP Form */}
         {!isSuccess && (
           <motion.div
-            className="bg-card rounded-2xl border border-border p-6 sm:p-8 shadow-lg shadow-primary/[0.04] relative overflow-hidden"
+            className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 sm:p-8 shadow-2xl relative overflow-hidden"
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             {/* Top accent line */}
             <motion.div
-              className="absolute top-0 left-0 right-0 h-[3px]"
-              style={{ background: "linear-gradient(to right, transparent, var(--accent), transparent)" }}
+              className="absolute top-0 left-0 right-0 h-[2px]"
+              style={{ background: "linear-gradient(to right, transparent, #3b82f6, transparent)" }}
               initial={{ opacity: 0, scaleX: 0 }}
               animate={{ opacity: 0.6, scaleX: 1 }}
               transition={{ duration: 0.6, delay: 0.5 }}
@@ -295,13 +287,13 @@ export default function OTPPage() {
                         onFocus={() => setFocusedIndex(index)}
                         onBlur={() => setFocusedIndex(null)}
                         disabled={isVerifying}
-                        className={`w-full aspect-square text-center font-['Inter:Bold',sans-serif] text-[24px] sm:text-[28px] rounded-xl border transition-all duration-300 bg-background focus:outline-none ${
+                        className={`w-full aspect-square text-center font-['Inter:Bold',sans-serif] text-[24px] sm:text-[28px] rounded-xl border transition-all duration-300 bg-white/5 focus:bg-white/10 focus:outline-none ${
                           focusedIndex === index
-                            ? "border-accent ring-2 ring-accent/20 text-accent"
+                            ? "border-[#3b82f6] ring-2 ring-[#3b82f6]/30 text-white"
                             : digit
-                            ? "border-muted-foreground/40 text-foreground"
-                            : "border-border text-muted-foreground"
-                        } ${error ? "border-destructive/50 focus:border-destructive focus:ring-destructive/20" : ""} ${isVerifying ? "opacity-60" : ""}`}
+                            ? "border-white/30 text-white"
+                            : "border-white/10 text-slate-400"
+                        } ${error ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/20 text-red-400" : ""} ${isVerifying ? "opacity-60" : ""}`}
                       />
                     </motion.div>
                   ))}
@@ -313,7 +305,7 @@ export default function OTPPage() {
                       initial={{ opacity: 0, y: -4, height: 0 }}
                       animate={{ opacity: 1, y: 0, height: "auto" }}
                       exit={{ opacity: 0, y: -4, height: 0 }}
-                      className="text-center text-[13px] text-destructive mt-3"
+                      className="text-center text-[13px] text-red-400 mt-3"
                     >
                       {error}
                     </motion.p>
@@ -325,16 +317,16 @@ export default function OTPPage() {
               <motion.button
                 type="submit"
                 disabled={isVerifying}
-                className={`w-full bg-primary text-primary-foreground py-3.5 rounded-xl font-['Inter:Medium',sans-serif] font-medium text-[16px] shadow-md shadow-primary/20 transition-all duration-300 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 ${isVerifying ? 'opacity-70 cursor-not-allowed' : ''}`}
+                className={`w-full bg-white text-[#0B1120] py-4 rounded-xl font-['Inter:Bold',sans-serif] font-bold text-[16px] shadow-lg transition-all duration-300 hover:bg-slate-100 hover:shadow-xl active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 ${isVerifying ? 'opacity-70 cursor-not-allowed' : ''}`}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 }}
-                whileHover={isVerifying ? {} : { scale: 1.01 }}
+                whileHover={isVerifying ? {} : { scale: 1.02 }}
                 whileTap={isVerifying ? {} : { scale: 0.98 }}
               >
                 {isVerifying ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin text-[#0B1120]" />
                     Verifying...
                   </>
                 ) : (
@@ -345,12 +337,12 @@ export default function OTPPage() {
 
             {/* Resend Code */}
             <motion.div
-              className="mt-6 flex flex-col items-center gap-3"
+              className="mt-8 flex flex-col items-center gap-3"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
             >
-              <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground text-center">
+              <p className="font-['Inter:Regular',sans-serif] text-[14px] text-slate-400 text-center">
                 Didn't receive the code?
               </p>
               
@@ -359,8 +351,8 @@ export default function OTPPage() {
                 disabled={timer > 0 || isResending}
                 className={`flex items-center gap-2 font-['Inter:Medium',sans-serif] text-[14px] transition-all duration-300 ${
                   timer > 0
-                    ? "text-muted-foreground cursor-not-allowed"
-                    : "text-accent hover:text-accent/80 hover:underline underline-offset-2"
+                    ? "text-slate-500 cursor-not-allowed"
+                    : "text-[#3b82f6] hover:text-[#60a5fa] hover:underline underline-offset-2"
                 }`}
               >
                 {isResending ? (
@@ -377,13 +369,13 @@ export default function OTPPage() {
         {/* Success state */}
         {isSuccess && (
           <motion.div
-            className="bg-card rounded-2xl border border-border p-8 shadow-lg shadow-primary/[0.04] relative overflow-hidden text-center"
+            className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 shadow-2xl relative overflow-hidden text-center"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
           >
             <motion.div
-              className="absolute top-0 left-0 right-0 h-[3px]"
+              className="absolute top-0 left-0 right-0 h-[2px]"
               style={{ background: "linear-gradient(to right, transparent, #22c55e, transparent)" }}
             />
             <motion.div
@@ -391,12 +383,12 @@ export default function OTPPage() {
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
             >
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-6" />
             </motion.div>
-            <h2 className="font-['Inter:Bold',sans-serif] font-bold text-[24px] text-foreground mb-2">
-              Welcome to Forsa!
+            <h2 className="font-['Inter:Bold',sans-serif] font-bold text-[24px] text-white mb-2 tracking-tight">
+              Welcome to ForSa!
             </h2>
-            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
+            <p className="font-['Inter:Regular',sans-serif] text-[15px] text-slate-300">
               Redirecting you to your dashboard...
             </p>
           </motion.div>

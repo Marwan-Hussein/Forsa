@@ -51,18 +51,18 @@ namespace Forsa
 
 
 
-            // Add Google Auth Configuration 
-            var google = builder.Configuration.GetSection("Authentication:Google");
-            builder.Services.AddAuthentication(options => {
-                options.DefaultScheme = IdentityConstants.ApplicationScheme;
-                options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-            }).AddGoogle(options =>
-                {
-                    options.ClientId = google["GoogleId"]!;
-                    options.ClientSecret = google["GoogleSecret"]!;
-                    options.CallbackPath = "/signin-google";
-                }
-            );
+            //// Add Google Auth Configuration 
+            //var google = builder.Configuration.GetSection("Authentication:Google");
+            //builder.Services.AddAuthentication(options => {
+            //    options.DefaultScheme = IdentityConstants.ApplicationScheme;
+            //    options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+            //}).AddGoogle(options =>
+            //    {
+            //        options.ClientId = google["GoogleId"]!;
+            //        options.ClientSecret = google["GoogleSecret"]!;
+            //        options.CallbackPath = "/signin-google";
+            //    }
+            //);
 
             builder.Services.AddApplicationServices(builder.Configuration);
             builder.Services.AddInfrastructureServices(builder.Configuration);

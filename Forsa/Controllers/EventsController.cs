@@ -48,5 +48,61 @@ namespace Forsa.Controllers
                 return StatusCode(500, "An error occurred while retrieving event details");
             }
         }
+        [HttpPost("{id}/evaluate-status")]
+        public async Task<ActionResult> EvaluateEventStatus(int id)
+        {
+            try
+            {
+                await _eventService.EvaluateEventStatusAsync(id);
+                return Ok(new { Message = "Event status evaluated successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while evaluating event status: {ex.ToString()}\n{ex.Message}");
+            }
+        }
+
+        [HttpPost("{id}/deduct-tickets")]
+        public async Task<ActionResult> DeductTickets(int id, [FromQuery] int quantity)
+        {
+            try
+            {
+                if (quantity <= 0) return BadRequest("Quantity must be greater than 0");
+                
+                var success = await _eventService.DeductTicketInventoryAsync(id, quantity);
+                if (!success)
+                    return BadRequest("Not enough tickets available or event not found.");
+
+                return Ok(new { Message = "Tickets deducted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while deducting tickets: {ex.ToString()}\n{ex.Message}");
+            }
+        }
+
+        [HttpPost("{id}/release-tickets")]
+        public async Task<ActionResult> ReleaseTickets(int id, [FromQuery] int quantity)
+        {
+            try
+            {
+                if (quantity <= 0) return BadRequest("Quantity must be greater than 0");
+                
+                await _eventService.ReleaseTicketInventoryAsync(id, quantity);
+                return Ok(new { Message = "Tickets released successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while releasing tickets: {ex.ToString()}\n{ex.Message}");
+            }
+        }
     }
 }
