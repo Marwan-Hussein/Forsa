@@ -29,6 +29,8 @@ using Application.Services.OrganizerServices;
 using AutoMapper;
 using Application.Core.Interfaces.OrganizerInterfaces;
 using Application.Services.OrganizerServices;
+using Application.Core.Interfaces.AttendeeInterfaces;
+using Application.Services.AttendeeServices;
 namespace Application;
 
 public static class DependencyInjection
@@ -62,6 +64,7 @@ public static class DependencyInjection
         // Attendee Services
         services.AddScoped<IAttendeeAdminService,AttendeeAdminService>();
         services.AddScoped<IAttendeeProfileService,AttendeeProfileService>();
+        services.AddScoped<IAttendeeFeedbackService, AttendeeFeedbackService>();
 
         // Organizer Services
         services.AddScoped<IOrganizerService, OrganizerService>();

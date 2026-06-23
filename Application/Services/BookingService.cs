@@ -204,7 +204,7 @@ namespace Application.Services
             if(bookingInfo.Status == BookingStatus.Cancelled)
                 throw new InvalidOperationException("This booking has been cancelled and cannot be used for attendance.");
 
-            bookingInfo.Status = BookingStatus.Confirmed;
+            bookingInfo.Status = BookingStatus.Attended;
             _bookingRepository.Update(bookingInfo);
 
             await _unitOfWork.SaveChangesAsync();
