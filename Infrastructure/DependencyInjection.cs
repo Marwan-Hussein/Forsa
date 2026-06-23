@@ -1,12 +1,16 @@
-using Application.Core.Interfaces.Auth;
 using Application.Core.Interfaces;
+using Application.Core.Interfaces.Auth;
+using Application.Core.Interfaces.OrganizerInterfaces;
 using Application.Services.Auth;
+using Application.Services.OrganizerServices;
 using Domain.Interfaces;
 using Domain.Interfaces.AttendeeInterfaces;
+using Domain.Interfaces.OrganizerInterfaces;
 using Domain.Interfaces.OwnerInterfaces;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.AttendeeRepos;
+using Infrastructure.Repositories.OrganizerRepos;
 using Infrastructure.Repositories.OwnerRepos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +38,12 @@ public static class DependencyInjection
         services.AddScoped<IFeedbackRepository, FeedbackRepository>();
         services.AddScoped<IPlaceRepository, PlaceRepository>();
         services.AddScoped<IReportsRepository, ReportsRepository>();
+
+        // Organizer Services
+        services.AddScoped<IOrganizerRepository, OrgainzerRepository>();
+
+        // Promo Services
+        services.AddScoped<IPromoCodeRepository, PromoCodeRepository>();
 
         return services;
     }
