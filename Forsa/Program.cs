@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Application.Validators;
 
 namespace Forsa
 {
