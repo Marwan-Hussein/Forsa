@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { User, Mail, Phone, MapPin, Calendar, Save, ArrowLeft } from "lucide-react";
+import { User, Mail, Phone, MapPin, Calendar, Save, ArrowLeft, Camera, Shield, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "../../api/api";
 import {
@@ -10,6 +10,7 @@ import {
   type AttendeeProfileDto,
   type UpdateAttendeeProfileRequest,
 } from "../../lib/attendee-api";
+import { motion } from "motion/react";
 
 const emptyFormData: UpdateAttendeeProfileRequest = {
   fullName: "",
@@ -66,11 +67,9 @@ function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof ApiError) {
     return error.message;
   }
-
   if (error instanceof Error) {
     return error.message;
   }
-
   return fallback;
 }
 
@@ -93,31 +92,21 @@ export default function ProfilePage() {
         setLoadError(null);
 
         const profile = await getAttendeeProfile(attendeeId);
-        if (!isActive) {
-          return;
-        }
+        if (!isActive) return;
 
         const mappedProfile = mapProfileToForm(profile);
         setFormData(mappedProfile);
         setOriginalData(mappedProfile);
       } catch (error) {
-        if (!isActive) {
-          return;
-        }
-
+        if (!isActive) return;
         setLoadError(getErrorMessage(error, "Failed to load profile."));
       } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
+        if (isActive) setIsLoading(false);
       }
     }
 
     loadProfile();
-
-    return () => {
-      isActive = false;
-    };
+    return () => { isActive = false; };
   }, [attendeeId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,7 +114,6 @@ export default function ProfilePage() {
     const fieldName = name as keyof UpdateAttendeeProfileRequest;
 
     setFormData((prev) => ({ ...prev, [fieldName]: value }));
-    // Clear error when user starts typing
     if (errors[fieldName]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -138,33 +126,14 @@ export default function ProfilePage() {
   const validateForm = () => {
     const newErrors: Partial<Record<keyof UpdateAttendeeProfileRequest, string>> = {};
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "Full name is required";
-    }
-
-    if (!formData.userName.trim()) {
-      newErrors.userName = "Username is required";
-    } else if (formData.userName.length < 3) {
-      newErrors.userName = "Username must be at least 3 characters";
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
-    }
-
-    if (!formData.phoneNumber.trim()) {
-      newErrors.phoneNumber = "Phone number is required";
-    }
-
-    if (!formData.location.trim()) {
-      newErrors.location = "Location is required";
-    }
-
-    if (!formData.birthDate) {
-      newErrors.birthDate = "Birthdate is required";
-    }
+    if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
+    if (!formData.userName.trim()) newErrors.userName = "Username is required";
+    else if (formData.userName.length < 3) newErrors.userName = "Username must be at least 3 characters";
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Please enter a valid email";
+    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = "Phone number is required";
+    if (!formData.location.trim()) newErrors.location = "Location is required";
+    if (!formData.birthDate) newErrors.birthDate = "Birthdate is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -182,16 +151,12 @@ export default function ProfilePage() {
   };
 
   const handleSave = async () => {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
       setIsSaving(true);
-
       const updatedProfile = await updateAttendeeProfile(attendeeId, formData);
       const mappedProfile = mapProfileToForm(updatedProfile);
-
       setFormData(mappedProfile);
       setOriginalData(mappedProfile);
       setErrors({});
@@ -199,10 +164,7 @@ export default function ProfilePage() {
       toast.success("Profile updated successfully.");
     } catch (error) {
       const serverErrors = getValidationErrors(error);
-      if (Object.keys(serverErrors).length > 0) {
-        setErrors(serverErrors);
-      }
-
+      if (Object.keys(serverErrors).length > 0) setErrors(serverErrors);
       toast.error(getErrorMessage(error, "Failed to update profile."));
     } finally {
       setIsSaving(false);
@@ -211,16 +173,10 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background py-12 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8 text-center">
-            <h1 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-2">
-              Loading profile...
-            </h1>
-            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
-              Fetching your attendee data from the API.
-            </p>
-          </div>
+      <div className="min-h-screen bg-slate-50 pt-24 pb-12 flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-slate-500 font-['Inter:Medium',sans-serif]">Loading your profile...</p>
         </div>
       </div>
     );
@@ -228,129 +184,143 @@ export default function ProfilePage() {
 
   if (loadError) {
     return (
-      <div className="min-h-screen bg-background py-12 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8 text-center">
-            <h1 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-2">
-              Could not load profile
-            </h1>
-            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-4">
-              {loadError}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors cursor-pointer"
-            >
-              Retry
-            </button>
-          </div>
+      <div className="min-h-screen bg-slate-50 pt-24 pb-12 px-4 flex items-center justify-center">
+        <div className="bg-white rounded-3xl p-10 max-w-md w-full text-center shadow-xl shadow-slate-200/50">
+          <Shield className="w-16 h-16 text-rose-500 mx-auto mb-4" />
+          <h1 className="font-['Inter:Bold',sans-serif] text-2xl text-slate-800 mb-2">Could not load profile</h1>
+          <p className="font-['Inter:Medium',sans-serif] text-slate-500 mb-8">{loadError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full bg-blue-600 text-white px-6 py-3 rounded-xl font-['Inter:Bold',sans-serif] hover:bg-blue-700 transition-colors"
+          >
+            Retry Connection
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-slate-50 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto">
+        
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-10">
           <Link
-            to="/"
-            className="inline-flex items-center gap-2 mb-4 text-muted-foreground hover:text-foreground transition-colors font-['Inter:Regular',sans-serif] text-[14px] cursor-pointer"
+            to="/dashboard"
+            className="inline-flex items-center gap-2 mb-6 text-slate-500 hover:text-blue-600 transition-colors font-['Inter:Medium',sans-serif] text-sm group"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            Back to Dashboard
           </Link>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-foreground mb-2">
-                My Profile
+              <h1 className="font-['Inter:Bold',sans-serif] text-4xl text-slate-800 mb-2 tracking-tight">
+                Account Settings
               </h1>
-              <p className="font-['Inter:Regular',sans-serif] text-[16px] text-muted-foreground">
-                View and update your account information
+              <p className="font-['Inter:Medium',sans-serif] text-slate-500">
+                Manage your profile, preferences, and account security
               </p>
             </div>
             <Link
               to="/interests"
-              className="bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground px-6 py-3 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-xl font-['Inter:Bold',sans-serif] text-sm hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
             >
               Manage Interests
             </Link>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Profile Summary Card */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-6">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center mb-4">
-                  <span className="font-['Inter:Bold',sans-serif] font-bold text-[32px] text-[#dde6ed]">
-                    {formData.fullName.charAt(0)}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Left Column: Avatar & Summary */}
+          <div className="lg:col-span-4 space-y-6">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden text-center"
+            >
+              <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-blue-500/20 to-purple-500/20" />
+              
+              <div className="relative mb-6 inline-block">
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center border-4 border-white shadow-lg mx-auto relative z-10">
+                  <span className="font-['Inter:Bold',sans-serif] text-5xl text-white">
+                    {formData.fullName.charAt(0) || "U"}
                   </span>
                 </div>
-                <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-1">
-                  {formData.fullName}
-                </h2>
-                <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-4">
-                  @{formData.userName}
-                </p>
-                <div className="w-full pt-4 border-t border-[rgba(82,109,130,0.2)]">
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
-                      Events Attended
-                    </span>
-                    <span className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground">
-                      12
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
-                      Upcoming Events
-                    </span>
-                    <span className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground">
-                      5
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
-                      Member Since
-                    </span>
-                    <span className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground">
-                      Jan 2026
-                    </span>
-                  </div>
+                {isEditing && (
+                  <button className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:text-blue-600 hover:border-blue-300 shadow-sm transition-all z-20">
+                    <Camera className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+              
+              <h2 className="font-['Inter:Bold',sans-serif] text-2xl text-slate-800 mb-1">
+                {formData.fullName || "User Name"}
+              </h2>
+              <p className="font-['Inter:Medium',sans-serif] text-slate-500 mb-6">
+                @{formData.userName || "username"}
+              </p>
+              
+              <div className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-6">
+                <div>
+                  <p className="font-['Inter:Medium',sans-serif] text-slate-500 text-sm mb-1">Events</p>
+                  <p className="font-['Inter:Bold',sans-serif] text-2xl text-slate-800">12</p>
+                </div>
+                <div>
+                  <p className="font-['Inter:Medium',sans-serif] text-slate-500 text-sm mb-1">Upcoming</p>
+                  <p className="font-['Inter:Bold',sans-serif] text-2xl text-blue-600">5</p>
                 </div>
               </div>
+            </motion.div>
+
+            {/* Quick Settings Links */}
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+              <button className="w-full flex items-center justify-between p-5 hover:bg-slate-50 transition-colors border-b border-slate-100 group">
+                <div className="flex items-center gap-3 text-slate-700 font-['Inter:Bold',sans-serif]">
+                  <Shield className="w-5 h-5 text-slate-400 group-hover:text-blue-500" />
+                  Security
+                </div>
+              </button>
+              <button className="w-full flex items-center justify-between p-5 hover:bg-slate-50 transition-colors group">
+                <div className="flex items-center gap-3 text-slate-700 font-['Inter:Bold',sans-serif]">
+                  <Bell className="w-5 h-5 text-slate-400 group-hover:text-rose-500" />
+                  Notifications
+                </div>
+              </button>
             </div>
           </div>
 
-          {/* Profile Details Card */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground">
-                  Profile Information
+          {/* Right Column: Form */}
+          <div className="lg:col-span-8">
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 p-8 sm:p-10"
+            >
+              <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-100">
+                <h2 className="font-['Inter:Bold',sans-serif] text-2xl text-slate-800">
+                  Personal Details
                 </h2>
                 {!isEditing ? (
                   <button
                     onClick={handleEdit}
-                    className="bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors cursor-pointer"
+                    className="bg-blue-50 text-blue-600 px-5 py-2.5 rounded-xl font-['Inter:Bold',sans-serif] text-sm hover:bg-blue-100 transition-colors"
                   >
                     Edit Profile
                   </button>
                 ) : (
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-3">
                     <button
                       onClick={handleCancel}
-                      className="bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors cursor-pointer"
+                      className="text-slate-500 hover:text-slate-700 font-['Inter:Bold',sans-serif] text-sm px-4 py-2 transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSave}
                       disabled={isSaving}
-                      className="bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936] transition-colors flex items-center gap-2 cursor-pointer"
+                      className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-['Inter:Bold',sans-serif] text-sm hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-70 shadow-sm"
                     >
                       <Save className="w-4 h-4" />
                       {isSaving ? "Saving..." : "Save Changes"}
@@ -359,17 +329,14 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 {/* Full Name */}
-                <div>
-                  <label
-                    htmlFor="fullName"
-                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2"
-                  >
+                <div className="space-y-2">
+                  <label htmlFor="fullName" className="block font-['Inter:Medium',sans-serif] text-sm text-slate-700">
                     Full Name
                   </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <div className="relative group">
+                    <User className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${isEditing ? 'text-blue-500 group-focus-within:text-blue-600' : 'text-slate-400'}`} />
                     <input
                       type="text"
                       id="fullName"
@@ -377,28 +344,23 @@ export default function ProfilePage() {
                       value={formData.fullName}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-foreground ${
+                      className={`w-full pl-12 pr-4 py-3.5 rounded-xl border ${
                         isEditing
-                          ? "focus:outline-none focus:border-primary bg-white"
-                          : "bg-[#f8f9fa] cursor-not-allowed"
-                      }`}
+                          ? "border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-white"
+                          : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
+                      } font-['Inter:Medium',sans-serif] text-slate-800 transition-all outline-none`}
                     />
                   </div>
-                  {errors.fullName && (
-                    <p className="mt-1 text-[12px] text-red-500">{errors.fullName}</p>
-                  )}
+                  {errors.fullName && <p className="text-sm font-['Inter:Medium',sans-serif] text-rose-500 mt-1">{errors.fullName}</p>}
                 </div>
 
                 {/* Username */}
-                <div>
-                  <label
-                    htmlFor="username"
-                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2"
-                  >
+                <div className="space-y-2">
+                  <label htmlFor="userName" className="block font-['Inter:Medium',sans-serif] text-sm text-slate-700">
                     Username
                   </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <div className="relative group">
+                    <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-['Inter:Bold',sans-serif] transition-colors ${isEditing ? 'text-blue-500 group-focus-within:text-blue-600' : 'text-slate-400'}`}>@</span>
                     <input
                       type="text"
                       id="userName"
@@ -406,28 +368,23 @@ export default function ProfilePage() {
                       value={formData.userName}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-foreground ${
+                      className={`w-full pl-10 pr-4 py-3.5 rounded-xl border ${
                         isEditing
-                          ? "focus:outline-none focus:border-primary bg-white"
-                          : "bg-[#f8f9fa] cursor-not-allowed"
-                      }`}
+                          ? "border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-white"
+                          : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
+                      } font-['Inter:Medium',sans-serif] text-slate-800 transition-all outline-none`}
                     />
                   </div>
-                  {errors.userName && (
-                    <p className="mt-1 text-[12px] text-red-500">{errors.userName}</p>
-                  )}
+                  {errors.userName && <p className="text-sm font-['Inter:Medium',sans-serif] text-rose-500 mt-1">{errors.userName}</p>}
                 </div>
 
                 {/* Email */}
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2"
-                  >
+                <div className="space-y-2 md:col-span-2">
+                  <label htmlFor="email" className="block font-['Inter:Medium',sans-serif] text-sm text-slate-700">
                     Email Address
                   </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <div className="relative group">
+                    <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${isEditing ? 'text-blue-500 group-focus-within:text-blue-600' : 'text-slate-400'}`} />
                     <input
                       type="email"
                       id="email"
@@ -435,28 +392,23 @@ export default function ProfilePage() {
                       value={formData.email}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-foreground ${
+                      className={`w-full pl-12 pr-4 py-3.5 rounded-xl border ${
                         isEditing
-                          ? "focus:outline-none focus:border-primary bg-white"
-                          : "bg-[#f8f9fa] cursor-not-allowed"
-                      }`}
+                          ? "border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-white"
+                          : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
+                      } font-['Inter:Medium',sans-serif] text-slate-800 transition-all outline-none`}
                     />
                   </div>
-                  {errors.email && (
-                    <p className="mt-1 text-[12px] text-red-500">{errors.email}</p>
-                  )}
+                  {errors.email && <p className="text-sm font-['Inter:Medium',sans-serif] text-rose-500 mt-1">{errors.email}</p>}
                 </div>
 
                 {/* Phone */}
-                <div>
-                  <label
-                    htmlFor="phone"
-                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2"
-                  >
+                <div className="space-y-2">
+                  <label htmlFor="phoneNumber" className="block font-['Inter:Medium',sans-serif] text-sm text-slate-700">
                     Phone Number
                   </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <div className="relative group">
+                    <Phone className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${isEditing ? 'text-blue-500 group-focus-within:text-blue-600' : 'text-slate-400'}`} />
                     <input
                       type="tel"
                       id="phoneNumber"
@@ -464,28 +416,23 @@ export default function ProfilePage() {
                       value={formData.phoneNumber}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-foreground ${
+                      className={`w-full pl-12 pr-4 py-3.5 rounded-xl border ${
                         isEditing
-                          ? "focus:outline-none focus:border-primary bg-white"
-                          : "bg-[#f8f9fa] cursor-not-allowed"
-                      }`}
+                          ? "border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-white"
+                          : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
+                      } font-['Inter:Medium',sans-serif] text-slate-800 transition-all outline-none`}
                     />
                   </div>
-                  {errors.phoneNumber && (
-                    <p className="mt-1 text-[12px] text-red-500">{errors.phoneNumber}</p>
-                  )}
+                  {errors.phoneNumber && <p className="text-sm font-['Inter:Medium',sans-serif] text-rose-500 mt-1">{errors.phoneNumber}</p>}
                 </div>
 
                 {/* Location */}
-                <div>
-                  <label
-                    htmlFor="location"
-                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2"
-                  >
+                <div className="space-y-2">
+                  <label htmlFor="location" className="block font-['Inter:Medium',sans-serif] text-sm text-slate-700">
                     Location
                   </label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <div className="relative group">
+                    <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${isEditing ? 'text-blue-500 group-focus-within:text-blue-600' : 'text-slate-400'}`} />
                     <input
                       type="text"
                       id="location"
@@ -493,28 +440,23 @@ export default function ProfilePage() {
                       value={formData.location}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-foreground ${
+                      className={`w-full pl-12 pr-4 py-3.5 rounded-xl border ${
                         isEditing
-                          ? "focus:outline-none focus:border-primary bg-white"
-                          : "bg-[#f8f9fa] cursor-not-allowed"
-                      }`}
+                          ? "border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-white"
+                          : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
+                      } font-['Inter:Medium',sans-serif] text-slate-800 transition-all outline-none`}
                     />
                   </div>
-                  {errors.location && (
-                    <p className="mt-1 text-[12px] text-red-500">{errors.location}</p>
-                  )}
+                  {errors.location && <p className="text-sm font-['Inter:Medium',sans-serif] text-rose-500 mt-1">{errors.location}</p>}
                 </div>
 
                 {/* Birthdate */}
-                <div>
-                  <label
-                    htmlFor="birthdate"
-                    className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2"
-                  >
+                <div className="space-y-2 md:col-span-2">
+                  <label htmlFor="birthDate" className="block font-['Inter:Medium',sans-serif] text-sm text-slate-700">
                     Date of Birth
                   </label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <div className="relative group">
+                    <Calendar className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${isEditing ? 'text-blue-500 group-focus-within:text-blue-600' : 'text-slate-400'}`} />
                     <input
                       type="date"
                       id="birthDate"
@@ -522,19 +464,18 @@ export default function ProfilePage() {
                       value={formData.birthDate}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 rounded-[8px] border-[0.8px] border-[rgba(82,109,130,0.2)] font-['Inter:Regular',sans-serif] text-[14px] text-foreground ${
+                      className={`w-full pl-12 pr-4 py-3.5 rounded-xl border ${
                         isEditing
-                          ? "focus:outline-none focus:border-primary bg-white"
-                          : "bg-[#f8f9fa] cursor-not-allowed"
-                      }`}
+                          ? "border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-white"
+                          : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
+                      } font-['Inter:Medium',sans-serif] text-slate-800 transition-all outline-none`}
                     />
                   </div>
-                  {errors.birthDate && (
-                    <p className="mt-1 text-[12px] text-red-500">{errors.birthDate}</p>
-                  )}
+                  {errors.birthDate && <p className="text-sm font-['Inter:Medium',sans-serif] text-rose-500 mt-1">{errors.birthDate}</p>}
                 </div>
+
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>

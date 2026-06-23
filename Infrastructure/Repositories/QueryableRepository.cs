@@ -1,7 +1,6 @@
 using Domain.Interfaces;
 using Domain.Common.Interfaces;
 using Infrastructure.Data.DbContexts;
-using System.Linq;
 
 namespace Infrastructure.Repositories
 {

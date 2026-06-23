@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { ArrowLeft, Bell, Check, X, Calendar, Users, Sparkles, Building2, Settings } from "lucide-react";
+import { ArrowLeft, Bell, Check, X, Calendar, Users, Sparkles, Building2, Settings, Trash2 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { EASE_IN_OUT } from "../../lib/motion";
 
 interface Notification {
   id: string;
@@ -68,7 +70,6 @@ export default function NotificationsPage() {
   ]);
 
   const [filter, setFilter] = useState<"all" | "unread">("all");
-
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAsRead = (id: string) => {
@@ -85,8 +86,7 @@ export default function NotificationsPage() {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
-  const filteredNotifications =
-    filter === "unread" ? notifications.filter((n) => !n.read) : notifications;
+  const filteredNotifications = filter === "unread" ? notifications.filter((n) => !n.read) : notifications;
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -105,171 +105,187 @@ export default function NotificationsPage() {
 
   const getNotificationColor = (type: Notification["type"]) => {
     switch (type) {
-      case "event":
-        return "#155dfc";
-      case "recommendation":
-        return "#EC9B3B";
-      case "organization":
-        return "#9810fa";
-      case "reminder":
-        return "#f97316";
-      default:
-        return "#526d82";
+      case "event": return "bg-blue-500 text-white shadow-blue-500/20";
+      case "recommendation": return "bg-amber-500 text-white shadow-amber-500/20";
+      case "organization": return "bg-violet-500 text-white shadow-violet-500/20";
+      case "reminder": return "bg-rose-500 text-white shadow-rose-500/20";
+      default: return "bg-slate-500 text-white shadow-slate-500/20";
     }
   };
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
+    <div className="min-h-screen bg-slate-50 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center gap-2 mb-4 text-muted-foreground hover:text-foreground transition-colors font-['Inter:Regular',sans-serif] text-[14px] cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Link>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Bell className="w-8 h-8 text-accent" />
-                <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-foreground">
-                  Notifications
-                </h1>
-              </div>
-              <p className="font-['Inter:Regular',sans-serif] text-[16px] text-muted-foreground">
-                {unreadCount} unread notification{unreadCount !== 1 ? "s" : ""}
-              </p>
-            </div>
+        <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
             <Link
-              to="/notifications/settings"
-              className="flex items-center gap-2 px-4 py-2 bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors cursor-pointer"
+              to="/dashboard"
+              className="inline-flex items-center gap-2 mb-4 text-slate-500 hover:text-blue-600 transition-colors font-['Inter:Medium',sans-serif] text-sm group"
             >
-              <Settings className="w-4 h-4" />
-              Settings
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              Back to Dashboard
             </Link>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="relative">
+                <Bell className="w-8 h-8 text-blue-600" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-rose-500 border-2 border-slate-50 rounded-full" />
+                )}
+              </div>
+              <h1 className="font-['Inter:Bold',sans-serif] text-4xl text-slate-800 tracking-tight">
+                Notifications
+              </h1>
+            </div>
+            <p className="font-['Inter:Medium',sans-serif] text-slate-500 text-lg">
+              You have <strong className="text-slate-800">{unreadCount}</strong> unread notifications
+            </p>
           </div>
+
+          <Link
+            to="/settings"
+            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-['Inter:Bold',sans-serif] text-sm hover:bg-slate-50 hover:text-blue-600 transition-all shadow-sm group"
+          >
+            <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
+            Preferences
+          </Link>
         </div>
 
-        {/* Filter and Actions */}
-        <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-4 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex gap-2">
-              <button
-                onClick={() => setFilter("all")}
-                className={`px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-colors cursor-pointer ${
-                  filter === "all"
-                    ? "bg-primary text-[#dde6ed] hover:bg-[#1e2936]"
-                    : "bg-background text-foreground hover:bg-[#dde6ed]"
-                }`}
-              >
-                All ({notifications.length})
-              </button>
-              <button
-                onClick={() => setFilter("unread")}
-                className={`px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-colors cursor-pointer ${
-                  filter === "unread"
-                    ? "bg-primary text-[#dde6ed] hover:bg-[#1e2936]"
-                    : "bg-background text-foreground hover:bg-[#dde6ed]"
-                }`}
-              >
-                Unread ({unreadCount})
-              </button>
-            </div>
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllAsRead}
-                className="px-4 py-2 text-foreground hover:text-[#1e2936] font-['Inter:Medium',sans-serif] font-medium text-[14px] cursor-pointer"
-              >
-                Mark all as read
-              </button>
-            )}
+        {/* Filters and Actions */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
+          <div className="flex gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => setFilter("all")}
+              className={`flex-1 sm:flex-none px-6 py-2.5 rounded-xl font-['Inter:Bold',sans-serif] text-sm transition-all ${
+                filter === "all"
+                  ? "bg-slate-800 text-white shadow-md"
+                  : "bg-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setFilter("unread")}
+              className={`flex-1 sm:flex-none px-6 py-2.5 rounded-xl font-['Inter:Bold',sans-serif] text-sm transition-all ${
+                filter === "unread"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                  : "bg-transparent text-slate-500 hover:bg-blue-50 hover:text-blue-600"
+              }`}
+            >
+              Unread
+            </button>
           </div>
+          
+          {unreadCount > 0 && (
+            <button
+              onClick={markAllAsRead}
+              className="flex items-center justify-center gap-2 px-5 py-2.5 text-blue-600 hover:bg-blue-50 rounded-xl font-['Inter:Bold',sans-serif] text-sm transition-colors w-full sm:w-auto"
+            >
+              <Check className="w-4 h-4" />
+              Mark all as read
+            </button>
+          )}
         </div>
 
         {/* Notifications List */}
-        <div className="space-y-3">
-          {filteredNotifications.length > 0 ? (
-            filteredNotifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-4 hover:shadow-md transition-shadow ${
-                  !notification.read ? "bg-background/50" : ""
-                }`}
-              >
-                <div className="flex items-start gap-4">
-                  {/* Icon */}
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white"
-                    style={{ backgroundColor: getNotificationColor(notification.type) }}
-                  >
-                    {notification.icon}
-                  </div>
+        <div className="space-y-4">
+          <AnimatePresence mode="popLayout">
+            {filteredNotifications.length > 0 ? (
+              filteredNotifications.map((notification, index) => (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                  transition={{ duration: 0.3, delay: index * 0.05, ease: EASE_IN_OUT }}
+                  key={notification.id}
+                  className={`relative bg-white rounded-3xl border transition-all duration-300 group ${
+                    !notification.read
+                      ? "border-blue-100 shadow-md shadow-blue-500/5"
+                      : "border-slate-100 shadow-sm hover:border-slate-200"
+                  }`}
+                >
+                  {/* Unread indicator bar */}
+                  {!notification.read && (
+                    <div className="absolute left-0 top-6 bottom-6 w-1 bg-blue-500 rounded-r-full" />
+                  )}
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground">
-                        {notification.title}
-                      </h3>
-                      {!notification.read && (
-                        <div className="w-2 h-2 bg-accent rounded-full flex-shrink-0 mt-2" />
-                      )}
-                    </div>
-                    <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-2">
-                      {notification.message}
-                    </p>
-                    <div className="flex items-center gap-4">
-                      <span className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
-                        {formatTimestamp(notification.timestamp)}
-                      </span>
-                      {notification.link && (
-                        <Link
-                          to={notification.link}
-                          className="font-['Inter:Medium',sans-serif] font-medium text-[12px] text-foreground hover:underline cursor-pointer"
-                        >
-                          View →
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    {!notification.read && (
-                      <button
-                        onClick={() => markAsRead(notification.id)}
-                        className="w-8 h-8 flex items-center justify-center hover:bg-background rounded-[8px] transition-colors cursor-pointer"
-                        title="Mark as read"
-                      >
-                        <Check className="w-4 h-4 text-[#16a34a]" />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => deleteNotification(notification.id)}
-                      className="w-8 h-8 flex items-center justify-center hover:bg-red-50 rounded-[8px] transition-colors cursor-pointer"
-                      title="Delete"
+                  <div className="p-5 sm:p-6 flex flex-col sm:flex-row gap-5">
+                    {/* Icon */}
+                    <div
+                      className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg ${getNotificationColor(notification.type)}`}
                     >
-                      <X className="w-4 h-4 text-red-500" />
-                    </button>
+                      {notification.icon}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
+                        <h3 className={`font-['Inter:Bold',sans-serif] text-lg ${!notification.read ? "text-slate-800" : "text-slate-600"}`}>
+                          {notification.title}
+                        </h3>
+                        <span className="font-['Inter:Medium',sans-serif] text-xs text-slate-400 whitespace-nowrap bg-slate-50 px-2.5 py-1 rounded-md w-fit">
+                          {formatTimestamp(notification.timestamp)}
+                        </span>
+                      </div>
+                      
+                      <p className={`font-['Inter:Medium',sans-serif] mb-4 ${!notification.read ? "text-slate-600" : "text-slate-500"}`}>
+                        {notification.message}
+                      </p>
+                      
+                      <div className="flex items-center justify-between">
+                        {notification.link ? (
+                          <Link
+                            to={notification.link}
+                            className="text-blue-600 font-['Inter:Bold',sans-serif] text-sm hover:text-blue-700 hover:underline"
+                          >
+                            View Details
+                          </Link>
+                        ) : <div />}
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                          {!notification.read && (
+                            <button
+                              onClick={() => markAsRead(notification.id)}
+                              className="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-full transition-colors"
+                              title="Mark as read"
+                            >
+                              <Check className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => deleteNotification(notification.id)}
+                            className="w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-500 hover:bg-rose-100 rounded-full transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+                </motion.div>
+              ))
+            ) : (
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="bg-white rounded-3xl border border-slate-100 p-16 text-center shadow-sm"
+              >
+                <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Bell className="w-12 h-12 text-slate-300" />
                 </div>
-              </div>
-            ))
-          ) : (
-            <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-12 text-center">
-              <Bell className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-2">
-                No notifications
-              </p>
-              <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
-                {filter === "unread"
-                  ? "You're all caught up!"
-                  : "You'll see notifications here when you have updates"}
-              </p>
-            </div>
-          )}
+                <p className="font-['Inter:Bold',sans-serif] text-2xl text-slate-800 mb-2">
+                  All caught up!
+                </p>
+                <p className="font-['Inter:Medium',sans-serif] text-slate-500 max-w-sm mx-auto">
+                  {filter === "unread"
+                    ? "You don't have any unread notifications right now."
+                    : "You don't have any notifications yet. We'll alert you when something happens."}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

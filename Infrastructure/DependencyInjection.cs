@@ -1,10 +1,13 @@
 using Application.Core.Interfaces.Auth;
+using Application.Core.Interfaces;
 using Application.Services.Auth;
 using Domain.Interfaces;
 using Domain.Interfaces.AttendeeInterfaces;
+using Domain.Interfaces.OwnerInterfaces;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.AttendeeRepos;
+using Infrastructure.Repositories.OwnerRepos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,8 +28,12 @@ public static class DependencyInjection
         services.AddScoped<IAttendeeRepository, AttendeeRepository>();
         services.AddScoped<IAttendeeProfileRepository,AttendeeProfileRepository>();
 
+        // Owner
+        services.AddScoped<IOwnerRepository, OwnerRepository>();
+
         services.AddScoped<IFeedbackRepository, FeedbackRepository>();
         services.AddScoped<IPlaceRepository, PlaceRepository>();
+        services.AddScoped<IReportsRepository, ReportsRepository>();
 
         return services;
     }

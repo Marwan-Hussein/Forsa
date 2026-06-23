@@ -105,86 +105,82 @@ export default function EventsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        <PageHeader title="Browse Events" subtitle="Discover amazing events happening near you" />
+    <div className="min-h-screen bg-slate-50">
+      {/* Hero Section */}
+      <div className="relative bg-[#0B1120] pt-36 pb-28 px-4 overflow-hidden">
+        <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E3D61 100%)" }} />
+        <div className="absolute inset-0 z-0 overflow-hidden mix-blend-screen pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full filter blur-[100px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#3b82f6]/20 rounded-full filter blur-[100px]" />
+          <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px]" />
+        </div>
+        
+        <div className="relative max-w-7xl mx-auto text-center">
+          <span className="inline-block py-1 px-3 rounded-full bg-white/10 text-white/90 text-xs font-bold tracking-widest uppercase mb-6 backdrop-blur-md border border-white/20">
+            The Premier Event Platform in 2026
+          </span>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tight">
+            Discover & Book <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-blue-400">Exceptional Events</span>
+          </h1>
+          <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-8 leading-relaxed font-light">
+            Elevate your experiences. Gain access to exclusive gatherings, professional summits, and vibrant festivals all in one beautifully curated platform.
+          </p>
+        </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 -mt-12 relative z-10 pb-20">
         {/* Search and Filter Bar */}
-        <div className="bg-white rounded-[14px] border border-border p-6 mb-6">
+        <div className="bg-white rounded-2xl shadow-xl shadow-[#1E3D61]/5 border border-slate-100 p-6 mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search Input */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <div className="flex-1 relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[#1E3D61] transition-colors" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search events by name, location, or keyword..."
-                className="w-full pl-10 pr-4 py-3 rounded-[8px] border border-border focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 font-['Inter:Regular',sans-serif] text-[14px] transition-all duration-300"
+                className="w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 focus:outline-none focus:border-[#1E3D61] focus:ring-1 focus:ring-[#1E3D61]/30 font-medium text-slate-800 transition-all duration-300 bg-slate-50 focus:bg-white"
               />
             </div>
 
             {/* Filter Toggle Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex cursor-pointer items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-primary/90 transition-colors"
+              className="flex items-center gap-2 px-8 py-4 bg-[#1E3D61] text-white rounded-xl font-bold hover:bg-[#1a365d] transition-all shadow-md hover:shadow-lg active:scale-95"
             >
-              <SlidersHorizontal className="w-4 h-4" />
+              <SlidersHorizontal className="w-5 h-5" />
               Filters
               {(selectedDiscovery !== "All" ||
                 selectedCategory !== "All" ||
                 selectedDate !== "All" ||
                 priceRange !== "All" ||
                 locationFilter) && (
-                <span className="ml-1 px-2 py-0.5 bg-accent rounded-full text-[12px]">
-                  Active
-                </span>
+                <span className="ml-2 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
               )}
             </button>
           </div>
 
           {/* Advanced Filters */}
           {showFilters && (
-            <div className="mt-6 pt-6 border-t border-border space-y-5">
+            <div className="mt-8 pt-8 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {/* Discovery Filter */}
-              <div>
-                <label className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2">
+              <div className="space-y-3">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">
                   Discovery
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {discoveryFilters.map((mode) => {
-                    const colorVar = "var(--Business)";
                     const isActive = selectedDiscovery === mode;
                     return (
                       <button
                         key={mode}
                         onClick={() => setSelectedDiscovery(mode)}
-                        className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-200 border ${
+                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
                           isActive
-                            ? "shadow-md"
-                            : "bg-white border-border text-foreground"
+                            ? "bg-[#1E3D61] text-white shadow-md shadow-[#1E3D61]/20 scale-105"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800"
                         }`}
-                        style={
-                          isActive
-                            ? { backgroundColor: `color-mix(in srgb, ${colorVar} 15%, white)`, color: colorVar, borderColor: colorVar }
-                            : undefined
-                        }
-                        onMouseEnter={(e) => {
-                          if (!isActive) {
-                            const el = e.currentTarget;
-                            el.style.backgroundColor = `color-mix(in srgb, ${colorVar} 15%, white)`;
-                            el.style.color = colorVar;
-                            el.style.borderColor = colorVar;
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isActive) {
-                            const el = e.currentTarget;
-                            el.style.backgroundColor = "";
-                            el.style.color = "";
-                            el.style.borderColor = "";
-                          }
-                        }}
                       >
                         {mode}
                       </button>
@@ -194,44 +190,22 @@ export default function EventsPage() {
               </div>
 
               {/* Category Filter */}
-              <div>
-                <label className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2">
+              <div className="space-y-3 lg:col-span-2">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">
                   Category
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {categories.map((category) => {
-                    const colorVar = category !== "All" ? `var(--${category})` : "var(--Business)";
                     const isActive = selectedCategory === category;
                     return (
                       <button
                         key={category}
                         onClick={() => setSelectedCategory(category)}
-                        className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-200 border ${
+                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
                           isActive
-                            ? "shadow-md"
-                            : "bg-white border-border text-foreground"
+                            ? "bg-blue-600 text-white shadow-md shadow-blue-600/20 scale-105"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800"
                         }`}
-                        style={
-                          isActive
-                            ? { backgroundColor: `color-mix(in srgb, ${colorVar} 15%, white)`, color: colorVar, borderColor: colorVar }
-                            : undefined
-                        }
-                        onMouseEnter={(e) => {
-                          if (!isActive) {
-                            const el = e.currentTarget;
-                            el.style.backgroundColor = `color-mix(in srgb, ${colorVar} 15%, white)`;
-                            el.style.color = colorVar;
-                            el.style.borderColor = colorVar;
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isActive) {
-                            const el = e.currentTarget;
-                            el.style.backgroundColor = "";
-                            el.style.color = "";
-                            el.style.borderColor = "";
-                          }
-                        }}
                       >
                         {category}
                       </button>
@@ -241,44 +215,22 @@ export default function EventsPage() {
               </div>
 
               {/* Date Filter */}
-              <div>
-                <label className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2">
+              <div className="space-y-3">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">
                   Date Range
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {dateFilters.map((date) => {
-                    const colorVar = "var(--Business)";
                     const isActive = selectedDate === date;
                     return (
                       <button
                         key={date}
                         onClick={() => setSelectedDate(date)}
-                        className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-200 border ${
+                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
                           isActive
-                            ? "shadow-md"
-                            : "bg-white border-border text-foreground"
+                            ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20 scale-105"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800"
                         }`}
-                        style={
-                          isActive
-                            ? { backgroundColor: `color-mix(in srgb, ${colorVar} 15%, white)`, color: colorVar, borderColor: colorVar }
-                            : undefined
-                        }
-                        onMouseEnter={(e) => {
-                          if (!isActive) {
-                            const el = e.currentTarget;
-                            el.style.backgroundColor = `color-mix(in srgb, ${colorVar} 15%, white)`;
-                            el.style.color = colorVar;
-                            el.style.borderColor = colorVar;
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isActive) {
-                            const el = e.currentTarget;
-                            el.style.backgroundColor = "";
-                            el.style.color = "";
-                            el.style.borderColor = "";
-                          }
-                        }}
                       >
                         {date}
                       </button>
@@ -288,44 +240,22 @@ export default function EventsPage() {
               </div>
 
               {/* Price Filter */}
-              <div>
-                <label className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2">
-                  Price Range
+              <div className="space-y-3">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">
+                  Price
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {priceFilters.map((price) => {
-                    const colorVar = "var(--Business)";
                     const isActive = priceRange === price;
                     return (
                       <button
                         key={price}
                         onClick={() => setPriceRange(price)}
-                        className={`cursor-pointer px-4 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-200 border ${
+                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
                           isActive
-                            ? "shadow-md"
-                            : "bg-white border-border text-foreground"
+                            ? "bg-amber-500 text-white shadow-md shadow-amber-500/20 scale-105"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800"
                         }`}
-                        style={
-                          isActive
-                            ? { backgroundColor: `color-mix(in srgb, ${colorVar} 15%, white)`, color: colorVar, borderColor: colorVar }
-                            : undefined
-                        }
-                        onMouseEnter={(e) => {
-                          if (!isActive) {
-                            const el = e.currentTarget;
-                            el.style.backgroundColor = `color-mix(in srgb, ${colorVar} 15%, white)`;
-                            el.style.color = colorVar;
-                            el.style.borderColor = colorVar;
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isActive) {
-                            const el = e.currentTarget;
-                            el.style.backgroundColor = "";
-                            el.style.color = "";
-                            el.style.borderColor = "";
-                          }
-                        }}
                       >
                         {price}
                       </button>
@@ -335,47 +265,50 @@ export default function EventsPage() {
               </div>
 
               {/* Location Filter */}
-              <div>
-                <label className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-2">
+              <div className="space-y-3 lg:col-span-2">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">
                   Location
                 </label>
                 <input
                   type="text"
                   value={locationFilter}
                   onChange={(e) => setLocationFilter(e.target.value)}
-                  placeholder="Enter city or venue..."
-                  className="w-full max-w-md px-4 py-3 rounded-[8px] border border-border focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 font-['Inter:Regular',sans-serif] text-[14px] transition-all duration-300"
+                  placeholder="Enter city, neighborhood, or venue..."
+                  className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[#1E3D61] focus:ring-1 focus:ring-[#1E3D61]/30 font-medium text-slate-800 transition-all duration-300 bg-slate-50 focus:bg-white"
                 />
               </div>
 
               {/* Clear Filters */}
-              {(selectedDiscovery !== "All" ||
-                selectedCategory !== "All" ||
-                selectedDate !== "All" ||
-                priceRange !== "All" ||
-                locationFilter) && (
-                <button
-                  onClick={() => {
-                    setSelectedDiscovery("All");
-                    setSelectedCategory("All");
-                    setSelectedDate("All");
-                    setPriceRange("All");
-                    setLocationFilter("");
-                  }}
-                  className="flex cursor-pointer items-center gap-2 px-4 py-2 text-destructive hover:text-destructive/80 font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                  Clear All Filters
-                </button>
-              )}
+              <div className="flex items-end lg:col-span-1 pb-1">
+                {(selectedDiscovery !== "All" ||
+                  selectedCategory !== "All" ||
+                  selectedDate !== "All" ||
+                  priceRange !== "All" ||
+                  locationFilter) && (
+                  <button
+                    onClick={() => {
+                      setSelectedDiscovery("All");
+                      setSelectedCategory("All");
+                      setSelectedDate("All");
+                      setPriceRange("All");
+                      setLocationFilter("");
+                    }}
+                    className="flex items-center justify-center gap-2 w-full py-3 text-red-500 hover:bg-red-50 rounded-xl font-bold text-sm transition-colors border border-transparent hover:border-red-100 active:scale-95"
+                  >
+                    <X className="w-4 h-4" />
+                    Clear All Filters
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
 
         {/* Results Count */}
-        <div className="mb-6">
-          <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
-            Found {displayEvents.length} event{displayEvents.length !== 1 ? "s" : ""}
+        <div className="mb-8 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-slate-800">Trending Now</h2>
+          <p className="font-medium text-sm text-slate-500 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
+            Found <span className="text-[#1E3D61] font-bold">{displayEvents.length}</span> event{displayEvents.length !== 1 ? "s" : ""}
           </p>
         </div>
 

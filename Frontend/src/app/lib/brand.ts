@@ -1,5 +1,8 @@
-export const brandNavy = "#1e3a5f";
+export const brandNavy = "#1e3d61";
 
-export const brandCtaBlue = "#0891b2";
+export const brandCtaBlue = "#1e3d61";
 
-export const brandNavyElevated = "rgba(30, 58, 95, 0.92)";
+export const brandNavyElevated = "rgba(30, 61, 97, 0.85)";
+
+
+

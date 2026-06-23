@@ -1,5 +1,6 @@
 using Application.Authorization.Handlers;
 using Application.Authorization.Requirements;
+using MediatR;
 using Application.Core.Interfaces;
 using Application.Core.Interfaces.AttendeeInterfaces;
 using Application.Core.Interfaces.Auth;
@@ -9,10 +10,8 @@ using Application.Services;
 using Application.Services.AttendeeServices;
 using Application.Services.Auth.OTP;
 using Application.Services.Auth;
-using Domain.Entities;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +22,10 @@ using Application.Services.EventServices;
 using Application.Core.Interfaces.PlaceInterfaces;
 using Application.Services.PlaceServices;
 using Application.Core.Interfaces.AdminServices;
+using Application.Core.Interfaces.OwnerInterfaces;
+using Application.Services.OwnerServices;
+using Application.Core.Interfaces.OrganizerInterfaces;
+using Application.Services.OrganizerServices;
 using AutoMapper;
 namespace Application;
 
@@ -33,6 +36,7 @@ public static class DependencyInjection
         // Add Application Layer Services here. Example: AutoMapper, MediatR, FluentValidation, domain services.
         services.AddAutoMapper(typeof(DependencyInjection).Assembly);
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+        services.AddMediatR(typeof(DependencyInjection).Assembly);
 
         // Event Services
         services.AddScoped<IEventService, EventService>();
@@ -40,13 +44,25 @@ public static class DependencyInjection
 
         // Place Services
         services.AddScoped<IPlaceAdminService, PlaceAdminService>();
+        services.AddScoped<IPlaceMediaService, PlaceMediaService>();
+
+        // Owner Services
+        services.AddScoped<IOwnerService, OwnerService>();
+        services.AddScoped<IPlaceOwnerService, PlaceOwnerService>();
+        services.AddScoped<IPlaceAvailabilityService, PlaceAvailabilityService>();
+        services.AddScoped<IBookingRequestOwnerService, BookingRequestOwnerService>();
+        services.AddScoped<IOwnerFeedbackService, OwnerFeedbackService>();
 
         // Booking Services
         services.AddScoped<IBookingService, BookingService>();
+        services.AddScoped<IQrService, QrService>();
 
         // Attendee Services
         services.AddScoped<IAttendeeAdminService,AttendeeAdminService>();
         services.AddScoped<IAttendeeProfileService,AttendeeProfileService>();
+
+        // Promo Services
+        services.AddScoped<IPromoService, PromoCodeService>();
 
         // Jwt Configuration
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));

@@ -32,5 +32,7 @@ namespace Application.Core.DTOs.Auth
         public string Location { get; set; }
 
         public string? Role { get; set; }
+
+        public string? OrganizationName { get; set; }
     }
 }

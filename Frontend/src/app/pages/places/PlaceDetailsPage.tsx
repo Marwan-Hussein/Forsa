@@ -21,6 +21,7 @@ import {
   ChevronRight,
   Image as ImageIcon,
 } from "lucide-react";
+import { motion } from "motion/react";
 
 // Mock place data
 const mockPlace = {
@@ -99,239 +100,281 @@ export default function PlaceDetailsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="px-6 py-8 max-w-7xl mx-auto w-full">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-          <Link to="/places" className="hover:text-accent">Places</Link>
-          <ChevronRight className="size-4" />
-          <span className="text-foreground">{mockPlace.name}</span>
+      {/* Dark Header Background for Navbar & Hero */}
+      <div className="bg-[#0B1120] pt-32 pb-24 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E3D61 100%)" }} />
+        <div className="absolute inset-0 z-0 overflow-hidden mix-blend-screen pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full filter blur-[100px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#3b82f6]/20 rounded-full filter blur-[100px]" />
+          <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px]" />
         </div>
 
-        {/* Image Gallery */}
-        <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-[rgba(39,55,77,0.1)] mb-6">
-          <div className="grid grid-cols-4 gap-2 p-2">
-            <div className="col-span-3 row-span-2">
-              <ImageWithFallback
-                src={mockPlace.images[selectedImage]}
-                alt={mockPlace.name}
-                className="w-full h-[400px] object-cover rounded-lg"
-              />
-            </div>
-            {mockPlace.images.slice(1, 4).map((image, index) => (
-              <button
-                key={index}
-                onClick={() => setSelectedImage(index + 1)}
-                className={`relative overflow-hidden rounded-lg transition-all duration-300 ease-in-out hover:ring-2 hover:ring-accent/50 ${
-                  selectedImage === index + 1 ? "ring-2 ring-accent" : ""
-                }`}
-              >
-                <ImageWithFallback
-                  src={image}
-                  alt={`Gallery ${index + 2}`}
-                  className="w-full h-[130px] object-cover hover:opacity-80 transition-opacity"
-                />
-              </button>
-            ))}
-            <button
-              onClick={() => setSelectedImage(0)}
-              className={`relative overflow-hidden rounded-lg transition-all duration-300 ease-in-out hover:ring-2 hover:ring-accent/50 ${
-                selectedImage === 0 ? "ring-2 ring-accent" : ""
-              }`}
-            >
-              <ImageWithFallback
-                src={mockPlace.images[0]}
-                alt="Gallery 1"
-                className="w-full h-[130px] object-cover hover:opacity-80 transition-opacity"
-              />
-            </button>
+        <div className="max-w-7xl mx-auto w-full relative z-10">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-slate-300 mb-8">
+            <Link to="/places" className="hover:text-white transition-colors">Places</Link>
+            <ChevronRight className="size-4 opacity-50" />
+            <span className="text-white font-medium">{mockPlace.name}</span>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Header Info */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h1 className="text-3xl font-bold text-foreground mb-2">{mockPlace.name}</h1>
-                  <div className="flex items-center gap-2 text-muted-foreground mb-3">
-                    <MapPin className="size-5" />
-                    <span>{mockPlace.address}, {mockPlace.city}, {mockPlace.state} {mockPlace.zipCode}</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <Star className="size-5 fill-accent text-accent" />
-                      <span className="font-semibold text-foreground">{mockPlace.rating}</span>
-                      <span className="text-sm text-muted-foreground">({mockPlace.reviews} reviews)</span>
-                    </div>
-                  </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Title & Info */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-6"
+            >
+              <h1 className="text-4xl md:text-5xl font-['Inter:Bold',sans-serif] font-bold text-white leading-tight">
+                {mockPlace.name}
+              </h1>
+              
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-slate-300">
+                <div className="flex items-center gap-2">
+                  <MapPin className="size-5 text-[#3b82f6]" />
+                  <span>{mockPlace.address}, {mockPlace.city}</span>
                 </div>
+                <div className="hidden sm:block text-slate-600">•</div>
+                <div className="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full border border-white/10">
+                  <Star className="size-4 fill-yellow-400 text-yellow-400" />
+                  <span className="font-medium text-white">{mockPlace.rating}</span>
+                  <span className="text-slate-400 text-sm">({mockPlace.reviews} reviews)</span>
+                </div>
+              </div>
+
+              <p className="text-slate-300 text-lg leading-relaxed max-w-xl">
+                {mockPlace.description}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-4 pt-4">
                 <Link
                   to={`/places/${placeId}/book`}
-                  className="px-6 py-3 bg-gradient-to-r from-accent to-accent/80 text-white rounded-lg hover:opacity-90 transition-opacity"
+                  className="px-8 py-4 bg-white text-[#0B1120] font-bold rounded-xl hover:bg-slate-100 hover:scale-105 transition-all shadow-xl shadow-white/10"
                 >
                   Book This Venue
                 </Link>
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-              <h2 className="text-xl font-bold text-foreground mb-4">About This Venue</h2>
-              <p className="text-muted-foreground leading-relaxed mb-4">{mockPlace.fullDescription}</p>
-              <div className="grid grid-cols-2 gap-4 mt-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-br from-primary to-primary/80 rounded-lg">
-                    <Users className="size-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Capacity</p>
-                    <p className="font-semibold text-foreground">{mockPlace.capacity.min} - {mockPlace.capacity.max} people</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-br from-accent to-accent/80 rounded-lg">
-                    <DollarSign className="size-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Price Range</p>
-                    <p className="font-semibold text-foreground">${mockPlace.priceRange.min} - ${mockPlace.priceRange.max}/day</p>
-                  </div>
+                <div className="flex items-center gap-2 text-slate-300 px-6 py-4 rounded-xl bg-white/5 border border-white/10">
+                  <DollarSign className="size-5 text-green-400" />
+                  <span className="font-semibold text-white">Starts at ${mockPlace.priceRange.min}</span>
+                  <span className="text-sm">/day</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Amenities */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-              <h2 className="text-xl font-bold text-foreground mb-4">Amenities</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {mockPlace.amenities.map((amenity, index) => {
-                  const Icon = amenity.icon;
-                  return (
-                    <div key={index} className="flex items-center gap-3 p-3 bg-background rounded-lg">
-                      <Icon className="size-5 text-foreground" />
-                      <span className="text-sm text-foreground">{amenity.name}</span>
-                    </div>
-                  );
-                })}
+            {/* Image Gallery */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="space-y-4"
+            >
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 aspect-[4/3] group">
+                <ImageWithFallback
+                  src={mockPlace.images[selectedImage]}
+                  alt={mockPlace.name}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120]/80 via-transparent to-transparent opacity-60" />
               </div>
-            </div>
-
-            {/* Upcoming Events */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-              <h2 className="text-xl font-bold text-foreground mb-4">Upcoming Events at This Venue</h2>
-              <div className="space-y-3">
-                {mockPlace.upcomingEvents.map((event) => (
-                  <div key={event.id} className="flex items-center justify-between p-4 bg-background rounded-lg">
-                    <div>
-                      <h3 className="font-semibold text-foreground">{event.title}</h3>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="size-4" />
-                          {new Date(event.date).toLocaleDateString()}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Users className="size-4" />
-                          {event.attendees} attendees
-                        </span>
-                      </div>
-                    </div>
-                    <span className="text-sm text-muted-foreground">by {event.organizer}</span>
-                  </div>
+              <div className="grid grid-cols-4 gap-4">
+                {mockPlace.images.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImage(index)}
+                    className={`relative rounded-xl overflow-hidden border-2 transition-all duration-300 aspect-[4/3] ${
+                      selectedImage === index ? "border-white shadow-lg shadow-white/20" : "border-transparent hover:border-white/50 opacity-60 hover:opacity-100"
+                    }`}
+                  >
+                    <ImageWithFallback
+                      src={image}
+                      alt={`Gallery ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
                 ))}
               </div>
-            </div>
+            </motion.div>
           </div>
+        </div>
+      </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Contact Information */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-              <h2 className="text-xl font-bold text-foreground mb-4">Contact Information</h2>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Owner</p>
-                  <p className="font-semibold text-foreground">{mockPlace.owner}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="size-5 text-accent" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Phone</p>
-                    <a href={`tel:${mockPlace.ownerPhone}`} className="text-foreground hover:text-accent">
-                      {mockPlace.ownerPhone}
-                    </a>
+      {/* Main Content (White bg) */}
+      <div className="bg-background pt-12 pb-20 px-4">
+        <div className="max-w-7xl mx-auto w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Column */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Description */}
+              <div className="bg-white rounded-2xl p-8 shadow-sm border border-[rgba(39,55,77,0.1)]">
+                <h2 className="text-2xl font-bold text-foreground mb-4">About This Venue</h2>
+                <p className="text-muted-foreground leading-relaxed mb-8">{mockPlace.fullDescription}</p>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
+                    <div className="p-3 bg-white shadow-sm rounded-lg text-[#3b82f6]">
+                      <Users className="size-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Capacity</p>
+                      <p className="font-semibold text-foreground text-lg">{mockPlace.capacity.min} - {mockPlace.capacity.max} people</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
+                    <div className="p-3 bg-white shadow-sm rounded-lg text-green-500">
+                      <DollarSign className="size-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Price Range</p>
+                      <p className="font-semibold text-foreground text-lg">${mockPlace.priceRange.min} - ${mockPlace.priceRange.max}/day</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Mail className="size-5 text-accent" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <a href={`mailto:${mockPlace.ownerEmail}`} className="text-foreground hover:text-accent break-all">
-                      {mockPlace.ownerEmail}
-                    </a>
-                  </div>
+              </div>
+
+              {/* Amenities */}
+              <div className="bg-white rounded-2xl p-8 shadow-sm border border-[rgba(39,55,77,0.1)]">
+                <h2 className="text-2xl font-bold text-foreground mb-6">Amenities</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                  {mockPlace.amenities.map((amenity, index) => {
+                    const Icon = amenity.icon;
+                    return (
+                      <div key={index} className="flex items-center gap-3">
+                        <div className="p-2 bg-slate-50 text-slate-600 rounded-lg">
+                          <Icon className="size-5" />
+                        </div>
+                        <span className="font-medium text-foreground">{amenity.name}</span>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className="flex items-center gap-3">
-                  <Globe className="size-5 text-accent" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Website</p>
-                    <a href={`https://${mockPlace.website}`} target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-accent">
-                      {mockPlace.website}
-                    </a>
-                  </div>
+              </div>
+
+              {/* Upcoming Events */}
+              <div className="bg-white rounded-2xl p-8 shadow-sm border border-[rgba(39,55,77,0.1)]">
+                <h2 className="text-2xl font-bold text-foreground mb-6">Upcoming Events at This Venue</h2>
+                <div className="space-y-4">
+                  {mockPlace.upcomingEvents.map((event) => (
+                    <div key={event.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl gap-4 hover:border-slate-200 transition-colors">
+                      <div>
+                        <h3 className="font-bold text-foreground text-lg">{event.title}</h3>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                          <span className="flex items-center gap-1.5">
+                            <Calendar className="size-4" />
+                            {new Date(event.date).toLocaleDateString()}
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <Users className="size-4" />
+                            {event.attendees} attendees
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-sm font-medium text-slate-500 bg-white px-3 py-1 rounded-lg shadow-sm">by {event.organizer}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="bg-gradient-to-br from-primary to-primary/80 rounded-xl p-6 text-white">
-              <h2 className="text-xl font-bold mb-4">Quick Stats</h2>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-white/80">Total Events Hosted</span>
-                  <span className="text-2xl font-bold">247</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-white/80">Happy Clients</span>
-                  <span className="text-2xl font-bold">189</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-white/80">Years in Business</span>
-                  <span className="text-2xl font-bold">15</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Availability Calendar Preview */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-[rgba(39,55,77,0.1)]">
-              <h2 className="text-xl font-bold text-foreground mb-4">Availability</h2>
-              <div className="space-y-2">
-                {mockPlace.availability.map((day, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 rounded">
-                    <span className="text-sm text-muted-foreground">{new Date(day.date).toLocaleDateString()}</span>
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full ${
-                        day.status === "available"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {day.status}
-                    </span>
+            {/* Sidebar */}
+            <div className="space-y-8">
+              {/* Contact Information */}
+              <div className="bg-white rounded-2xl p-8 shadow-sm border border-[rgba(39,55,77,0.1)]">
+                <h2 className="text-xl font-bold text-foreground mb-6">Contact Information</h2>
+                <div className="space-y-6">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Owner</p>
+                    <p className="font-semibold text-foreground text-lg">{mockPlace.owner}</p>
                   </div>
-                ))}
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-slate-50 text-[#3b82f6] rounded-xl">
+                      <Phone className="size-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-0.5">Phone</p>
+                      <a href={`tel:${mockPlace.ownerPhone}`} className="font-medium text-foreground hover:text-[#3b82f6] transition-colors">
+                        {mockPlace.ownerPhone}
+                      </a>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-slate-50 text-[#3b82f6] rounded-xl">
+                      <Mail className="size-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-0.5">Email</p>
+                      <a href={`mailto:${mockPlace.ownerEmail}`} className="font-medium text-foreground hover:text-[#3b82f6] transition-colors break-all">
+                        {mockPlace.ownerEmail}
+                      </a>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-slate-50 text-[#3b82f6] rounded-xl">
+                      <Globe className="size-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-0.5">Website</p>
+                      <a href={`https://${mockPlace.website}`} target="_blank" rel="noopener noreferrer" className="font-medium text-foreground hover:text-[#3b82f6] transition-colors">
+                        {mockPlace.website}
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <Link
-                to={`/places/${placeId}/book`}
-                className="mt-4 block text-center px-4 py-2 border border-primary text-foreground rounded-lg hover:bg-primary hover:text-white transition-all"
-              >
-                Check Full Availability
-              </Link>
+
+              {/* Quick Stats */}
+              <div className="bg-gradient-to-br from-[#0B1120] to-[#1E3D61] rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-10">
+                  <Star className="size-32" />
+                </div>
+                <h2 className="text-xl font-bold mb-6 relative z-10">Quick Stats</h2>
+                <div className="space-y-6 relative z-10">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-300">Total Events Hosted</span>
+                    <span className="text-3xl font-black tracking-tight">247</span>
+                  </div>
+                  <div className="h-px bg-white/10 w-full" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-300">Happy Clients</span>
+                    <span className="text-3xl font-black tracking-tight">189</span>
+                  </div>
+                  <div className="h-px bg-white/10 w-full" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-300">Years in Business</span>
+                    <span className="text-3xl font-black tracking-tight">15</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Availability Calendar Preview */}
+              <div className="bg-white rounded-2xl p-8 shadow-sm border border-[rgba(39,55,77,0.1)]">
+                <h2 className="text-xl font-bold text-foreground mb-6">Availability</h2>
+                <div className="space-y-3">
+                  {mockPlace.availability.map((day, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
+                      <span className="font-medium text-muted-foreground">{new Date(day.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                      <span
+                        className={`text-xs px-3 py-1.5 rounded-full font-bold uppercase tracking-wider ${
+                          day.status === "available"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {day.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <Link
+                  to={`/places/${placeId}/book`}
+                  className="mt-6 flex items-center justify-center w-full px-4 py-3 bg-white border-2 border-[#3b82f6] text-[#3b82f6] font-bold rounded-xl hover:bg-[#3b82f6] hover:text-white transition-all duration-300"
+                >
+                  Check Full Availability
+                </Link>
+              </div>
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

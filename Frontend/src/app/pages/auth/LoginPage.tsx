@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router";
 import { Mail, Lock, Sparkles, GraduationCap } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
+import { ForSaLogo } from "../../components/ForSaLogo";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -64,21 +65,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background px-4 py-14 sm:py-16 md:py-20 relative overflow-hidden">
-      {/* Decorative background blobs */}
-      <div
-        className="pointer-events-none absolute -top-32 -right-32 h-96 w-96 rounded-full opacity-[0.07] blur-3xl"
-        style={{ background: "var(--accent)" }}
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full opacity-[0.05] blur-3xl"
-        style={{ background: "var(--primary)" }}
-        aria-hidden
-      />
+    <div className="min-h-screen bg-[#0B1120] px-4 py-14 sm:py-16 md:py-20 relative overflow-hidden flex flex-col justify-center">
+      {/* Premium Background */}
+      <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E3D61 100%)" }} />
+      <div className="absolute inset-0 z-0 overflow-hidden mix-blend-screen pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full filter blur-[100px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#3b82f6]/20 rounded-full filter blur-[100px]" />
+        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px]" />
+      </div>
 
       <motion.div
-        className="mx-auto max-w-2xl relative z-10"
+        className="mx-auto max-w-lg w-full relative z-10"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -86,22 +83,13 @@ export default function LoginPage() {
         <div className="mb-10 text-center sm:mb-12">
           <Link
             to="/"
-            className="mb-4 inline-block font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground transition-colors duration-300 ease-in-out hover:text-accent"
+            className="mb-8 inline-block"
           >
-            ← Back to Home
+            <ForSaLogo className="h-12 text-white" />
           </Link>
 
-          <motion.div
-            className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10"
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <GraduationCap className="h-8 w-8 text-accent" />
-          </motion.div>
-
           <motion.h1
-            className="mb-2 font-['Inter:Bold',sans-serif] text-[34px] font-bold text-foreground sm:text-[36px]"
+            className="mb-3 font-['Inter:Bold',sans-serif] text-[34px] font-bold text-white sm:text-[36px] tracking-tight"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.2 }}
@@ -109,25 +97,25 @@ export default function LoginPage() {
             Welcome back
           </motion.h1>
           <motion.p
-            className="mx-auto max-w-lg font-['Inter:Regular',sans-serif] text-[16px] leading-relaxed text-muted-foreground sm:text-[17px]"
+            className="mx-auto max-w-sm font-['Inter:Regular',sans-serif] text-[16px] leading-relaxed text-slate-300"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.28 }}
           >
-            Sign in to ForSa to manage events, bookings, and your profile
+            Sign in to ForSa to manage events, bookings, and your profile.
           </motion.p>
         </div>
 
         <motion.div
-          className="rounded-2xl border border-border bg-card p-8 shadow-lg shadow-primary/[0.04] sm:p-10 md:p-12 relative overflow-hidden"
+          className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 shadow-2xl sm:p-10 relative overflow-hidden"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           {/* Subtle shimmer accent line at the top of the card */}
-          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-accent to-transparent opacity-60" />
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#3b82f6] to-transparent opacity-60" />
 
-          <form onSubmit={handleSubmit} className="space-y-7 sm:space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <motion.div
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
@@ -135,12 +123,12 @@ export default function LoginPage() {
             >
               <label
                 htmlFor="login-email"
-                className="mb-2.5 block font-['Inter:Medium',sans-serif] text-[15px] font-medium text-foreground sm:text-[16px]"
+                className="mb-2 block font-['Inter:Medium',sans-serif] text-sm font-medium text-slate-200"
               >
                 Email address
               </label>
               <div className="relative group">
-                <Mail className={`absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 transition-colors duration-300 sm:left-4 ${focusedField === "email" ? "text-accent" : "text-muted-foreground"}`} />
+                <Mail className={`absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 transition-colors duration-300 ${focusedField === "email" ? "text-white" : "text-slate-400"}`} />
                 <input
                   id="login-email"
                   type="email"
@@ -152,11 +140,11 @@ export default function LoginPage() {
                     setEmail(e.target.value);
                     if (errors.email) setErrors((p) => ({ ...p, email: undefined }));
                   }}
-                  className="w-full rounded-xl border border-border bg-background py-3.5 pl-11 pr-4 font-['Inter:Regular',sans-serif] text-[15px] text-foreground transition-all duration-300 ease-out focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none sm:py-4 sm:pl-12 sm:text-[16px]"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 font-['Inter:Regular',sans-serif] text-white transition-all duration-300 ease-out focus:border-[#3b82f6] focus:bg-white/10 focus:ring-1 focus:ring-[#3b82f6]/50 focus:outline-none placeholder:text-slate-500"
                   placeholder="you@example.com"
                 />
               </div>
-              {errors.email && <p className="mt-1.5 text-[12px] text-destructive">{errors.email}</p>}
+              {errors.email && <p className="mt-2 text-xs text-red-400">{errors.email}</p>}
             </motion.div>
 
             <motion.div
@@ -166,12 +154,12 @@ export default function LoginPage() {
             >
               <label
                 htmlFor="login-password"
-                className="mb-2.5 block font-['Inter:Medium',sans-serif] text-[15px] font-medium text-foreground sm:text-[16px]"
+                className="mb-2 block font-['Inter:Medium',sans-serif] text-sm font-medium text-slate-200"
               >
                 Password
               </label>
               <div className="relative group">
-                <Lock className={`absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 transition-colors duration-300 sm:left-4 ${focusedField === "password" ? "text-accent" : "text-muted-foreground"}`} />
+                <Lock className={`absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 transition-colors duration-300 ${focusedField === "password" ? "text-white" : "text-slate-400"}`} />
                 <input
                   id="login-password"
                   type="password"
@@ -183,32 +171,32 @@ export default function LoginPage() {
                     setPassword(e.target.value);
                     if (errors.password) setErrors((p) => ({ ...p, password: undefined }));
                   }}
-                  className="w-full rounded-xl border border-border bg-background py-3.5 pl-11 pr-4 font-['Inter:Regular',sans-serif] text-[15px] text-foreground transition-all duration-300 ease-out focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none sm:py-4 sm:pl-12 sm:text-[16px]"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 font-['Inter:Regular',sans-serif] text-white transition-all duration-300 ease-out focus:border-[#3b82f6] focus:bg-white/10 focus:ring-1 focus:ring-[#3b82f6]/50 focus:outline-none placeholder:text-slate-500"
                   placeholder="Enter your password"
                 />
               </div>
-              {errors.password && <p className="mt-1.5 text-[12px] text-destructive">{errors.password}</p>}
+              {errors.password && <p className="mt-2 text-xs text-red-400">{errors.password}</p>}
             </motion.div>
 
             <motion.div
-              className="flex flex-wrap items-center justify-between gap-3 pt-1"
+              className="flex items-center justify-between pt-2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.6 }}
             >
-              <label className="flex cursor-pointer items-center gap-2.5 font-['Inter:Regular',sans-serif] text-[15px] text-muted-foreground sm:text-[16px]">
+              <label className="flex cursor-pointer items-center gap-2 font-['Inter:Regular',sans-serif] text-sm text-slate-300">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 rounded border-border text-accent focus:ring-accent/30 sm:h-[18px] sm:w-[18px]"
+                  className="h-4 w-4 rounded border-white/20 bg-white/10 text-[#3b82f6] focus:ring-[#3b82f6]/30"
                 />
                 Remember me
               </label>
               <button
                 type="button"
                 onClick={() => toast.info("Password reset will be available when your API is connected.")}
-                className="font-['Inter:Medium',sans-serif] text-[15px] font-medium text-accent underline-offset-2 transition-colors hover:text-accent/80 hover:underline sm:text-[16px]"
+                className="font-['Inter:Medium',sans-serif] text-sm font-medium text-[#3b82f6] hover:text-[#60a5fa] transition-colors"
               >
                 Forgot password?
               </button>
@@ -216,11 +204,11 @@ export default function LoginPage() {
 
             <motion.button
               type="submit"
-              className="w-full rounded-xl bg-primary py-3.5 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-primary-foreground shadow-md shadow-primary/20 transition-all duration-300 ease-out hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25 active:scale-[0.98] sm:py-4 sm:text-[17px] cursor-pointer"
+              className="w-full rounded-xl bg-white py-4 font-['Inter:Bold',sans-serif] text-[16px] font-bold text-[#0B1120] shadow-lg transition-all duration-300 hover:bg-slate-100 hover:shadow-xl active:scale-[0.98] cursor-pointer mt-4"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.65 }}
-              whileHover={{ scale: 1.01 }}
+              whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               Sign in
@@ -228,31 +216,31 @@ export default function LoginPage() {
           </form>
 
           <motion.div
-            className="mt-6 flex items-center justify-between"
+            className="mt-8 flex items-center justify-between"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.7 }}
           >
-            <div className="h-px flex-1 bg-border"></div>
-            <span className="mx-4 font-['Inter:Regular',sans-serif] text-[13px] text-muted-foreground uppercase tracking-wider">
+            <div className="h-px flex-1 bg-white/10"></div>
+            <span className="mx-4 font-['Inter:Regular',sans-serif] text-xs text-slate-400 uppercase tracking-widest">
               Or continue with
             </span>
-            <div className="h-px flex-1 bg-border"></div>
+            <div className="h-px flex-1 bg-white/10"></div>
           </motion.div>
 
           <motion.button
             type="button"
-            className="mt-6 flex w-full items-center justify-center rounded-xl border border-border bg-background py-3.5 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-foreground transition-all duration-300 ease-out hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-accent/20 active:scale-[0.98] sm:py-4 sm:text-[17px] cursor-pointer"
+            className="mt-6 flex w-full items-center justify-center rounded-xl border border-white/10 bg-white/5 py-4 font-['Inter:Medium',sans-serif] text-[15px] font-medium text-white transition-all duration-300 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/20 active:scale-[0.98] cursor-pointer"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.75 }}
-            whileHover={{ scale: 1.01 }}
+            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
               window.location.href = `${import.meta.env.VITE_API_BASE_URL}/api/Auth/external-login?provider=Google&role=Attendee`;
             }}
           >
-            <svg viewBox="0 0 24 24" className="mr-3 h-5 w-5">
+            <svg viewBox="0 0 24 24" className="mr-3 h-5 w-5 bg-white rounded-full p-0.5">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 fill="#4285F4"
@@ -274,7 +262,7 @@ export default function LoginPage() {
           </motion.button>
 
           <motion.p
-            className="mt-8 text-center font-['Inter:Regular',sans-serif] text-[15px] text-muted-foreground sm:text-[16px]"
+            className="mt-8 text-center font-['Inter:Regular',sans-serif] text-[15px] text-slate-400"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.85 }}
@@ -282,7 +270,7 @@ export default function LoginPage() {
             Don&apos;t have an account?{" "}
             <Link
               to="/register"
-              className="font-['Inter:Medium',sans-serif] font-medium text-accent underline-offset-2 transition-colors duration-300 hover:underline"
+              className="font-['Inter:Medium',sans-serif] font-medium text-white hover:text-[#3b82f6] transition-colors duration-300"
             >
               Create one
             </Link>
@@ -291,17 +279,17 @@ export default function LoginPage() {
 
         {/* Trust indicators */}
         <motion.div
-          className="mt-8 flex flex-wrap items-center justify-center gap-6 text-[13px] text-muted-foreground"
+          className="mt-8 flex flex-wrap items-center justify-center gap-6 text-[13px] text-slate-400"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.95 }}
         >
           <span className="flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-accent" />
+            <Sparkles className="h-3.5 w-3.5 text-[#3b82f6]" />
             Trusted by 50,000+ users
           </span>
           <span className="flex items-center gap-1.5">
-            <Lock className="h-3.5 w-3.5 text-accent" />
+            <Lock className="h-3.5 w-3.5 text-[#3b82f6]" />
             Bank-level security
           </span>
         </motion.div>
