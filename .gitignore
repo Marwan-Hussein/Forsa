@@ -59,3 +59,4 @@ _ReSharper*/
 # Migrations
 Infrastructure/Migrations/
 /Forsa/appsettings.json
+/Documentations
