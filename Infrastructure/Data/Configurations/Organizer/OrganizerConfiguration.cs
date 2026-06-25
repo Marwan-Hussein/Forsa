@@ -15,6 +15,18 @@ namespace Infrastructure.Data.Configurations
             builder.Property(o => o.OrganizationName)
                 .IsRequired()
                 .HasMaxLength(50);
+
+            var organizers = new List<Organizer>();
+            for (int i = 1; i <= 25; i++)
+            {
+                organizers.Add(new Organizer
+                {
+                    Id = i,
+                    OrganizationName = $"Organization {i}",
+                    AverageRating = Math.Round(new Random().NextDouble() * 5, 2),
+                    ReviewsCount = new Random().Next(0, 100)
+                });
+            }
         }
     }
 }
