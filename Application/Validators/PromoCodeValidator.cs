@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Application.Core.DTOs.PromoCode;
+using Domain.Entities;
 using FluentValidation;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Application.Validators
 {
-    public class PromoCodeValidator : AbstractValidator<PromoCode>
+    public class PromoCodeValidator : AbstractValidator<OrganizerPromoCodeDto>
     {
         public PromoCodeValidator()
         {

@@ -99,6 +99,7 @@ namespace Application.Services.OrganizerServices
         {
             var newEvent = new Event
             {
+                OrganizerId = dto.OrganizerId,
                 Title = dto.Title,
                 Description = dto.Description,
                 Category = dto.Category,
@@ -150,6 +151,7 @@ namespace Application.Services.OrganizerServices
                 throw new KeyNotFoundException("Event not found");
 
             ev.Status = EventStatus.Cancelled;
+            ev.IsDeleted = true;
             _eventRepository.Update(ev);
 
             // Void current attendee bookings and notify
@@ -180,7 +182,7 @@ namespace Application.Services.OrganizerServices
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<BookingResponseDto> SubmitPlaceBookingRequestAsync(int eventId, int placeId, BookingRequestDto dto)
+        public async Task<BookingRequestDetailsDto> SubmitPlaceBookingRequestAsync(int eventId, int placeId, BookingRequestDto dto)
         {
             var ev = await _eventRepository.GetQueryable()
                 .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
@@ -203,7 +205,7 @@ namespace Application.Services.OrganizerServices
             await _bookingRequestRepository.AddAsync(request);
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<BookingResponseDto>(request);
+            return _mapper.Map<BookingRequestDetailsDto>(request);
         }
 
         public async Task CancelPendingBookingRequestAsync(int requestId)
@@ -218,6 +220,9 @@ namespace Application.Services.OrganizerServices
                 throw new InvalidOperationException("Can only cancel pending booking requests.");
 
             request.Status = RequestStatus.Cancelled;
+            request.IsDeleted = true;
+            request.DeletedAt = DateTime.UtcNow; 
+            
             _bookingRequestRepository.Update(request);
 
             await _unitOfWork.SaveChangesAsync();

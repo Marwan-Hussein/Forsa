@@ -33,6 +33,6 @@ namespace Application.Core.DTOs.Auth
 
         public string? Role { get; set; }
 
-        public string? OrganizationName { get; set; }
+        //public string? OrganizationName { get; set; }
     }
 }

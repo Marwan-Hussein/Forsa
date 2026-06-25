@@ -1,4 +1,4 @@
-﻿using Application.Core.DTOs.Event;
+﻿using Application.Core.DTOs.PromoCode;
 using FluentValidation;
 using System;
 using System.Collections.Generic;

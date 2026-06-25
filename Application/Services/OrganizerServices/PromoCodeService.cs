@@ -1,4 +1,5 @@
 ﻿using Application.Core.DTOs.Event;
+using Application.Core.DTOs.PromoCode;
 using Application.Core.Interfaces.OrganizerInterfaces;
 using Domain.Entities;
 using Domain.Interfaces;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Application.Services.OrganizerServices
 {
-    public class PromoCodeService(IPromoCodeRepository repo , IValidator<OrganizerPromoCodeDto> validator) : IPromoService
+    public class PromoCodeService(IPromoCodeRepository repo , IValidator<OrganizerPromoCodeDto> validator , IUnitOfWork _unitOfWork) : IPromoService
     {
         public async Task<(bool IsSuccess, string Message)> GeneratePromoCode(int eventId,OrganizerPromoCodeDto dto)
         {
@@ -34,18 +35,22 @@ namespace Application.Services.OrganizerServices
                 IsPercentage = dto.IsPercentage,
                 StartDate = dto.StartDate,
                 ExpiryDate = dto.ExpiryDate,
-                MaxUsageLimit = dto.MaxUsageLimit
+                MaxUsageLimit = dto.MaxUsageLimit,
+                OrganizerId = dto.OrganizerId,
+                IsActive = true
             };
             await repo.AddAsync(promoCode);
+            await _unitOfWork.SaveChangesAsync();
             return (true, "Promo code generated successfully.");
         }
 
-        public async Task<(bool IsSuccess, string Message)> TerminatePromoCode(int eventId,OrganizerPromoCodeDto dto)
+        public async Task<(bool IsSuccess, string Message)> TerminatePromoCode(int eventId,OrganizerTerminatePromoCodeDTO dto)
         {
             var victemCode = await repo.GetByCodeAsync(eventId, dto.Code);
             if (victemCode == null)
                 return (false, $"The promo code '{dto.Code}' does not exist for this event.");
             await repo.DeletePromoCode(eventId, victemCode.Code);
+            await _unitOfWork.SaveChangesAsync();
             return (true, "Promo code terminated successfully.");
         }
 

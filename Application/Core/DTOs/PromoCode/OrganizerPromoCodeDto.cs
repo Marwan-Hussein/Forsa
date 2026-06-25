@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Core.DTOs.Event
+namespace Application.Core.DTOs.PromoCode
 {
     public class OrganizerPromoCodeDto
     {
@@ -14,5 +14,6 @@ namespace Application.Core.DTOs.Event
         public DateTime StartDate { get; set; }
         public DateTime ExpiryDate { get; set; }
         public int MaxUsageLimit { get; set; }
+        public int OrganizerId { get; set; }
     }
 }

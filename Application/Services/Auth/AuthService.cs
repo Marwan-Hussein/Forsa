@@ -215,8 +215,9 @@ namespace Application.Services.Auth
 
         private async Task<(ApplicationUser User, RefreshToken RefreshToken)> GetUserByRefreshTokenAsync(string token)
         {
-            var user = await userManager.Users.SingleOrDefaultAsync(u =>
-                u.RefreshTokens.Any(t => t.Token == token));
+            var user = await userManager.Users
+                .SingleOrDefaultAsync(u =>u.RefreshTokens
+                .Any(t => t.Token == token));
 
             if (user == null)
                 throw new Exception("Invalid refresh token.");
