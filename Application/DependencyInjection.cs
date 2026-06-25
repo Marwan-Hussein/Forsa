@@ -22,15 +22,13 @@ using Application.Services.EventServices;
 using Application.Core.Interfaces.PlaceInterfaces;
 using Application.Services.PlaceServices;
 using Application.Core.Interfaces.AdminServices;
+using Application.Services.AdminServices;
 using Application.Core.Interfaces.OwnerInterfaces;
 using Application.Services.OwnerServices;
 using Application.Core.Interfaces.OrganizerInterfaces;
 using Application.Services.OrganizerServices;
 using AutoMapper;
-using Application.Core.Interfaces.OrganizerInterfaces;
-using Application.Services.OrganizerServices;
-using Application.Core.Interfaces.AttendeeInterfaces;
-using Application.Services.AttendeeServices;
+
 namespace Application;
 
 public static class DependencyInjection
@@ -41,6 +39,9 @@ public static class DependencyInjection
         services.AddAutoMapper(typeof(DependencyInjection).Assembly);
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         services.AddMediatR(typeof(DependencyInjection).Assembly);
+
+        // Admin Services
+        services.AddScoped<IAdminUserService, AdminUserService>();
 
         // Event Services
         services.AddScoped<IEventService, EventService>();
