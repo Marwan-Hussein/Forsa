@@ -85,7 +85,7 @@ namespace Forsa
             if (app.Environment.IsDevelopment())
             {
                 // uncomment this to run the seeder
-                // await DatabaseSeeder.SeedAsync(app.Services);
+                //DatabaseSeeder.SeedAsync(app.Services);
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
