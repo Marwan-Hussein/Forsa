@@ -5,7 +5,7 @@ namespace Domain.Entities.OrganizerEntities
 {
     public class Organizer : ApplicationUser
     {
-        public string OrganizationName { get; set; }
+        public string? OrganizationName { get; set; }
 
 
         // Relationships

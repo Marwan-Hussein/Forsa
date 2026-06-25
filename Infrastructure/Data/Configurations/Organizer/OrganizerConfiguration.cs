@@ -13,7 +13,7 @@ namespace Infrastructure.Data.Configurations
 
 
             builder.Property(o => o.OrganizationName)
-                .IsRequired()
+                .IsRequired(false)
                 .HasMaxLength(50);
         }
     }
