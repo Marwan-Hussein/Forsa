@@ -12,7 +12,7 @@ namespace Application.Core.Interfaces.OrganizerInterfaces
         Task<EventDetailsDto> CreateEventAsync(CreateEventDto dto);
         Task<EventDetailsDto> UpdateEventDetailsAsync(int eventId, UpdateEventDto dto);
         Task CancelEventAsync(int eventId);
-        Task<BookingResponseDto> SubmitPlaceBookingRequestAsync(int eventId, int placeId, BookingRequestDto dto);
+        Task<BookingRequestDetailsDto> SubmitPlaceBookingRequestAsync(int eventId, int placeId, BookingRequestDto dto);
         Task CancelPendingBookingRequestAsync(int requestId);
     }
 }

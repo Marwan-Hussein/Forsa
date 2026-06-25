@@ -48,8 +48,8 @@ namespace Application.Services.EventServices
             if (!string.IsNullOrWhiteSpace(criteria.EventName))
                 events = events.Where(E => E.Title.Contains(criteria.EventName));
 
-            if (!string.IsNullOrWhiteSpace(criteria.EventLocation))
-                events = events.Where(E => E.Place.Contains(criteria.EventLocation));
+            //if (!string.IsNullOrWhiteSpace(criteria.EventLocation))
+            //    events = events.Where(E => E.Place.Contains(criteria.EventLocation));
 
             if (!string.IsNullOrWhiteSpace(criteria.EventCategory))
                 events = events.Where(E => E.Category.Contains(criteria.EventCategory));
@@ -105,7 +105,7 @@ namespace Application.Services.EventServices
             {
                 eventEntity.Status = EventStatus.Completed;
                 eventEntity.RemainingTickets = 0; // Locks further bookings
-                CalculateAttendeeRatings(eventEntity).Wait(); // Update attendee ratings based on bookings
+                await CalculateAttendeeRatings(eventEntity); // Update attendee ratings based on bookings
 
 
                 _repo.Update(eventEntity);

@@ -2,6 +2,7 @@ using Domain.Common.Implementation;
 using Domain.Entities.BookingEntities;
 using Domain.ENUMs;
 using Domain.Entities.OrganizerEntities;
+using Domain.Entities.PlaceEntities;
 
 namespace Domain.Entities.EventEntities
 {
@@ -24,8 +25,8 @@ namespace Domain.Entities.EventEntities
         public Organizer Organizer { get; set; }
 
         // FK 
-        public int PlaceId { get; set; }
-        public string Place { get; set; } // this will be changed to Place object in the future (when we implement the Place entity)
+        public int? PlaceId { get; set; }
+        public Place Place { get; set; } // this will be changed to Place object in the future (when we implement the Place entity)
 
         // Navigation - owned by Person 3
         public ICollection<Booking> Bookings { get; set; }

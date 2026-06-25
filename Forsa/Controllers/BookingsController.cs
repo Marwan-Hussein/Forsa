@@ -1,5 +1,6 @@
 using Application.Core.DTOs.Booking;
 using Application.Core.DTOs.Event;
+using Application.Core.DTOs.PromoCode;
 using Application.Core.Interfaces;
 using Application.Core.Interfaces.OrganizerInterfaces;
 using FluentValidation;
@@ -190,7 +191,7 @@ namespace Forsa.Controllers
 
         [Authorize(Roles = "Organizer,Admin")]
         [HttpPost("event/{eventId}/promo-codes/terminate")]
-        public async Task<IActionResult> TerminatePromoCode(int eventId, [FromBody] OrganizerPromoCodeDto dto)
+        public async Task<IActionResult> TerminatePromoCode(int eventId, [FromBody] OrganizerTerminatePromoCodeDTO dto)
         {
             try
             {

@@ -34,6 +34,8 @@ namespace Infrastructure.Data.Configurations
 
             builder.Property(e => e.StartDate)
                    .IsRequired();
+            builder.Property(e => e.PlaceId)
+                   .IsRequired(false);
 
             builder.Property(e => e.EndDate)
                    .IsRequired();
