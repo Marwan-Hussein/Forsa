@@ -1,11 +1,13 @@
-﻿using Domain.Entities.AttendeeEntities;
+using Domain.Entities.AttendeeEntities;
 using Domain.Entities.BookingEntities;
 
 namespace Domain.Entities.OrganizerEntities
 {
     public class Organizer : ApplicationUser
     {
-        public string? OrganizationName { get; set; }
+        public string OrganizationName { get; set; }
+        public double AverageRating { get; set; } = 0.0;
+        public int ReviewsCount { get; set; } = 0;
 
 
         // Relationships

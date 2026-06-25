@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,6 +16,7 @@ namespace Infrastructure.Data.Configurations
             builder.Property(o => o.OrganizationName)
                 .IsRequired(false)
                 .HasMaxLength(50);
+
         }
     }
 }

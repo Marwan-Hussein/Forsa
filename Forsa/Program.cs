@@ -3,7 +3,7 @@ using Application;
 using Application.Core.Interfaces.Auth.OTP;
 using Application.Services.Auth.OTP;
 using Domain.Entities;
-// using Forsa.Seed;
+using Forsa.Seed;
 using Infrastructure;
 using Infrastructure.Data.DbContexts;
 using Microsoft.AspNetCore.Identity;
@@ -11,13 +11,14 @@ using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Application.Validators;
 
 namespace Forsa
 {
-    // if you want to create a local admin user, you can uncomment the commented code lines and run once the program
     public class Program
     {
-        // public static async Task Main(string[] args)
+        // uncomment this and below in app.environment to run the seeder
+        //public static async Task Main(string[] args)
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -76,14 +77,41 @@ namespace Forsa
                 });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Description = "JWT Authorization header using the Bearer scheme. Just paste your token directly here, the 'Bearer ' prefix will be added automatically."
+                });
+
+                c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+                {
+                    {
+                        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                        {
+                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                            {
+                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+            });
 
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                //await LocalAdminSeeder.SeedAsync(app.Services);
+                // uncomment this to run the seeder
+                //DatabaseSeeder.SeedAsync(app.Services);
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
@@ -96,9 +124,8 @@ namespace Forsa
             app.UseAuthorization();
 
             app.MapControllers();
+
             app.Run();
-
-
         }
     }
 }

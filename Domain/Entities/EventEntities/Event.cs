@@ -1,6 +1,7 @@
-﻿using Domain.Common.Implementation;
+using Domain.Common.Implementation;
 using Domain.Entities.BookingEntities;
 using Domain.ENUMs;
+using Domain.Entities.OrganizerEntities;
 
 namespace Domain.Entities.EventEntities
 {
@@ -15,10 +16,12 @@ namespace Domain.Entities.EventEntities
         public EventStatus Status { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public double AverageRating { get; set; } = 0.0;
+        public int ReviewsCount { get; set; } = 0;
 
         // FK
-        //public int OrganizerId { get; set; }
-        //public Organizer Organizer { get; set; }
+        public int OrganizerId { get; set; }
+        public Organizer Organizer { get; set; }
 
         // FK 
         public int PlaceId { get; set; }
