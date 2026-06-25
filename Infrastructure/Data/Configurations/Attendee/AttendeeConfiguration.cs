@@ -19,34 +19,6 @@ namespace Infrastructure.Data.Configurations
                    .OnDelete(DeleteBehavior.NoAction);
 
 
-            builder.HasData(
-                new Attendee
-                {
-                    Id = 1, 
-                    UserName = "testattendee",
-                    Email = "attendee@forsa.com",
-                    NormalizedEmail = "ATTENDEE@FORSA.COM",
-                    EmailConfirmed = true,
-                    FullName = "Test Attendee",
-                    Location = "Dummy Location",
-                    CreatedAt = new DateTime(2026, 1, 1),
-                    IsDeleted = false,
-                    LoyaltyPoint = 0
-                },
-                new Attendee
-                {
-                    Id = 2,
-                    UserName = "testattendee2",
-                    Email = "attendee2@forsa.com",
-                    NormalizedEmail = "ATTENDEE2@FORSA.COM",
-                    EmailConfirmed = true,
-                    FullName = "Test Attendee 2",
-                    Location = "Dummy Location",
-                    CreatedAt = new DateTime(2026, 1, 1),
-                    IsDeleted = false,
-                    LoyaltyPoint = 0
-                }
-            );
         }
     }
 }
