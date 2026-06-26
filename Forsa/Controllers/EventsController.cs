@@ -104,5 +104,25 @@ namespace Forsa.Controllers
                 return StatusCode(500, $"An error occurred while releasing tickets: {ex.ToString()}\n{ex.Message}");
             }
         }
+
+        // GET: api/events/{id}/share (No auth needed)
+        [HttpGet("{id}/share")]
+        public async Task<ActionResult<ShareEventDto>> GetShareableLink(int id)
+        {
+            try
+            {
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                var shareData = await _eventService.GetShareableLinkAsync(id, baseUrl);
+                return Ok(shareData);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while generating shareable link: {ex.Message}");
+            }
+        }
     }
 }

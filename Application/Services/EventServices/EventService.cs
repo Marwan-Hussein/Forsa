@@ -150,5 +150,24 @@ namespace Application.Services.EventServices
             _repo.Update(eventEntity);
             await _unitOfWork.SaveChangesAsync();
         }
+
+        public async Task<ShareEventDto> GetShareableLinkAsync(int eventId, string baseUrl)
+        {
+            var eventEntity = await _repo.GetQueryable()
+                .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
+
+            if (eventEntity == null)
+                throw new KeyNotFoundException("Event not found.");
+
+            var shareUrl = $"{baseUrl.TrimEnd('/')}/api/events/{eventEntity.Id}/details";
+
+            return new ShareEventDto
+            {
+                EventId = eventEntity.Id,
+                Title = eventEntity.Title,
+                ShareUrl = shareUrl,
+                ShareText = $"Check out \"{eventEntity.Title}\" on Forsa! {shareUrl}"
+            };
+        }
     }
 }
