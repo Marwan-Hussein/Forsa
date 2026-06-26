@@ -72,7 +72,9 @@ public static class DependencyInjection
 
         // Promo Services
         services.AddScoped<IPromoService, PromoCodeService>();
-        
+
+        // User Profile Services (generic for all roles)
+        services.AddScoped<IUserProfileService, UserProfileService>();
 
         // Jwt Configuration
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
