@@ -198,14 +198,24 @@ namespace Application.Services.OrganizerServices
                 EventId = eventId,
                 PlaceId = placeId,
                 OrganizerId = dto.OrganizerId,
+                StartTime = dto.StartTime,
+                EndTime = dto.EndTime,
                 Status = RequestStatus.Pending,
+                RequestedDate = dto.RequestedDate,
+                CreatedAt = DateTime.UtcNow,
                 IsDeleted = false
             };
 
             await _bookingRequestRepository.AddAsync(request);
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<BookingRequestDetailsDto>(request);
+            // Fetch the fully populated request from DB so the DTO mapping has Organizer and Place names
+            var populatedRequest = await _bookingRequestRepository.GetQueryable()
+                .Include(r => r.Organizer)
+                .Include(r => r.Place)
+                .FirstOrDefaultAsync(r => r.Id == request.Id);
+
+            return _mapper.Map<BookingRequestDetailsDto>(populatedRequest ?? request);
         }
 
         public async Task CancelPendingBookingRequestAsync(int requestId)
@@ -226,6 +236,35 @@ namespace Application.Services.OrganizerServices
             _bookingRequestRepository.Update(request);
 
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task<List<BookingRequestDetailsDto>> GetOrganizerBookingRequestsAsync(int organizerId)
+        {
+            var requests = await _bookingRequestRepository.GetQueryable()
+                .Include(r => r.Organizer)
+                .Include(r => r.Place)
+                .Where(r => r.OrganizerId == organizerId && !r.IsDeleted)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            return _mapper.Map<List<BookingRequestDetailsDto>>(requests);
+        }
+
+        public async Task<List<OrganizerEventDashboardDto>> GetOrganizerEventsDashboardAsync(int organizerId)
+        {
+            var events = await _eventRepository.GetQueryable()
+                .Where(e => e.OrganizerId == organizerId && !e.IsDeleted)
+                .OrderByDescending(e => e.StartDate)
+                .ToListAsync();
+
+            return events.Select(e => new OrganizerEventDashboardDto
+            {
+                EventId = e.Id,
+                Title = e.Title,
+                Status = e.Status.ToString(),
+                TotalTickets = e.TotalTickets,
+                RemainingTickets = e.RemainingTickets
+            }).ToList();
         }
     }
 }

@@ -11,5 +11,6 @@ namespace Application.Core.Interfaces.EventInterfaces
         Task EvaluateEventStatusAsync(int eventId);
         Task<bool> DeductTicketInventoryAsync(int eventId, int quantity);
         Task ReleaseTicketInventoryAsync(int eventId, int quantity);
+        Task<ShareEventDto> GetShareableLinkAsync(int eventId, string baseUrl);
     }
 }

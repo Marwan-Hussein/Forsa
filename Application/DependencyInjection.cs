@@ -66,13 +66,17 @@ public static class DependencyInjection
         services.AddScoped<IAttendeeAdminService,AttendeeAdminService>();
         services.AddScoped<IAttendeeProfileService,AttendeeProfileService>();
         services.AddScoped<IAttendeeFeedbackService, AttendeeFeedbackService>();
+        services.AddScoped<IAttendeeBookingService, AttendeeBookingService>();
+        services.AddScoped<IWishlistService, WishlistService>();
 
         // Organizer Services
         services.AddScoped<IOrganizerService, OrganizerService>();
 
         // Promo Services
         services.AddScoped<IPromoService, PromoCodeService>();
-        
+
+        // User Profile Services (generic for all roles)
+        services.AddScoped<IUserProfileService, UserProfileService>();
 
         // Jwt Configuration
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
