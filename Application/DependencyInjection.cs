@@ -66,6 +66,7 @@ public static class DependencyInjection
         services.AddScoped<IAttendeeAdminService,AttendeeAdminService>();
         services.AddScoped<IAttendeeProfileService,AttendeeProfileService>();
         services.AddScoped<IAttendeeFeedbackService, AttendeeFeedbackService>();
+        services.AddScoped<IAttendeeBookingService, AttendeeBookingService>();
 
         // Organizer Services
         services.AddScoped<IOrganizerService, OrganizerService>();
