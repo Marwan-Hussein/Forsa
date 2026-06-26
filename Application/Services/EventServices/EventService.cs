@@ -26,6 +26,7 @@ namespace Application.Services.EventServices
         public async Task<List<EventDetailsDto>> GetAllEvents()
         {
             var events = await _repo.GetQueryable()
+                                    .Include(e => e.Place)
                                     .Where(e => !e.IsDeleted)
                                     .ToListAsync();
             return _mapper.Map<List<EventDetailsDto>>(events);
@@ -34,6 +35,7 @@ namespace Application.Services.EventServices
         public async Task<EventDetailsDto?> GetEventById(int id)
         {
             var ev = await _repo.GetQueryable()
+                                .Include(e => e.Place)
                                 .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
             return ev == null ? null : _mapper.Map<EventDetailsDto>(ev);
         }
@@ -43,6 +45,7 @@ namespace Application.Services.EventServices
             criteria ??= new EventSearchParameterDto();
 
             var events = _repo.GetQueryable()
+                              .Include(e => e.Place)
                               .Where(e => !e.IsDeleted);
 
             if (!string.IsNullOrWhiteSpace(criteria.EventName))

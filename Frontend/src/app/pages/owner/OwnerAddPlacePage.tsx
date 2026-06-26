@@ -2,15 +2,28 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { ArrowLeft, Upload, MapPin, DollarSign, Users, Wifi, Coffee, Music, Info, Building2 } from "lucide-react";
 import { motion } from "motion/react";
+import MapPicker from "../../components/map/MapPicker";
 
 export default function OwnerAddPlacePage() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Map state
+  const [address, setAddress] = useState("");
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [googlePlaceId, setGooglePlaceId] = useState<string | null>(null);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     // Simulate API call
+    console.log("Submitting Place:", {
+      address,
+      latitude,
+      longitude,
+      googlePlaceId,
+    });
     setTimeout(() => {
       setIsSubmitting(false);
       navigate("/owner/places");
@@ -73,20 +86,23 @@ export default function OwnerAddPlacePage() {
               ></textarea>
             </div>
 
-            <div>
-              <label className="block text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700 mb-2">Location / Address <span className="text-rose-500">*</span></label>
-              <div className="relative">
-                <MapPin className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input 
-                  type="text" 
-                  required
-                  placeholder="e.g. 123 Main St, Cairo"
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 focus:bg-white transition-all font-['Inter:Medium',sans-serif] text-slate-800"
-                />
-              </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700 mb-2">Location & Map Coordinates <span className="text-rose-500">*</span></label>
+              <MapPicker
+                address={address}
+                latitude={latitude}
+                longitude={longitude}
+                googlePlaceId={googlePlaceId}
+                onChange={(data) => {
+                  setAddress(data.address);
+                  setLatitude(data.latitude);
+                  setLongitude(data.longitude);
+                  setGooglePlaceId(data.googlePlaceId);
+                }}
+              />
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700 mb-2">Capacity (Max Persons) <span className="text-rose-500">*</span></label>
               <div className="relative">
                 <Users className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />

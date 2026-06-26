@@ -39,6 +39,7 @@ namespace Application.Services
         public async Task<EventDetailsDto> GetEventDetailsAsync(int eventId)
         {
             var eventEntity = await _eventRepository.GetQueryable()
+                .Include(e => e.Place)
                 .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
 
             if (eventEntity == null)

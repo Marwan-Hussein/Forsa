@@ -19,6 +19,9 @@ export const mockEvents: Event[] = [
     isFeatured: true,
     capacity: 2000,
     tags: ["AI", "Technology", "Networking", "Innovation"],
+    placeLatitude: 37.7749,
+    placeLongitude: -122.4194,
+    googlePlaceId: "ChIJbXz8-W8RxQRR1eU3v7TpHjA",
   },
   {
     id: "2",

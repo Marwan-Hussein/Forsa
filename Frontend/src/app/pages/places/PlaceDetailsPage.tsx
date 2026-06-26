@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 import { ImageWithFallback } from "../../components/ImageWithFallback";
+import MapDisplay from "../../components/map/MapDisplay";
 import {
   MapPin,
   Users,
@@ -34,6 +35,8 @@ const mockPlace = {
   state: "CA",
   zipCode: "94102",
   country: "USA",
+  latitude: 37.7749,
+  longitude: -122.4194,
   owner: "Michael Chen",
   ownerEmail: "michael.chen@grandconvention.com",
   ownerPhone: "+1 (555) 123-4567",
@@ -247,6 +250,16 @@ export default function PlaceDetailsPage() {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* Venue Map Location */}
+              <div className="bg-white rounded-2xl p-8 shadow-sm border border-[rgba(39,55,77,0.1)]">
+                <h2 className="text-2xl font-bold text-foreground mb-6">Location Map</h2>
+                <MapDisplay
+                  address={`${mockPlace.address}, ${mockPlace.city}`}
+                  latitude={mockPlace.latitude}
+                  longitude={mockPlace.longitude}
+                />
               </div>
 
               {/* Upcoming Events */}
