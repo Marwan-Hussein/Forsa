@@ -198,14 +198,24 @@ namespace Application.Services.OrganizerServices
                 EventId = eventId,
                 PlaceId = placeId,
                 OrganizerId = dto.OrganizerId,
+                StartTime = dto.StartTime,
+                EndTime = dto.EndTime,
                 Status = RequestStatus.Pending,
+                RequestedDate = dto.RequestedDate,
+                CreatedAt = DateTime.UtcNow,
                 IsDeleted = false
             };
 
             await _bookingRequestRepository.AddAsync(request);
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<BookingRequestDetailsDto>(request);
+            // Fetch the fully populated request from DB so the DTO mapping has Organizer and Place names
+            var populatedRequest = await _bookingRequestRepository.GetQueryable()
+                .Include(r => r.Organizer)
+                .Include(r => r.Place)
+                .FirstOrDefaultAsync(r => r.Id == request.Id);
+
+            return _mapper.Map<BookingRequestDetailsDto>(populatedRequest ?? request);
         }
 
         public async Task CancelPendingBookingRequestAsync(int requestId)

@@ -75,7 +75,7 @@ namespace Forsa.Controllers
         }
 
         [HttpPost("events/{eventId}/booking-requests/places/{placeId}")]
-        public async Task<ActionResult<BookingResponseDto>> SubmitPlaceBookingRequest(int eventId, int placeId, [FromBody] BookingRequestDto dto)
+        public async Task<ActionResult<BookingRequestDetailsDto>> SubmitPlaceBookingRequest(int eventId, int placeId, [FromBody] BookingRequestDto dto)
         {
             try
             {
