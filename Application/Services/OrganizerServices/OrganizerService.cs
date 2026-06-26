@@ -227,5 +227,34 @@ namespace Application.Services.OrganizerServices
 
             await _unitOfWork.SaveChangesAsync();
         }
+
+        public async Task<List<BookingRequestDetailsDto>> GetOrganizerBookingRequestsAsync(int organizerId)
+        {
+            var requests = await _bookingRequestRepository.GetQueryable()
+                .Include(r => r.Organizer)
+                .Include(r => r.Place)
+                .Where(r => r.OrganizerId == organizerId && !r.IsDeleted)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            return _mapper.Map<List<BookingRequestDetailsDto>>(requests);
+        }
+
+        public async Task<List<OrganizerEventDashboardDto>> GetOrganizerEventsDashboardAsync(int organizerId)
+        {
+            var events = await _eventRepository.GetQueryable()
+                .Where(e => e.OrganizerId == organizerId && !e.IsDeleted)
+                .OrderByDescending(e => e.StartDate)
+                .ToListAsync();
+
+            return events.Select(e => new OrganizerEventDashboardDto
+            {
+                EventId = e.Id,
+                Title = e.Title,
+                Status = e.Status.ToString(),
+                TotalTickets = e.TotalTickets,
+                RemainingTickets = e.RemainingTickets
+            }).ToList();
+        }
     }
 }

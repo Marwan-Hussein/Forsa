@@ -117,5 +117,35 @@ namespace Forsa.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        // GET: api/organizers/booking-requests?organizerId=2
+        [HttpGet("booking-requests")]
+        public async Task<ActionResult<List<BookingRequestDetailsDto>>> GetOrganizerBookingRequests([FromQuery] int organizerId)
+        {
+            try
+            {
+                var requests = await _organizerService.GetOrganizerBookingRequestsAsync(organizerId);
+                return Ok(requests);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while fetching booking requests: {ex.Message}");
+            }
+        }
+
+        // GET: api/organizers/events/dashboard?organizerId=2
+        [HttpGet("events/dashboard")]
+        public async Task<ActionResult<List<OrganizerEventDashboardDto>>> GetOrganizerEventsDashboard([FromQuery] int organizerId)
+        {
+            try
+            {
+                var dashboard = await _organizerService.GetOrganizerEventsDashboardAsync(organizerId);
+                return Ok(dashboard);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while fetching the dashboard: {ex.Message}");
+            }
+        }
     }
 }
