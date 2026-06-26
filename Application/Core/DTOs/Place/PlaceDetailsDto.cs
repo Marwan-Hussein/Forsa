@@ -15,5 +15,8 @@ namespace Application.Core.DTOs.Place
         public string? Reason { get; set; }
         public int? OwnerId { get; set; }
         public DateTime CreatedAt { get; set; }
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
+        public string? GooglePlaceId { get; set; }
     }
 }

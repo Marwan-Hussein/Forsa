@@ -13,6 +13,11 @@ namespace Application.Core.DTOs.Event
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public string Place { get; set; }
+        public int? PlaceId { get; set; }
+        public string? PlaceLocation { get; set; }
+        public decimal? PlaceLatitude { get; set; }
+        public decimal? PlaceLongitude { get; set; }
+        public string? GooglePlaceId { get; set; }
         public string AvailabilityStatus { get; set; }  // Calculated based on remaining tickets
     }
 }

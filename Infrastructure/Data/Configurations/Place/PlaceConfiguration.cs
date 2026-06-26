@@ -16,6 +16,18 @@ namespace Infrastructure.Data.Configurations
                    .WithMany(o => o.Places)
                    .HasForeignKey(p => p.OwnerId)
                    .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Property(p => p.Latitude)
+                   .HasColumnType("decimal(18, 15)")
+                   .IsRequired(false);
+
+            builder.Property(p => p.Longitude)
+                   .HasColumnType("decimal(18, 15)")
+                   .IsRequired(false);
+
+            builder.Property(p => p.GooglePlaceId)
+                   .HasMaxLength(400)
+                   .IsRequired(false);
         }
     }
 }
