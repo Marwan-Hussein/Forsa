@@ -1,4 +1,4 @@
-﻿using Google.Apis.Calendar.v3;
+﻿using Application.Core.DTOs.ExternalDTOs;
 
 namespace Application.Core.Interfaces.ExternalServicesInterfaces
 {
