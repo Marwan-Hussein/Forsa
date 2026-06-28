@@ -1,13 +1,16 @@
-﻿using Application.Core.DTOs.ExternalDTOs;
+using Application.Core.DTOs.ExternalDTOs;
 using Application.Core.Interfaces.ExternalServicesInterfaces;
 using Application.Services.ExternalServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Forsa.Controllers.ExternalControllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class GoogleCalendarController : ControllerBase
     {
         private readonly IGoogleCalendarService _googleCalendarService;
@@ -16,6 +19,15 @@ namespace Forsa.Controllers.ExternalControllers
         {
             _googleCalendarService = googleCalendarService;
             _logger = logger;
+        }
+
+        // Extracts the logged-in user's email from the JWT token to use as the CalendarId
+        private string GetUserCalendarId()
+        {
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            if (string.IsNullOrWhiteSpace(email))
+                throw new UnauthorizedAccessException("User email claim is missing from the token.");
+            return email;
         }
 
         // get the event from google calender with id={id}
@@ -27,7 +39,8 @@ namespace Forsa.Controllers.ExternalControllers
 
             try
             {
-                var googleEvent = await _googleCalendarService.GetEventAsync(eventId, cancellationToken);
+                var calendarId = GetUserCalendarId();
+                var googleEvent = await _googleCalendarService.GetEventAsync(calendarId, eventId, cancellationToken);
 
                 if (googleEvent == null)
                 {
@@ -36,6 +49,10 @@ namespace Forsa.Controllers.ExternalControllers
                 }
 
                 return Ok(googleEvent);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
             }
             catch (ExternalServiceException ex)
             {
@@ -60,8 +77,13 @@ namespace Forsa.Controllers.ExternalControllers
 
             try
             {
-                var createdEventId = await _googleCalendarService.CreateEventAsync(eventDto, cancellationToken);
+                var calendarId = GetUserCalendarId();
+                var createdEventId = await _googleCalendarService.CreateEventAsync(calendarId, eventDto, cancellationToken);
                 return CreatedAtAction(nameof(GetEvent), new { eventId = createdEventId }, createdEventId);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
@@ -93,8 +115,13 @@ namespace Forsa.Controllers.ExternalControllers
 
             try
             {
-                await _googleCalendarService.UpdateEventAsync(eventId, eventDto, cancellationToken);
+                var calendarId = GetUserCalendarId();
+                await _googleCalendarService.UpdateEventAsync(calendarId, eventId, eventDto, cancellationToken);
                 return Ok(new { message = $"Event '{eventId}' updated successfully." });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
             }
             catch (KeyNotFoundException ex)
             {
@@ -120,8 +147,13 @@ namespace Forsa.Controllers.ExternalControllers
 
             try
             {
-                await _googleCalendarService.DeleteEventAsync(eventId, cancellationToken);
+                var calendarId = GetUserCalendarId();
+                await _googleCalendarService.DeleteEventAsync(calendarId, eventId, cancellationToken);
                 return NoContent();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
             }
             catch (ExternalServiceException ex)
             {
