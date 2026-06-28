@@ -146,7 +146,6 @@ public static class DependencyInjection
         // Google Calendar Services
         services.Configure<GoogleCalendarSettings>(configuration.GetSection("GoogleCalendar"));
         services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
-        services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 
         return services;
     }

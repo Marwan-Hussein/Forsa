@@ -8,12 +8,7 @@ using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Application.Services.ExternalServices
 {
@@ -22,6 +17,7 @@ namespace Application.Services.ExternalServices
         #region Attributes and ctor
         private readonly GoogleCalendarSettings _settings;
         private readonly ILogger<GoogleCalendarService> _logger;
+        private CalendarService? _calendarService;
 
         public GoogleCalendarService(
             IOptions<GoogleCalendarSettings> settings,
@@ -33,22 +29,50 @@ namespace Application.Services.ExternalServices
         #endregion
 
         #region Helper Methods (privates)
-        private CalendarService GetCalendarService(string accessToken)
+        private async Task<CalendarService> GetCalendarServiceAsync()
         {
+            if (_calendarService != null)
+                return _calendarService;
+
             try
             {
-                var credential = GoogleCredential.FromAccessToken(accessToken);
-                return new CalendarService(new BaseClientService.Initializer
+                GoogleCredential credential;
+
+                if (!string.IsNullOrWhiteSpace(_settings.ServiceAccountKeyPath)
+                    && File.Exists(_settings.ServiceAccountKeyPath))
+                {
+                    // Load credentials from the service account key file
+                    using var stream = new FileStream(
+                        _settings.ServiceAccountKeyPath, FileMode.Open, FileAccess.Read);
+
+#pragma warning disable CS0618 // GoogleCredential.FromStream is deprecated but CredentialFactory is not yet stable
+                    credential = GoogleCredential.FromStream(stream)
+                        .CreateScoped(CalendarService.Scope.Calendar);
+#pragma warning restore CS0618
+                }
+                else
+                {
+                    // Fall back to Application Default Credentials (ADC)
+                    // This works in GCP-hosted environments or when GOOGLE_APPLICATION_CREDENTIALS is set
+                    credential = (await GoogleCredential.GetApplicationDefaultAsync())
+                        .CreateScoped(CalendarService.Scope.Calendar);
+                }
+
+                _calendarService = new CalendarService(new BaseClientService.Initializer
                 {
                     HttpClientInitializer = credential,
                     ApplicationName = _settings.ApplicationName
                 });
+
+                _logger.LogInformation("Google Calendar service initialized successfully.");
+
+                return _calendarService;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to initialize Google Calendar service with access token");
+                _logger.LogError(ex, "Failed to initialize Google Calendar service");
                 throw new InvalidOperationException(
-                    "Unable to initialize Google Calendar service. Check user credentials.", ex);
+                    "Unable to initialize Google Calendar service. Check credentials configuration.", ex);
             }
         }
 
@@ -91,18 +115,19 @@ namespace Application.Services.ExternalServices
         #endregion
 
         #region inheritdoc
-        public async Task<string> CreateEventAsync(string accessToken, GoogleCalendarEventDto eventDto, CancellationToken cancellationToken = default)
+        public async Task<string> CreateEventAsync(string calendarId, GoogleCalendarEventDto eventDto, CancellationToken cancellationToken = default)
         {
+
             try
             {
-                var service = GetCalendarService(accessToken);
+                var service = await GetCalendarServiceAsync(); // Lazily initializes and returns the Google Calendar API client (using service account credentials)
                 var googleEvent = MapToGoogleEvent(eventDto);
 
                 _logger.LogInformation(
-                    "Creating Google Calendar event: {Title} from {Start} to {End} on user's primary calendar",
-                    eventDto.Title, eventDto.StartTime, eventDto.EndTime);
+                    "Creating Google Calendar event: {Title} from {Start} to {End} on calendar: {CalendarId}",
+                    eventDto.Title, eventDto.StartTime, eventDto.EndTime, calendarId);
 
-                var request = service.Events.Insert(googleEvent, "primary");
+                var request = service.Events.Insert(googleEvent, calendarId);
                 var createdEvent = await request.ExecuteAsync(cancellationToken);
 
                 _logger.LogInformation(
@@ -111,6 +136,7 @@ namespace Application.Services.ExternalServices
 
                 return createdEvent.Id;
             }
+
             #region ErrorHandling
             catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.Conflict)
             {
@@ -124,7 +150,7 @@ namespace Application.Services.ExternalServices
                     "Google Calendar API error while creating event: {Title}. Status: {StatusCode}",
                     eventDto.Title, ex.HttpStatusCode);
                 throw new ExternalServiceException(
-                    $"Failed to create Google Calendar event '{eventDto.Title}'. Google API error: {ex.Message}", ex);
+                    $"Failed to create Google Calendar event '{eventDto.Title}'.", ex);
             }
             catch (OperationCanceledException)
             {
@@ -140,25 +166,26 @@ namespace Application.Services.ExternalServices
             #endregion
         }
 
-        public async Task UpdateEventAsync(string accessToken, string googleEventId, GoogleCalendarEventDto eventDto, CancellationToken cancellationToken = default)
+        public async Task UpdateEventAsync(string calendarId, string googleEventId, GoogleCalendarEventDto eventDto, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(googleEventId))
                 throw new ArgumentException("Google event ID cannot be null or empty.", nameof(googleEventId));
 
             try
             {
-                var service = GetCalendarService(accessToken);
+                var service = await GetCalendarServiceAsync();
                 var googleEvent = MapToGoogleEvent(eventDto);
 
                 _logger.LogInformation(
-                    "Updating Google Calendar event: {EventId} on user's primary calendar", googleEventId);
+                    "Updating Google Calendar event: {EventId} on calendar: {CalendarId}", googleEventId, calendarId);
 
-                var request = service.Events.Update(googleEvent, "primary", googleEventId);
+                var request = service.Events.Update(googleEvent, calendarId, googleEventId);
                 await request.ExecuteAsync(cancellationToken);
 
                 _logger.LogInformation(
                     "Google Calendar event {EventId} updated successfully", googleEventId);
             }
+
             #region ErrorHandling
             catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound)
             {
@@ -173,7 +200,7 @@ namespace Application.Services.ExternalServices
                     "Google Calendar API error while updating event: {EventId}. Status: {StatusCode}",
                     googleEventId, ex.HttpStatusCode);
                 throw new ExternalServiceException(
-                    $"Failed to update Google Calendar event '{googleEventId}'. Google API error: {ex.Message}", ex);
+                    $"Failed to update Google Calendar event '{googleEventId}'.", ex);
             }
             catch (OperationCanceledException)
             {
@@ -188,34 +215,36 @@ namespace Application.Services.ExternalServices
             }
             #endregion
         }
-
-        public async Task DeleteEventAsync(string accessToken, string googleEventId, CancellationToken cancellationToken = default)
+        public async Task DeleteEventAsync(string calendarId, string googleEventId, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(googleEventId))
                 throw new ArgumentException("Google event ID cannot be null or empty.", nameof(googleEventId));
 
             try
             {
-                var service = GetCalendarService(accessToken);
+                var service = await GetCalendarServiceAsync();
 
                 _logger.LogInformation(
-                    "Deleting Google Calendar event: {EventId} from user's primary calendar", googleEventId);
+                    "Deleting Google Calendar event: {EventId} from calendar: {CalendarId}", googleEventId, calendarId);
 
-                var request = service.Events.Delete("primary", googleEventId);
+                var request = service.Events.Delete(calendarId, googleEventId);
                 await request.ExecuteAsync(cancellationToken);
 
                 _logger.LogInformation(
                     "Google Calendar event {EventId} deleted successfully", googleEventId);
             }
+
             #region ErrorHandling
             catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound)
             {
+                // Event already gone from Google Calendar — treat as idempotent success
                 _logger.LogWarning(
                     "Google Calendar event {EventId} was not found during deletion (may have already been removed)",
                     googleEventId);
             }
             catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.Gone)
             {
+                // Event was already deleted — treat as idempotent success
                 _logger.LogWarning(
                     "Google Calendar event {EventId} was already deleted (410 Gone)",
                     googleEventId);
@@ -226,7 +255,7 @@ namespace Application.Services.ExternalServices
                     "Google Calendar API error while deleting event: {EventId}. Status: {StatusCode}",
                     googleEventId, ex.HttpStatusCode);
                 throw new ExternalServiceException(
-                    $"Failed to delete Google Calendar event '{googleEventId}'. Google API error: {ex.Message}", ex);
+                    $"Failed to delete Google Calendar event '{googleEventId}'.", ex);
             }
             catch (OperationCanceledException)
             {
@@ -242,19 +271,19 @@ namespace Application.Services.ExternalServices
             #endregion
         }
 
-        public async Task<GoogleCalendarEventDto?> GetEventAsync(string accessToken, string googleEventId, CancellationToken cancellationToken = default)
+        public async Task<GoogleCalendarEventDto?> GetEventAsync(string calendarId, string googleEventId, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(googleEventId))
                 throw new ArgumentException("Google event ID cannot be null or empty.", nameof(googleEventId));
 
             try
             {
-                var service = GetCalendarService(accessToken);
+                var service = await GetCalendarServiceAsync();
 
                 _logger.LogInformation(
-                    "Retrieving Google Calendar event: {EventId} from user's primary calendar", googleEventId);
+                    "Retrieving Google Calendar event: {EventId} from calendar: {CalendarId}", googleEventId, calendarId);
 
-                var request = service.Events.Get("primary", googleEventId);
+                var request = service.Events.Get(calendarId, googleEventId);
                 var googleEvent = await request.ExecuteAsync(cancellationToken);
 
                 _logger.LogInformation(
@@ -262,6 +291,7 @@ namespace Application.Services.ExternalServices
 
                 return MapToDto(googleEvent);
             }
+
             #region ErrorHandling
             catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound)
             {
@@ -275,7 +305,7 @@ namespace Application.Services.ExternalServices
                     "Google Calendar API error while retrieving event: {EventId}. Status: {StatusCode}",
                     googleEventId, ex.HttpStatusCode);
                 throw new ExternalServiceException(
-                    $"Failed to retrieve Google Calendar event '{googleEventId}'. Google API error: {ex.Message}", ex);
+                    $"Failed to retrieve Google Calendar event '{googleEventId}'.", ex);
             }
             catch (OperationCanceledException)
             {
@@ -290,8 +320,10 @@ namespace Application.Services.ExternalServices
             }
             #endregion
         }
+
         #endregion
     }
+
 
     public class ExternalServiceException : Exception
     {

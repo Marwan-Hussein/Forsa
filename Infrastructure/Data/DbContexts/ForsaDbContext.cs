@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
-using Domain.Entities.AuthEntities;
-
 namespace Infrastructure.Data.DbContexts
 {
     public class ForsaDbContext(DbContextOptions<ForsaDbContext> options) : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>(options)
@@ -21,7 +19,6 @@ namespace Infrastructure.Data.DbContexts
             builder.Entity<IdentityUserToken<int>>().ToTable("UserTokens");
         }
         public DbSet<UserOtp> UserOtps { get; set; }
-        public DbSet<UserGoogleToken> UserGoogleTokens { get; set; }
     }
 }
 

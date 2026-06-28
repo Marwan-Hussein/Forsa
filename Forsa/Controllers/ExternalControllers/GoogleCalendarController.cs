@@ -4,12 +4,7 @@ using Application.Services.ExternalServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace Forsa.Controllers.ExternalControllers
 {
@@ -19,48 +14,23 @@ namespace Forsa.Controllers.ExternalControllers
     public class GoogleCalendarController : ControllerBase
     {
         private readonly IGoogleCalendarService _googleCalendarService;
-        private readonly IGoogleAuthService _googleAuthService;
         private readonly ILogger<GoogleCalendarController> _logger;
-
-        public GoogleCalendarController(
-            IGoogleCalendarService googleCalendarService,
-            IGoogleAuthService googleAuthService,
-            ILogger<GoogleCalendarController> _logger)
+        public GoogleCalendarController(IGoogleCalendarService googleCalendarService, ILogger<GoogleCalendarController> logger)
         {
             _googleCalendarService = googleCalendarService;
-            _googleAuthService = googleAuthService;
-            this._logger = _logger;
+            _logger = logger;
         }
 
-        private int GetUserId()
+        // Extracts the logged-in user's email from the JWT token to use as the CalendarId
+        private string GetUserCalendarId()
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrWhiteSpace(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
-                throw new UnauthorizedAccessException("User identification claim is missing or invalid in the token.");
-            return userId;
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            if (string.IsNullOrWhiteSpace(email))
+                throw new UnauthorizedAccessException("User email claim is missing from the token.");
+            return email;
         }
 
-        [HttpGet("status")]
-        public async Task<IActionResult> GetConnectionStatus(CancellationToken cancellationToken)
-        {
-            try
-            {
-                var userId = GetUserId();
-                var isConnected = await _googleAuthService.IsConnectedAsync(userId, cancellationToken);
-                return Ok(new { isConnected });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error retrieving connection status");
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An internal error occurred." });
-            }
-        }
-
-        // get the event from google calendar with id={eventId}
+        // get the event from google calender with id={id}
         [HttpGet("{eventId}")]
         public async Task<IActionResult> GetEvent(string eventId, CancellationToken cancellationToken)
         {
@@ -69,9 +39,8 @@ namespace Forsa.Controllers.ExternalControllers
 
             try
             {
-                var userId = GetUserId();
-                var accessToken = await _googleAuthService.GetOrRefreshTokenAsync(userId, cancellationToken);
-                var googleEvent = await _googleCalendarService.GetEventAsync(accessToken, eventId, cancellationToken);
+                var calendarId = GetUserCalendarId();
+                var googleEvent = await _googleCalendarService.GetEventAsync(calendarId, eventId, cancellationToken);
 
                 if (googleEvent == null)
                 {
@@ -85,10 +54,6 @@ namespace Forsa.Controllers.ExternalControllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("not integrated") || ex.Message.Contains("needs to be reconnected"))
-            {
-                return BadRequest(new { message = ex.Message, code = "GOOGLE_CALENDAR_DISCONNECTED" });
-            }
             catch (ExternalServiceException ex)
             {
                 return StatusCode(StatusCodes.Status502BadGateway, new { message = ex.Message });
@@ -100,7 +65,7 @@ namespace Forsa.Controllers.ExternalControllers
             }
         }
 
-        // set an event in Google Calendar from Forsa
+        // set an event in GC from Forsa
         [HttpPost]
         public async Task<IActionResult> CreateEvent([FromBody] GoogleCalendarEventDto eventDto, CancellationToken cancellationToken)
         {
@@ -112,18 +77,13 @@ namespace Forsa.Controllers.ExternalControllers
 
             try
             {
-                var userId = GetUserId();
-                var accessToken = await _googleAuthService.GetOrRefreshTokenAsync(userId, cancellationToken);
-                var createdEventId = await _googleCalendarService.CreateEventAsync(accessToken, eventDto, cancellationToken);
+                var calendarId = GetUserCalendarId();
+                var createdEventId = await _googleCalendarService.CreateEventAsync(calendarId, eventDto, cancellationToken);
                 return CreatedAtAction(nameof(GetEvent), new { eventId = createdEventId }, createdEventId);
             }
             catch (UnauthorizedAccessException ex)
             {
                 return Unauthorized(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("not integrated") || ex.Message.Contains("needs to be reconnected"))
-            {
-                return BadRequest(new { message = ex.Message, code = "GOOGLE_CALENDAR_DISCONNECTED" });
             }
             catch (InvalidOperationException ex)
             {
@@ -140,7 +100,7 @@ namespace Forsa.Controllers.ExternalControllers
             }
         }
 
-        // update event in Google Calendar with id={eventId}
+        // update event in GC with id={id}
         [HttpPut("{eventId}")]
         public async Task<IActionResult> UpdateEvent(string eventId, [FromBody] GoogleCalendarEventDto eventDto, CancellationToken cancellationToken)
         {
@@ -155,18 +115,13 @@ namespace Forsa.Controllers.ExternalControllers
 
             try
             {
-                var userId = GetUserId();
-                var accessToken = await _googleAuthService.GetOrRefreshTokenAsync(userId, cancellationToken);
-                await _googleCalendarService.UpdateEventAsync(accessToken, eventId, eventDto, cancellationToken);
+                var calendarId = GetUserCalendarId();
+                await _googleCalendarService.UpdateEventAsync(calendarId, eventId, eventDto, cancellationToken);
                 return Ok(new { message = $"Event '{eventId}' updated successfully." });
             }
             catch (UnauthorizedAccessException ex)
             {
                 return Unauthorized(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("not integrated") || ex.Message.Contains("needs to be reconnected"))
-            {
-                return BadRequest(new { message = ex.Message, code = "GOOGLE_CALENDAR_DISCONNECTED" });
             }
             catch (KeyNotFoundException ex)
             {
@@ -183,7 +138,7 @@ namespace Forsa.Controllers.ExternalControllers
             }
         }
 
-        // delete event in Google Calendar with id={eventId}
+        // delete event in GC with id={id}
         [HttpDelete("{eventId}")]
         public async Task<IActionResult> DeleteEvent(string eventId, CancellationToken cancellationToken)
         {
@@ -192,18 +147,13 @@ namespace Forsa.Controllers.ExternalControllers
 
             try
             {
-                var userId = GetUserId();
-                var accessToken = await _googleAuthService.GetOrRefreshTokenAsync(userId, cancellationToken);
-                await _googleCalendarService.DeleteEventAsync(accessToken, eventId, cancellationToken);
+                var calendarId = GetUserCalendarId();
+                await _googleCalendarService.DeleteEventAsync(calendarId, eventId, cancellationToken);
                 return NoContent();
             }
             catch (UnauthorizedAccessException ex)
             {
                 return Unauthorized(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("not integrated") || ex.Message.Contains("needs to be reconnected"))
-            {
-                return BadRequest(new { message = ex.Message, code = "GOOGLE_CALENDAR_DISCONNECTED" });
             }
             catch (ExternalServiceException ex)
             {
