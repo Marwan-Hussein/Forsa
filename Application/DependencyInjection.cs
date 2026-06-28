@@ -29,7 +29,10 @@ using Application.Services.OwnerServices;
 using Application.Core.Interfaces.OrganizerInterfaces;
 using Application.Services.OrganizerServices;
 using AutoMapper;
-
+using Application.Core.Interfaces.AttendeeInterfaces;
+using Application.Services.AttendeeServices;
+using Application.Services.LLMServices;
+using Application.Core.Interfaces.LLMInterfaces;
 namespace Application;
 
 public static class DependencyInjection
@@ -139,6 +142,9 @@ public static class DependencyInjection
 
         // IAuth Services
         services.AddScoped<IAuthService, AuthService>();
+
+        // LLM Services
+        services.AddScoped<ILLMService, LLMService>();
         return services;
     }
 }
