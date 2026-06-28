@@ -27,6 +27,8 @@ using Application.Core.Interfaces.OwnerInterfaces;
 using Application.Services.OwnerServices;
 using Application.Core.Interfaces.OrganizerInterfaces;
 using Application.Services.OrganizerServices;
+using Application.Core.Interfaces.ExternalServicesInterfaces;
+using Application.Services.ExternalServices;
 using AutoMapper;
 
 namespace Application;
@@ -140,6 +142,11 @@ public static class DependencyInjection
 
         // Google Services
         services.Configure<GoogleAuthSettings>(configuration.GetSection("Authentication:Google"));
+
+        // Google Calendar Services
+        services.Configure<GoogleCalendarSettings>(configuration.GetSection("GoogleCalendar"));
+        services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
+
         return services;
     }
 }
