@@ -108,5 +108,26 @@ namespace Forsa.Controllers.ExternalControllers
             }
         }
 
+        [HttpDelete("{eventId}")]
+        public async Task<IActionResult> DeleteEvent(string eventId, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(eventId))
+                return BadRequest("Event ID cannot be empty.");
+
+            try
+            {
+                await _googleCalendarService.DeleteEventAsync(eventId, cancellationToken);
+                return NoContent();
+            }
+            catch (ExternalServiceException ex)
+            {
+                return StatusCode(StatusCodes.Status502BadGateway, new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error deleting event {EventId}", eventId);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An internal error occurred." });
+            }
+        }
     }
 }
