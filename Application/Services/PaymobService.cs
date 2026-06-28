@@ -2,11 +2,14 @@
 using Application.Core.Interfaces;
 using Domain.ENUMs;
 using Domain.Interfaces;
+using Microsoft.Extensions.Configuration;
 
 namespace Application.Services
 {
     public class PaymobService(IBookingRepository bookingRepository
-                               ,IUnitOfWork unitOfWork) : IPaymentMethod
+                               ,IUnitOfWork unitOfWork
+                               ,IConfiguration configuration
+                               ,IHttpClientFactory httpClientFactory   ) : IPaymentMethod
     {
         public async Task<PaymentResponseDto> InitiatePaymentProcess(PaymentRequestDto dto)
         {
@@ -39,8 +42,22 @@ namespace Application.Services
                 };
             }
 
-            HttpClient client = new HttpClient();
-            var response = await client.PostAsync("https://paymentgateway.com/api/pay", new StringContent(JsonConvert.SerializeObject(dto), Encoding.UTF8, "application/json"));
+            var secretKey = configuration["PaymentGateway:PayMob:SecretKey"];
+            var PublicKey = configuration["PaymentGateway:PayMob:PublicKey"];
+            var apiKey = configuration["PaymentGateway:PayMob:APIKey"];
+            var IntegrationId = configuration["PaymentGateway:PayMob:IntegrationId:OnlineCard"];
+
+            var amountInPiasters = (int)(booking.NumberOfTickets * booking.Event.TicketPrice) * 100;
+            var paymobRequestedData = new
+            {
+                Amount = amountInPiasters,
+                Currancy = "EGY", 
+                PaymentMethod = configuration["PaymentGateway:PayMob:IntegrationId"]
+            };
+
+            var client = httpClientFactory.CreateClient();
+
+            
         }
     }
 }
