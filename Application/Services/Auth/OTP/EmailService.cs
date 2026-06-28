@@ -29,7 +29,7 @@ namespace Application.Services.Auth.OTP
 
             // to connect to the SMTP server and send the email
             using var client = new SmtpClient();
-            await client.ConnectAsync(_settings.SmtpServer, _settings.Port, _settings.UseSsl);
+            await client.ConnectAsync(_settings.SmtpServer, _settings.Port, MailKit.Security.SecureSocketOptions.StartTls);
             await client.AuthenticateAsync(_settings.SenderEmail, _settings.Password);
             await client.SendAsync(msg);
             await client.DisconnectAsync(true);

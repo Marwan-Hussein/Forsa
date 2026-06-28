@@ -1,5 +1,6 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Outlet } from "react-router";
 import Layout from "./pages/layout/Layout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import GuestHomePage from "./pages/home/GuestHomePage";
 import AttendeeDashboard from "./pages/attendee/AttendeeDashboard";
 import LoginPage from "./pages/auth/LoginPage";
@@ -23,6 +24,8 @@ import MyBookingRequestsPage from "./pages/places/MyBookingRequestsPage";
 import SubmitOrgToOwnerFeedbackPage from "./pages/places/SubmitOrgToOwnerFeedbackPage";
 import ViewFeedbackRatingPage from "./pages/places/ViewFeedbackRatingPage";
 
+import AdminLoginPage from "./pages/auth/AdminLoginPage";
+
 // Admin Portal Imports
 import AdminLayout from "./pages/layout/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -36,6 +39,7 @@ import OwnerLayout from "./pages/layout/OwnerLayout";
 import OwnerDashboard from "./pages/owner/OwnerDashboard";
 import OwnerPlacesPage from "./pages/owner/OwnerPlacesPage";
 import OwnerAddPlacePage from "./pages/owner/OwnerAddPlacePage";
+import OwnerEditPlacePage from "./pages/owner/OwnerEditPlacePage";
 import OwnerPlaceMediaPage from "./pages/owner/OwnerPlaceMediaPage";
 import OwnerBookingsPage from "./pages/owner/OwnerBookingsPage";
 
@@ -48,6 +52,10 @@ import ManageAttendeesPage from "./pages/organizations/ManageAttendeesPage";
 import QRCodeScannerPage from "./pages/organizations/QRCodeScannerPage";
 
 export const router = createBrowserRouter([
+  {
+    path: "/admin/login",
+    Component: AdminLoginPage,
+  },
   {
     path: "/",
     Component: Layout,
@@ -144,7 +152,11 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    Component: AdminLayout,
+    element: (
+      <ProtectedRoute allowedRoles={["Admin"]}>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
@@ -170,7 +182,11 @@ export const router = createBrowserRouter([
   },
   {
     path: "/owner",
-    Component: OwnerLayout,
+    element: (
+      <ProtectedRoute allowedRoles={["Owner", "PlaceOwner"]}>
+        <OwnerLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
@@ -185,6 +201,10 @@ export const router = createBrowserRouter([
         Component: OwnerAddPlacePage,
       },
       {
+        path: "places/:placeId/edit",
+        Component: OwnerEditPlacePage,
+      },
+      {
         path: "places/:placeId/media",
         Component: OwnerPlaceMediaPage,
       },
@@ -196,7 +216,11 @@ export const router = createBrowserRouter([
   },
   {
     path: "/organizer",
-    Component: OrganizerLayout,
+    element: (
+      <ProtectedRoute allowedRoles={["Organizer"]}>
+        <OrganizerLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,

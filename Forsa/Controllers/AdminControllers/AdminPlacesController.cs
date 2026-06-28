@@ -18,6 +18,23 @@ namespace Forsa.Controllers.AdminControllers
             _service = service;
         }
 
+        // GET: api/admin/places
+        // Returns all places (except soft deleted)
+        [HttpGet]
+        public async Task<ActionResult<List<PlaceDetailsDto>>> GetAll(
+            [FromQuery] PlaceSearchParameterDto parameters)
+        {
+            try
+            {
+                var result = await _service.GetAllPlacesAsync(parameters);
+                return Ok(result ?? new List<PlaceDetailsDto>());
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching places." });
+            }
+        }
+
         // GET: api/admin/places/pending
         // Returns all places whose Status == Pending
         [HttpGet("pending")]
@@ -66,6 +83,24 @@ namespace Forsa.Controllers.AdminControllers
             catch (Exception)
             {
                 return StatusCode(500, new { message = "An error occurred while updating place status." });
+            }
+        }
+        // DELETE: api/admin/places/{id}
+        // Soft delete a place
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeletePlace(int id)
+        {
+            try
+            {
+                var deleted = await _service.SoftDeletePlaceAsync(id);
+                if (!deleted)
+                    return NotFound(new { message = "Place not found or already deleted." });
+
+                return NoContent();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An error occurred while deleting the place." });
             }
         }
     }

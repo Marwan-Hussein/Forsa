@@ -1,3 +1,4 @@
+using Application.Core.DTOs.Admin;
 using Application.Core.DTOs.Place;
 using Application.Core.Interfaces.PlaceInterfaces;
 using AutoMapper;
@@ -24,6 +25,39 @@ namespace Application.Services.PlaceServices
             _feedbackRepo = feedbackRepo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+        }
+
+        // GET /api/admin/places
+        public async Task<List<PlaceDetailsDto>> GetAllPlacesAsync(PlaceSearchParameterDto parameters)
+        {
+            parameters ??= new PlaceSearchParameterDto();
+
+            // Include all places except those that are soft deleted
+            var query = _placeRepo.GetQueryable()
+                                  .Where(p => !p.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(parameters.Name))
+                query = query.Where(p => p.Name.Contains(parameters.Name));
+
+            if (!string.IsNullOrWhiteSpace(parameters.Location))
+                query = query.Where(p => p.Location.Contains(parameters.Location));
+
+            query = parameters.SortBy?.ToLower() switch
+            {
+                "name" => parameters.IsDescending
+                              ? query.OrderByDescending(p => p.Name)
+                              : query.OrderBy(p => p.Name),
+                "location" => parameters.IsDescending
+                              ? query.OrderByDescending(p => p.Location)
+                              : query.OrderBy(p => p.Location),
+                "date" => parameters.IsDescending
+                              ? query.OrderByDescending(p => p.CreatedAt)
+                              : query.OrderBy(p => p.CreatedAt),
+                _ => query.OrderBy(p => p.Id)
+            };
+
+            var places = await query.ToListAsync();
+            return _mapper.Map<List<PlaceDetailsDto>>(places);
         }
 
         // GET /api/admin/places/pending
@@ -78,6 +112,62 @@ namespace Application.Services.PlaceServices
             await _unitOfWork.SaveChangesAsync();
 
             return true;
+        }
+
+        // DELETE /api/admin/places/{id}
+        public async Task<bool> SoftDeletePlaceAsync(int placeId)
+        {
+            var place = await _placeRepo.GetQueryable()
+                                        .FirstOrDefaultAsync(p => p.Id == placeId && !p.IsDeleted);
+            if (place == null)
+                return false;
+
+            place.IsDeleted = true;
+            place.DeletedAt = DateTime.UtcNow;
+
+            _placeRepo.Update(place);
+            await _unitOfWork.SaveChangesAsync();
+
+            return true;
+        }
+
+        // GET /api/admin/reviews
+        public async Task<List<AdminReviewDto>> GetAllFeedbacksAsync(string? targetType = null)
+        {
+            var query = _feedbackRepo.GetQueryable()
+                                     .Include(f => f.Attendee)
+                                     .Include(f => f.Owner)
+                                     .Include(f => f.Organizer)
+                                     .Include(f => f.Event)
+                                     .Include(f => f.Place);
+
+            var feedbacks = await query.ToListAsync();
+
+            var dtos = feedbacks.Select(f => new AdminReviewDto
+            {
+                Id = f.Id,
+                Rating = f.Rating,
+                Comment = f.Comment,
+                CreatedAt = f.CreatedAt,
+                IsDeleted = f.IsDeleted,
+                ReviewerName = f.Attendee != null ? f.Attendee.FullName :
+                               f.Organizer != null ? f.Organizer.FullName :
+                               f.Owner != null ? f.Owner.FullName : "Unknown",
+                ReviewerType = f.Attendee != null ? "Attendee" :
+                               f.Organizer != null ? "Organizer" :
+                               f.Owner != null ? "Owner" : "Unknown",
+                TargetName = f.Event != null ? f.Event.Title :
+                             f.Place != null ? f.Place.Name : "Unknown",
+                TargetType = f.Event != null ? "Event" :
+                             f.Place != null ? "Place" : "Unknown"
+            }).ToList();
+
+            if (!string.IsNullOrWhiteSpace(targetType))
+            {
+                dtos = dtos.Where(d => d.TargetType.Equals(targetType, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            return dtos.OrderByDescending(d => d.CreatedAt).ToList();
         }
 
         // DELETE /api/admin/reviews/{id}

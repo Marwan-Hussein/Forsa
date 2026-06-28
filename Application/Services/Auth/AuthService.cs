@@ -175,11 +175,19 @@ namespace Application.Services.Auth
             if (user == null)
                 throw new Exception("Invalid email or password.");
 
+            // Enforce email verification
+            if (!user.EmailConfirmed)
+                throw new Exception("Email is not verified.");
+
             var passwordValid = await userManager.CheckPasswordAsync(user, loginDto.Password);
             if (!passwordValid)
                 throw new Exception("Invalid email or password.");
 
             var refreshToken = refreshTokenService.GenerateToken();
+            if (user.RefreshTokens == null)
+            {
+                user.RefreshTokens = new List<Domain.Entities.AuthEntities.RefreshToken>();
+            }
             user.RefreshTokens.Add(refreshTokenService.CreateRefreshToken(refreshToken));
             var roles = await userManager.GetRolesAsync(user);
 

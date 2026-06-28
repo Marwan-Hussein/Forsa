@@ -21,7 +21,8 @@ import {
   Play
 } from "lucide-react";
 import { EventCard } from "../../components/EventCard";
-import { mockEvents } from "../../data/mockData";
+import { apiGet } from "../../api/api";
+import type { Event as EventType } from "../../types/index";
 
 // Premium Color Palette Constants
 const DEEP_NAVY = "#1E3D61";
@@ -51,6 +52,9 @@ const itemVariants = {
 export default function GuestHomePage() {
   const [eventFilter, setEventFilter] = useState<"all" | "week" | "month" | "featured">("featured");
   const [navElevated, setNavElevated] = useState(false);
+  const [events, setEvents] = useState<EventType[]>([]);
+  const [eventCategories, setEventCategories] = useState<{name: string, icon: any, count: string, color: string}[]>([]);
+
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 100]);
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
@@ -74,23 +78,63 @@ export default function GuestHomePage() {
     { label: "Secure Ticket Bookings", value: "1M+", icon: Ticket },
   ];
 
-  const eventCategories = [
-    { name: "Business & Tech", icon: Briefcase, count: "2.3k Events" },
-    { name: "Live Music", icon: Music, count: "1.8k Events" },
-    { name: "Arts & Culture", icon: Palette, count: "1.2k Events" },
-    { name: "Sports & Wellness", icon: Dumbbell, count: "980 Events" },
-    { name: "Food & Dining", icon: UtensilsCrossed, count: "1.4k Events" },
-    { name: "Education & Workshops", icon: GraduationCap, count: "2.1k Events" },
-  ];
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const data = await apiGet('/api/events') as any[];
+        setEvents(data.map(e => ({ ...e, id: e.eventId || e.id })));
+        
+        // Extract Categories
+        const categoryMap = new Map<string, number>();
+        data.forEach((e: EventType) => {
+          if (e.category) {
+            categoryMap.set(e.category, (categoryMap.get(e.category) || 0) + 1);
+          }
+        });
+        
+        const categoryIconMap: Record<string, any> = {
+          "Business": Briefcase,
+          "Tech": Briefcase,
+          "Music": Music,
+          "Art": Palette,
+          "Sports": Dumbbell,
+          "Food": UtensilsCrossed,
+          "Education": GraduationCap,
+        };
+
+        const categoryColorMap: Record<string, string> = {
+          "Business": "text-blue-600 bg-blue-50",
+          "Tech": "text-indigo-600 bg-indigo-50",
+          "Music": "text-rose-600 bg-rose-50",
+          "Art": "text-fuchsia-600 bg-fuchsia-50",
+          "Sports": "text-emerald-600 bg-emerald-50",
+          "Food": "text-orange-600 bg-orange-50",
+          "Education": "text-cyan-600 bg-cyan-50",
+        };
+
+        const categories = Array.from(categoryMap.entries()).map(([name, count]) => ({
+          name,
+          icon: categoryIconMap[name] || Calendar,
+          count: `${count} Event${count !== 1 ? 's' : ''}`,
+          color: categoryColorMap[name] || "text-[#1E3D61] bg-[#F8FAFC]",
+        }));
+        
+        setEventCategories(categories);
+      } catch (err) {
+        console.error("Failed to fetch events", err);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   const filteredEvents = useMemo(() => {
-    const list = [...mockEvents];
+    const list = [...events];
     if (eventFilter === "featured") {
-      const f = list.filter((e) => e.isFeatured);
-      return f.length >= 6 ? f.slice(0, 6) : list.slice(0, 6);
+      // If we had featured events in db, we'd filter here. For now, just slice.
+      return list.slice(0, 6);
     }
     return list.slice(0, 6);
-  }, [eventFilter]);
+  }, [eventFilter, events]);
 
   const eventTabs: { id: typeof eventFilter; label: string }[] = [
     { id: "featured", label: "✨ Featured" },
@@ -270,11 +314,11 @@ export default function GuestHomePage() {
                 onClick={handleProtectedAction}
                 className="w-full bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-[#1E3D61]/30 hover:-translate-y-1 transition-all duration-300 flex items-center gap-5 group text-left"
               >
-                <div className="w-14 h-14 rounded-xl bg-[#F8FAFC] flex items-center justify-center group-hover:bg-[#1E3D61] transition-colors duration-300 shrink-0">
-                  <cat.icon className="w-6 h-6 text-[#1E3D61] group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-300 shrink-0 ${cat.color.split(' ')[1]} group-hover:opacity-80`}>
+                  <cat.icon className={`w-6 h-6 transition-colors duration-300 ${cat.color.split(' ')[0]}`} strokeWidth={1.5} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-lg mb-1 group-hover:text-[#1E3D61] transition-colors">{cat.name}</h3>
+                  <h3 className={`font-bold text-lg mb-1 transition-colors ${cat.color.split(' ')[0]}`}>{cat.name}</h3>
                   <p className="text-sm font-medium text-slate-500">{cat.count}</p>
                 </div>
               </motion.button>

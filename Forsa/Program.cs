@@ -2,24 +2,24 @@
 using Application;
 using Application.Core.Interfaces.Auth.OTP;
 using Application.Services.Auth.OTP;
+using Application.Services.LLMServices;
 using Domain.Entities;
+using Domain.Interfaces.LLMInterfaces;
 using Forsa.Seed;
 using Infrastructure;
 using Infrastructure.Data.DbContexts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.SemanticKernel;
 using StackExchange.Redis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Application.Validators;
-
 namespace Forsa
 {
     public class Program
     {
         // uncomment this and below in app.environment to run the seeder
-        //public static async Task Main(string[] args)
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
            
@@ -52,18 +52,18 @@ namespace Forsa
 
 
 
-            //// Add Google Auth Configuration 
-            //var google = builder.Configuration.GetSection("Authentication:Google");
-            //builder.Services.AddAuthentication(options => {
-            //    options.DefaultScheme = IdentityConstants.ApplicationScheme;
-            //    options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-            //}).AddGoogle(options =>
-            //    {
-            //        options.ClientId = google["GoogleId"]!;
-            //        options.ClientSecret = google["GoogleSecret"]!;
-            //        options.CallbackPath = "/signin-google";
-            //    }
-            //);
+            // Add Google Auth Configuration 
+            var google = builder.Configuration.GetSection("Authentication:Google");
+            builder.Services.AddAuthentication(options => {
+                options.DefaultScheme = IdentityConstants.ApplicationScheme;
+                options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+            }).AddGoogle(options =>
+                {
+                    options.ClientId = google["GoogleId"]!;
+                    options.ClientSecret = google["GoogleSecret"]!;
+                    options.CallbackPath = "/signin-google";
+                }
+            );
 
             builder.Services.AddApplicationServices(builder.Configuration);
             builder.Services.AddInfrastructureServices(builder.Configuration);
@@ -104,17 +104,37 @@ namespace Forsa
                     }
                 });
             });
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped(sp =>
+            {
+                var config = sp.GetRequiredService<IConfiguration>();
+                var modelId = config["LLM:ModelId"];
+                var apiKey = config["LLM:APIKey"];
+                var kernelBuilder = Kernel.CreateBuilder();
+
+                kernelBuilder.AddGoogleAIGeminiChatCompletion(modelId, apiKey);
+
+                var LLMRepo = sp.GetRequiredService<ILLMRepository>();
+                var httpAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+                var forsaPlugin = new ForsaSystemPlugin(LLMRepo, httpAccessor);
+
+                kernelBuilder.Plugins.AddFromObject(forsaPlugin, "ForsaSystemPlugin");
+
+                return kernelBuilder.Build();
+            });
 
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                // uncomment this to run the seeder
-                //DatabaseSeeder.SeedAsync(app.Services);
+                await DatabaseSeeder.SeedAsync(app.Services);
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            // Enable serving static files (for uploaded images in wwwroot)
+            app.UseStaticFiles();
 
             // Active Cors Middleware
             // app.UseHttpsRedirection();

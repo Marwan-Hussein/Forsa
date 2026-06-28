@@ -2,6 +2,7 @@ using Application.Authorization.Handlers;
 using Application.Authorization.Requirements;
 using MediatR;
 using Application.Core.Interfaces;
+using Application.Core.Interfaces.AdminInterfaces;
 using Application.Core.Interfaces.AttendeeInterfaces;
 using Application.Core.Interfaces.Auth;
 using Application.Core.Interfaces.Auth.OTP;
@@ -28,7 +29,10 @@ using Application.Services.OwnerServices;
 using Application.Core.Interfaces.OrganizerInterfaces;
 using Application.Services.OrganizerServices;
 using AutoMapper;
-
+using Application.Core.Interfaces.AttendeeInterfaces;
+using Application.Services.AttendeeServices;
+using Application.Services.LLMServices;
+using Application.Core.Interfaces.LLMInterfaces;
 namespace Application;
 
 public static class DependencyInjection
@@ -42,6 +46,7 @@ public static class DependencyInjection
 
         // Admin Services
         services.AddScoped<IAdminUserService, AdminUserService>();
+        services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 
         // Event Services
         services.AddScoped<IEventService, EventService>();
@@ -57,6 +62,7 @@ public static class DependencyInjection
         services.AddScoped<IPlaceAvailabilityService, PlaceAvailabilityService>();
         services.AddScoped<IBookingRequestOwnerService, BookingRequestOwnerService>();
         services.AddScoped<IOwnerFeedbackService, OwnerFeedbackService>();
+        services.AddScoped<IOwnerDashboardService, OwnerDashboardService>();
 
         // Booking Services
         services.AddScoped<IBookingService, BookingService>();
@@ -137,6 +143,9 @@ public static class DependencyInjection
 
         // IAuth Services
         services.AddScoped<IAuthService, AuthService>();
+
+        // LLM Services
+        services.AddScoped<ILLMService, LLMService>();
         return services;
     }
 }
