@@ -137,6 +137,9 @@ public static class DependencyInjection
 
         // IAuth Services
         services.AddScoped<IAuthService, AuthService>();
+
+        // Google Services
+        services.Configure<GoogleAuthSettings>(configuration.GetSection("Authentication:Google"));
         return services;
     }
 }
