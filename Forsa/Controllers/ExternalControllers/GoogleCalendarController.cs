@@ -18,6 +18,7 @@ namespace Forsa.Controllers.ExternalControllers
             _logger = logger;
         }
 
+        // get the event from google calender with id={id}
         [HttpGet("{eventId}")]
         public async Task<IActionResult> GetEvent(string eventId, CancellationToken cancellationToken)
         {
@@ -47,6 +48,7 @@ namespace Forsa.Controllers.ExternalControllers
             }
         }
 
+        // set an event in GC from Forsa
         [HttpPost]
         public async Task<IActionResult> CreateEvent([FromBody] GoogleCalendarEventDto eventDto, CancellationToken cancellationToken)
         {
@@ -76,6 +78,7 @@ namespace Forsa.Controllers.ExternalControllers
             }
         }
 
+        // update event in GC with id={id}
         [HttpPut("{eventId}")]
         public async Task<IActionResult> UpdateEvent(string eventId, [FromBody] GoogleCalendarEventDto eventDto, CancellationToken cancellationToken)
         {
@@ -108,6 +111,7 @@ namespace Forsa.Controllers.ExternalControllers
             }
         }
 
+        // delete event in GC with id={id}
         [HttpDelete("{eventId}")]
         public async Task<IActionResult> DeleteEvent(string eventId, CancellationToken cancellationToken)
         {
