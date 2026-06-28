@@ -180,6 +180,10 @@ namespace Application.Services.Auth
                 throw new Exception("Invalid email or password.");
 
             var refreshToken = refreshTokenService.GenerateToken();
+            if (user.RefreshTokens == null)
+            {
+                user.RefreshTokens = new List<Domain.Entities.AuthEntities.RefreshToken>();
+            }
             user.RefreshTokens.Add(refreshTokenService.CreateRefreshToken(refreshToken));
             var roles = await userManager.GetRolesAsync(user);
 

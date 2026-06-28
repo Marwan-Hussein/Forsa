@@ -23,6 +23,8 @@ import MyBookingRequestsPage from "./pages/places/MyBookingRequestsPage";
 import SubmitOrgToOwnerFeedbackPage from "./pages/places/SubmitOrgToOwnerFeedbackPage";
 import ViewFeedbackRatingPage from "./pages/places/ViewFeedbackRatingPage";
 
+import AdminLoginPage from "./pages/auth/AdminLoginPage";
+
 // Admin Portal Imports
 import AdminLayout from "./pages/layout/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -48,6 +50,10 @@ import ManageAttendeesPage from "./pages/organizations/ManageAttendeesPage";
 import QRCodeScannerPage from "./pages/organizations/QRCodeScannerPage";
 
 export const router = createBrowserRouter([
+  {
+    path: "/admin/login",
+    Component: AdminLoginPage,
+  },
   {
     path: "/",
     Component: Layout,

@@ -18,8 +18,7 @@ namespace Forsa
     public class Program
     {
         // uncomment this and below in app.environment to run the seeder
-        //public static async Task Main(string[] args)
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
            
@@ -128,8 +127,7 @@ namespace Forsa
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                // uncomment this to run the seeder
-                //DatabaseSeeder.SeedAsync(app.Services);
+                await DatabaseSeeder.SeedAsync(app.Services);
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }

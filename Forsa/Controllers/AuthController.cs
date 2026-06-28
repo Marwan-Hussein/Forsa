@@ -120,9 +120,14 @@ namespace Forsa.Controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while logging in");
+                return StatusCode(500, new 
+                { 
+                    message = "An error occurred while logging in", 
+                    error = ex.Message, 
+                    innerError = ex.InnerException?.Message 
+                });
             }
         }
 
