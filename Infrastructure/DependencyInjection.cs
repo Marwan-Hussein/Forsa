@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<IFeedbackRepository, FeedbackRepository>();
         services.AddScoped<IPlaceRepository, PlaceRepository>();
         services.AddScoped<IReportsRepository, ReportsRepository>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
 
         // Organizer Services
         services.AddScoped<IOrganizerRepository, OrgainzerRepository>();

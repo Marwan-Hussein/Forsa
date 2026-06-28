@@ -10,17 +10,49 @@ import {
   Menu,
   X
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ForSaLogo } from "../../components/ForSaLogo";
 import { motion } from "motion/react";
+import { Toaster } from "sonner";
+
+function parseJwt(token: string) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      window.atob(base64).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    return null;
+  }
+}
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const token = localStorage.getItem("forsa_token");
+    if (!token) {
+      navigate("/admin/login", { replace: true });
+      return;
+    }
+
+    const decoded = parseJwt(token);
+    const roleClaim = decoded?.role || decoded?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+    
+    if (roleClaim !== "Admin") {
+      navigate("/admin/login", { replace: true });
+    }
+  }, [navigate]);
+
   const handleLogout = () => {
-    // TODO: implement real logout
-    navigate("/login");
+    localStorage.removeItem("forsa_token");
+    localStorage.removeItem("forsa_refresh_token");
+    navigate("/admin/login");
   };
 
   const navItems = [
@@ -33,6 +65,18 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans">
+      <Toaster 
+        position="bottom-right" 
+        richColors
+        toastOptions={{
+          style: {
+            fontFamily: "Inter, sans-serif",
+            fontSize: "14px",
+            borderRadius: "14px",
+            boxShadow: "0 20px 40px -10px rgba(0,0,0,0.15)",
+          },
+        }}
+      />
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div 

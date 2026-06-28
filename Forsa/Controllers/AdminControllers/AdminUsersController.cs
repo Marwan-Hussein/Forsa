@@ -1,4 +1,4 @@
-﻿using Application.Core.DTOs.CommonDTOs;
+using Application.Core.DTOs.CommonDTOs;
 using Application.Core.Interfaces.AdminServices;
 using AutoMapper;
 using Domain.Entities;
@@ -27,27 +27,21 @@ namespace Forsa.Controllers.AdminControllers
         public async Task<ActionResult<List<ApplicationUserDTO>>> GetAll([FromQuery] int pageNum = 1, [FromQuery] int size = 20)
         {
             var users = await _adminService.GetAll(pageNum, size);
-            if (users == null || users.Count == 0)
-                return NotFound();
-            return Ok(users);
+            return Ok(users ?? new List<ApplicationUserDTO>());
         }
 
         [HttpGet("role/{role}")]
         public async Task<ActionResult<List<ApplicationUserDTO>>> GetByRole(Roles role, [FromQuery] int pageNum = 1, [FromQuery] int size = 20)
         {
             var users = await _adminService.GetAllInRole(role, pageNum, size);
-            if (users == null || users.Count == 0)
-                return NotFound();
-            return Ok(users);
+            return Ok(users ?? new List<ApplicationUserDTO>());
         }
 
         [HttpGet("blocked")]
         public async Task<ActionResult<List<ApplicationUserDTO>>> GetBlocked([FromQuery] int pageNum = 1, [FromQuery] int size = 20)
         {
             var users = await _adminService.GetAllBlockedUsers(pageNum, size);
-            if (users == null || users.Count == 0)
-                return NotFound();
-            return Ok(users);
+            return Ok(users ?? new List<ApplicationUserDTO>());
         }
 
         [HttpGet("{id}")]

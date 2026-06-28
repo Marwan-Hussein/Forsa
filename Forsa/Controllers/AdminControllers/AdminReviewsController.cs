@@ -16,6 +16,21 @@ namespace Forsa.Controllers.AdminControllers
             _service = service;
         }
 
+        // GET: api/admin/reviews
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromQuery] string? targetType)
+        {
+            try
+            {
+                var reviews = await _service.GetAllFeedbacksAsync(targetType);
+                return Ok(reviews);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching reviews." });
+            }
+        }
+
         // DELETE: api/admin/reviews/{id}
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
