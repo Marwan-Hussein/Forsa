@@ -115,34 +115,36 @@ export default function ManagePlacesPage() {
     }
   }
 
-  const renderStatusBadge = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "pending":
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-200/50 text-[12px] font-['Inter:Bold',sans-serif] shadow-sm">
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> Pending
-          </span>
-        );
-      case "approved":
-      case "available":
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/50 text-[12px] font-['Inter:Bold',sans-serif] shadow-sm">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Approved
-          </span>
-        );
-      case "rejected":
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-200/50 text-[12px] font-['Inter:Bold',sans-serif] shadow-sm">
-            <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Rejected
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 text-slate-600 border border-slate-200/50 text-[12px] font-['Inter:Bold',sans-serif] shadow-sm">
-            {status}
-          </span>
-        );
+  const renderStatusBadge = (status: string | number) => {
+    const statusStr = String(status).toLowerCase();
+    
+    if (statusStr === "pending" || statusStr === "1") {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-200/50 text-[12px] font-['Inter:Bold',sans-serif] shadow-sm">
+          <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> Pending
+        </span>
+      );
     }
+    if (statusStr === "approved" || statusStr === "available" || statusStr === "2") {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/50 text-[12px] font-['Inter:Bold',sans-serif] shadow-sm">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Approved
+        </span>
+      );
+    }
+    if (statusStr === "rejected" || statusStr === "3") {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-200/50 text-[12px] font-['Inter:Bold',sans-serif] shadow-sm">
+          <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Rejected
+        </span>
+      );
+    }
+
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 text-slate-600 border border-slate-200/50 text-[12px] font-['Inter:Bold',sans-serif] shadow-sm">
+        {status}
+      </span>
+    );
   };
 
   return (
@@ -318,7 +320,7 @@ export default function ManagePlacesPage() {
 
                 {/* Actions depending on Tab & Status */}
                 <div className="grid grid-cols-2 gap-3 mt-auto">
-                  {place.status.toLowerCase() === "pending" ? (
+                  {String(place.status).toLowerCase() === "pending" || String(place.status) === "1" ? (
                     <>
                       <button 
                         onClick={() => setRejectingPlace(place)}

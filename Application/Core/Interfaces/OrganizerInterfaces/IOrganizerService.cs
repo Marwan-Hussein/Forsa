@@ -18,5 +18,6 @@ namespace Application.Core.Interfaces.OrganizerInterfaces
         Task CancelPendingBookingRequestAsync(int requestId);
         Task<List<BookingRequestDetailsDto>> GetOrganizerBookingRequestsAsync(int organizerId);
         Task<List<OrganizerEventDashboardDto>> GetOrganizerEventsDashboardAsync(int organizerId);
+        Task<OrganizerDashboardStatsDto> GetOrganizerDashboardStatsAsync(int organizerId);
     }
 }

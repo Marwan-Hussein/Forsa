@@ -19,7 +19,11 @@ export default function OrganizerLayout() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // TODO: implement real logout
+    localStorage.removeItem("forsa_token");
+    localStorage.removeItem("forsa_refresh_token");
+    localStorage.removeItem("forsa_user_name");
+    localStorage.removeItem("forsa_user_email");
+    localStorage.removeItem("role");
     navigate("/login");
   };
 

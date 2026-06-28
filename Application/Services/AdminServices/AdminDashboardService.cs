@@ -1,9 +1,10 @@
 using Application.Core.DTOs.Admin;
 using Application.Core.Interfaces.AdminInterfaces;
-using Domain.Interfaces;
 using Domain.Entities;
 using Domain.Entities.BookingEntities;
 using Domain.ENUMs;
+using Domain.Interfaces;
+using Domain.Interfaces.BookingInterfaces;
 using Microsoft.AspNetCore.Identity;
 
 namespace Application.Services.AdminServices

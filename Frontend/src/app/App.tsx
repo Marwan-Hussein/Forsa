@@ -7,15 +7,11 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate initial loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-    return () => clearTimeout(timer);
+    setIsLoading(false);
   }, []);
 
   if (isLoading) {
-    return <TicketSpinner />;
+    return null; // Quick flicker, no need for spinner
   }
 
   return <RouterProvider router={router} />;

@@ -147,5 +147,19 @@ namespace Forsa.Controllers
                 return StatusCode(500, $"An error occurred while fetching the dashboard: {ex.Message}");
             }
         }
+        // GET: api/organizers/dashboard/stats?organizerId=2
+        [HttpGet("dashboard/stats")]
+        public async Task<ActionResult<OrganizerDashboardStatsDto>> GetOrganizerDashboardStats([FromQuery] int organizerId)
+        {
+            try
+            {
+                var stats = await _organizerService.GetOrganizerDashboardStatsAsync(organizerId);
+                return Ok(stats);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while fetching dashboard stats: {ex.Message}");
+            }
+        }
     }
 }

@@ -52,6 +52,9 @@ export default function AdminLayout() {
   const handleLogout = () => {
     localStorage.removeItem("forsa_token");
     localStorage.removeItem("forsa_refresh_token");
+    localStorage.removeItem("forsa_user_name");
+    localStorage.removeItem("forsa_user_email");
+    localStorage.removeItem("role");
     navigate("/admin/login");
   };
 
