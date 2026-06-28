@@ -46,5 +46,34 @@ namespace Forsa.Controllers.ExternalControllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An internal error occurred." });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateEvent([FromBody] GoogleCalendarEventDto eventDto, CancellationToken cancellationToken)
+        {
+            if (eventDto == null)
+                return BadRequest("Event data cannot be null.");
+
+            if (eventDto.StartTime >= eventDto.EndTime)
+                return BadRequest("Start time must be strictly before end time.");
+
+            try
+            {
+                var createdEventId = await _googleCalendarService.CreateEventAsync(eventDto, cancellationToken);
+                return CreatedAtAction(nameof(GetEvent), new { eventId = createdEventId }, createdEventId);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (ExternalServiceException ex)
+            {
+                return StatusCode(StatusCodes.Status502BadGateway, new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error creating event: {Title}", eventDto.Title);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An internal error occurred." });
+            }
+        }
     }
 }
