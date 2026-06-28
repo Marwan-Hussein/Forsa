@@ -75,7 +75,7 @@ namespace Application.Services.ExternalServices
             }
         }
 
-        // application DTO -> Google Calendar API Event object.
+        // application DTO -> Google Calendar API Event object
         private static Event MapToGoogleEvent(GoogleCalendarEventDto dto)
         {
             var timeZone = dto.TimeZone ?? "UTC";
@@ -95,6 +95,20 @@ namespace Application.Services.ExternalServices
                     DateTimeDateTimeOffset = new DateTimeOffset(dto.EndTime, TimeSpan.Zero),
                     TimeZone = timeZone
                 }
+            };
+        }
+
+        // Google Calendar API Event object -> application DTO
+        private static GoogleCalendarEventDto MapToDto(Event googleEvent)
+        {
+            return new GoogleCalendarEventDto
+            {
+                Title = googleEvent.Summary,
+                Description = googleEvent.Description,
+                Location = googleEvent.Location,
+                StartTime = googleEvent.Start?.DateTimeDateTimeOffset?.UtcDateTime ?? DateTime.MinValue,
+                EndTime = googleEvent.End?.DateTimeDateTimeOffset?.UtcDateTime ?? DateTime.MinValue,
+                TimeZone = googleEvent.Start?.TimeZone
             };
         }
         #endregion
@@ -256,9 +270,54 @@ namespace Application.Services.ExternalServices
             #endregion
         }
 
-        public Task<GoogleCalendarEventDto?> GetEventAsync(string googleEventId, CancellationToken cancellationToken = default)
+        public async Task<GoogleCalendarEventDto?> GetEventAsync(string googleEventId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(googleEventId))
+                throw new ArgumentException("Google event ID cannot be null or empty.", nameof(googleEventId));
+
+            try
+            {
+                var service = await GetCalendarServiceAsync();
+
+                _logger.LogInformation(
+                    "Retrieving Google Calendar event: {EventId}", googleEventId);
+
+                var request = service.Events.Get(_settings.CalendarId, googleEventId);
+                var googleEvent = await request.ExecuteAsync(cancellationToken);
+
+                _logger.LogInformation(
+                    "Google Calendar event {EventId} retrieved successfully", googleEventId);
+
+                return MapToDto(googleEvent);
+            }
+
+            #region ErrorHandling
+            catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound)
+            {
+                _logger.LogWarning(
+                    "Google Calendar event not found: {EventId}", googleEventId);
+                return null;
+            }
+            catch (GoogleApiException ex)
+            {
+                _logger.LogError(ex,
+                    "Google Calendar API error while retrieving event: {EventId}. Status: {StatusCode}",
+                    googleEventId, ex.HttpStatusCode);
+                throw new ExternalServiceException(
+                    $"Failed to retrieve Google Calendar event '{googleEventId}'.", ex);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Google Calendar GetEvent was cancelled for: {EventId}", googleEventId);
+                throw;
+            }
+            catch (Exception ex) when (ex is not InvalidOperationException)
+            {
+                _logger.LogError(ex, "Unexpected error retrieving Google Calendar event: {EventId}", googleEventId);
+                throw new ExternalServiceException(
+                    $"Unexpected error retrieving Google Calendar event '{googleEventId}'.", ex);
+            }
+            #endregion
         }
 
         #endregion
