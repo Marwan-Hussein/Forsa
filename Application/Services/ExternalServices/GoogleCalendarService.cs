@@ -99,6 +99,7 @@ namespace Application.Services.ExternalServices
         }
         #endregion
 
+        #region inheritdoc
         public async Task<string> CreateEventAsync(GoogleCalendarEventDto eventDto, CancellationToken cancellationToken = default)
         {
 
@@ -149,6 +150,54 @@ namespace Application.Services.ExternalServices
             }
         }
 
+        public async Task UpdateEventAsync(string googleEventId, GoogleCalendarEventDto eventDto, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(googleEventId))
+                throw new ArgumentException("Google event ID cannot be null or empty.", nameof(googleEventId));
+
+            try
+            {
+                var service = await GetCalendarServiceAsync();
+                var googleEvent = MapToGoogleEvent(eventDto);
+
+                _logger.LogInformation(
+                    "Updating Google Calendar event: {EventId}", googleEventId);
+
+                var request = service.Events.Update(googleEvent, _settings.CalendarId, googleEventId);
+                await request.ExecuteAsync(cancellationToken);
+
+                _logger.LogInformation(
+                    "Google Calendar event {EventId} updated successfully", googleEventId);
+            }
+
+            // HANDLING
+            catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound)
+            {
+                _logger.LogWarning(ex,
+                    "Google Calendar event not found for update: {EventId}", googleEventId);
+                throw new KeyNotFoundException(
+                    $"Google Calendar event '{googleEventId}' was not found.", ex);
+            }
+            catch (GoogleApiException ex)
+            {
+                _logger.LogError(ex,
+                    "Google Calendar API error while updating event: {EventId}. Status: {StatusCode}",
+                    googleEventId, ex.HttpStatusCode);
+                throw new ExternalServiceException(
+                    $"Failed to update Google Calendar event '{googleEventId}'.", ex);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Google Calendar UpdateEvent was cancelled for: {EventId}", googleEventId);
+                throw;
+            }
+            catch (Exception ex) when (ex is not (KeyNotFoundException or InvalidOperationException))
+            {
+                _logger.LogError(ex, "Unexpected error updating Google Calendar event: {EventId}", googleEventId);
+                throw new ExternalServiceException(
+                    $"Unexpected error updating Google Calendar event '{googleEventId}'.", ex);
+            }
+        }
         public Task DeleteEventAsync(string googleEventId, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
@@ -159,10 +208,7 @@ namespace Application.Services.ExternalServices
             throw new NotImplementedException();
         }
 
-        public Task UpdateEventAsync(string googleEventId, GoogleCalendarEventDto eventDto, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
     }
 
 
