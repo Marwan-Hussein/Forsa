@@ -131,7 +131,12 @@ Forsa provides a centralized system where:
       "GoogleId": "[google-id].apps.googleusercontent.com",
       "GoogleSecret": "google-secret-key"
     }
-  }
+  },
+  "GoogleCalendar": {
+  "ServiceAccountKeyPath": "path-to-yout-serviceAccountKeyFile.json",
+  "ApplicationName": "Forsa",
+  "CalendarId": "primary"
+  },
   "LLM": {
   "ModelId": "",
   "APIKey": ""
