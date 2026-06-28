@@ -10,9 +10,7 @@ namespace Domain.Interfaces.BookingInterfaces
 {
     public interface IBookingRepository : IQueryableRepository<Booking>
     {
-        //Task<Booking> GetBookingByIdAsync(int bookingId);
         Task<List<Booking>> GetBookingsByUserIdAsync(string userId);
-        //Task<List<Booking>> GetBookingsByEventIdAsync(int eventId);
-        //Task<List<Booking>> GetBookingsByStatusAsync(BookingStatus status);
+        Task<Booking> GetBookingWithEventAsync(int bookingId);
     }
 }

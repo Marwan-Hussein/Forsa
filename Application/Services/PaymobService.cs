@@ -2,6 +2,7 @@
 using Application.Core.Interfaces;
 using Domain.ENUMs;
 using Domain.Interfaces;
+using Domain.Interfaces.BookingInterfaces;
 using Microsoft.Extensions.Configuration;
 
 namespace Application.Services
@@ -57,7 +58,7 @@ namespace Application.Services
 
             var client = httpClientFactory.CreateClient();
 
-            
+            throw new NotImplementedException();
         }
     }
 }
