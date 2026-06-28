@@ -132,6 +132,10 @@ Forsa provides a centralized system where:
       "GoogleSecret": "google-secret-key"
     }
   }
+  "LLM": {
+  "ModelId": "",
+  "APIKey": ""
+}
 }
 ```
 
