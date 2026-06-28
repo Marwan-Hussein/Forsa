@@ -62,6 +62,7 @@ public static class DependencyInjection
         services.AddScoped<IPlaceAvailabilityService, PlaceAvailabilityService>();
         services.AddScoped<IBookingRequestOwnerService, BookingRequestOwnerService>();
         services.AddScoped<IOwnerFeedbackService, OwnerFeedbackService>();
+        services.AddScoped<IOwnerDashboardService, OwnerDashboardService>();
 
         // Booking Services
         services.AddScoped<IBookingService, BookingService>();

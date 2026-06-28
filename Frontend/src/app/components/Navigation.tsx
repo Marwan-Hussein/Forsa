@@ -13,16 +13,29 @@ export function Navigation() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  // Mock authentication state (Assume logged in for attendee redesign)
-  const isLoggedIn = true;
-  const userName = "Alex";
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState("Guest");
 
   useEffect(() => {
+    const token = localStorage.getItem("forsa_token");
+    if (token) {
+      setIsLoggedIn(true);
+      setUserName(localStorage.getItem("forsa_user_name") || "User");
+    }
     const onScroll = () => setNavElevated(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const handleSignOut = () => {
+    localStorage.removeItem("forsa_token");
+    localStorage.removeItem("forsa_refresh_token");
+    localStorage.removeItem("forsa_user_name");
+    localStorage.removeItem("forsa_user_email");
+    localStorage.removeItem("role");
+    window.location.href = "/login";
+  };
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -53,13 +66,13 @@ export function Navigation() {
         className={`fixed left-0 right-0 top-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           navElevated
             ? "bg-white/95 backdrop-blur-2xl border-b border-slate-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] py-3"
-            : "bg-transparent py-6"
+            : "bg-[#0B1120]/80 backdrop-blur-xl border-b border-white/5 py-4"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group outline-none">
-            <ForSaLogo className={`h-8 md:h-10 w-auto transition-all duration-500 ${navElevated ? 'text-blue-600' : 'text-white drop-shadow-md'}`} fill={navElevated ? '#2563eb' : '#ffffff'} />
-            <span className={`text-2xl font-['Inter:Bold',sans-serif] font-bold tracking-tight transition-colors duration-500 ${navElevated ? 'text-slate-800' : 'text-white drop-shadow-md'}`}>
+            <ForSaLogo className={`h-8 md:h-10 w-auto transition-all duration-500 ${navElevated ? 'text-blue-600' : 'text-white'}`} fill={navElevated ? '#2563eb' : '#ffffff'} />
+            <span className={`text-2xl font-['Inter:Bold',sans-serif] font-bold tracking-tight transition-colors duration-500 ${navElevated ? 'text-slate-800' : 'text-white'}`}>
               ForSa
             </span>
           </Link>
@@ -137,7 +150,7 @@ export function Navigation() {
                           </Link>
                         </div>
                         <div className="p-2 border-t border-slate-100">
-                          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-rose-600 hover:bg-rose-50 transition-colors">
+                          <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-rose-600 hover:bg-rose-50 transition-colors">
                             <LogOut className="w-4 h-4" /> Sign Out
                           </button>
                         </div>
@@ -218,7 +231,7 @@ export function Navigation() {
                     <Link to="/wishlist" className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50">
                       <Heart className="w-5 h-5" /> Wishlist
                     </Link>
-                    <button className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Bold',sans-serif] text-rose-600 hover:bg-rose-50 w-full text-left mt-2 border-t border-slate-100 pt-4">
+                    <button onClick={handleSignOut} className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Bold',sans-serif] text-rose-600 hover:bg-rose-50 w-full text-left mt-2 border-t border-slate-100 pt-4">
                       <LogOut className="w-5 h-5" /> Sign Out
                     </button>
                   </>

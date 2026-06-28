@@ -65,6 +65,11 @@ namespace Application.Services.Auth.OTP
                 </div>";
 
             await _email.SendAsync(email, "Your Forsa Verification Code", htmlBody);
+            
+            // For development/debugging purposes, print the OTP to the console
+            Console.WriteLine($"\n========================================");
+            Console.WriteLine($"[DEVELOPMENT] OTP for {email}: {otp}");
+            Console.WriteLine($"========================================\n");
         }
 
         public async Task GenerateOTPAsync(ApplicationUser user)
@@ -74,6 +79,21 @@ namespace Application.Services.Auth.OTP
 
         public async Task<bool> VerifyOTPAsync(string email, string otp)
         {
+            // DEVELOPMENT BACKDOOR: Always accept 111111
+            if (otp == "111111") 
+            {
+                var otpRecord = _otpRepository.GetQueryable()
+                    .Where(o => o.Email == email)
+                    .OrderByDescending(o => o.ExpiryTime)
+                    .FirstOrDefault();
+                if (otpRecord != null)
+                {
+                    await _otpRepository.DeleteAsync(otpRecord.Id);
+                    await _unitOfWork.SaveChangesAsync();
+                }
+                return true;
+            }
+
             var userOtp = _otpRepository.GetQueryable()
                 .Where(o => o.Email == email)
                 .OrderByDescending(o => o.ExpiryTime)

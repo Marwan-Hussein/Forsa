@@ -1,15 +1,17 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useParams } from "react-router";
 import { ArrowLeft, Building2, Info, MapPin, DollarSign, Loader2, Users } from "lucide-react";
-import { ownerApi, AddPlaceDto } from "../../api/ownerApi";
+import { ownerApi, UpdatePlaceDto } from "../../api/ownerApi";
 import { toast } from "sonner";
 import MapPicker from "../../components/map/MapPicker";
 
-export default function OwnerAddPlacePage() {
+export default function OwnerEditPlacePage() {
   const navigate = useNavigate();
+  const { placeId } = useParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const [formData, setFormData] = useState<AddPlaceDto>({
+  const [formData, setFormData] = useState<UpdatePlaceDto>({
     name: "",
     location: "",
     description: "",
@@ -17,6 +19,32 @@ export default function OwnerAddPlacePage() {
     dailyPrice: 0,
     hourlyPrice: 0,
   });
+
+  useEffect(() => {
+    const fetchPlace = async () => {
+      if (!placeId) return;
+      try {
+        setIsLoading(true);
+        const place = await ownerApi.getPlaceById(Number(placeId));
+        setFormData({
+          name: place.name || "",
+          location: place.location || "",
+          description: place.description || "",
+          capacity: place.capacity || 100,
+          dailyPrice: place.dailyPrice || 0,
+          hourlyPrice: place.hourlyPrice || 0,
+          latitude: place.latitude,
+          longitude: place.longitude,
+        });
+      } catch (error) {
+        toast.error("Failed to load venue details.");
+        navigate("/owner/places");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPlace();
+  }, [placeId, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -28,28 +56,35 @@ export default function OwnerAddPlacePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!placeId) return;
     try {
       setIsSubmitting(true);
-
-      // Fallback coordinates (Cairo) if the map fails to load
       const submissionData = {
         ...formData,
         latitude: formData.latitude ?? 30.0444,
         longitude: formData.longitude ?? 31.2357,
       };
 
-      const place = await ownerApi.addPlace(submissionData);
-      toast.success("Venue created successfully!");
-      navigate(`/owner/places/${place.id}/media`); // Redirect to media page to upload images immediately
+      await ownerApi.updatePlace(Number(placeId), submissionData);
+      toast.success("Venue updated successfully!");
+      navigate(`/owner/places`); 
     } catch (error) {
-      toast.error("Failed to add venue. Please try again.");
+      toast.error("Failed to update venue. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500 pb-12">
       <div className="flex items-center gap-4">
         <Link 
           to="/owner/places"
@@ -58,8 +93,8 @@ export default function OwnerAddPlacePage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-3xl font-['Inter:Bold',sans-serif] font-bold text-slate-800 tracking-tight">Add New Venue</h1>
-          <p className="text-slate-500 font-['Inter:Regular',sans-serif] mt-1">Fill in the details to list your property on ForSa.</p>
+          <h1 className="text-3xl font-['Inter:Bold',sans-serif] font-bold text-slate-800 tracking-tight">Edit Venue</h1>
+          <p className="text-slate-500 font-['Inter:Regular',sans-serif] mt-1">Update the details of your property.</p>
         </div>
       </div>
 
@@ -225,10 +260,10 @@ export default function OwnerAddPlacePage() {
             {isSubmitting ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Saving Venue...
+                Updating Venue...
               </>
             ) : (
-              "Save & Continue to Media"
+              "Update Venue"
             )}
           </button>
         </div>
