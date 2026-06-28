@@ -22,13 +22,12 @@ using Application.Services.EventServices;
 using Application.Core.Interfaces.PlaceInterfaces;
 using Application.Services.PlaceServices;
 using Application.Core.Interfaces.AdminServices;
+using Application.Services.AdminServices;
 using Application.Core.Interfaces.OwnerInterfaces;
 using Application.Services.OwnerServices;
 using Application.Core.Interfaces.OrganizerInterfaces;
 using Application.Services.OrganizerServices;
 using AutoMapper;
-using Application.Core.Interfaces.OrganizerInterfaces;
-using Application.Services.OrganizerServices;
 using Application.Core.Interfaces.AttendeeInterfaces;
 using Application.Services.AttendeeServices;
 using Application.Services.LLMServices;
@@ -43,6 +42,9 @@ public static class DependencyInjection
         services.AddAutoMapper(typeof(DependencyInjection).Assembly);
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         services.AddMediatR(typeof(DependencyInjection).Assembly);
+
+        // Admin Services
+        services.AddScoped<IAdminUserService, AdminUserService>();
 
         // Event Services
         services.AddScoped<IEventService, EventService>();
@@ -67,13 +69,17 @@ public static class DependencyInjection
         services.AddScoped<IAttendeeAdminService,AttendeeAdminService>();
         services.AddScoped<IAttendeeProfileService,AttendeeProfileService>();
         services.AddScoped<IAttendeeFeedbackService, AttendeeFeedbackService>();
+        services.AddScoped<IAttendeeBookingService, AttendeeBookingService>();
+        services.AddScoped<IWishlistService, WishlistService>();
 
         // Organizer Services
         services.AddScoped<IOrganizerService, OrganizerService>();
 
         // Promo Services
         services.AddScoped<IPromoService, PromoCodeService>();
-        
+
+        // User Profile Services (generic for all roles)
+        services.AddScoped<IUserProfileService, UserProfileService>();
 
         // Jwt Configuration
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));

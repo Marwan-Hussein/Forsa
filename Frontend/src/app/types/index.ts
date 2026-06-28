@@ -16,6 +16,9 @@ export interface Event {
   isFeatured: boolean;
   capacity: number;
   tags: string[];
+  placeLatitude?: number | null;
+  placeLongitude?: number | null;
+  googlePlaceId?: string | null;
 }
 
 export interface Organization {

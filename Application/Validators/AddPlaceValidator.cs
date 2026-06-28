@@ -26,6 +26,14 @@ namespace Application.Validators
 
             RuleFor(x => x.DailyPrice)
                 .GreaterThanOrEqualTo(0).WithMessage("Daily price cannot be negative.");
+                
+            RuleFor(x => x.Latitude)
+                .NotNull().WithMessage("Latitude is required.")
+                .InclusiveBetween(-90, 90).WithMessage("Latitude must be between -90 and 90.");
+
+            RuleFor(x => x.Longitude)
+                .NotNull().WithMessage("Longitude is required.")
+                .InclusiveBetween(-180, 180).WithMessage("Longitude must be between -180 and 180.");
         }
     }
 }

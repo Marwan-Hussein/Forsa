@@ -17,6 +17,9 @@ namespace Domain.Entities.PlaceEntities
         public FacilityName FacilityName { get; set; }
         public bool IsLocked { get; set; }
         public string? Reason { get; set; }
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
+        public string? GooglePlaceId { get; set; }
 
         // Relationships
         public List<PlaceMedia> PlaceMedias { get; set; }

@@ -54,6 +54,9 @@ namespace Application.Services.OwnerServices
             if (dto.HourlyPrice.HasValue) place.HourlyPrice = dto.HourlyPrice.Value;
             if (dto.DailyPrice.HasValue) place.DailyPrice = dto.DailyPrice.Value;
             if (dto.FacilityName.HasValue) place.FacilityName = (FacilityName)dto.FacilityName.Value;
+            if (dto.Latitude.HasValue) place.Latitude = dto.Latitude.Value;
+            if (dto.Longitude.HasValue) place.Longitude = dto.Longitude.Value;
+            if (dto.GooglePlaceId != null) place.GooglePlaceId = dto.GooglePlaceId;
 
             place.LastModifiedAt = DateTime.UtcNow;
             _placeRepo.Update(place);

@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { apiPost } from "../../api/api";
+import MapDisplay from "../../components/map/MapDisplay";
 import {
   ArrowLeft,
   Calendar,
@@ -249,6 +250,19 @@ export default function EventDetailsPage() {
                   ))}
                 </div>
               </div>
+            </div>
+
+            {/* Venue Location Map */}
+            <div className="rounded-2xl border border-[rgba(82,109,130,0.14)] bg-white p-8 shadow-[0_4px_24px_-8px_rgba(39,55,77,0.12)]">
+              <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-4">
+                Venue Location Map
+              </h2>
+              <MapDisplay
+                address={event.location}
+                latitude={event.placeLatitude ?? null}
+                longitude={event.placeLongitude ?? null}
+                googlePlaceId={event.googlePlaceId ?? null}
+              />
             </div>
           </div>
 

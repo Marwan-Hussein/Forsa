@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.Core.DTOs.Event;
 using Application.Core.DTOs.Booking;
+using Application.Core.DTOs.Organizer;
+
 namespace Application.Core.Interfaces.OrganizerInterfaces
 {
     public interface IOrganizerService
@@ -14,5 +16,7 @@ namespace Application.Core.Interfaces.OrganizerInterfaces
         Task CancelEventAsync(int eventId);
         Task<BookingRequestDetailsDto> SubmitPlaceBookingRequestAsync(int eventId, int placeId, BookingRequestDto dto);
         Task CancelPendingBookingRequestAsync(int requestId);
+        Task<List<BookingRequestDetailsDto>> GetOrganizerBookingRequestsAsync(int organizerId);
+        Task<List<OrganizerEventDashboardDto>> GetOrganizerEventsDashboardAsync(int organizerId);
     }
 }

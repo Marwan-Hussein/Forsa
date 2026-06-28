@@ -1,12 +1,10 @@
+using Application.Core.DTOs.UserDTOs;
+
 namespace Application.Core.DTOs.AttendeeDTOs
 {
-    public class UpdateAttendeeProfileDto
+    public class UpdateAttendeeProfileDto : UpdateUserProfileDto
     {
-        public string FullName { get; set; } = string.Empty;
-        public string UserName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string PhoneNumber { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
-        public DateTime BirthDate { get; set; }
+        // Attendee has no extra updatable fields beyond base.
+        // LoyaltyPoint is system-managed, Interests have their own endpoint.
     }
 }
