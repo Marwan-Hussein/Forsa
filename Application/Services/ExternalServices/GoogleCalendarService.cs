@@ -122,7 +122,7 @@ namespace Application.Services.ExternalServices
                 return createdEvent.Id;
             }
 
-            // HANDLING
+            #region ErrorHandling
             catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.Conflict)
             {
                 _logger.LogWarning(ex, "Conflict when creating Google Calendar event: {Title}", eventDto.Title);
@@ -148,6 +148,7 @@ namespace Application.Services.ExternalServices
                 throw new ExternalServiceException(
                     $"Unexpected error creating Google Calendar event '{eventDto.Title}'.", ex);
             }
+            #endregion
         }
 
         public async Task UpdateEventAsync(string googleEventId, GoogleCalendarEventDto eventDto, CancellationToken cancellationToken = default)
@@ -170,7 +171,7 @@ namespace Application.Services.ExternalServices
                     "Google Calendar event {EventId} updated successfully", googleEventId);
             }
 
-            // HANDLING
+            #region ErrorHandling
             catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound)
             {
                 _logger.LogWarning(ex,
@@ -197,10 +198,62 @@ namespace Application.Services.ExternalServices
                 throw new ExternalServiceException(
                     $"Unexpected error updating Google Calendar event '{googleEventId}'.", ex);
             }
+            #endregion
         }
-        public Task DeleteEventAsync(string googleEventId, CancellationToken cancellationToken = default)
+        public async Task DeleteEventAsync(string googleEventId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(googleEventId))
+                throw new ArgumentException("Google event ID cannot be null or empty.", nameof(googleEventId));
+
+            try
+            {
+                var service = await GetCalendarServiceAsync();
+
+                _logger.LogInformation(
+                    "Deleting Google Calendar event: {EventId}", googleEventId);
+
+                var request = service.Events.Delete(_settings.CalendarId, googleEventId);
+                await request.ExecuteAsync(cancellationToken);
+
+                _logger.LogInformation(
+                    "Google Calendar event {EventId} deleted successfully", googleEventId);
+            }
+
+            #region ErrorHandling
+            catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound)
+            {
+                // Event already gone from Google Calendar — treat as idempotent success
+                _logger.LogWarning(
+                    "Google Calendar event {EventId} was not found during deletion (may have already been removed)",
+                    googleEventId);
+            }
+            catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.Gone)
+            {
+                // Event was already deleted — treat as idempotent success
+                _logger.LogWarning(
+                    "Google Calendar event {EventId} was already deleted (410 Gone)",
+                    googleEventId);
+            }
+            catch (GoogleApiException ex)
+            {
+                _logger.LogError(ex,
+                    "Google Calendar API error while deleting event: {EventId}. Status: {StatusCode}",
+                    googleEventId, ex.HttpStatusCode);
+                throw new ExternalServiceException(
+                    $"Failed to delete Google Calendar event '{googleEventId}'.", ex);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Google Calendar DeleteEvent was cancelled for: {EventId}", googleEventId);
+                throw;
+            }
+            catch (Exception ex) when (ex is not InvalidOperationException)
+            {
+                _logger.LogError(ex, "Unexpected error deleting Google Calendar event: {EventId}", googleEventId);
+                throw new ExternalServiceException(
+                    $"Unexpected error deleting Google Calendar event '{googleEventId}'.", ex);
+            }
+            #endregion
         }
 
         public Task<GoogleCalendarEventDto?> GetEventAsync(string googleEventId, CancellationToken cancellationToken = default)
