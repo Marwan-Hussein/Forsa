@@ -2,17 +2,17 @@
 using Application;
 using Application.Core.Interfaces.Auth.OTP;
 using Application.Services.Auth.OTP;
+using Application.Services.LLMServices;
 using Domain.Entities;
-using Forsa.Seed;
+using Domain.Interfaces.LLMInterfaces;
 using Infrastructure;
 using Infrastructure.Data.DbContexts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.SemanticKernel;
 using StackExchange.Redis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Application.Validators;
-
 namespace Forsa
 {
     public class Program
@@ -103,6 +103,24 @@ namespace Forsa
                         Array.Empty<string>()
                     }
                 });
+            });
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped(sp =>
+            {
+                var config = sp.GetRequiredService<IConfiguration>();
+                var modelId = config["LLM:ModelId"];
+                var apiKey = config["LLM:APIKey"];
+                var kernelBuilder = Kernel.CreateBuilder();
+
+                kernelBuilder.AddGoogleAIGeminiChatCompletion(modelId, apiKey);
+
+                var LLMRepo = sp.GetRequiredService<ILLMRepository>();
+                var httpAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+                var forsaPlugin = new ForsaSystemPlugin(LLMRepo, httpAccessor);
+
+                kernelBuilder.Plugins.AddFromObject(forsaPlugin, "ForsaSystemPlugin");
+
+                return kernelBuilder.Build();
             });
 
             var app = builder.Build();
