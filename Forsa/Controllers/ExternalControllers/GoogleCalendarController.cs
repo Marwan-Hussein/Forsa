@@ -75,5 +75,38 @@ namespace Forsa.Controllers.ExternalControllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An internal error occurred." });
             }
         }
+
+        [HttpPut("{eventId}")]
+        public async Task<IActionResult> UpdateEvent(string eventId, [FromBody] GoogleCalendarEventDto eventDto, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(eventId))
+                return BadRequest("Event ID cannot be empty.");
+
+            if (eventDto == null)
+                return BadRequest("Update payload cannot be null.");
+
+            if (eventDto.StartTime >= eventDto.EndTime)
+                return BadRequest("Start time must be strictly before end time.");
+
+            try
+            {
+                await _googleCalendarService.UpdateEventAsync(eventId, eventDto, cancellationToken);
+                return Ok(new { message = $"Event '{eventId}' updated successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ExternalServiceException ex)
+            {
+                return StatusCode(StatusCodes.Status502BadGateway, new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error updating event {EventId}", eventId);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An internal error occurred." });
+            }
+        }
+
     }
 }
