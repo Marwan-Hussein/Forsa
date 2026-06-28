@@ -64,7 +64,8 @@ namespace Application.Services.ExternalServices
                     ApplicationName = _settings.ApplicationName
                 });
 
-                _logger.LogInformation("Google Calendar service initialized successfully");
+                _logger.LogInformation("Google Calendar service initialized successfully.");
+
                 return _calendarService;
             }
             catch (Exception ex)
@@ -114,7 +115,7 @@ namespace Application.Services.ExternalServices
         #endregion
 
         #region inheritdoc
-        public async Task<string> CreateEventAsync(GoogleCalendarEventDto eventDto, CancellationToken cancellationToken = default)
+        public async Task<string> CreateEventAsync(string calendarId, GoogleCalendarEventDto eventDto, CancellationToken cancellationToken = default)
         {
 
             try
@@ -123,10 +124,10 @@ namespace Application.Services.ExternalServices
                 var googleEvent = MapToGoogleEvent(eventDto);
 
                 _logger.LogInformation(
-                    "Creating Google Calendar event: {Title} from {Start} to {End}",
-                    eventDto.Title, eventDto.StartTime, eventDto.EndTime);
+                    "Creating Google Calendar event: {Title} from {Start} to {End} on calendar: {CalendarId}",
+                    eventDto.Title, eventDto.StartTime, eventDto.EndTime, calendarId);
 
-                var request = service.Events.Insert(googleEvent, _settings.CalendarId);
+                var request = service.Events.Insert(googleEvent, calendarId);
                 var createdEvent = await request.ExecuteAsync(cancellationToken);
 
                 _logger.LogInformation(
@@ -165,7 +166,7 @@ namespace Application.Services.ExternalServices
             #endregion
         }
 
-        public async Task UpdateEventAsync(string googleEventId, GoogleCalendarEventDto eventDto, CancellationToken cancellationToken = default)
+        public async Task UpdateEventAsync(string calendarId, string googleEventId, GoogleCalendarEventDto eventDto, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(googleEventId))
                 throw new ArgumentException("Google event ID cannot be null or empty.", nameof(googleEventId));
@@ -176,9 +177,9 @@ namespace Application.Services.ExternalServices
                 var googleEvent = MapToGoogleEvent(eventDto);
 
                 _logger.LogInformation(
-                    "Updating Google Calendar event: {EventId}", googleEventId);
+                    "Updating Google Calendar event: {EventId} on calendar: {CalendarId}", googleEventId, calendarId);
 
-                var request = service.Events.Update(googleEvent, _settings.CalendarId, googleEventId);
+                var request = service.Events.Update(googleEvent, calendarId, googleEventId);
                 await request.ExecuteAsync(cancellationToken);
 
                 _logger.LogInformation(
@@ -214,7 +215,7 @@ namespace Application.Services.ExternalServices
             }
             #endregion
         }
-        public async Task DeleteEventAsync(string googleEventId, CancellationToken cancellationToken = default)
+        public async Task DeleteEventAsync(string calendarId, string googleEventId, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(googleEventId))
                 throw new ArgumentException("Google event ID cannot be null or empty.", nameof(googleEventId));
@@ -224,9 +225,9 @@ namespace Application.Services.ExternalServices
                 var service = await GetCalendarServiceAsync();
 
                 _logger.LogInformation(
-                    "Deleting Google Calendar event: {EventId}", googleEventId);
+                    "Deleting Google Calendar event: {EventId} from calendar: {CalendarId}", googleEventId, calendarId);
 
-                var request = service.Events.Delete(_settings.CalendarId, googleEventId);
+                var request = service.Events.Delete(calendarId, googleEventId);
                 await request.ExecuteAsync(cancellationToken);
 
                 _logger.LogInformation(
@@ -270,7 +271,7 @@ namespace Application.Services.ExternalServices
             #endregion
         }
 
-        public async Task<GoogleCalendarEventDto?> GetEventAsync(string googleEventId, CancellationToken cancellationToken = default)
+        public async Task<GoogleCalendarEventDto?> GetEventAsync(string calendarId, string googleEventId, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(googleEventId))
                 throw new ArgumentException("Google event ID cannot be null or empty.", nameof(googleEventId));
@@ -280,9 +281,9 @@ namespace Application.Services.ExternalServices
                 var service = await GetCalendarServiceAsync();
 
                 _logger.LogInformation(
-                    "Retrieving Google Calendar event: {EventId}", googleEventId);
+                    "Retrieving Google Calendar event: {EventId} from calendar: {CalendarId}", googleEventId, calendarId);
 
-                var request = service.Events.Get(_settings.CalendarId, googleEventId);
+                var request = service.Events.Get(calendarId, googleEventId);
                 var googleEvent = await request.ExecuteAsync(cancellationToken);
 
                 _logger.LogInformation(
