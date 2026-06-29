@@ -117,7 +117,7 @@ namespace Forsa
             }
 
             // Active Cors Middleware
-            // app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
             app.UseCors("Frontend");
 
             app.UseAuthentication();
