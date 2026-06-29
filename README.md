@@ -131,7 +131,16 @@ Forsa provides a centralized system where:
       "GoogleId": "[google-id].apps.googleusercontent.com",
       "GoogleSecret": "google-secret-key"
     }
-  }
+  },
+  "GoogleCalendar": {
+  "ServiceAccountKeyPath": "path-to-yout-serviceAccountKeyFile.json",
+  "ApplicationName": "Forsa",
+  "CalendarId": "primary"
+  },
+  "LLM": {
+  "ModelId": "",
+  "APIKey": ""
+}
 }
 ```
 
@@ -143,7 +152,8 @@ Forsa provides a centralized system where:
 
 | Contributor                                              | LinkedIn                                                            | Tasks and Lifecycles                                                                                                                            |
 | -------------------------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. [Marwan Hussein](https://github.com/Marwan-Hussein)   | [LinkedIn](https://linkedin.com/in/marwanhussein9)                  | - Forsa Logo<br>- OTP Service<br>- Admin Reports<br>- Event Services \[EvaluateEventStatus, DeductTicketInventory, ReleaseTicketInventory\]<br> |
+| 1. [Marwan Hussein](https://github.com/Marwan-Hussein)   | [LinkedIn](https://linkedin.com/in/marwanhussein9)                  | - Forsa Logo<br>- OTP Service<br>- Admin Reports<br>- Event Services \[EvaluateEventStatus, DeductTicketInventory, ReleaseTicketInventory\]<br>- Google Calendar Integration<br>
+ |
 | 2. [Mariam Ehab](https://github.com/Marria-m)            | [LinkedIn](https://www.linkedin.com/in/mariamehab1305)              | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
 | 3. [Mohamed Kotb](https://github.com/kotbb)              | [LinkedIn](https://www.linkedin.com/in/mohamedkotbb)                | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
 | 4. [Mohamed Nagy](https://github.com/Nagy101)            | [LinkedIn](https://www.linkedin.com/in/mohamed-nagy-36aa4b318)      | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |

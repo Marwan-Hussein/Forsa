@@ -19,6 +19,7 @@ namespace Domain.Entities.EventEntities
         public DateTime EndDate { get; set; }
         public double AverageRating { get; set; } = 0.0;
         public int ReviewsCount { get; set; } = 0;
+        public string? GoogleCalendarEventId { get; set; } // The ID of the corresponding event in Google Calendar (null if not synced)
 
         // FK
         public int OrganizerId { get; set; }
