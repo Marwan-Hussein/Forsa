@@ -39,7 +39,7 @@ namespace Forsa.Controllers.ExternalControllers
 
         [HttpGet("callback")]
         [AllowAnonymous]
-        public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string state, [FromQuery] string error)
+        public async Task<IActionResult> Callback([FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error)
         {
             if (!string.IsNullOrWhiteSpace(error))
             {

@@ -67,6 +67,11 @@ namespace Infrastructure.ExternalServices
         {
             try
             {
+                _logger.LogInformation("Exchanging OAuth code for token. ClientId: '{ClientId}', Secret length: {SecretLength}, RedirectUri: '{RedirectUri}'",
+                    _authSettings.ResolvedClientId,
+                    _authSettings.ResolvedClientSecret?.Length ?? 0,
+                    redirectUri);
+
                 var flow = CreateFlow();
                 var tokenResponse = await flow.ExchangeCodeForTokenAsync("user", code, redirectUri, cancellationToken);
                 var expiresAtUtc = tokenResponse.IssuedUtc.AddSeconds(tokenResponse.ExpiresInSeconds ?? 0);
