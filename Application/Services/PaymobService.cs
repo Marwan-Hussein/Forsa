@@ -8,13 +8,13 @@ using Microsoft.Extensions.Configuration;
 namespace Application.Services
 {
     public class PaymobService(IBookingRepository bookingRepository
-                               ,IUnitOfWork unitOfWork
-                               ,IConfiguration configuration
-                               ,IHttpClientFactory httpClientFactory   ) : IPaymentMethod
+                               , IUnitOfWork unitOfWork
+                               , IConfiguration configuration
+                               , IHttpClientFactory httpClientFactory) : IPaymentService
     {
-        public async Task<PaymentResponseDto> InitiatePaymentProcess(PaymentRequestDto dto)
+        public async Task<PaymentResponseDto> InitiatePaymentProcess(int transactionId)
         {
-            var booking = await bookingRepository.GetBookingWithEventAsync(dto.bookingId);
+            var booking = await bookingRepository.GetBookingWithEventAsync(transactionId);
 
             if (booking.Event.Status is EventStatus.Cancelled or EventStatus.SoldOut)
             {
@@ -52,7 +52,7 @@ namespace Application.Services
             var paymobRequestedData = new
             {
                 Amount = amountInPiasters,
-                Currancy = "EGY", 
+                Currancy = "EGY",
                 PaymentMethod = configuration["PaymentGateway:PayMob:IntegrationId"]
             };
 

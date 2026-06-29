@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace Application.Core.Interfaces
 {
-    public interface IPaymentMethod
+    public interface ICheckoutService
     {
-        Task<PaymentResponseDto> InitiatePaymentProcess(PaymentRequestDto dto);
+        Task<PaymentResponseDto> ProcessEventCheckoutAsync(int bookingId, int userId);
     }
 }
