@@ -65,8 +65,8 @@ public static class DependencyInjection
         services.AddScoped<IQrService, QrService>();
 
         // Attendee Services
-        services.AddScoped<IAttendeeAdminService,AttendeeAdminService>();
-        services.AddScoped<IAttendeeProfileService,AttendeeProfileService>();
+        services.AddScoped<IAttendeeAdminService, AttendeeAdminService>();
+        services.AddScoped<IAttendeeProfileService, AttendeeProfileService>();
         services.AddScoped<IAttendeeFeedbackService, AttendeeFeedbackService>();
         services.AddScoped<IAttendeeBookingService, AttendeeBookingService>();
         services.AddScoped<IWishlistService, WishlistService>();
@@ -101,7 +101,7 @@ public static class DependencyInjection
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:Key"]))
             };
         });
-        
+
         // Authorization Policies
         services.AddAuthorization(options =>
         {
@@ -120,7 +120,7 @@ public static class DependencyInjection
 
         // Register HttpContextAccessor for handlers
         services.AddHttpContextAccessor();
-        
+
         // Register Authorization Handlers
         services.AddScoped<IAuthorizationHandler, BookingOwnerHandler>();
 
@@ -146,6 +146,7 @@ public static class DependencyInjection
         // Google Calendar Services
         services.Configure<GoogleCalendarSettings>(configuration.GetSection("GoogleCalendar"));
         services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
+        services.AddScoped<IGoogleCalendarAuthService, GoogleCalendarAuthService>();
         return services;
     }
 }
