@@ -3,7 +3,6 @@ import {
   LayoutDashboard, 
   MapPin, 
   CalendarCheck, 
-  Image as ImageIcon,
   LogOut, 
   Bell, 
   Settings,
@@ -13,13 +12,18 @@ import {
 import { useState } from "react";
 import { ForSaLogo } from "../../components/ForSaLogo";
 import { motion } from "motion/react";
+import { Toaster } from "sonner";
 
 export default function OwnerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // TODO: implement real logout
+    localStorage.removeItem("forsa_token");
+    localStorage.removeItem("forsa_refresh_token");
+    localStorage.removeItem("forsa_user_name");
+    localStorage.removeItem("forsa_user_email");
+    localStorage.removeItem("role");
     navigate("/login");
   };
 
@@ -31,6 +35,18 @@ export default function OwnerLayout() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans">
+      <Toaster 
+        position="bottom-right" 
+        richColors
+        toastOptions={{
+          style: {
+            fontFamily: "Inter, sans-serif",
+            fontSize: "14px",
+            borderRadius: "14px",
+            boxShadow: "0 20px 40px -10px rgba(0,0,0,0.15)",
+          },
+        }}
+      />
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div 
@@ -44,8 +60,8 @@ export default function OwnerLayout() {
         {/* Premium Background Effects */}
         <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E3D61 100%)" }} />
         <div className="absolute inset-0 z-0 overflow-hidden mix-blend-screen pointer-events-none opacity-50">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full filter blur-[80px]" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full filter blur-[80px]" />
+          <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full filter blur-[80px]" />
+          <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#3b82f6]/10 rounded-full filter blur-[80px]" />
         </div>
 
         <div className="h-20 flex items-center justify-between px-6 border-b border-white/10 relative z-10">
@@ -83,9 +99,9 @@ export default function OwnerLayout() {
                     />
                   )}
                   {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-amber-500 rounded-r-full" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#3b82f6] rounded-r-full" />
                   )}
-                  <item.icon className={`w-5 h-5 relative z-10 transition-colors ${isActive ? "text-amber-500" : "group-hover:text-white"}`} />
+                  <item.icon className={`w-5 h-5 relative z-10 transition-colors ${isActive ? "text-[#3b82f6]" : "group-hover:text-white"}`} />
                   <span className={`relative z-10 font-['Inter:Medium',sans-serif] ${isActive ? "font-bold" : "font-medium"}`}>{item.name}</span>
                 </>
               )}
@@ -113,20 +129,20 @@ export default function OwnerLayout() {
               <Menu className="w-6 h-6" />
             </button>
             <div>
-              <h2 className="text-2xl font-['Inter:Bold',sans-serif] font-bold text-slate-800 hidden sm:block tracking-tight">Welcome, Owner</h2>
-              <p className="text-sm font-['Inter:Regular',sans-serif] text-slate-500 hidden sm:block">Manage your venues and bookings.</p>
+              <h2 className="text-2xl font-['Inter:Bold',sans-serif] font-bold text-slate-800 hidden sm:block tracking-tight">Welcome back</h2>
+              <p className="text-sm font-['Inter:Regular',sans-serif] text-slate-500 hidden sm:block">Here's what's happening with your venues today.</p>
             </div>
           </div>
           
           <div className="flex items-center gap-3 sm:gap-5">
             <button className="relative p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white"></span>
             </button>
             <button className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all hidden sm:block">
               <Settings className="w-5 h-5" />
             </button>
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-white font-bold border-2 border-white shadow-md ml-2 cursor-pointer hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold border-2 border-white shadow-md ml-2 cursor-pointer hover:scale-105 transition-transform">
               O
             </div>
           </div>

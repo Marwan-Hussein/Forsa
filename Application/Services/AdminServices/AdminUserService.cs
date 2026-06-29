@@ -1,8 +1,11 @@
-﻿using Application.Core.DTOs.CommonDTOs;
+using Application.Core.DTOs.CommonDTOs;
 using Application.Core.Interfaces.AdminServices;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.AttendeeEntities;
+using Domain.Entities.OrganizerEntities;
+using Domain.Entities.OwnerEntities;
+using Domain.Entities.AdminEntities;
 using Domain.ENUMs;
 using Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -36,7 +39,7 @@ namespace Application.Services.AdminServices
                         .Take(size)
                         .ToListAsync();
 
-            return _mapper.Map<List<ApplicationUserDTO>>(data);
+            return await MapWithRolesAsync(data);
         }
         public async Task<List<ApplicationUserDTO>> GetAllInRole(Roles roleName , int PageNum, int size = 20)
         {
@@ -47,7 +50,7 @@ namespace Application.Services.AdminServices
                         .Skip((PageNum - 1) * size)
                         .Take(size)
                         .ToList();
-            return _mapper.Map<List<ApplicationUserDTO>>(data);
+            return await MapWithRolesAsync(data);
         }
         public async Task<ApplicationUserDTO> GetById(int id)
         {
@@ -56,7 +59,10 @@ namespace Application.Services.AdminServices
             {
                 throw new Exception("ID not found");
             }
-            return _mapper.Map<ApplicationUserDTO>(user);
+            var dto = _mapper.Map<ApplicationUserDTO>(user);
+            var roles = await _userManager.GetRolesAsync(user);
+            dto.Role = roles.FirstOrDefault() ?? "User";
+            return dto;
         }
         public async Task Block(int id)
         {
@@ -85,7 +91,18 @@ namespace Application.Services.AdminServices
                         .Skip((PageNum - 1) * size)
                         .Take(size)
                         .ToListAsync();
-            return _mapper.Map<List<ApplicationUserDTO>>(data);
+            return await MapWithRolesAsync(data);
+        }
+
+        private async Task<List<ApplicationUserDTO>> MapWithRolesAsync(List<ApplicationUser> users)
+        {
+            var dtos = _mapper.Map<List<ApplicationUserDTO>>(users);
+            for (int i = 0; i < users.Count; i++)
+            {
+                var roles = await _userManager.GetRolesAsync(users[i]);
+                dtos[i].Role = roles.FirstOrDefault() ?? "User";
+            }
+            return dtos;
         }
     }
 }

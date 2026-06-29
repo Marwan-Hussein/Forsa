@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { motion } from "motion/react";
 import { EASE_IN_OUT } from "../../lib/motion";
@@ -187,7 +187,15 @@ function EventCardHorizontal({ event, onToggleWishlist, isInWishlist }: { event:
 
 export default function AttendeeDashboard() {
   const [wishlist, setWishlist] = useState<string[]>([]);
-  const userName = "Alex";
+  const [userName, setUserName] = useState("Guest");
+
+  useEffect(() => {
+    const storedName = localStorage.getItem("forsa_user_name");
+    if (storedName) {
+      // Get the first name
+      setUserName(storedName.split(" ")[0]);
+    }
+  }, []);
 
   const recommendedEvents = mockEvents.slice(0, 4);
   const thisWeekEvents = mockEvents.slice(0, 3);

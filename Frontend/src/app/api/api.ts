@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 export class ApiError extends Error {
   status: number;
@@ -39,10 +39,26 @@ function getErrorMessage(status: number, data: unknown) {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, init);
+  const token = localStorage.getItem("forsa_token");
+  const headers = new Headers(init?.headers);
+  
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...init,
+    headers,
+  });
+  
   const data = await readResponseBody(response);
 
   if (!response.ok) {
+    if (response.status === 401 && !path.toLowerCase().includes("/api/auth/login")) {
+      localStorage.removeItem("forsa_token");
+      localStorage.removeItem("forsa_refresh_token");
+      window.location.href = "/login";
+    }
     throw new ApiError(response.status, getErrorMessage(response.status, data), data);
   }
 
@@ -72,3 +88,13 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
 }
+
+export async function apiPatch<T>(path: string, body: unknown): Promise<T> {
+  return request<T>(path, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+}

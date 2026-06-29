@@ -6,12 +6,16 @@ using Application.Services.Auth;
 using Application.Services.OrganizerServices;
 using Domain.Interfaces;
 using Domain.Interfaces.AttendeeInterfaces;
+using Domain.Interfaces.BookingInterfaces;
+using Domain.Interfaces.LLMInterfaces;
 using Domain.Interfaces.OrganizerInterfaces;
 using Domain.Interfaces.OwnerInterfaces;
 using Infrastructure.Data;
 using Infrastructure.ExternalServices;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.AttendeeRepos;
+using Infrastructure.Repositories.BookingRepos;
+using Infrastructure.Repositories.LLM;
 using Infrastructure.Repositories.OrganizerRepos;
 using Infrastructure.Repositories.OwnerRepos;
 using Microsoft.Extensions.Configuration;
@@ -41,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<IFeedbackRepository, FeedbackRepository>();
         services.AddScoped<IPlaceRepository, PlaceRepository>();
         services.AddScoped<IReportsRepository, ReportsRepository>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
 
         // Organizer Services
         services.AddScoped<IOrganizerRepository, OrgainzerRepository>();
@@ -50,6 +55,11 @@ public static class DependencyInjection
 
         // Google Calendar Infrastructure
         services.AddScoped<IGoogleCalendarClient, GoogleCalendarClient>();
+        // LLM Services
+        services.AddScoped<ILLMRepository, LLMRepository>();
+
+        // Booking Services
+        services.AddScoped<IBookingRepository, BookingRepository>();
 
         return services;
     }

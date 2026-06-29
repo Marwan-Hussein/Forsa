@@ -266,5 +266,32 @@ namespace Application.Services.OrganizerServices
                 RemainingTickets = e.RemainingTickets
             }).ToList();
         }
+        public async Task<OrganizerDashboardStatsDto> GetOrganizerDashboardStatsAsync(int organizerId)
+        {
+            var events = await _eventRepository.GetQueryable()
+                .Where(e => e.OrganizerId == organizerId && !e.IsDeleted)
+                .ToListAsync();
+
+            var totalEvents = events.Count;
+            var completedEvents = events.Count(e => e.Status == EventStatus.Completed);
+            var pendingEvents = events.Count(e => e.Status == EventStatus.Pending || e.Status == EventStatus.Draft);
+
+            var totalTicketsSold = events.Sum(e => e.TotalTickets - e.RemainingTickets);
+            var totalRevenue = events.Sum(e => (decimal)((e.TotalTickets - e.RemainingTickets) * e.TicketPrice));
+
+            var bookingRequests = await _bookingRequestRepository.GetQueryable()
+                .Where(r => r.OrganizerId == organizerId && r.Status == RequestStatus.Accepted && !r.IsDeleted)
+                .ToListAsync();
+
+            return new OrganizerDashboardStatsDto
+            {
+                TotalEvents = totalEvents,
+                CompletedEvents = completedEvents,
+                PendingEvents = pendingEvents,
+                TotalTicketsSold = totalTicketsSold,
+                TotalRevenue = totalRevenue,
+                TotalPlacesBooked = bookingRequests.Count
+            };
+        }
     }
 }

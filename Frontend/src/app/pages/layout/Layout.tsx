@@ -7,7 +7,7 @@ import { Toaster } from "../../components/ui/sonner";
 
 export default function Layout() {
   const { pathname } = useLocation();
-  const isAuthPage = pathname === "/login" || pathname === "/register";
+  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/verify-otp";
   const showAppChrome = !isAuthPage && pathname !== "/";
   const showNavigation = !isAuthPage;
 
