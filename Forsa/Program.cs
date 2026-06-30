@@ -52,12 +52,15 @@ namespace Forsa
 
 
 
-            // Add Google Auth Configuration 
+            //// Add Google Auth Configuration 
             var google = builder.Configuration.GetSection("Authentication:Google");
-            builder.Services.AddAuthentication(options => {
+            builder.Services.AddAuthentication(options =>
+            {
                 options.DefaultScheme = IdentityConstants.ApplicationScheme;
                 options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-            }).AddGoogle(options =>
+            })
+            .AddCookie()
+            .AddGoogle(options =>
                 {
                     options.ClientId = google["GoogleId"]!;
                     options.ClientSecret = google["GoogleSecret"]!;
@@ -137,7 +140,7 @@ namespace Forsa
             app.UseStaticFiles();
 
             // Active Cors Middleware
-            // app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
             app.UseCors("Frontend");
 
             app.UseAuthentication();
