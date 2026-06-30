@@ -1,5 +1,6 @@
 using Application.Core.DTOs.Place;
 using Application.Core.Interfaces.OwnerInterfaces;
+using Application.Core.Interfaces.ExternalServicesInterfaces;
 using AutoMapper;
 using Domain.Entities.PlaceEntities;
 using Domain.ENUMs;
@@ -14,17 +15,20 @@ namespace Application.Services.OwnerServices
         private readonly IQueryableRepository<PlaceAvailability> _availabilityRepo;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IGoogleCalendarSyncService _calendarSync;
 
         public PlaceAvailabilityService(
             IPlaceRepository placeRepo,
             IQueryableRepository<PlaceAvailability> availabilityRepo,
             IMapper mapper,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IGoogleCalendarSyncService calendarSync)
         {
             _placeRepo = placeRepo;
             _availabilityRepo = availabilityRepo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _calendarSync = calendarSync;
         }
 
         public async Task<PlaceAvailabilityDto> UpdatePlaceAvailabilityCalendarAsync(
@@ -58,6 +62,26 @@ namespace Application.Services.OwnerServices
                 conflict.LastModifiedAt = DateTime.UtcNow;
                 _availabilityRepo.Update(conflict);
                 await _unitOfWork.SaveChangesAsync();
+
+                // Sync update to owner's Google Calendar (fire-and-forget)
+                if (!string.IsNullOrWhiteSpace(conflict.GoogleCalendarEventId))
+                {
+                    await _calendarSync.UpdateOwnerAvailabilityInCalendarAsync(
+                        ownerId, conflict.GoogleCalendarEventId,
+                        place.Name, dto.Date, dto.StartTime, dto.EndTime, status.ToString());
+                }
+                else
+                {
+                    var gcEventId = await _calendarSync.SyncOwnerAvailabilityToCalendarAsync(
+                        ownerId, place.Name, dto.Date, dto.StartTime, dto.EndTime, status.ToString());
+                    if (!string.IsNullOrWhiteSpace(gcEventId))
+                    {
+                        conflict.GoogleCalendarEventId = gcEventId;
+                        _availabilityRepo.Update(conflict);
+                        await _unitOfWork.SaveChangesAsync();
+                    }
+                }
+
                 return _mapper.Map<PlaceAvailabilityDto>(conflict);
             }
 
@@ -74,6 +98,17 @@ namespace Application.Services.OwnerServices
 
             await _availabilityRepo.AddAsync(slot);
             await _unitOfWork.SaveChangesAsync();
+
+            // Sync to owner's Google Calendar (fire-and-forget)
+            var googleEventId = await _calendarSync.SyncOwnerAvailabilityToCalendarAsync(
+                ownerId, place.Name, dto.Date, dto.StartTime, dto.EndTime, status.ToString());
+
+            if (!string.IsNullOrWhiteSpace(googleEventId))
+            {
+                slot.GoogleCalendarEventId = googleEventId;
+                _availabilityRepo.Update(slot);
+                await _unitOfWork.SaveChangesAsync();
+            }
 
             return _mapper.Map<PlaceAvailabilityDto>(slot);
         }
@@ -127,6 +162,10 @@ namespace Application.Services.OwnerServices
             slot.DeletedAt = DateTime.UtcNow;
             _availabilityRepo.Update(slot);
             await _unitOfWork.SaveChangesAsync();
+
+            // Remove from owner's Google Calendar (fire-and-forget)
+            await _calendarSync.RemoveOwnerAvailabilityFromCalendarAsync(
+                ownerId, slot.GoogleCalendarEventId);
 
             return true;
         }

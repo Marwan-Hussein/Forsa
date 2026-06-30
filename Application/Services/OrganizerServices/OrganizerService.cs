@@ -3,6 +3,7 @@ using Application.Core.DTOs.Event;
 using Application.Core.DTOs.Booking;
 using Application.Core.Interfaces.OrganizerInterfaces;
 using Application.Core.Interfaces;
+using Application.Core.Interfaces.ExternalServicesInterfaces;
 using Domain.Entities.OrganizerEntities;
 using Domain.Entities.EventEntities;
 using Domain.Entities.BookingEntities;
@@ -29,6 +30,7 @@ namespace Application.Services.OrganizerServices
         private readonly IGenericRepository<Notification> _notificationRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IGoogleCalendarSyncService _calendarSync;
 
         public OrganizerService(
             IOrganizerRepository organizerRepo,
@@ -37,7 +39,8 @@ namespace Application.Services.OrganizerServices
             IQueryableRepository<BookingRequest> bookingRequestRepository,
             IGenericRepository<Notification> notificationRepository,
             IUnitOfWork unitOfWork,
-            IMapper mapper)
+            IMapper mapper,
+            IGoogleCalendarSyncService calendarSync)
         {
             _organizerRepo = organizerRepo;
             _eventRepository = eventRepository;
@@ -46,6 +49,7 @@ namespace Application.Services.OrganizerServices
             _notificationRepository = notificationRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _calendarSync = calendarSync;
         }
 
         public async Task<List<Organizer>> FilterOrganizers(OrganizerSearchParameters searchParameter)
@@ -115,6 +119,21 @@ namespace Application.Services.OrganizerServices
             await _eventRepository.AddAsync(newEvent);
             await _unitOfWork.SaveChangesAsync();
 
+            // Sync to organizer's Google Calendar (fire-and-forget)
+            var googleEventId = await _calendarSync.SyncOrganizerEventToCalendarAsync(
+                dto.OrganizerId,
+                dto.Title,
+                dto.Description,
+                dto.StartDate,
+                dto.EndDate);
+
+            if (!string.IsNullOrWhiteSpace(googleEventId))
+            {
+                newEvent.GoogleCalendarEventId = googleEventId;
+                _eventRepository.Update(newEvent);
+                await _unitOfWork.SaveChangesAsync();
+            }
+
             return _mapper.Map<EventDetailsDto>(newEvent);
         }
 
@@ -137,6 +156,15 @@ namespace Application.Services.OrganizerServices
 
             _eventRepository.Update(ev);
             await _unitOfWork.SaveChangesAsync();
+
+            // Sync update to organizer's Google Calendar (fire-and-forget)
+            await _calendarSync.UpdateOrganizerEventInCalendarAsync(
+                ev.OrganizerId,
+                ev.GoogleCalendarEventId,
+                dto.Title,
+                dto.Description,
+                dto.StartDate,
+                dto.EndDate);
 
             return _mapper.Map<EventDetailsDto>(ev);
         }
@@ -180,6 +208,22 @@ namespace Application.Services.OrganizerServices
             }
 
             await _unitOfWork.SaveChangesAsync();
+
+            // Remove from organizer's Google Calendar (fire-and-forget)
+            await _calendarSync.RemoveOrganizerEventFromCalendarAsync(
+                ev.OrganizerId,
+                ev.GoogleCalendarEventId);
+
+            // Also remove from all attendees' Google Calendars
+            if (ev.Bookings != null)
+            {
+                foreach (var booking in ev.Bookings)
+                {
+                    await _calendarSync.RemoveBookingFromCalendarAsync(
+                        booking.AttendeeId,
+                        booking.GoogleCalendarEventId);
+                }
+            }
         }
 
         public async Task<BookingRequestDetailsDto> SubmitPlaceBookingRequestAsync(int eventId, int placeId, BookingRequestDto dto)
