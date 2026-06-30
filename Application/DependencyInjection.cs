@@ -83,6 +83,10 @@ public static class DependencyInjection
         // Promo Services
         services.AddScoped<IPromoService, PromoCodeService>();
 
+        // Payment Services
+        services.AddScoped<IPaymentService, PaymobService>();
+        services.AddScoped<ICheckoutService, CheckoutService>();
+
         // User Profile Services (generic for all roles)
         services.AddScoped<IUserProfileService, UserProfileService>();
 
@@ -126,6 +130,9 @@ public static class DependencyInjection
 
         // Register HttpContextAccessor for handlers
         services.AddHttpContextAccessor();
+
+        // Register HttpClientFactory
+        services.AddHttpClient();
 
         // Register Authorization Handlers
         services.AddScoped<IAuthorizationHandler, BookingOwnerHandler>();

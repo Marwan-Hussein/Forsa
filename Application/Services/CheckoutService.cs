@@ -1,20 +1,18 @@
-﻿using Application.Core.DTOs.Payment;
+using Application.Core.DTOs.Payment;
 using Application.Core.Interfaces;
 using Domain.Entities.PaymentEntities;
 using Domain.ENUMs;
 using Domain.Interfaces;
 using Domain.Interfaces.BookingInterfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Application.Services
 {
     public class CheckoutService(IBookingRepository bookingRepository 
                                 ,IPaymentService paymentService
-                                ,IGenericRepository<PaymentTransaction> genericRepo
+                                ,IQueryableRepository<PaymentTransaction> transactionRepo
                                 ,IUnitOfWork unitOfWork) : ICheckoutService
     {
         public async Task<PaymentResponseDto> ProcessEventCheckoutAsync(int bookingId, int userId)
@@ -27,10 +25,30 @@ namespace Application.Services
             if (booking.Status is BookingStatus.Cancelled)
                 throw new InvalidOperationException("Booking is cancelled");
 
-            if (booking.Status is BookingStatus.Confirmed)
+            // If the event is free, it doesn't need checkout/payment
+            if (booking.Event.TicketPrice <= 0)
+                throw new InvalidOperationException("This booking is for a free event and is already confirmed.");
+
+            // Check if there is already a completed transaction for this booking
+            var isAlreadyPaid = await transactionRepo.GetQueryable()
+                .AnyAsync(t => t.ReferenceId == bookingId && t.ItemType == "EventBooking" && t.TransactionStatus == TransactionStatus.Completed);
+
+            if (isAlreadyPaid)
                 throw new InvalidOperationException("Booking is already paid.");
 
             var amount = booking.Event.TicketPrice * booking.NumberOfTickets;
+
+            // Check if a pending transaction already exists for this booking to avoid duplicates
+            var existingTransaction = await transactionRepo.GetQueryable()
+                .FirstOrDefaultAsync(t => t.ReferenceId == bookingId && t.ItemType == "EventBooking" && t.TransactionStatus == TransactionStatus.Pending);
+
+            if (existingTransaction != null)
+            {
+                existingTransaction.Amount = (decimal)amount;
+                transactionRepo.Update(existingTransaction);
+                await unitOfWork.SaveChangesAsync();
+                return await paymentService.InitiatePaymentProcess(existingTransaction.PaymentId);
+            }
 
             var transaction = new PaymentTransaction
             {
@@ -42,7 +60,7 @@ namespace Application.Services
                 UserId = userId
             };
 
-            await genericRepo.AddAsync(transaction);
+            await transactionRepo.AddAsync(transaction);
             await unitOfWork.SaveChangesAsync();
             return await paymentService.InitiatePaymentProcess(transaction.PaymentId);
         }

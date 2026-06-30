@@ -1,4 +1,4 @@
-﻿using Application.Core.DTOs.Payment;
+using Application.Core.DTOs.Payment;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,16 +18,16 @@ namespace Application.Core.Interfaces
         // ==========================================
         // PHASE 2: THE LEDGER (Paymob Webhook)
         // ==========================================
-        //Task<bool> ProcessPaymentCallbackAsync(PaymobWebhookDto webhookPayload);
+        Task<bool> ProcessPaymentCallbackAsync(PaymobWebhookDto webhookPayload);
 
         // ==========================================
         // PHASE 3: MONEY OUT (Paymob Payouts API)
         // ==========================================
-        //Task<PayoutResponseDto> InitiateOrganizerPayoutAsync(int organizerId, decimal amount);
+        Task<PayoutResponseDto> InitiateOrganizerPayoutAsync(int organizerId, decimal amount);
 
         // ==========================================
         // BONUS: REFUNDS (Paymob Refund API)
         // ==========================================
-        //Task<RefundResponseDto> ProcessRefundAsync(int transactionId);
+        Task<RefundResponseDto> ProcessRefundAsync(int transactionId);
     }
 }
