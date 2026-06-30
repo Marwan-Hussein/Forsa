@@ -1,64 +1,89 @@
 ﻿using Application.Core.DTOs.Payment;
 using Application.Core.Interfaces;
+using Domain.Entities.PaymentEntities;
 using Domain.ENUMs;
 using Domain.Interfaces;
 using Domain.Interfaces.BookingInterfaces;
 using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 
 namespace Application.Services
 {
     public class PaymobService(IBookingRepository bookingRepository
                                , IUnitOfWork unitOfWork
                                , IConfiguration configuration
-                               , IHttpClientFactory httpClientFactory) : IPaymentService
+                               , IHttpClientFactory httpClientFactory
+                               , IGenericRepository<PaymentTransaction> genericRepo) : IPaymentService
     {
         public async Task<PaymentResponseDto> InitiatePaymentProcess(int transactionId)
         {
-            var booking = await bookingRepository.GetBookingWithEventAsync(transactionId);
 
-            if (booking.Event.Status is EventStatus.Cancelled or EventStatus.SoldOut)
+
+            var transaction = await genericRepo.GetByIdAsync(transactionId);
+
+            if (transaction == null)
             {
-                return new PaymentResponseDto
-                {
-                    IsSuccess = false,
-                    Message = $"Cannot proceed. This event is currently {booking.Event.Status}."
-                };
+                return new PaymentResponseDto { IsSuccess = false, Message = "Transaction not found." };
             }
 
-            if (booking.Status is BookingStatus.Cancelled or BookingStatus.Attended)
+            if (transaction.TransactionStatus != TransactionStatus.Pending)
             {
-                return new PaymentResponseDto
-                {
-                    IsSuccess = false,
-                    Message = "Booking is cancelled or attended"
-                };
-            }
-
-            if (booking.Status == BookingStatus.Confirmed)
-            {
-                return new PaymentResponseDto
-                {
-                    IsSuccess = false,
-                    Message = "This booking has already been paid for."
-                };
+                return new PaymentResponseDto { IsSuccess = false, Message = "This transaction has already been processed." };
             }
 
             var secretKey = configuration["PaymentGateway:PayMob:SecretKey"];
-            var PublicKey = configuration["PaymentGateway:PayMob:PublicKey"];
+            var publicKey = configuration["PaymentGateway:PayMob:PublicKey"];
             var apiKey = configuration["PaymentGateway:PayMob:APIKey"];
-            var IntegrationId = configuration["PaymentGateway:PayMob:IntegrationId:OnlineCard"];
-
-            var amountInPiasters = (int)(booking.NumberOfTickets * booking.Event.TicketPrice) * 100;
-            var paymobRequestedData = new
-            {
-                Amount = amountInPiasters,
-                Currancy = "EGY",
-                PaymentMethod = configuration["PaymentGateway:PayMob:IntegrationId"]
-            };
+            var amountInPiasters = (int)(transaction.Amount * 100);
 
             var client = httpClientFactory.CreateClient();
+            
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Token", secretKey);
 
-            throw new NotImplementedException();
+            var jsonPayload = JsonSerializer.Serialize(new
+            {
+                amount = amountInPiasters,
+                currency = "EGP", 
+                payment_methods = new[] { int.Parse(configuration["PaymentGateway:PayMob:IntegrationId:OnlineCard"]) }
+            });
+
+            try {
+                var response = await client.PostAsync("https://accept.paymob.com/v1/intention/",
+                              new StringContent(jsonPayload, System.Text.Encoding.UTF8, "application/json"));
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    using var jsonDoc = JsonDocument.Parse(responseContent);
+                    var paymobOrderId = jsonDoc.RootElement.GetProperty("id").GetInt32();
+                    var clientSecret = jsonDoc.RootElement.GetProperty("client_secret").GetString();
+                    transaction.PaymobIntentionId = paymobOrderId.ToString();
+                    genericRepo.Update(transaction);
+                    await unitOfWork.SaveChangesAsync();
+                    return new PaymentResponseDto
+                    {
+                        IsSuccess = true,
+                        Message = "Payment process initiated successfully.",
+                        ClientSecret = clientSecret,
+                        BookingId = transaction.ReferenceId
+                    };
+                }
+                else {
+                    return new PaymentResponseDto
+                    {
+                        IsSuccess = false,
+                        Message = $"Failed to initiate payment process. Status Code: {response.StatusCode}"
+                    };
+                }
+
+            }
+            catch (Exception ex) { 
+                return new PaymentResponseDto
+                {
+                    IsSuccess = false,
+                    Message = $"An error occurred while initiating payment process: {ex.Message}"
+                };
+            }
         }
     }
 }
