@@ -59,6 +59,57 @@ namespace Forsa.Controllers
             }
         }
 
+        [Authorize(Roles = "Organizer,Admin")]
+        [HttpPost("{id}/approve")]
+        public async Task<IActionResult> ApproveBooking(int id)
+        {
+            try
+            {
+                await _bookingService.ApproveBookingAsync(id);
+                return Ok(new { message = "Booking approved successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while approving the booking");
+            }
+        }
+
+        public class RejectBookingRequest
+        {
+            public string Reason { get; set; }
+        }
+
+        [Authorize(Roles = "Organizer,Admin")]
+        [HttpPost("{id}/reject")]
+        public async Task<IActionResult> RejectBooking(int id, [FromBody] RejectBookingRequest request)
+        {
+            try
+            {
+                await _bookingService.RejectBookingAsync(id, request.Reason);
+                return Ok(new { message = "Booking rejected successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while rejecting the booking");
+            }
+        }
+
         [Authorize(Policy = "BookingOwnerOrAdmin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> CancelBooking(int id)

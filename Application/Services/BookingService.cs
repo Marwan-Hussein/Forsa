@@ -87,9 +87,10 @@ namespace Application.Services
                 EventId = dto.EventId,
                 NumberOfTickets = dto.NumberOfTickets,
                 QRCode = Guid.NewGuid().ToString("N"),
-                Status = BookingStatus.Confirmed,
+                Status = BookingStatus.Pending,
                 BookingDate = DateTime.UtcNow,
-                IsDeleted = false
+                IsDeleted = false,
+                SpecialRequests = dto.SpecialRequests
             };
 
             await _bookingRepository.AddAsync(booking);
@@ -104,7 +105,7 @@ namespace Application.Services
                 Type = NotificationType.BookingConfirmation,
                 SentVia = DeliveryMethod.Email,
                 UserId = dto.AttendeeId,
-                Message = $"Your booking for '{eventEntity.Title}' has been confirmed. Booking ID: {booking.Id}",
+                Message = $"Your ticket request for '{eventEntity.Title}' has been received and is pending approval. Booking ID: {booking.Id}",
                 Status = NotificationStatus.Pending,
                 IsDeleted = false
             };
@@ -116,6 +117,69 @@ namespace Application.Services
 
             // Map and return response
             return _mapper.Map<BookingResponseDto>(booking);
+        }
+
+        public async Task ApproveBookingAsync(int bookingId)
+        {
+            var booking = await _bookingRepository.GetQueryable()
+                .Include(b => b.Event)
+                .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
+
+            if (booking == null)
+                throw new KeyNotFoundException("Booking not found");
+
+            if (booking.Status != BookingStatus.Pending)
+                throw new InvalidOperationException("Booking is not pending approval");
+
+            booking.Status = BookingStatus.Confirmed;
+            _bookingRepository.Update(booking);
+
+            var notification = new Notification
+            {
+                Type = NotificationType.BookingConfirmation,
+                SentVia = DeliveryMethod.Email,
+                UserId = booking.AttendeeId,
+                Message = $"Your ticket request for '{booking.Event.Title}' has been approved! Booking ID: {booking.Id}",
+                Status = NotificationStatus.Pending,
+                IsDeleted = false
+            };
+
+            await _notificationRepository.AddAsync(notification);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task RejectBookingAsync(int bookingId, string reason)
+        {
+            var booking = await _bookingRepository.GetQueryable()
+                .Include(b => b.Event)
+                .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
+
+            if (booking == null)
+                throw new KeyNotFoundException("Booking not found");
+
+            if (booking.Status != BookingStatus.Pending)
+                throw new InvalidOperationException("Booking is not pending approval");
+
+            booking.Status = BookingStatus.Rejected;
+            booking.RejectionReason = reason;
+            _bookingRepository.Update(booking);
+
+            // Restore tickets to event
+            booking.Event.RemainingTickets += booking.NumberOfTickets;
+            _eventRepository.Update(booking.Event);
+
+            var notification = new Notification
+            {
+                Type = NotificationType.BookingConfirmation,
+                SentVia = DeliveryMethod.Email,
+                UserId = booking.AttendeeId,
+                Message = $"Your ticket request for '{booking.Event.Title}' has been rejected. Reason: {reason}",
+                Status = NotificationStatus.Pending,
+                IsDeleted = false
+            };
+
+            await _notificationRepository.AddAsync(notification);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task CancelBookingAsync(int bookingId)
@@ -195,6 +259,8 @@ namespace Application.Services
                 finalToken = queryDictionary["token"].ToString();
             }
 
+            finalToken = finalToken.Trim();
+
             var bookingInfo = await _bookingRepository.GetQueryable()
                 .Include(b => b.Event)
                 .FirstOrDefaultAsync(b => b.EventId == eventId && b.QRCode == finalToken && !b.IsDeleted);
@@ -202,8 +268,17 @@ namespace Application.Services
             if (bookingInfo == null)
                 throw new KeyNotFoundException("Invalid ticket. This QR code does not match any bookings for this event.");
 
-            if(bookingInfo.Status == BookingStatus.Cancelled)
+            if (bookingInfo.Status == BookingStatus.Cancelled)
                 throw new InvalidOperationException("This booking has been cancelled and cannot be used for attendance.");
+
+            if (bookingInfo.Status == BookingStatus.Pending)
+                throw new InvalidOperationException("This ticket is still pending approval. It must be approved before check-in.");
+
+            if (bookingInfo.Status == BookingStatus.Rejected)
+                throw new InvalidOperationException("This ticket was rejected and is not valid for entry.");
+
+            if (bookingInfo.Status == BookingStatus.Attended)
+                throw new InvalidOperationException("This ticket has already been used for check-in.");
 
             bookingInfo.Status = BookingStatus.Attended;
             _bookingRepository.Update(bookingInfo);

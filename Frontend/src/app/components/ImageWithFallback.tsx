@@ -40,8 +40,13 @@ export function ImageWithFallback(props: ImageWithFallbackProps) {
         loaded ? "opacity-100" : "opacity-0",
         className,
       )}
-      onLoad={() => setLoaded(true)}
+      onLoad={(e) => setLoaded(true)}
       onError={() => setImgSrc(FALLBACK_SRC)}
+      ref={(el) => {
+        if (el && el.complete) {
+          setLoaded(true);
+        }
+      }}
     />
   );
 }

@@ -30,6 +30,7 @@ export default function OrganizerLayout() {
   const navItems = [
     { name: "Dashboard", path: "/organizer", icon: LayoutDashboard, exact: true },
     { name: "My Events", path: "/organizer/events", icon: CalendarDays },
+    { name: "Browse Venues", path: "/organizer/places", icon: MapPin },
     { name: "Venue Requests", path: "/organizer/venue-requests", icon: MapPin },
     { name: "Ticket Requests", path: "/organizer/ticket-requests", icon: Bell },
     { name: "Scan QR Tickets", path: "/organizer/events/1/scan", icon: ScanLine }, // Mocking eventId 1 for now
