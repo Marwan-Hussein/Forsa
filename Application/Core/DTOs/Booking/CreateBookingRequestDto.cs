@@ -5,5 +5,6 @@ namespace Application.Core.DTOs.Booking
         public int AttendeeId { get; set; }
         public int EventId { get; set; }
         public int NumberOfTickets { get; set; }  // to validate 
+        public string? SpecialRequests { get; set; }
     }
 }

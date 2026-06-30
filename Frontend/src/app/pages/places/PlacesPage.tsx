@@ -1,112 +1,57 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { ImageWithFallback } from "../../components/ImageWithFallback";
+import { placeApi, PlaceSummary } from "../../api/placeApi";
 import {
   MapPin,
   Users,
-  DollarSign,
   Star,
   Search,
   Filter,
   ChevronDown,
   Building2,
-  Wifi,
-  Car,
-  Coffee,
+  CheckCircle2
 } from "lucide-react";
-// Mock places data
-const mockPlaces = [
-  {
-    id: "1",
-    name: "Grand Conference Center",
-    location: "Downtown, New York",
-    capacity: 500,
-    pricePerDay: 5000,
-    rating: 4.8,
-    reviews: 124,
-    type: "Conference Center",
-    amenities: ["WiFi", "Parking", "Catering"],
-    imageQuery: "modern conference center interior",
-  },
-  {
-    id: "2",
-    name: "The Garden Venue",
-    location: "Midtown, New York",
-    capacity: 200,
-    pricePerDay: 3000,
-    rating: 4.6,
-    reviews: 89,
-    type: "Event Space",
-    amenities: ["WiFi", "Outdoor Space", "Catering"],
-    imageQuery: "elegant event venue garden",
-  },
-  {
-    id: "3",
-    name: "Tech Hub Auditorium",
-    location: "Silicon Valley, CA",
-    capacity: 800,
-    pricePerDay: 8000,
-    rating: 4.9,
-    reviews: 201,
-    type: "Auditorium",
-    amenities: ["WiFi", "Parking", "Tech Equipment"],
-    imageQuery: "modern tech auditorium",
-  },
-  {
-    id: "4",
-    name: "Riverside Hall",
-    location: "Brooklyn, New York",
-    capacity: 350,
-    pricePerDay: 4200,
-    rating: 4.7,
-    reviews: 156,
-    type: "Banquet Hall",
-    amenities: ["WiFi", "Parking", "Catering", "Outdoor Space"],
-    imageQuery: "elegant banquet hall riverside",
-  },
-  {
-    id: "5",
-    name: "Downtown Meeting Space",
-    location: "Manhattan, New York",
-    capacity: 100,
-    pricePerDay: 1500,
-    rating: 4.5,
-    reviews: 67,
-    type: "Meeting Room",
-    amenities: ["WiFi", "Tech Equipment"],
-    imageQuery: "modern meeting room downtown",
-  },
-  {
-    id: "6",
-    name: "Skyline Rooftop Venue",
-    location: "Chicago, IL",
-    capacity: 250,
-    pricePerDay: 6000,
-    rating: 4.9,
-    reviews: 143,
-    type: "Rooftop Venue",
-    amenities: ["WiFi", "Outdoor Space", "Catering", "Bar"],
-    imageQuery: "rooftop event venue skyline",
-  },
-];
-
-const placeTypes = ["All Types", "Conference Center", "Event Space", "Auditorium", "Banquet Hall", "Meeting Room", "Rooftop Venue"];
-const capacityRanges = ["All Capacities", "0-100", "101-250", "251-500", "500+"];
-const priceRanges = ["All Prices", "$0-$2000", "$2001-$5000", "$5001-$10000"];
+import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
 
 export default function PlacesPage() {
+  const [places, setPlaces] = useState<PlaceSummary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("All Types");
   const [selectedCapacity, setSelectedCapacity] = useState("All Capacities");
-  const [selectedPrice, setSelectedPrice] = useState("All Prices");
-  const [showFilters, setShowFilters] = useState(false);
 
-  const filteredPlaces = mockPlaces.filter((place) => {
+  useEffect(() => {
+    const fetchPlaces = async () => {
+      try {
+        const data = await placeApi.getAvailablePlaces();
+        setPlaces(data);
+      } catch (error) {
+        console.error("Failed to fetch places:", error);
+        toast.error("Failed to load venues. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPlaces();
+  }, []);
+
+  const placeTypes = ["All Types", ...Array.from(new Set(places.map(p => p.facilityName)))];
+  const capacityRanges = ["All Capacities", "0-100", "101-250", "251-500", "500+"];
+
+  const filteredPlaces = places.filter((place) => {
     const matchesSearch =
       place.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       place.location.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesType = selectedType === "All Types" || place.type === selectedType;
+    const matchesType = selectedType === "All Types" || place.facilityName === selectedType;
     
     const matchesCapacity = (() => {
       if (selectedCapacity === "All Capacities") return true;
@@ -117,193 +62,165 @@ export default function PlacesPage() {
       return true;
     })();
 
-    const matchesPrice = (() => {
-      if (selectedPrice === "All Prices") return true;
-      if (selectedPrice === "$0-$2000") return place.pricePerDay <= 2000;
-      if (selectedPrice === "$2001-$5000") return place.pricePerDay > 2000 && place.pricePerDay <= 5000;
-      if (selectedPrice === "$5001-$10000") return place.pricePerDay > 5000 && place.pricePerDay <= 10000;
-      return true;
-    })();
-
-    return matchesSearch && matchesType && matchesCapacity && matchesPrice;
+    return matchesSearch && matchesType && matchesCapacity;
   });
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Hero Section */}
-      <div className="relative bg-[#0B1120] pt-36 pb-28 px-4 overflow-hidden">
-        <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E3D61 100%)" }} />
-        <div className="absolute inset-0 z-0 overflow-hidden mix-blend-screen pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full filter blur-[100px]" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#3b82f6]/20 rounded-full filter blur-[100px]" />
-          <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px]" />
-        </div>
-        
-        <div className="relative max-w-7xl mx-auto text-center">
-          <span className="inline-block py-1 px-3 rounded-full bg-white/10 text-white/90 text-xs font-bold tracking-widest uppercase mb-6 backdrop-blur-md border border-white/20">
-            Premium Spaces
-          </span>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tight">
-            Browse <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-blue-400">Venues</span>
-          </h1>
-          <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-8 leading-relaxed font-light">
-            Find the perfect venue for your next event. From grand conference halls to intimate garden spaces.
-          </p>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 -mt-12 relative z-10 pb-20">
-        {/* Search and Filter Bar */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-[#1E3D61]/5 border border-slate-100 p-6 mb-8">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search venues by name or location..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-              />
-            </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
-            >
-              <Filter className="size-5" />
-              Filters
-              <ChevronDown className={`size-4 transition-transform ${showFilters ? "rotate-180" : ""}`} />
-            </button>
+    <div className="min-h-screen bg-slate-50 font-['Inter',sans-serif]">
+      <div className="max-w-7xl mx-auto px-4 pt-8 pb-24">
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Available Venues</h1>
+            <p className="text-slate-500 font-medium">Browse and book the perfect space for your next event.</p>
           </div>
-
-          {/* Filter Options */}
-          {showFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-[rgba(39,55,77,0.1)]">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Venue Type</label>
-                <select
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
-                  className="w-full px-4 py-2 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                >
-                  {placeTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Capacity</label>
-                <select
-                  value={selectedCapacity}
-                  onChange={(e) => setSelectedCapacity(e.target.value)}
-                  className="w-full px-4 py-2 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                >
-                  {capacityRanges.map((range) => (
-                    <option key={range} value={range}>
-                      {range}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Price Range</label>
-                <select
-                  value={selectedPrice}
-                  onChange={(e) => setSelectedPrice(e.target.value)}
-                  className="w-full px-4 py-2 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                >
-                  {priceRanges.map((range) => (
-                    <option key={range} value={range}>
-                      {range}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Results Count */}
-        <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-slate-800">Available Venues</h2>
-          <p className="font-medium text-sm text-slate-500 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
-            Found <span className="text-[#1E3D61] font-bold">{filteredPlaces.length}</span> venue{filteredPlaces.length !== 1 ? "s" : ""}
+        {/* Search and Filters */}
+        <div className="flex flex-col lg:flex-row gap-4 mb-10 items-center justify-between">
+          <div className="w-full lg:w-1/2 relative group">
+            <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search venues by name or location..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-6 py-3.5 bg-white border border-slate-200 rounded-full text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all font-medium shadow-sm hover:border-slate-300"
+            />
+          </div>
+          
+          <div className="w-full lg:w-auto flex flex-wrap gap-3">
+            <Select value={selectedType} onValueChange={setSelectedType}>
+              <SelectTrigger className="w-[180px] h-[52px] px-5 bg-white border border-slate-200 hover:border-slate-300 rounded-full text-slate-700 font-semibold shadow-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all outline-none">
+                <SelectValue placeholder="Venue Type" />
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl border border-slate-200 shadow-xl overflow-hidden bg-white/95 backdrop-blur-md">
+                {placeTypes.map((type) => (
+                  <SelectItem key={type} value={type} className="font-semibold text-slate-700 cursor-pointer focus:bg-slate-100 focus:text-blue-600 py-3 transition-colors data-[state=checked]:text-blue-600 data-[state=checked]:bg-blue-50/50">
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedCapacity} onValueChange={setSelectedCapacity}>
+              <SelectTrigger className="w-[180px] h-[52px] px-5 bg-white border border-slate-200 hover:border-slate-300 rounded-full text-slate-700 font-semibold shadow-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all outline-none">
+                <SelectValue placeholder="Capacity" />
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl border border-slate-200 shadow-xl overflow-hidden bg-white/95 backdrop-blur-md">
+                {capacityRanges.map((range) => (
+                  <SelectItem key={range} value={range} className="font-semibold text-slate-700 cursor-pointer focus:bg-slate-100 focus:text-blue-600 py-3 transition-colors data-[state=checked]:text-blue-600 data-[state=checked]:bg-blue-50/50">
+                    {range}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Results Info */}
+        <div className="mb-6 flex items-center justify-between">
+          <p className="text-sm font-medium text-slate-500">
+            Showing <span className="text-slate-900 font-bold">{filteredPlaces.length}</span> venues
           </p>
         </div>
 
         {/* Places Grid */}
-        {filteredPlaces.length === 0 ? (
-          <div className="bg-white rounded-xl p-12 shadow-sm border border-[rgba(39,55,77,0.1)] text-center">
-            <Building2 className="size-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <h3 className="text-xl font-bold text-foreground mb-2">No venues found</h3>
-            <p className="text-muted-foreground">Try adjusting your search or filters</p>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 animate-pulse">
+                <div className="h-56 bg-slate-200" />
+                <div className="p-6 space-y-4">
+                  <div className="h-6 bg-slate-200 rounded w-3/4" />
+                  <div className="h-4 bg-slate-200 rounded w-1/2" />
+                  <div className="h-4 bg-slate-200 rounded w-1/4" />
+                  <div className="pt-4 border-t border-slate-100">
+                    <div className="h-8 bg-slate-200 rounded w-1/3" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredPlaces.length === 0 ? (
+          <div className="bg-white rounded-3xl p-16 shadow-sm border border-slate-100 text-center flex flex-col items-center justify-center">
+            <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+              <Building2 className="h-12 w-12 text-slate-300" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900 mb-3">No venues found</h3>
+            <p className="text-slate-500 text-lg max-w-md">We couldn't find any venues matching your criteria. Try adjusting your filters or search term.</p>
+            <button 
+              onClick={() => { setSearchQuery(""); setSelectedType("All Types"); setSelectedCapacity("All Capacities"); }}
+              className="mt-8 px-6 py-3 bg-blue-50 text-blue-600 font-semibold rounded-xl hover:bg-blue-100 transition-colors"
+            >
+              Clear all filters
+            </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredPlaces.map((place) => (
               <Link
                 key={place.id}
-                to={`/places/${place.id}`}
-                className="group bg-white rounded-xl overflow-hidden shadow-sm border border-border hover:border-Entertainment transition-all duration-300 hover:shadow-md"
+                to={`/organizer/places/${place.id}`}
+                className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-blue-500/10 border border-slate-200 hover:border-blue-200 transition-all duration-500 flex flex-col h-full hover:-translate-y-1.5"
               >
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-64 overflow-hidden bg-slate-100">
                   <ImageWithFallback
-                    src={`https://source.unsplash.com/800x600/?${place.imageQuery.replace(/ /g, ",")}`}
+                    src={place.images && place.images.length > 0 ? (place.images[0].startsWith('http') ? place.images[0] : `http://localhost:5000${place.images[0].startsWith('/') ? '' : '/'}${place.images[0]}`) : "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop"}
                     alt={place.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-foreground text-xs font-medium px-2.5 py-1 rounded-full">
-                    {place.type}
-                  </span>
-                  <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center gap-1">
-                    <Star className="size-4 fill-accent text-accent" />
-                    <span className="text-sm font-medium text-foreground">{place.rating}</span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  
+                  <div className="absolute top-4 left-4 bg-white/95 backdrop-blur shadow-sm text-slate-700 text-xs font-bold tracking-wider px-3.5 py-1.5 rounded-full uppercase">
+                    {place.facilityName}
+                  </div>
+                  <div className="absolute top-4 right-4 bg-white/95 backdrop-blur shadow-sm rounded-full px-3.5 py-1.5 flex items-center gap-1.5">
+                    <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                    <span className="text-xs font-bold text-slate-700">{place.rating > 0 ? place.rating.toFixed(1) : 'New'}</span>
                   </div>
                 </div>
 
-                <div className="p-5">
-                  <h3 className="font-bold text-xl text-foreground mb-2 group-hover:text-accent transition-colors">
+                <div className="p-6 flex flex-col flex-1">
+                  <h3 className="font-bold text-xl text-slate-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
                     {place.name}
                   </h3>
 
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                    <MapPin className="size-4" />
-                    <span>{place.location}</span>
+                  <div className="flex items-center gap-2 text-sm text-slate-500 mb-5">
+                    <MapPin className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{place.location}</span>
                   </div>
 
-                  <div className="flex items-center justify-between mb-3 text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Users className="size-4" />
-                      <span>Up to {place.capacity} people</span>
+                  <div className="flex flex-wrap items-center gap-3 mb-6">
+                    <div className="flex items-center gap-1.5 text-slate-600 bg-slate-50 px-3 py-1.5 rounded-xl text-sm font-semibold">
+                      <Users className="h-4 w-4" />
+                      <span>Up to {place.capacity}</span>
                     </div>
+                    {place.availabilities && place.availabilities.some(a => a.status === "Available") ? (
+                      <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl text-sm font-semibold">
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span>Available Now</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-amber-700 bg-amber-50 px-3 py-1.5 rounded-xl text-sm font-semibold">
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span>Check Dates</span>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="flex items-center gap-2 mb-4">
-                    {place.amenities.slice(0, 3).map((amenity) => (
-                      <span
-                        key={amenity}
-                        className="px-2 py-1 bg-background text-muted-foreground text-xs rounded-full flex items-center gap-1"
-                      >
-                        {amenity === "WiFi" && <Wifi className="size-3" />}
-                        {amenity === "Parking" && <Car className="size-3" />}
-                        {amenity === "Catering" && <Coffee className="size-3" />}
-                        {amenity}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between pt-4 border-t border-[rgba(39,55,77,0.1)]">
+                  <div className="mt-auto pt-6 border-t border-slate-100 flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-muted-foreground">Starting from</p>
-                      <p className="text-2xl font-bold text-foreground">
-                        ${place.pricePerDay.toLocaleString()}
-                        <span className="text-sm font-normal text-muted-foreground">/day</span>
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Starting from</p>
+                      <p className="text-2xl font-black text-slate-900">
+                        {place.dailyPrice.toLocaleString()} EGP
+                        <span className="text-sm font-medium text-slate-500 ml-1">/day</span>
                       </p>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {place.reviews} reviews
+                    <div className="h-12 w-12 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center group-hover:bg-blue-600 group-hover:border-blue-600 group-hover:text-white transition-all text-blue-600 group-hover:shadow-md group-hover:shadow-blue-500/30">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                     </div>
                   </div>
                 </div>

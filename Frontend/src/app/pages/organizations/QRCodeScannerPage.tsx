@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router";
 import {
   QrCode,
@@ -15,77 +15,145 @@ import {
   MapPin
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { organizerApi } from "../../api/organizerApi";
+import { toast } from "react-toastify";
 
-const mockScanResults = [
-  {
-    id: "1",
-    attendeeName: "Sarah Johnson",
-    ticketType: "VIP",
-    ticketCount: 2,
-    scanTime: new Date().toISOString(),
-    status: "success",
-  },
-  {
-    id: "2",
-    attendeeName: "Michael Chen",
-    ticketType: "General",
-    ticketCount: 1,
-    scanTime: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-    status: "success",
-  },
-  {
-    id: "3",
-    attendeeName: "Unknown User",
-    ticketType: "N/A",
-    ticketCount: 0,
-    scanTime: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-    status: "error",
-    errorMessage: "Invalid ticket or already checked in",
-  },
-];
+interface ScanResult {
+  id: string;
+  attendeeName: string;
+  ticketType: string;
+  ticketCount: number;
+  scanTime: string;
+  status: "success" | "error";
+  errorMessage?: string;
+}
 
 export default function QRCodeScannerPage() {
   const { eventId } = useParams();
   const [isScanning, setIsScanning] = useState(false);
-  const [scanResults, setScanResults] = useState(mockScanResults);
-  const [lastScannedResult, setLastScannedResult] = useState<typeof mockScanResults[0] | null>(null);
+  const [scanResults, setScanResults] = useState<ScanResult[]>([]);
+  const [eventDetails, setEventDetails] = useState<any>(null);
+  const [stats, setStats] = useState({ totalScanned: 0, failedScans: 0, lastScanTime: null as string | null });
+  const [loading, setLoading] = useState(true);
 
-  const mockEvent = {
-    id: eventId || "1",
-    title: "Tech Summit 2026",
-    date: "2026-04-15",
-    location: "Grand Convention Center",
+  const [showManualModal, setShowManualModal] = useState(false);
+  const [manualCode, setManualCode] = useState("");
+
+  useEffect(() => {
+    if (eventId) {
+      loadData();
+    }
+  }, [eventId]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [event, attendees] = await Promise.all([
+        organizerApi.getEventDetails(Number(eventId)),
+        organizerApi.getEventAttendees(Number(eventId))
+      ]);
+      setEventDetails(event);
+      
+      const checkedIn = attendees.filter((a: any) => a.checkInStatus === "checked-in");
+      setStats(prev => ({
+        ...prev,
+        totalScanned: checkedIn.length,
+        lastScanTime: checkedIn.length > 0 ? new Date().toISOString() : prev.lastScanTime
+      }));
+
+    } catch (err: any) {
+      toast.error("Failed to load event details: " + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const stats = {
-    totalScanned: scanResults.filter(r => r.status === "success").length,
-    failedScans: scanResults.filter(r => r.status === "error").length,
-    lastScanTime: scanResults.length > 0 ? scanResults[0].scanTime : null,
+  const processScan = async (qrCode: string) => {
+    if (!eventId) return;
+    try {
+      setIsScanning(true);
+      await organizerApi.verifyAttendance(Number(eventId), qrCode);
+      
+      // Success
+      toast.success("Ticket scanned successfully!");
+      
+      const newScan: ScanResult = {
+        id: Date.now().toString(),
+        attendeeName: "Ticket Approved", // the api doesn't return attendee info directly for now
+        ticketType: "Event Ticket",
+        ticketCount: 1,
+        scanTime: new Date().toISOString(),
+        status: "success",
+      };
+
+      setScanResults(prev => [newScan, ...prev]);
+      setStats(prev => ({
+        ...prev,
+        totalScanned: prev.totalScanned + 1,
+        lastScanTime: newScan.scanTime
+      }));
+      
+    } catch (err: any) {
+      // Failed scan
+      const errorMessage = err.response?.data?.message || err.response?.data || err.message || "Invalid ticket";
+      toast.error(typeof errorMessage === 'string' ? errorMessage : "Invalid ticket");
+      
+      const newScan: ScanResult = {
+        id: Date.now().toString(),
+        attendeeName: "Unknown",
+        ticketType: "N/A",
+        ticketCount: 0,
+        scanTime: new Date().toISOString(),
+        status: "error",
+        errorMessage: typeof errorMessage === 'string' ? errorMessage : "Invalid ticket"
+      };
+      
+      setScanResults(prev => [newScan, ...prev]);
+      setStats(prev => ({
+        ...prev,
+        failedScans: prev.failedScans + 1,
+        lastScanTime: newScan.scanTime
+      }));
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   const handleStartScanning = () => {
+    // For now, we simulate camera by showing the manual entry modal 
+    // but giving the user a "Scanning..." effect in the background
     setIsScanning(true);
     setTimeout(() => {
-      const newScan = {
-        id: String(scanResults.length + 1),
-        attendeeName: "Emily Rodriguez",
-        ticketType: "VIP",
-        ticketCount: 3,
-        scanTime: new Date().toISOString(),
-        status: "success" as const,
-      };
-      setScanResults([newScan, ...scanResults]);
-      setLastScannedResult(newScan);
-      setIsScanning(false);
-    }, 2000);
+      setShowManualModal(true);
+    }, 500);
   };
 
   const handleManualEntry = () => {
-    const ticketId = prompt("Enter ticket ID:");
-    if (ticketId) {
-      alert(`Processing ticket ID: ${ticketId}`);
+    setIsScanning(false);
+    setShowManualModal(true);
+  };
+
+  const submitManualEntry = () => {
+    if (manualCode.trim()) {
+      processScan(manualCode.trim());
+      setManualCode("");
+      setShowManualModal(false);
     }
   };
+
+  const cancelManualEntry = () => {
+    setManualCode("");
+    setShowManualModal(false);
+    setIsScanning(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
@@ -117,11 +185,11 @@ export default function QRCodeScannerPage() {
             <div className="flex flex-wrap items-center gap-x-8 gap-y-3 font-['Inter:Medium',sans-serif] text-slate-300">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-violet-400" />
-                <span>{mockEvent.title} - {new Date(mockEvent.date).toLocaleDateString()}</span>
+                <span>{eventDetails?.title || eventDetails?.Title || "Event Details"} - {eventDetails?.startDate || eventDetails?.StartDate ? new Date(eventDetails.startDate || eventDetails.StartDate).toLocaleDateString() : ""}</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-emerald-400" />
-                <span>{mockEvent.location}</span>
+                <span>{eventDetails?.place || eventDetails?.Place || "Virtual"}</span>
               </div>
             </div>
           </div>
@@ -290,6 +358,58 @@ export default function QRCodeScannerPage() {
           </div>
         </div>
       </div>
+
+      {/* Manual Entry Modal */}
+      <AnimatePresence>
+        {showManualModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              onClick={cancelManualEntry}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden"
+            >
+              <div className="p-6">
+                <h3 className="text-xl font-['Inter:Bold',sans-serif] font-bold text-slate-800 mb-2">Enter Ticket Code</h3>
+                <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-500 mb-6">
+                  Please enter the ticket QR code or token string manually to verify attendance.
+                </p>
+                <input
+                  type="text"
+                  placeholder="e.g. e12c0f1e-f2c0-4382-9f21-becbc570b0e8"
+                  value={manualCode}
+                  onChange={(e) => setManualCode(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && submitManualEntry()}
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent font-['Inter:Medium',sans-serif] text-slate-700 placeholder:text-slate-400 transition-all mb-6"
+                  autoFocus
+                />
+                <div className="flex gap-3">
+                  <button
+                    onClick={cancelManualEntry}
+                    className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-['Inter:Bold',sans-serif] font-bold rounded-xl transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={submitManualEntry}
+                    disabled={!manualCode.trim()}
+                    className="flex-1 px-4 py-3 bg-violet-600 hover:bg-violet-700 disabled:bg-violet-300 text-white font-['Inter:Bold',sans-serif] font-bold rounded-xl transition-colors"
+                  >
+                    Verify Ticket
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

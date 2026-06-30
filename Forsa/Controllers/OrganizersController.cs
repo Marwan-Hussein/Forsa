@@ -133,6 +133,20 @@ namespace Forsa.Controllers
             }
         }
 
+        [HttpGet("ticket-requests")]
+        public async Task<ActionResult<List<TicketRequestDto>>> GetOrganizerTicketRequests([FromQuery] int organizerId)
+        {
+            try
+            {
+                var requests = await _organizerService.GetOrganizerTicketRequestsAsync(organizerId);
+                return Ok(requests);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while fetching ticket requests: {ex.Message}");
+            }
+        }
+
         // GET: api/organizers/events/dashboard?organizerId=2
         [HttpGet("events/dashboard")]
         public async Task<ActionResult<List<OrganizerEventDashboardDto>>> GetOrganizerEventsDashboard([FromQuery] int organizerId)
@@ -159,6 +173,43 @@ namespace Forsa.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"An error occurred while fetching dashboard stats: {ex.Message}");
+            }
+        }
+        // GET: api/organizers/events/{eventId}/attendees
+        [HttpGet("events/{eventId}/attendees")]
+        public async Task<ActionResult<List<EventAttendeeDto>>> GetEventAttendees(int eventId)
+        {
+            try
+            {
+                var attendees = await _organizerService.GetEventAttendeesAsync(eventId);
+                return Ok(attendees);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while fetching attendees: {ex.Message}");
+            }
+        }
+
+        // POST: api/organizers/bookings/{bookingId}/check-in
+        [HttpPost("bookings/{bookingId}/check-in")]
+        public async Task<ActionResult> ManualCheckIn(int bookingId)
+        {
+            try
+            {
+                await _organizerService.ManualCheckInAsync(bookingId);
+                return Ok(new { message = "Attendee successfully checked in." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred during check-in: {ex.Message}" });
             }
         }
     }

@@ -193,6 +193,18 @@ namespace Application.Services.OrganizerServices
             if (ev.StartDate <= DateTime.UtcNow)
                 throw new InvalidOperationException("Event date must be in the future to submit a booking request.");
 
+            var existingRequest = await _bookingRequestRepository.GetQueryable()
+                .FirstOrDefaultAsync(r => r.EventId == eventId 
+                                       && r.PlaceId == placeId 
+                                       && r.OrganizerId == dto.OrganizerId 
+                                       && !r.IsDeleted 
+                                       && (r.Status == RequestStatus.Pending || r.Status == RequestStatus.Accepted));
+
+            if (existingRequest != null)
+            {
+                throw new InvalidOperationException($"You already have a {existingRequest.Status.ToString().ToLower()} booking request for this place and event.");
+            }
+
             var request = new BookingRequest
             {
                 EventId = eventId,
@@ -250,6 +262,32 @@ namespace Application.Services.OrganizerServices
             return _mapper.Map<List<BookingRequestDetailsDto>>(requests);
         }
 
+        public async Task<List<TicketRequestDto>> GetOrganizerTicketRequestsAsync(int organizerId)
+        {
+            var bookings = await _bookingRepository.GetQueryable()
+                .Include(b => b.Event)
+                .Include(b => b.Attendee)
+                .Where(b => b.Event.OrganizerId == organizerId && !b.IsDeleted)
+                .OrderByDescending(b => b.BookingDate)
+                .ToListAsync();
+
+            return bookings.Select(b => new TicketRequestDto
+            {
+                Id = b.Id,
+                EventId = b.EventId,
+                EventTitle = b.Event?.Title ?? "Unknown Event",
+                AttendeeId = b.AttendeeId,
+                AttendeeName = b.Attendee?.FullName ?? "Unknown Attendee",
+                AttendeeEmail = b.Attendee?.Email ?? "Unknown",
+                AttendeePhone = b.Attendee?.PhoneNumber ?? "Unknown",
+                RequestDate = b.BookingDate,
+                Status = b.Status.ToString(),
+                Tickets = b.NumberOfTickets,
+                SpecialRequests = b.SpecialRequests,
+                RejectionReason = b.RejectionReason
+            }).ToList();
+        }
+
         public async Task<List<OrganizerEventDashboardDto>> GetOrganizerEventsDashboardAsync(int organizerId)
         {
             var events = await _eventRepository.GetQueryable()
@@ -292,6 +330,53 @@ namespace Application.Services.OrganizerServices
                 TotalRevenue = totalRevenue,
                 TotalPlacesBooked = bookingRequests.Count
             };
+        }
+        public async Task<List<EventAttendeeDto>> GetEventAttendeesAsync(int eventId)
+        {
+            var bookings = await _bookingRepository.GetQueryable()
+                .Include(b => b.Attendee)
+                .Where(b => b.EventId == eventId && !b.IsDeleted)
+                .ToListAsync();
+
+            return bookings.Select(b => new EventAttendeeDto
+            {
+                BookingId = b.Id,
+                AttendeeId = b.AttendeeId,
+                FullName = b.Attendee?.FullName ?? "Unknown",
+                Email = b.Attendee?.Email ?? "Unknown",
+                PhoneNumber = b.Attendee?.PhoneNumber ?? "Unknown",
+                NumberOfTickets = b.NumberOfTickets,
+                TicketType = "General", // Placeholder for actual logic
+                BookingDate = b.BookingDate,
+                CheckInStatus = b.Status.ToString(), 
+                CheckInTime = b.Status == BookingStatus.Attended ? b.BookingDate.ToString("yyyy-MM-dd HH:mm") : null,
+                PaymentStatus = "paid" // Adjust based on logic
+            }).ToList();
+        }
+
+        public async Task ManualCheckInAsync(int bookingId)
+        {
+            var booking = await _bookingRepository.GetQueryable()
+                .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
+
+            if (booking == null)
+                throw new KeyNotFoundException("Booking not found");
+
+            if (booking.Status == BookingStatus.Cancelled)
+                throw new InvalidOperationException("Cannot check in a cancelled booking");
+
+            if (booking.Status == BookingStatus.Rejected)
+                throw new InvalidOperationException("Cannot check in a rejected booking");
+            
+            if (booking.Status == BookingStatus.Pending)
+                throw new InvalidOperationException("Booking is pending approval");
+
+            if (booking.Status == BookingStatus.Attended)
+                throw new InvalidOperationException("Attendee has already checked in");
+
+            booking.Status = BookingStatus.Attended;
+            _bookingRepository.Update(booking);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }
