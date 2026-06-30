@@ -1,6 +1,7 @@
 using Application.Core.Interfaces;
 using Application.Core.Interfaces.Auth;
 using Application.Core.Interfaces.OrganizerInterfaces;
+using Application.Core.Interfaces.ExternalServicesInterfaces;
 using Application.Services.Auth;
 using Application.Services.OrganizerServices;
 using Domain.Interfaces;
@@ -10,6 +11,7 @@ using Domain.Interfaces.LLMInterfaces;
 using Domain.Interfaces.OrganizerInterfaces;
 using Domain.Interfaces.OwnerInterfaces;
 using Infrastructure.Data;
+using Infrastructure.ExternalServices;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.AttendeeRepos;
 using Infrastructure.Repositories.BookingRepos;
@@ -30,12 +32,12 @@ public static class DependencyInjection
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped(typeof(IQueryableRepository<>), typeof(QueryableRepository<>));
         services.AddScoped<IEventRepository, EventRepository>();
-        services.AddScoped<IAuthService,AuthService>();
+        services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IExternalAuthService, ExternalAuthService>();
         services.AddScoped<IPromoCodeRepository, PromoCodeRepository>();
         // Attendee 
         services.AddScoped<IAttendeeRepository, AttendeeRepository>();
-        services.AddScoped<IAttendeeProfileRepository,AttendeeProfileRepository>();
+        services.AddScoped<IAttendeeProfileRepository, AttendeeProfileRepository>();
 
         // Owner
         services.AddScoped<IOwnerRepository, OwnerRepository>();
@@ -51,6 +53,8 @@ public static class DependencyInjection
         // Promo Services
         services.AddScoped<IPromoCodeRepository, PromoCodeRepository>();
 
+        // Google Calendar Infrastructure
+        services.AddScoped<IGoogleCalendarClient, GoogleCalendarClient>();
         // LLM Services
         services.AddScoped<ILLMRepository, LLMRepository>();
 
