@@ -2,6 +2,10 @@ using Application.Core.DTOs.Event;
 using Application.Core.DTOs.Booking;
 using Application.Core.DTOs.Organizer;
 using Application.Core.Interfaces.OrganizerInterfaces;
+using Application.Core.Interfaces;
+using Application.Core.DTOs.Payment;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -14,10 +18,14 @@ namespace Forsa.Controllers
     public class OrganizersController : ControllerBase
     {
         private readonly IOrganizerService _organizerService;
+        private readonly ICheckoutService _checkoutService;
+        private readonly IPaymentService _paymentService;
 
-        public OrganizersController(IOrganizerService organizerService)
+        public OrganizersController(IOrganizerService organizerService, ICheckoutService checkoutService, IPaymentService paymentService)
         {
             _organizerService = organizerService;
+            _checkoutService = checkoutService;
+            _paymentService = paymentService;
         }
 
         [HttpPost("events")]
@@ -210,6 +218,69 @@ namespace Forsa.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = $"An error occurred during check-in: {ex.Message}" });
+            }
+        }
+
+        // POST: api/organizers/booking-requests/{requestId}/checkout
+        [Authorize(Policy = "OrganizerOnly")]
+        [HttpPost("booking-requests/{requestId:int}/checkout")]
+        public async Task<ActionResult<PaymentResponseDto>> ProcessPlaceCheckout(int requestId)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var response = await _checkoutService.ProcessPlaceCheckoutAsync(requestId, userId);
+                if (!response.IsSuccess)
+                {
+                    return BadRequest(response);
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // POST: api/organizers/payout
+        [Authorize(Policy = "OrganizerOnly")]
+        [HttpPost("payout")]
+        public async Task<ActionResult<PayoutResponseDto>> RequestPayout([FromBody] PayoutRequestDto dto)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var response = await _paymentService.InitiateOrganizerPayoutAsync(userId, dto.Amount);
+                if (!response.IsSuccess)
+                {
+                    return BadRequest(response);
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // POST: api/organizers/payout-method
+        [Authorize(Policy = "OrganizerOnly")]
+        [HttpPost("payout-method")]
+        public async Task<ActionResult> ConfigurePayoutMethod([FromBody] ConfigurePayoutMethodDto dto)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var result = await _paymentService.ConfigurePayoutMethodAsync(userId, dto);
+                if (!result)
+                {
+                    return BadRequest(new { message = "Failed to configure payout method." });
+                }
+                return Ok(new { message = "Payout method configured successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
     }

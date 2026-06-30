@@ -23,11 +23,16 @@ namespace Application.Core.Interfaces
         // ==========================================
         // PHASE 3: MONEY OUT (Paymob Payouts API)
         // ==========================================
-        Task<PayoutResponseDto> InitiateOrganizerPayoutAsync(int organizerId, decimal amount);
+        Task<PayoutResponseDto> InitiateOrganizerPayoutAsync(int userId, decimal amount);
 
         // ==========================================
         // BONUS: REFUNDS (Paymob Refund API)
         // ==========================================
         Task<RefundResponseDto> ProcessRefundAsync(int transactionId);
+
+        // ==========================================
+        // PAYOUT CONFIGURATION
+        // ==========================================
+        Task<bool> ConfigurePayoutMethodAsync(int userId, ConfigurePayoutMethodDto dto);
     }
 }

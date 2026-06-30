@@ -1,5 +1,7 @@
 using Application.Core.DTOs.Owner;
 using Application.Core.Interfaces;
+using Application.Core.DTOs.Payment;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,10 +13,12 @@ namespace Forsa.Controllers.OwnerControllers
     public class OwnerProfileController : ControllerBase
     {
         private readonly IUserProfileService _profileService;
+        private readonly IPaymentService _paymentService;
 
-        public OwnerProfileController(IUserProfileService profileService)
+        public OwnerProfileController(IUserProfileService profileService, IPaymentService paymentService)
         {
             _profileService = profileService;
+            _paymentService = paymentService;
         }
 
         // GET: api/owner/{id}/profile
@@ -50,6 +54,48 @@ namespace Forsa.Controllers.OwnerControllers
             catch (Exception)
             {
                 return StatusCode(500, "An error occurred while updating owner profile.");
+            }
+        }
+
+        // POST: api/owner/payout
+        [Authorize(Policy = "OwnerOnly")]
+        [HttpPost("payout")]
+        public async Task<ActionResult<PayoutResponseDto>> RequestPayout([FromBody] PayoutRequestDto dto)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var response = await _paymentService.InitiateOrganizerPayoutAsync(userId, dto.Amount);
+                if (!response.IsSuccess)
+                {
+                    return BadRequest(response);
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // POST: api/owner/payout-method
+        [Authorize(Policy = "OwnerOnly")]
+        [HttpPost("payout-method")]
+        public async Task<ActionResult> ConfigurePayoutMethod([FromBody] ConfigurePayoutMethodDto dto)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var result = await _paymentService.ConfigurePayoutMethodAsync(userId, dto);
+                if (!result)
+                {
+                    return BadRequest(new { message = "Failed to configure payout method." });
+                }
+                return Ok(new { message = "Payout method configured successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
     }
