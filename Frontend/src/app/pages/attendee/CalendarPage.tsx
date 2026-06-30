@@ -14,7 +14,7 @@ import {
   endOfWeek,
 } from "date-fns";
 import { motion, AnimatePresence } from "motion/react";
-
+import GoogleCalendarConnect from "../../components/GoogleCalendarConnect";
 interface CalendarEvent {
   id: string;
   title: string;
@@ -276,13 +276,14 @@ export default function CalendarPage() {
                   to="/events"
                   className="w-full bg-slate-50 text-blue-600 py-3.5 rounded-xl font-['Inter:Bold',sans-serif] text-sm hover:bg-slate-100 hover:text-blue-700 transition-colors text-center flex items-center justify-center gap-2"
                 >
-                  Discover More Events <ArrowRight className="w-4 h-4" />
+                  {/* Discover More Events <ArrowRight className="w-4 h-4" /> */}
                 </Link>
               </div>
             </motion.div>
           </div>
         </div>
       </div>
+      <GoogleCalendarConnect />
     </div>
   );
 }

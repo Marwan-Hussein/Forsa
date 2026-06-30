@@ -1,7 +1,7 @@
 {
   "name": "forsa",
   "private": true,
-  "proxy": "http://localhost:5000",
+  "proxy": "https://localhost:7001",
   "version": "0.0.1",
   "type": "module",
   "scripts": {

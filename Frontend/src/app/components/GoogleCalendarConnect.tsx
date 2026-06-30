@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import GoogleCalendarLogo from "../../assets/google-calendar.svg";
+import { apiGet } from "../api/api";
 
 interface GoogleCalendarConnectProps {
   /**
@@ -23,33 +25,18 @@ const GoogleCalendarConnect: React.FC<GoogleCalendarConnectProps> = ({
 
   const connectGoogleCalendar = async () => {
     const finalReturnUrl = returnUrl ?? window.location.href;
-    const requestUrl = `${endpoint}${endpoint.includes("?") ? "&" : "?"}returnUrl=${encodeURIComponent(
+    const requestPath = `${endpoint}${endpoint.includes("?") ? "&" : "?"}returnUrl=${encodeURIComponent(
       finalReturnUrl,
     )}`;
 
     try {
       setLoading(true);
 
-      const response = await fetch(requestUrl, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
-        credentials: "include",
-      });
+      const data = await apiGet<{ authorizationUrl?: string; url?: string; redirectUrl?: string }>(
+        requestPath,
+      );
 
-      if (!response.ok) {
-        throw new Error("Failed to start Google authentication.");
-      }
-
-      if (response.redirected) {
-        window.location.href = response.url;
-        return;
-      }
-
-      const data = await response.json();
       const redirectUrl = data.authorizationUrl ?? data.url ?? data.redirectUrl;
-
       if (!redirectUrl) {
         throw new Error("Authentication URL was not returned.");
       }
@@ -143,21 +130,11 @@ const GoogleCalendarConnect: React.FC<GoogleCalendarConnectProps> = ({
           disabled={loading}
         >
           {/* Google Calendar SVG */}
-          <svg
-            className="gc-icon"
-            xmlns="http://www.w3.org/2000/svg"
-            width="34"
-            height="34"
-            viewBox="0 0 48 48"
-          >
-            <path fill="#4285F4" d="M34 6H14a4 4 0 0 0-4 4v28a4 4 0 0 0 4 4h20a4 4 0 0 0 4-4V10a4 4 0 0 0-4-4z"/>
-            <path fill="#FFF" d="M14 14h20v20H14z"/>
-            <path fill="#EA4335" d="M34 6H14v8h20z"/>
-            <path fill="#34A853" d="M18 22h12v12H18z"/>
-            <circle fill="#FBBC05" cx="20" cy="12" r="2"/>
-            <circle fill="#FBBC05" cx="28" cy="12" r="2"/>
-          </svg>
-
+          <img
+              src={GoogleCalendarLogo}
+              alt="Google Calendar"
+              className="gc-icon"
+            />
           <span className="gc-text">
             {loading
               ? "Connecting..."

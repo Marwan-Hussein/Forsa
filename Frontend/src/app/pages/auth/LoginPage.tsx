@@ -362,7 +362,7 @@ export default function LoginPage() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
-              window.location.href = `${import.meta.env.VITE_API_BASE_URL}/api/Auth/external-login?provider=Google&role=Attendee`;
+              window.location.href = `${import.meta.env.VITE_API_BASE_URL}api/Auth/external-login?provider=Google&role=Attendee`;
             }}
           >
             <svg viewBox="0 0 24 24" className="mr-3 h-5 w-5 bg-white rounded-full p-0.5 shadow-sm">
