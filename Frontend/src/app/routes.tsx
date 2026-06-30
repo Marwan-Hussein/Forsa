@@ -45,8 +45,10 @@ import OwnerBookingsPage from "./pages/owner/OwnerBookingsPage";
 
 // Organizer Portal Imports
 import OrganizerLayout from "./pages/layout/OrganizerLayout";
-import OrganizationDashboard from "./pages/organizations/OrganizationDashboard";
+import OrganizerDashboard from "./pages/organizer/OrganizerDashboard";
 import OrganizerEventsPage from "./pages/organizer/OrganizerEventsPage";
+import CreateEventPage from "./pages/organizer/CreateEventPage";
+import EditEventPage from "./pages/organizer/EditEventPage";
 import BookingRequestsPage from "./pages/organizations/BookingRequestsPage";
 import ManageAttendeesPage from "./pages/organizations/ManageAttendeesPage";
 import QRCodeScannerPage from "./pages/organizations/QRCodeScannerPage";
@@ -128,26 +130,6 @@ export const router = createBrowserRouter([
         path: "notifications",
         Component: NotificationsPage,
       },
-      {
-        path: "places",
-        Component: PlacesPage,
-      },
-      {
-        path: "places/:placeId",
-        Component: PlaceDetailsPage,
-      },
-      {
-        path: "places/:placeId/book",
-        Component: BookingRequestFormPage,
-      },
-      {
-        path: "places/:placeId/feedback",
-        Component: SubmitOrgToOwnerFeedbackPage,
-      },
-      {
-        path: "places/:placeId/reviews",
-        Component: ViewFeedbackRatingPage,
-      },
     ],
   },
   {
@@ -224,11 +206,19 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        Component: OrganizationDashboard,
+        Component: OrganizerDashboard,
       },
       {
         path: "events",
         Component: OrganizerEventsPage,
+      },
+      {
+        path: "events/new",
+        Component: CreateEventPage,
+      },
+      {
+        path: "events/:eventId/edit",
+        Component: EditEventPage,
       },
       {
         path: "venue-requests",
@@ -245,6 +235,26 @@ export const router = createBrowserRouter([
       {
         path: "events/:eventId/scan",
         Component: QRCodeScannerPage,
+      },
+      {
+        path: "places",
+        Component: PlacesPage,
+      },
+      {
+        path: "places/:placeId",
+        Component: PlaceDetailsPage,
+      },
+      {
+        path: "places/:placeId/book",
+        Component: BookingRequestFormPage,
+      },
+      {
+        path: "places/:placeId/feedback",
+        Component: SubmitOrgToOwnerFeedbackPage,
+      },
+      {
+        path: "places/:placeId/reviews",
+        Component: ViewFeedbackRatingPage,
       },
     ],
   },

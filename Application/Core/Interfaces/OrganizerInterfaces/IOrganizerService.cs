@@ -17,7 +17,10 @@ namespace Application.Core.Interfaces.OrganizerInterfaces
         Task<BookingRequestDetailsDto> SubmitPlaceBookingRequestAsync(int eventId, int placeId, BookingRequestDto dto);
         Task CancelPendingBookingRequestAsync(int requestId);
         Task<List<BookingRequestDetailsDto>> GetOrganizerBookingRequestsAsync(int organizerId);
+        Task<List<TicketRequestDto>> GetOrganizerTicketRequestsAsync(int organizerId);
         Task<List<OrganizerEventDashboardDto>> GetOrganizerEventsDashboardAsync(int organizerId);
         Task<OrganizerDashboardStatsDto> GetOrganizerDashboardStatsAsync(int organizerId);
+        Task<List<EventAttendeeDto>> GetEventAttendeesAsync(int eventId);
+        Task ManualCheckInAsync(int bookingId);
     }
 }

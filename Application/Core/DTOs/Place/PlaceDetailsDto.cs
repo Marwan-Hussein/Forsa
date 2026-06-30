@@ -18,5 +18,15 @@ namespace Application.Core.DTOs.Place
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }
         public string? GooglePlaceId { get; set; }
+
+        public string? OwnerName { get; set; }
+        public string? OwnerEmail { get; set; }
+        public string? OwnerPhone { get; set; }
+
+        public List<string> Images { get; set; } = new();
+        public List<PlaceAvailabilityDto> Availabilities { get; set; } = new();
+        
+        public double Rating { get; set; }
+        public int ReviewCount { get; set; }
     }
 }
