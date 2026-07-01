@@ -37,6 +37,21 @@ namespace Forsa.Controllers.ExternalControllers
             return Ok(new { authorizationUrl });
         }
 
+        [HttpGet("status")]
+        public async Task<IActionResult> Status()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Unauthorized(new { message = "Unable to determine user identity." });
+            }
+
+            var tokenDto = await _authService.GetStoredUserTokenAsync(int.Parse(userId));
+            var hasRefreshToken = tokenDto != null && !string.IsNullOrWhiteSpace(tokenDto.RefreshToken);
+
+            return Ok(new { hasRefreshToken });
+        }
+
         [HttpGet("callback")]
         [AllowAnonymous]
         public async Task<IActionResult> Callback([FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error)

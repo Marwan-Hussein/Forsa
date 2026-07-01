@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import GoogleCalendarLogo from "../../assets/google-calendar.svg";
 import { apiGet } from "../api/api";
 
@@ -22,6 +22,24 @@ const GoogleCalendarConnect: React.FC<GoogleCalendarConnectProps> = ({
   returnUrl,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [showConnectButton, setShowConnectButton] = useState(false);
+  const [statusLoaded, setStatusLoaded] = useState(false);
+
+  useEffect(() => {
+    const loadStatus = async () => {
+      try {
+        const data = await apiGet<{ hasRefreshToken: boolean }>("/api/calendar/status");
+        setShowConnectButton(!data.hasRefreshToken);
+      } catch (err) {
+        console.error("Failed to load Google Calendar status", err);
+        setShowConnectButton(false);
+      } finally {
+        setStatusLoaded(true);
+      }
+    };
+
+    loadStatus();
+  }, []);
 
   const connectGoogleCalendar = async () => {
     const finalReturnUrl = returnUrl ?? window.location.href;
@@ -49,6 +67,10 @@ const GoogleCalendarConnect: React.FC<GoogleCalendarConnectProps> = ({
       setLoading(false);
     }
   };
+
+  if (!statusLoaded || !showConnectButton) {
+    return null;
+  }
 
   return (
     <>
