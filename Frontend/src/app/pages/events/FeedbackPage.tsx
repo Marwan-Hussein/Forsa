@@ -1,17 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router";
 import { ArrowLeft, Star, Send } from "lucide-react";
-import { mockEvents, addReview, getUserReviewForEvent } from "../../data/mockData";
 import { toast } from "sonner";
 import { FloatingLabelTextarea } from "../../components/ui/floating-label-field";
 
 export default function FeedbackPage() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
-  const event = mockEvents.find((e) => e.id === eventId);
+  
+  // TODO: Fetch event details from API
+  const event: any = { id: eventId, title: "Event Title" };
   
   // Check if user already reviewed this event
-  const existingReview = eventId ? getUserReviewForEvent(eventId) : null;
+  const existingReview = null;
 
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
@@ -31,14 +32,8 @@ export default function FeedbackPage() {
     // Simulate API call
     setTimeout(() => {
       if (attendanceConfirmed && eventId) {
-        // Save the review
-        addReview({
-          eventId,
-          userId: "user1",
-          userName: "John Doe",
-          rating,
-          comment,
-        });
+        // TODO: Save the review using API post
+        console.log("Saving review for", eventId, rating, comment);
       }
       
       setIsSubmitting(false);

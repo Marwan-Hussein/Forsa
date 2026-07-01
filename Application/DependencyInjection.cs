@@ -53,6 +53,7 @@ public static class DependencyInjection
         // Event Services
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IEventAdminService, EventAdminService>();
+        services.AddScoped<IEventMediaService, EventMediaService>();
 
         // Place Services
         services.AddScoped<IPlaceAdminService, PlaceAdminService>();

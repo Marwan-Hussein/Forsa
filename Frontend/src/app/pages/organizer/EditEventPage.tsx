@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Link } from "react-router";
-import { ArrowLeft, Calendar, Tag, FileText, Ticket, DollarSign, LayoutList, RefreshCw } from "lucide-react";
+import { ArrowLeft, Calendar, Tag, FileText, Ticket, DollarSign, LayoutList, RefreshCw, Image as ImageIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { organizerApi } from "../../api/organizerApi";
+import { getUserIdFromToken } from "../../api/api";
 import { toast } from "react-toastify";
 import { DateTimePicker } from "../../components/ui/date-time-picker";
 import {
@@ -28,6 +29,7 @@ export default function EditEventPage() {
   });
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -63,6 +65,12 @@ export default function EditEventPage() {
     setFormData(prev => ({ ...prev, category: value }));
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -95,6 +103,12 @@ export default function EditEventPage() {
       };
 
       await organizerApi.updateEventDetails(Number(eventId), dto);
+      
+      const organizerId = getUserIdFromToken();
+      if (imageFile && organizerId) {
+        await organizerApi.uploadEventMedia(Number(eventId), organizerId, imageFile);
+      }
+
       toast.success("Event updated successfully!");
       navigate("/organizer/events");
     } catch (err: any) {
@@ -192,6 +206,23 @@ export default function EditEventPage() {
               placeholder="Describe what your event is about, what attendees can expect, etc." 
               className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all resize-none"
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700 flex items-center gap-2">
+              <ImageIcon className="w-4 h-4 text-indigo-500" />
+              Add/Replace Cover Image
+            </label>
+            <input 
+              type="file" 
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+            />
+            {imageFile && (
+              <p className="text-sm text-green-600 font-medium">Selected: {imageFile.name}</p>
+            )}
+            <p className="text-xs text-slate-500 mt-1">Uploading a new image will replace the current cover image (if any).</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

@@ -120,7 +120,7 @@ export default function AdminDashboard() {
           Admin Dashboard
         </h1>
         <p className="text-slate-400 font-['Inter:Medium',sans-serif] mt-2 text-base">
-          Live platform overview — updates on every page load.
+          Live platform overview - updates on every page load.
         </p>
       </motion.div>
 

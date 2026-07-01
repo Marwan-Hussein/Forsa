@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { Calendar, Clock, MapPin, Users, Heart } from "lucide-react";
-import { Event } from "../data/mockData";
+import { Event } from "../types";
 import { ImageWithFallback } from "@/app/components/ImageWithFallback";
 import {
   EASE_IN_OUT,
@@ -40,7 +40,7 @@ export function EventCard({
     Entertainment: "var(--Entertainment)",
   };
 
-  const priceDisplay = event.price === "Free" ? "Free" : `$${event.price}`;
+  const priceDisplay = event.price === "Free" ? "Free" : `${event.price} EGP`;
   const accent = categoryColors[event.category] || "hsl(var(--color-muted-foreground))";
 
   const enterMotion =
@@ -94,14 +94,22 @@ export function EventCard({
       {/* Event Image */}
       <div className="relative h-[192px] overflow-hidden">
         <div className="absolute inset-0 transition-transform duration-[380ms] ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform group-hover:scale-105">
-          <ImageWithFallback
-            alt={event.title}
-            className="absolute inset-0 h-full w-full object-cover"
-            query={event.image}
-          />
+          {event.image && (event.image.startsWith("http") || event.image.startsWith("/")) ? (
+            <ImageWithFallback
+              alt={event.title}
+              className="absolute inset-0 h-full w-full object-cover"
+              src={event.image.startsWith("/") ? `http://localhost:5000${event.image}` : event.image}
+            />
+          ) : (
+            <ImageWithFallback
+              alt={event.title}
+              className="absolute inset-0 h-full w-full object-cover"
+              query={event.image}
+            />
+          )}
         </div>
         <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-primary/50 via-primary/8 to-transparent"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#1E3D61]/50 via-slate-900/10 to-transparent"
           aria-hidden
         />
         {/* Category Badge */}
@@ -131,9 +139,22 @@ export function EventCard({
 
       {/* Event Content */}
       <div className="relative p-4">
-        <h3 className="mb-3 line-clamp-2 min-h-[56px] font-['Inter:Semi_Bold',sans-serif] text-[18px] font-semibold text-primary">
-          {event.title}
-        </h3>
+        <div className="flex justify-between items-start mb-3 min-h-[56px]">
+          <h3 className="line-clamp-2 font-['Inter:Semi_Bold',sans-serif] text-[18px] font-semibold text-primary pr-2">
+            {event.title}
+          </h3>
+          {event.status && (
+            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+              event.status === 'Approved' ? 'bg-green-100 text-green-700' :
+              event.status === 'Pending' ? 'bg-orange-100 text-orange-700' :
+              event.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
+              event.status === 'Completed' ? 'bg-gray-100 text-gray-700' :
+              'bg-blue-100 text-blue-700'
+            }`}>
+              {event.status}
+            </span>
+          )}
+        </div>
 
         <div className="mb-4 space-y-2">
           <div className="flex items-center gap-2">

@@ -24,7 +24,17 @@ namespace Application.Mapping
                 .ForMember(dest => dest.PlaceLongitude,
                            opt => opt.MapFrom(src => src.Place != null ? src.Place.Longitude : null))
                 .ForMember(dest => dest.GooglePlaceId,
-                           opt => opt.MapFrom(src => src.Place != null ? src.Place.GooglePlaceId : null));
+                           opt => opt.MapFrom(src => src.Place != null ? src.Place.GooglePlaceId : null))
+                .ForMember(dest => dest.ImageUrl,
+                           opt => opt.MapFrom(src => src.EventMedias != null && src.EventMedias.Any() 
+                               ? src.EventMedias.FirstOrDefault().MediaUrl 
+                               : null))
+                .ForMember(dest => dest.OrganizerId,
+                           opt => opt.MapFrom(src => src.OrganizerId))
+                .ForMember(dest => dest.OrganizerName,
+                           opt => opt.MapFrom(src => src.Organizer != null ? src.Organizer.OrganizationName : null))
+                .ForMember(dest => dest.OrganizerFollowersCount,
+                           opt => opt.MapFrom(src => src.Organizer != null && src.Organizer.AttendeeSubsOrganizers != null ? src.Organizer.AttendeeSubsOrganizers.Count : 0));
         }
     }
 }

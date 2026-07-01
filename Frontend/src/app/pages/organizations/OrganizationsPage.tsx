@@ -1,18 +1,70 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { useParams } from "react-router";
 import { ArrowLeft, Building2, Users, Calendar, Bell, BellOff } from "lucide-react";
-import { mockOrganizations } from "../../data/mockData";
 
 export default function OrganizationsPage() {
   const { orgId } = useParams<{ orgId: string }>();
   const [subscribedOrgs, setSubscribedOrgs] = useState<string[]>(["org1", "org2"]);
-  const selectedOrganization = orgId
-    ? mockOrganizations.find((org) => org.id === orgId)
-    : null;
-  const organizationsToRender = selectedOrganization
-    ? [selectedOrganization]
-    : mockOrganizations;
+  const [selectedOrganization, setSelectedOrganization] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  
+  useEffect(() => {
+    const fetchOrganization = async () => {
+      if (!orgId) {
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        // Assuming we have an apiGet function or using fetch directly
+        const response = await fetch(`/api/organizers/${orgId}/profile`);
+        if (response.ok) {
+          const data = await response.json();
+          setSelectedOrganization({
+            id: data.id.toString(),
+            name: data.organizationName || data.fullName,
+            logo: "🏛️",
+            description: "Event Organizer on ForSa",
+            eventsCount: 0,
+            followersCount: data.followersCount || 0,
+            categories: ["General"]
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching organization:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrganization();
+  }, [orgId]);
+
+  // Mock Data for the list when no orgId is present
+  const mockOrganizations = [
+    {
+      id: "org1",
+      name: "Tech Innovators",
+      logo: "🚀",
+      description: "Leading the way in tech events.",
+      eventsCount: 15,
+      followersCount: 12500,
+      categories: ["Technology", "Business"]
+    },
+    {
+      id: "org2",
+      name: "Global Business",
+      logo: "🏛️",
+      description: "Business conferences worldwide.",
+      eventsCount: 8,
+      followersCount: 5400,
+      categories: ["Business"]
+    }
+  ];
+
+  const organizationsToRender = orgId 
+    ? (selectedOrganization ? [selectedOrganization] : []) // If fetching specific org, show only that (or nothing if failed)
+    : mockOrganizations; // If no orgId, show all mocks (or real data if we fetched all)
 
   const toggleSubscription = (orgId: string) => {
     setSubscribedOrgs((prev) =>
@@ -20,10 +72,12 @@ export default function OrganizationsPage() {
     );
   };
 
+  const isSpecificOrg = !!orgId;
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Hero Section */}
-      <div className={`relative bg-[#0B1120] pt-36 pb-28 px-4 overflow-hidden ${orgId && !selectedOrganization ? "hidden" : ""}`}>
+      <div className={`relative bg-[#0B1120] pt-36 pb-28 px-4 overflow-hidden`}>
         <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E3D61 100%)" }} />
         <div className="absolute inset-0 z-0 overflow-hidden mix-blend-screen pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full filter blur-[100px]" />
@@ -33,11 +87,11 @@ export default function OrganizationsPage() {
         
         <div className="relative max-w-6xl mx-auto">
           <Link
-            to={selectedOrganization ? "/organizations" : "/"}
+            to={isSpecificOrg ? "/organizations" : "/"}
             className="inline-flex items-center gap-2 mb-6 text-white/70 hover:text-white transition-colors font-medium text-sm backdrop-blur-md bg-white/5 px-4 py-2 rounded-full border border-white/10"
           >
             <ArrowLeft className="w-4 h-4" />
-            {selectedOrganization ? "Back to Organizers" : "Back to Home"}
+            {isSpecificOrg ? "Back to Organizers" : "Back to Home"}
           </Link>
           
           <div className="flex items-center gap-4 mb-4">
@@ -45,7 +99,11 @@ export default function OrganizationsPage() {
               <Building2 className="w-10 h-10 text-blue-300" />
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">
-              {selectedOrganization ? selectedOrganization.name : (
+              {loading && isSpecificOrg ? (
+                <span className="opacity-50">Loading...</span>
+              ) : selectedOrganization ? (
+                selectedOrganization.name
+              ) : (
                 <>
                   Top <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-emerald-300">Organizers</span>
                 </>
@@ -53,7 +111,7 @@ export default function OrganizationsPage() {
             </h1>
           </div>
           <p className="text-lg text-white/80 max-w-2xl font-light">
-            {selectedOrganization
+            {isSpecificOrg
               ? "Organization profile and subscription details"
               : "Discover and subscribe to top event organizers. Never miss an exclusive event from your favorite creators."}
           </p>
@@ -65,7 +123,7 @@ export default function OrganizationsPage() {
         {/* Info Card */}
         <div
           className={`bg-white rounded-2xl shadow-xl shadow-[#1E3D61]/5 border border-slate-100 p-6 mb-8 ${
-            orgId && !selectedOrganization ? "hidden" : ""
+            isSpecificOrg ? "hidden" : ""
           }`}
         >
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">

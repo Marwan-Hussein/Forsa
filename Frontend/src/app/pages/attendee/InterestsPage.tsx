@@ -1,15 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ArrowLeft, Save, Sparkles, Check, Flame } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "../../api/api";
-import {
-  getAllInterests,
-  getAttendeeInterests,
-  getCurrentAttendeeId,
-  updateAttendeeInterests,
-  type InterestDto,
-} from "../../lib/attendee-api";
+import { attendeeApi } from "../../api/attendeeApi";
+import { InterestDto } from "../../types";
+import { getUserIdFromToken } from "../../api/api";
 import { motion, AnimatePresence } from "motion/react";
 
 interface Interest extends InterestDto {
@@ -65,7 +61,8 @@ function getErrorMessage(error: unknown, fallback: string) {
 }
 
 export default function InterestsPage() {
-  const attendeeId = getCurrentAttendeeId();
+  const attendeeId = getUserIdFromToken();
+  const navigate = useNavigate();
   const [availableInterests, setAvailableInterests] = useState<Interest[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
   const [originalInterests, setOriginalInterests] = useState<number[]>([]);
@@ -76,6 +73,10 @@ export default function InterestsPage() {
   const isModified = !haveSameInterests(selectedInterests, originalInterests);
 
   useEffect(() => {
+    if (!attendeeId) {
+      navigate("/login");
+      return;
+    }
     let isActive = true;
 
     async function loadInterests() {
@@ -84,8 +85,8 @@ export default function InterestsPage() {
         setLoadError(null);
 
         const [allInterests, attendeeInterests] = await Promise.all([
-          getAllInterests(),
-          getAttendeeInterests(attendeeId),
+          attendeeApi.getAllInterests(),
+          attendeeApi.getInterests(attendeeId),
         ]);
 
         if (!isActive) return;
@@ -117,7 +118,7 @@ export default function InterestsPage() {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      const updatedProfile = await updateAttendeeInterests(attendeeId, selectedInterests);
+      const updatedProfile = await attendeeApi.updateInterests(attendeeId, { interestIds: selectedInterests });
       const nextSelectedInterests = updatedProfile.interests.map((interest) => interest.id);
 
       setSelectedInterests(nextSelectedInterests);
@@ -164,86 +165,79 @@ export default function InterestsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        
-        {/* Header */}
-        <div className="mb-10 text-center sm:text-left">
-          <Link
-            to="/profile"
-            className="inline-flex items-center gap-2 mb-6 text-slate-500 hover:text-blue-600 transition-colors font-['Inter:Medium',sans-serif] text-sm group"
-          >
+    <div className="min-h-screen bg-[#F8FAFC]">
+      {/* Hero */}
+      <div className="bg-gradient-to-br from-[#0B1929] via-[#1E3D61] to-[#0F2847] pt-24 pb-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <Link to="/profile" className="inline-flex items-center gap-2 text-blue-200 hover:text-white text-sm font-medium mb-6 group transition-colors">
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Back to Profile
+            Profile
           </Link>
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
             <div>
-              <h1 className="font-['Inter:Bold',sans-serif] text-4xl text-slate-800 mb-3 tracking-tight flex items-center justify-center sm:justify-start gap-3">
-                <Sparkles className="w-8 h-8 text-amber-500" />
-                Personalize Your Feed
+              <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight flex items-center gap-3">
+                <Sparkles className="w-8 h-8 text-amber-400" />
+                Your Interests
               </h1>
-              <p className="font-['Inter:Medium',sans-serif] text-slate-500 text-lg max-w-xl">
-                Tell us what you love, and we'll curate the best events and experiences specifically for you.
+              <p className="text-blue-100/70 mt-2 max-w-xl">
+                Tell us what you love, and we'll curate the best events specifically for you.
               </p>
             </div>
             
             <AnimatePresence>
               {isModified && (
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="flex items-center gap-3 justify-center sm:justify-end"
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="flex items-center gap-3"
                 >
                   <button
                     onClick={handleReset}
-                    className="bg-white border border-slate-200 text-slate-600 px-6 py-3 rounded-xl font-['Inter:Bold',sans-serif] text-sm hover:bg-slate-50 transition-colors"
+                    className="bg-white/10 hover:bg-white/20 border border-white/15 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all"
                   >
                     Discard
                   </button>
                   <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="bg-blue-600 text-white px-8 py-3 rounded-xl font-['Inter:Bold',sans-serif] text-sm hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg shadow-blue-500/30 disabled:opacity-70"
+                    className="bg-amber-500 hover:bg-amber-400 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20 disabled:opacity-70"
                   >
-                    {isSaving ? (
-                      "Saving..."
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4" /> Save Changes
-                      </>
-                    )}
+                    {isSaving ? "Saving..." : <><Save className="w-4 h-4" /> Save</>}
                   </button>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         </div>
+      </div>
 
+      {/* Content */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Selected Counter */}
-        <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-200">
-          <h2 className="font-['Inter:Bold',sans-serif] text-xl text-slate-800">
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+          <h2 className="font-bold text-lg text-slate-800">
             Select Interests
           </h2>
-          <span className="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full font-['Inter:Bold',sans-serif] text-sm border border-blue-100">
+          <span className="bg-[#1E3D61]/5 text-[#1E3D61] px-3 py-1 rounded-full font-bold text-xs border border-[#1E3D61]/10">
             {selectedInterests.length} Selected
           </span>
         </div>
 
         {/* Interest Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {availableInterests.map((interest) => {
             const isSelected = selectedInterests.includes(interest.id);
             return (
               <motion.button
                 key={interest.id}
                 whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => toggleInterest(interest.id)}
-                className={`relative overflow-hidden p-6 rounded-3xl border-2 transition-all cursor-pointer text-left h-40 flex flex-col justify-end group ${
+                className={`relative overflow-hidden p-5 rounded-2xl border-2 transition-all cursor-pointer text-left h-36 flex flex-col justify-end group ${
                   isSelected
-                    ? "border-transparent shadow-xl shadow-blue-500/20"
-                    : "border-slate-200 bg-white hover:border-blue-200 hover:shadow-md"
+                    ? "border-transparent shadow-xl shadow-[#1E3D61]/20"
+                    : "border-slate-100 bg-white hover:border-[#1E3D61]/30 hover:shadow-md"
                 }`}
               >
                 {/* Background Gradient for Selected */}
@@ -257,7 +251,7 @@ export default function InterestsPage() {
                   <div className={`text-4xl mb-3 transition-transform duration-300 ${isSelected ? "scale-110" : ""}`}>
                     {interest.icon}
                   </div>
-                  <span className={`font-['Inter:Bold',sans-serif] text-lg transition-colors ${
+                  <span className={`font-bold text-base transition-colors ${
                     isSelected ? "text-white" : "text-slate-800"
                   }`}>
                     {interest.name}
@@ -274,7 +268,6 @@ export default function InterestsPage() {
             );
           })}
         </div>
-
       </div>
     </div>
   );
