@@ -13,10 +13,7 @@ namespace Infrastructure.Repositories.BookingRepos
 {
     public class BookingRepository : QueryableRepository<Booking>,IBookingRepository
     {
-        public BookingRepository(ForsaDbContext context):base(context)
-        {
-            
-        }
+        public BookingRepository(ForsaDbContext context):base(context){}
         public async Task<List<Booking>> GetBookingsByUserIdAsync(string userId)
         {
             var bookings = await _context.Set<Booking>()
@@ -28,6 +25,19 @@ namespace Infrastructure.Repositories.BookingRepos
             if (bookings == null || !bookings.Any())
                 throw new KeyNotFoundException($"No bookings found for user with ID '{userId}'.");
             return bookings;
+        }
+        public async Task<Booking> GetBookingWithEventAsync(int bookingId)
+        {
+            var suspectBooking = _context.Set<Booking>()
+                                         .Include(b => b.Event)
+                                         .Where(b => b.Id == bookingId)
+                                         .FirstOrDefault();
+            if (suspectBooking == null)
+            {
+                throw new Exception($"Booking with ID {bookingId} not found.");
+            }
+
+            return suspectBooking;
         }
     }
 }

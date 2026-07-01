@@ -6,6 +6,8 @@ using Application.Core.Interfaces.OrganizerInterfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Application.Core.DTOs.Payment;
+using System.Security.Claims;
 
 namespace Forsa.Controllers
 {
@@ -16,15 +18,21 @@ namespace Forsa.Controllers
         private readonly IBookingService _bookingService;
         private readonly IPromoService _promoService;
         private readonly IValidator<CreateBookingRequestDto> _validator;
+        private readonly ICheckoutService _checkoutService;
+        private readonly IPaymentService _paymentService;
 
         public BookingsController(
             IBookingService bookingService, 
             IPromoService promoService, 
-            IValidator<CreateBookingRequestDto> validator)
+            IValidator<CreateBookingRequestDto> validator,
+            ICheckoutService checkoutService,
+            IPaymentService paymentService)
         {
             _bookingService = bookingService;
             _promoService = promoService;
             _validator = validator;
+            _checkoutService = checkoutService;
+            _paymentService = paymentService;
         }
 
         [Authorize(Policy = "AttendeeOnly")]
@@ -256,6 +264,44 @@ namespace Forsa.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "An error occurred while terminating the promo code.", details = ex.Message });
+            }
+        }
+
+        [Authorize(Policy = "AttendeeOnly")]
+        [HttpPost("{bookingId:int}/checkout")]
+        public async Task<ActionResult<PaymentResponseDto>> ProcessBookingCheckout(int bookingId)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var response = await _checkoutService.ProcessEventCheckoutAsync(bookingId, userId);
+                if (!response.IsSuccess)
+                {
+                    return BadRequest(response);
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("callback")]
+        public async Task<IActionResult> PaymobCallback([FromBody] PaymobWebhookDto payload)
+        {
+            try
+            {
+                var result = await _paymentService.ProcessPaymentCallbackAsync(payload);
+                if (result)
+                {
+                    return Ok();
+                }
+                return BadRequest("Webhook processing failed.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
 
