@@ -93,7 +93,10 @@ namespace Application.Services
                 Status = BookingStatus.Pending,
                 BookingDate = DateTime.UtcNow,
                 IsDeleted = false,
-                SpecialRequests = dto.SpecialRequests
+                SpecialRequests = dto.SpecialRequests,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = dto.AttendeeId.ToString(),
+                IsBlocked = false,
             };
 
             await _bookingRepository.AddAsync(booking);
@@ -202,6 +205,7 @@ namespace Application.Services
 
             // Update booking status
             booking.Status = BookingStatus.Cancelled;
+            booking.IsDeleted = true;
             _bookingRepository.Update(booking);
 
             // Restore tickets to event
