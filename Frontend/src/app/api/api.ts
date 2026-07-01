@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE_URL = import.meta.env.VITE_USE_API_PROXY === "true"
+  ? ""
+  : (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$|^\s+|\s+$/g, "");
 
 export class ApiError extends Error {
   status: number;
@@ -97,4 +99,4 @@ export async function apiPatch<T>(path: string, body: unknown): Promise<T> {
     },
     body: JSON.stringify(body),
   });
-}
+}
