@@ -73,7 +73,7 @@ const GoogleCalendarConnect: React.FC<GoogleCalendarConnectProps> = ({
 
             border-radius:999px;
 
-            background:#ffffff;
+            background:#2b79f2;
 
             box-shadow:
                 0 6px 20px rgba(0,0,0,.2);
