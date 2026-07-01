@@ -13,6 +13,7 @@ namespace Domain.Entities.BookingEntities
         public string QRCode { get; set; }
         public string? SpecialRequests { get; set; }
         public string? RejectionReason { get; set; }
+        public string? GoogleCalendarEventId { get; set; } // The ID of the synced Google Calendar event (null if not synced)
 
         // FK (attendee)
         public int AttendeeId { get; set; }

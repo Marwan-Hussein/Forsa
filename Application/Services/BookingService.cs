@@ -1,6 +1,7 @@
 using Application.Core.DTOs.Booking;
 using Application.Core.DTOs.Event;
 using Application.Core.Interfaces;
+using Application.Core.Interfaces.ExternalServicesInterfaces;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.BookingEntities;
@@ -19,6 +20,7 @@ namespace Application.Services
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IQrService _qrService;
+        private readonly IGoogleCalendarSyncService _calendarSync;
 
         public BookingService(
             IQueryableRepository<Event> eventRepository,
@@ -26,7 +28,8 @@ namespace Application.Services
             IGenericRepository<Notification> notificationRepository,
             IMapper mapper,
             IUnitOfWork unitOfWork,
-            IQrService qrService)
+            IQrService qrService,
+            IGoogleCalendarSyncService calendarSync)
         {
             _eventRepository = eventRepository;
             _bookingRepository = bookingRepository;
@@ -34,6 +37,7 @@ namespace Application.Services
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _qrService = qrService;
+            _calendarSync = calendarSync;
         }
 
         public async Task<EventDetailsDto> GetEventDetailsAsync(int eventId)
@@ -120,6 +124,22 @@ namespace Application.Services
 
             // Save all changes
             await _unitOfWork.SaveChangesAsync();
+
+            // Sync to attendee's Google Calendar (fire-and-forget — won't break booking)
+            var googleEventId = await _calendarSync.SyncBookingToCalendarAsync(
+                dto.AttendeeId,
+                eventEntity.Title,
+                eventEntity.Description,
+                location: null, // Place is resolved later via booking request
+                eventEntity.StartDate,
+                eventEntity.EndDate);
+
+            if (!string.IsNullOrWhiteSpace(googleEventId))
+            {
+                booking.GoogleCalendarEventId = googleEventId;
+                _bookingRepository.Update(booking);
+                await _unitOfWork.SaveChangesAsync();
+            }
 
             // Map and return response
             return _mapper.Map<BookingResponseDto>(booking);
@@ -227,6 +247,11 @@ namespace Application.Services
 
             // Save all changes
             await _unitOfWork.SaveChangesAsync();
+
+            // Remove from attendee's Google Calendar (fire-and-forget)
+            await _calendarSync.RemoveBookingFromCalendarAsync(
+                booking.AttendeeId,
+                booking.GoogleCalendarEventId);
         }
 
         public async Task<BookingResponseDto> GetBookingAsync(int bookingId)

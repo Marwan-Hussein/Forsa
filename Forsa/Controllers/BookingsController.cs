@@ -61,9 +61,9 @@ namespace Forsa.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while creating the booking");
+                return StatusCode(500, $"An error occurred while creating the booking\n {ex.Message}\n {ex}");
             }
         }
 
@@ -154,9 +154,9 @@ namespace Forsa.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while retrieving the booking");
+                return StatusCode(500, $"An error occurred while retrieving the booking\n {ex.Message}\n {ex}");
             }
         }
 
@@ -173,9 +173,9 @@ namespace Forsa.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while retrieving the ticket");
+                return StatusCode(500, $"An error occurred while retrieving the ticket\n {ex.Message}\n {ex}");
             }
         }
 
@@ -200,9 +200,9 @@ namespace Forsa.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while verifying attendance");
+                return StatusCode(500, $"An error occurred while verifying attendance\n {ex.Message}\n {ex}");
             }
         }
 
@@ -223,9 +223,9 @@ namespace Forsa.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while blocking the attendee");
+                return StatusCode(500, $"An error occurred while blocking the attendee\n {ex.Message}\n {ex}");
             }
         }
 

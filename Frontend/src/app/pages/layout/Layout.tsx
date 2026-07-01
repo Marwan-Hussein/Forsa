@@ -13,76 +13,33 @@ export default function Layout() {
   const showNavigation = !isAuthPage;
 
   useEffect(() => {
-    function setupScrollToTop(elementId: string) {
-      const btn = document.getElementById(elementId);
-      if (!btn) return;
+    const btn = document.getElementById("scrollToTop");
+    if (!btn) return;
 
-      btn.addEventListener("click", () => {
-        window.scrollTo({
-          top: 0,
-          behavior: "smooth",
-        });
+    btn.addEventListener("click", () => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
       });
+    });
 
-      window.addEventListener("scroll", () => {
-        if (window.scrollY > 200) {
-          btn.style.opacity = "1";
-          btn.style.transform = "scale(1)";
-          btn.style.pointerEvents = "auto";
-        } else {
-          btn.style.opacity = "0";
-          btn.style.transform = "scale(0.8)";
-          btn.style.pointerEvents = "none";
-        }
-      });
-
-      // Initial state
-      if (window.scrollY <= 200) {
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 200) {
+        btn.style.opacity = "1";
+        btn.style.transform = "scale(1)";
+        btn.style.pointerEvents = "auto";
+      } else {
         btn.style.opacity = "0";
         btn.style.transform = "scale(0.8)";
         btn.style.pointerEvents = "none";
       }
+    });
+
+    if (window.scrollY <= 200) {
+      btn.style.opacity = "0";
+      btn.style.transform = "scale(0.8)";
+      btn.style.pointerEvents = "none";
     }
-
-    function setupScrollToBottom(elementId: string) {
-      const btn = document.getElementById(elementId);
-      if (!btn) return;
-
-      btn.addEventListener("click", () => {
-        window.scrollTo({
-          top: document.documentElement.scrollHeight,
-          behavior: "smooth",
-        });
-      });
-
-      window.addEventListener("scroll", () => {
-        const scrolledToBottom =
-          window.innerHeight + window.scrollY >=
-          document.documentElement.scrollHeight - 200;
-        if (!scrolledToBottom) {
-          btn.style.opacity = "1";
-          btn.style.transform = "scale(1)";
-          btn.style.pointerEvents = "auto";
-        } else {
-          btn.style.opacity = "0";
-          btn.style.transform = "scale(0.8)";
-          btn.style.pointerEvents = "none";
-        }
-      });
-
-      // Initial state
-      const scrolledToBottom =
-        window.innerHeight + window.scrollY >=
-        document.documentElement.scrollHeight - 200;
-      if (scrolledToBottom) {
-        btn.style.opacity = "0";
-        btn.style.transform = "scale(0.8)";
-        btn.style.pointerEvents = "none";
-      }
-    }
-
-    setupScrollToTop("scrollToTop");
-    setupScrollToBottom("scrollToBottom");
   }, []);
 
   return (
@@ -144,26 +101,6 @@ export default function Layout() {
         </svg>
       </div>
 
-      <div
-        id="scrollToBottom"
-        className="scroll-btn"
-        title="Go to bottom"
-        style={{ bottom: "30px" }}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="28"
-          height="28"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
-        </svg>
-      </div>
     </div>
   );
 }

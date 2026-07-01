@@ -5,26 +5,26 @@
   --background: #f8fafc;
   --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: var(--foreground);
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #1e3d61;
+  --popover-foreground: var(--foreground);
+  --primary: #0B1120;
   --primary-foreground: #ffffff;
   --secondary: #f1f5f9;
-  --secondary-foreground: #1e3d61;
-  --muted: #f1f5f9;
+  --secondary-foreground: var(--primary);
+  --muted: var(--secondary);
   --muted-foreground: #64748b;
-  --accent: #1e3d61;
+  --accent: var(--primary);
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   --border: rgba(30, 61, 97, 0.15);
   --input: transparent;
-  --input-background: #f1f5f9;
+  --input-background: var(--secondary);
   --switch-background: #cbd5e1;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #1e3d61;
+  --ring: var(--primary);
   --Business: #2563eb;
   --Sports: #059669;
   --Education: #7c3aed;
@@ -35,13 +35,13 @@
   --Food: #d97706;
   --radius: 0.75rem;
   --sidebar: #ffffff;
-  --sidebar-foreground: #0f172a;
-  --sidebar-primary: #1e3d61;
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f1f5f9;
-  --sidebar-accent-foreground: #0f172a;
+  --sidebar-accent: var(--secondary);
+  --sidebar-accent-foreground: var(--foreground);
   --sidebar-border: #e2e8f0;
-  --sidebar-ring: #1e3d61;
+  --sidebar-ring: var(--primary);
 }
 
 .dark {

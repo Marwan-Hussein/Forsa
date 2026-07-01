@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE_URL = import.meta.env.VITE_USE_API_PROXY === "true"
+  ? ""
+  : (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$|^\s+|\s+$/g, "");
 
 export class ApiError extends Error {
   status: number;
@@ -9,22 +11,6 @@ export class ApiError extends Error {
     this.name = "ApiError";
     this.status = status;
     this.data = data;
-  }
-}
-
-export function getUserIdFromToken(): number | null {
-  const token = localStorage.getItem("forsa_token");
-  if (!token) return null;
-
-  try {
-    const payload = token.split('.')[1];
-    const decoded = JSON.parse(atob(payload));
-    // Usually NameIdentifier is stored under this schema URL or just 'nameid'
-    const nameId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] || decoded.nameid || decoded.sub;
-    return nameId ? parseInt(nameId, 10) : null;
-  } catch (e) {
-    console.error("Failed to decode token", e);
-    return null;
   }
 }
 
@@ -114,9 +100,3 @@ export async function apiPatch<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
 }
-
-export async function apiDelete<T>(path: string): Promise<T> {
-  return request<T>(path, {
-    method: "DELETE",
-  });
-}
