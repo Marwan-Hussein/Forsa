@@ -14,10 +14,14 @@ namespace Forsa.Controllers
     public class OrganizersController : ControllerBase
     {
         private readonly IOrganizerService _organizerService;
+        private readonly Application.Core.Interfaces.EventInterfaces.IEventMediaService _eventMediaService;
 
-        public OrganizersController(IOrganizerService organizerService)
+        public OrganizersController(
+            IOrganizerService organizerService,
+            Application.Core.Interfaces.EventInterfaces.IEventMediaService eventMediaService)
         {
             _organizerService = organizerService;
+            _eventMediaService = eventMediaService;
         }
 
         [HttpPost("events")]
@@ -31,6 +35,38 @@ namespace Forsa.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("events/{eventId}/media")]
+        public async Task<ActionResult<List<EventMediaDto>>> UploadEventMedia(
+            int eventId, [FromForm] int organizerId, [FromForm] List<IFormFile> files)
+        {
+            try
+            {
+                if (files == null || files.Count == 0)
+                    return BadRequest("No files uploaded.");
+
+                var mediaDtos = new List<EventMediaUploadDto>();
+                foreach (var file in files)
+                {
+                    mediaDtos.Add(new EventMediaUploadDto { File = file });
+                }
+
+                var uploaded = await _eventMediaService.UploadEventMediaAsync(organizerId, eventId, mediaDtos);
+                return Ok(uploaded);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
             }
         }
 
@@ -210,6 +246,23 @@ namespace Forsa.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = $"An error occurred during check-in: {ex.Message}" });
+            }
+        }
+        [HttpGet("{organizerId}/profile")]
+        public async Task<ActionResult> GetOrganizerProfile(int organizerId)
+        {
+            try
+            {
+                var profile = await _organizerService.GetOrganizerProfileAsync(organizerId);
+                return Ok(profile);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred while fetching organizer profile: {ex.Message}" });
             }
         }
     }

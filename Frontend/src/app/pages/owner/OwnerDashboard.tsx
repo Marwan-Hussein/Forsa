@@ -159,7 +159,7 @@ export default function OwnerDashboard() {
               Dashboard
             </h1>
             <p className="text-slate-400 font-['Inter:Medium',sans-serif] mt-2 text-base">
-              Live platform overview — updates on every page load.
+              Live platform overview - updates on every page load.
             </p>
           </div>
           <div className="flex items-center gap-3">

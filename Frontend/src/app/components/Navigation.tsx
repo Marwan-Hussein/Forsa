@@ -15,12 +15,14 @@ export function Navigation() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("Guest");
+  const [userEmail, setUserEmail] = useState("user@forsa.com");
 
   useEffect(() => {
     const token = localStorage.getItem("forsa_token");
     if (token) {
       setIsLoggedIn(true);
       setUserName(localStorage.getItem("forsa_user_name") || "User");
+      setUserEmail(localStorage.getItem("forsa_user_email") || "user@forsa.com");
     }
     const onScroll = () => setNavElevated(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -56,22 +58,27 @@ export function Navigation() {
 
   const links = [
     { path: "/events", label: "Events" },
-    { path: "/organizations", label: "Organizers" },
+    { path: "/organizations", label: "Organizations" },
+    { path: "/about", label: "About" },
+    { path: "/contact", label: "Contact Us" },
   ];
+
+  const isHomePage = location.pathname === "/";
+  const shouldElevate = navElevated || !isHomePage;
 
   return (
     <>
       <nav
         className={`fixed left-0 right-0 top-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          navElevated
-            ? "bg-white/95 backdrop-blur-2xl border-b border-slate-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.06)] py-3"
-            : "bg-[#0B1120]/80 backdrop-blur-xl border-b border-white/5 py-4"
+          shouldElevate
+            ? "bg-white/90 backdrop-blur-md border-b border-slate-200/40 shadow-[0_8px_32px_rgba(30,61,97,0.05)] py-3"
+            : "bg-transparent border-b border-transparent py-5"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group outline-none">
-            <ForSaLogo className={`h-8 md:h-10 w-auto transition-all duration-500 ${navElevated ? 'text-blue-600' : 'text-white'}`} fill={navElevated ? '#2563eb' : '#ffffff'} />
-            <span className={`text-2xl font-['Inter:Bold',sans-serif] font-bold tracking-tight transition-colors duration-500 ${navElevated ? 'text-slate-800' : 'text-white'}`}>
+            <ForSaLogo className={`h-8 md:h-9 w-auto transition-all duration-500 ${shouldElevate ? 'brightness-0' : 'brightness-0 invert'}`} />
+            <span className={`text-2xl font-['Inter:Bold',sans-serif] font-bold tracking-tight transition-colors duration-500 ${shouldElevate ? 'text-[#0A1625]' : 'text-white'}`}>
               ForSa
             </span>
           </Link>
@@ -81,12 +88,12 @@ export function Navigation() {
               <Link 
                 key={item.path}
                 to={item.path} 
-                className={`relative font-['Inter:Medium',sans-serif] text-sm transition-colors group ${
-                  navElevated ? 'text-slate-600 hover:text-blue-600' : 'text-white/90 hover:text-white drop-shadow-sm'
+                className={`relative font-['Inter:Medium',sans-serif] text-sm font-semibold tracking-wide transition-colors group ${
+                  shouldElevate ? 'text-slate-600 hover:text-[#1E3D61]' : 'text-white/80 hover:text-white drop-shadow-sm'
                 }`}
               >
                 {item.label}
-                <span className={`absolute -bottom-1 left-0 w-0 h-0.5 rounded-full transition-all duration-300 group-hover:w-full ${navElevated ? 'bg-blue-600' : 'bg-white'}`}></span>
+                <span className={`absolute -bottom-1 left-0 w-0 h-0.5 rounded-full transition-all duration-300 group-hover:w-full ${shouldElevate ? 'bg-[#1E3D61]' : 'bg-white'}`}></span>
               </Link>
             ))}
           </div>
@@ -97,7 +104,7 @@ export function Navigation() {
                 <Link 
                   to="/notifications" 
                   className={`relative p-2 rounded-full transition-colors ${
-                    navElevated ? 'text-slate-500 hover:bg-slate-100' : 'text-white hover:bg-white/10'
+                    shouldElevate ? 'text-slate-500 hover:bg-slate-100' : 'text-white hover:bg-white/10'
                   }`}
                 >
                   <Bell className="w-5 h-5" />
@@ -108,15 +115,15 @@ export function Navigation() {
                   <button 
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full transition-all ${
-                      navElevated ? 'hover:bg-slate-100 border border-transparent' : 'bg-white/10 hover:bg-white/20 border border-white/20'
+                      shouldElevate ? 'hover:bg-slate-100 border border-transparent' : 'bg-white/10 hover:bg-white/20 border border-white/20'
                     }`}
                   >
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center font-['Inter:Bold',sans-serif] text-sm ${
-                      navElevated ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white' : 'bg-white text-blue-600'
+                      shouldElevate ? 'bg-gradient-to-br from-[#1E3D61] to-[#152D4A] text-white' : 'bg-white text-[#1E3D61]'
                     }`}>
                       {userName.charAt(0)}
                     </div>
-                    <span className={`text-sm font-['Inter:Medium',sans-serif] ${navElevated ? 'text-slate-700' : 'text-white'}`}>
+                    <span className={`text-sm font-['Inter:Medium',sans-serif] ${shouldElevate ? 'text-slate-700' : 'text-white'}`}>
                       {userName}
                     </span>
                   </button>
@@ -132,20 +139,11 @@ export function Navigation() {
                       >
                         <div className="p-4 border-b border-slate-100 bg-slate-50/50">
                           <p className="font-['Inter:Bold',sans-serif] text-slate-800">{userName}</p>
-                          <p className="text-xs font-['Inter:Medium',sans-serif] text-slate-500 truncate">alex@example.com</p>
+                          <p className="text-xs font-['Inter:Medium',sans-serif] text-slate-500 truncate">{userEmail}</p>
                         </div>
                         <div className="p-2">
-                          <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                          <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-[#1E3D61] transition-colors">
                             <LayoutDashboard className="w-4 h-4" /> Dashboard
-                          </Link>
-                          <Link to="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
-                            <User className="w-4 h-4" /> My Profile
-                          </Link>
-                          <Link to="/my-events" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
-                            <Calendar className="w-4 h-4" /> My Tickets
-                          </Link>
-                          <Link to="/wishlist" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-rose-500 transition-colors">
-                            <Heart className="w-4 h-4" /> Wishlist
                           </Link>
                         </div>
                         <div className="p-2 border-t border-slate-100">
@@ -162,9 +160,9 @@ export function Navigation() {
               <Link
                 to="/login"
                 className={`relative overflow-hidden text-sm font-['Inter:Bold',sans-serif] font-bold px-8 py-2.5 rounded-full shadow-lg transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 group ${
-                  navElevated 
-                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/20' 
-                    : 'bg-white text-blue-600 hover:bg-slate-50'
+                  shouldElevate 
+                    ? 'bg-[#1E3D61] text-white hover:bg-[#152D4A] shadow-[#1E3D61]/20' 
+                    : 'bg-white text-[#1E3D61] hover:bg-slate-50'
                 }`}
               >
                 <span className="relative z-10 flex items-center gap-2">Sign In <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
@@ -177,7 +175,7 @@ export function Navigation() {
               <Link 
                 to="/notifications" 
                 className={`relative p-2 rounded-full transition-colors ${
-                  navElevated ? 'text-slate-500' : 'text-white'
+                  shouldElevate ? 'text-slate-500' : 'text-white'
                 }`}
               >
                 <Bell className="w-5 h-5" />
@@ -187,7 +185,7 @@ export function Navigation() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${navElevated ? 'text-slate-800' : 'text-white'}`}
+              className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${shouldElevate ? 'text-slate-800' : 'text-white'}`}
             >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -221,15 +219,7 @@ export function Navigation() {
                     <Link to="/dashboard" className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50">
                       <LayoutDashboard className="w-5 h-5" /> Dashboard
                     </Link>
-                    <Link to="/profile" className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50">
-                      <User className="w-5 h-5" /> My Profile
-                    </Link>
-                    <Link to="/my-events" className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50">
-                      <Calendar className="w-5 h-5" /> My Tickets
-                    </Link>
-                    <Link to="/wishlist" className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50">
-                      <Heart className="w-5 h-5" /> Wishlist
-                    </Link>
+
                     <button onClick={handleSignOut} className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Bold',sans-serif] text-rose-600 hover:bg-rose-50 w-full text-left mt-2 border-t border-slate-100 pt-4">
                       <LogOut className="w-5 h-5" /> Sign Out
                     </button>
@@ -238,7 +228,7 @@ export function Navigation() {
                   <div className="pt-4 mt-2 border-t border-slate-100">
                     <Link
                       to="/login"
-                      className="flex justify-center items-center gap-2 rounded-xl px-4 py-3 font-['Inter:Bold',sans-serif] text-white bg-blue-600"
+                      className="flex justify-center items-center gap-2 rounded-xl px-4 py-3 font-['Inter:Bold',sans-serif] text-white bg-[#1E3D61] hover:bg-[#152D4A]"
                     >
                       Sign In <ArrowRight className="w-4 h-4" />
                     </Link>

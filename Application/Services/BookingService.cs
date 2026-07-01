@@ -40,6 +40,9 @@ namespace Application.Services
         {
             var eventEntity = await _eventRepository.GetQueryable()
                 .Include(e => e.Place)
+                .Include(e => e.EventMedias)
+                .Include(e => e.Organizer)
+                    .ThenInclude(o => o.AttendeeSubsOrganizers)
                 .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
 
             if (eventEntity == null)
