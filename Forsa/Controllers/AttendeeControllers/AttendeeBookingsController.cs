@@ -1,7 +1,11 @@
 using Application.Core.DTOs.AttendeeDTOs;
+using Application.Core.Interfaces;
 using Application.Core.Interfaces.AttendeeInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Forsa.Controllers.AttendeeControllers
 {
@@ -11,10 +15,12 @@ namespace Forsa.Controllers.AttendeeControllers
     public class AttendeeBookingsController : ControllerBase
     {
         private readonly IAttendeeBookingService _bookingService;
+        private readonly IPaymentService _paymentService;
 
-        public AttendeeBookingsController(IAttendeeBookingService bookingService)
+        public AttendeeBookingsController(IAttendeeBookingService bookingService, IPaymentService paymentService)
         {
             _bookingService = bookingService;
+            _paymentService = paymentService;
         }
 
         // GET: api/attendees/{attendeeId}/bookings
@@ -65,6 +71,27 @@ namespace Forsa.Controllers.AttendeeControllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"An error occurred while fetching the calendar: {ex.Message}");
+            }
+        }
+
+        // POST: api/attendees/test-refund/{transactionId}
+        // Test endpoint for attendee refunds
+        [Authorize(Policy = "AttendeeOnly")]
+        [HttpPost("test-refund/{transactionId:int}")]
+        public async Task<IActionResult> TestRefund(int transactionId)
+        {
+            try
+            {
+                var result = await _paymentService.ProcessRefundAsync(transactionId);
+                if (result.IsSuccess)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while processing refund: {ex.Message}");
             }
         }
     }

@@ -283,5 +283,25 @@ namespace Forsa.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        // POST: api/organizers/refunds/{transactionId}
+        [Authorize(Policy = "OrganizerOnly")]
+        [HttpPost("refunds/{transactionId:int}")]
+        public async Task<IActionResult> ProcessRefund(int transactionId)
+        {
+            try
+            {
+                var result = await _paymentService.ProcessRefundAsync(transactionId);
+                if (result.IsSuccess)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred while processing refund: {ex.Message}" });
+            }
+        }
     }
 }
