@@ -383,7 +383,7 @@ namespace Application.Services.OrganizerServices
             var organizer = await _organizerRepo.GetQueryable()
                 .Include(o => o.AttendeeSubsOrganizers)
                 .Include(o => o.OrganiztionTypeWithOrganizers)
-                    .ThenInclude(ot => ot.OrganiztionType)
+                    .ThenInclude(ot => ot.OrganizationType)
                 .FirstOrDefaultAsync(o => o.Id == organizerId);
 
             if (organizer == null)
@@ -396,8 +396,6 @@ namespace Application.Services.OrganizerServices
             {
                 Id = organizer.Id,
                 OrganizationName = organizer.OrganizationName,
-                FirstName = organizer.FirstName,
-                LastName = organizer.LastName,
                 FullName = organizer.FullName,
                 Email = organizer.Email,
                 PhoneNumber = organizer.PhoneNumber,
