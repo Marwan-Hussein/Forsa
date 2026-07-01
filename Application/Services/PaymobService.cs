@@ -49,6 +49,24 @@ namespace Application.Services
             }
 
             var secretKey = configuration["PaymentGateway:PayMob:SecretKey"];
+            bool isMockMode = string.IsNullOrEmpty(secretKey) || secretKey.StartsWith("mock", StringComparison.OrdinalIgnoreCase) || secretKey.StartsWith("dummy", StringComparison.OrdinalIgnoreCase);
+
+            if (isMockMode)
+            {
+                var mockIntentionId = $"mock_intention_{transaction.ItemType.ToLower()}_{transaction.ReferenceId}";
+                transaction.PaymobIntentionId = mockIntentionId;
+                transactionRepo.Update(transaction);
+                await unitOfWork.SaveChangesAsync();
+
+                return new PaymentResponseDto
+                {
+                    IsSuccess = true,
+                    Message = "[MOCK] Payment process initiated successfully.",
+                    ClientSecret = "mock_client_secret_" + Guid.NewGuid().ToString("N"),
+                    BookingId = transaction.ReferenceId
+                };
+            }
+
             var amountInPiasters = (int)(transaction.Amount * 100);
 
             var client = httpClientFactory.CreateClient();
