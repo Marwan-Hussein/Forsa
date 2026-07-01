@@ -19,13 +19,20 @@ namespace Forsa.Controllers
     {
         private readonly IOrganizerService _organizerService;
         private readonly Application.Core.Interfaces.EventInterfaces.IEventMediaService _eventMediaService;
+        private readonly ICheckoutService _checkoutService;
+        private readonly IPaymentService _paymentService;
+
 
         public OrganizersController(
             IOrganizerService organizerService,
-            Application.Core.Interfaces.EventInterfaces.IEventMediaService eventMediaService)
+            Application.Core.Interfaces.EventInterfaces.IEventMediaService eventMediaService,
+            ICheckoutService checkoutService,
+            IPaymentService paymentService)
         {
             _organizerService = organizerService;
             _eventMediaService = eventMediaService;
+            _checkoutService = checkoutService;
+            _paymentService = paymentService;
         }
 
         [HttpPost("events")]
@@ -333,6 +340,9 @@ namespace Forsa.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = $"An error occurred while processing refund: {ex.Message}" });
+            }
+        }
+
         [HttpGet("{organizerId}/profile")]
         public async Task<ActionResult> GetOrganizerProfile(int organizerId)
         {
