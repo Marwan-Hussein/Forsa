@@ -85,7 +85,11 @@ namespace Application.Services.Auth
             else
                 user = mapper.Map<Domain.Entities.AttendeeEntities.Attendee>(registerDto);
 
+
             user.EmailConfirmed = false; // Need to verify OTP
+            user.CreatedAt = DateTime.UtcNow;
+            user.IsBlocked = false;
+            user.IsDeleted = false;
 
             var refreshToken = refreshTokenService.GenerateToken();
             user.RefreshTokens.Add(refreshTokenService.CreateRefreshToken(refreshToken));
