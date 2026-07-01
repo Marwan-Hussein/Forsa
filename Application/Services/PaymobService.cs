@@ -654,69 +654,79 @@ namespace Application.Services
         {
             if (transaction.ItemType == "EventBooking")
             {
-                var booking = await bookingRepository.GetBookingWithEventAsync(transaction.ReferenceId);
-                if (booking != null)
-                {
-                    booking.Status = BookingStatus.Cancelled;
-                    bookingRepository.Update(booking);
-
-                    if (booking.Event != null)
-                    {
-                        booking.Event.RemainingTickets += booking.NumberOfTickets;
-                        eventRepo.Update(booking.Event);
-
-                        var organizerId = booking.Event.OrganizerId;
-                        var wallet = await walletRepo.GetQueryable()
-                            .FirstOrDefaultAsync(w => w.UserId == organizerId);
-
-                        if (wallet != null)
-                        {
-                            wallet.AvailableBalance -= transaction.Amount;
-                            wallet.LastModifiedAt = DateTime.UtcNow;
-                            walletRepo.Update(wallet);
-                        }
-                    }
-                }
+                await ProcessEventRefundDatabaseUpdates(transaction);
             }
             else if (transaction.ItemType == "PlaceBooking")
             {
-                var request = await bookingRequestRepo.GetQueryable()
-                    .Include(br => br.Place)
-                    .FirstOrDefaultAsync(br => br.Id == transaction.ReferenceId);
+                await ProcessPlaceRefundDatabaseUpdates(transaction);
+            }
+        }
 
-                if (request != null)
+        private async Task ProcessEventRefundDatabaseUpdates(PaymentTransaction transaction)
+        {
+            var booking = await bookingRepository.GetBookingWithEventAsync(transaction.ReferenceId);
+            if (booking != null)
+            {
+                booking.Status = BookingStatus.Cancelled;
+                bookingRepository.Update(booking);
+
+                if (booking.Event != null)
                 {
-                    request.Status = RequestStatus.Cancelled;
-                    bookingRequestRepo.Update(request);
+                    booking.Event.RemainingTickets += booking.NumberOfTickets;
+                    eventRepo.Update(booking.Event);
 
-                    var slot = await availabilityRepo.GetQueryable()
-                        .FirstOrDefaultAsync(s => s.PlaceId == request.PlaceId 
-                                               && s.Date == request.RequestedDate 
-                                               && s.StartTime == request.StartTime 
-                                               && s.EndTime == request.EndTime
-                                               && s.Status == PlaceStatus.Booked);
+                    var organizerId = booking.Event.OrganizerId;
+                    var wallet = await walletRepo.GetQueryable()
+                        .FirstOrDefaultAsync(w => w.UserId == organizerId);
 
-                    if (slot != null)
+                    if (wallet != null)
                     {
-                        slot.IsDeleted = true;
-                        slot.DeletedAt = DateTime.UtcNow;
-                        availabilityRepo.Update(slot);
+                        wallet.AvailableBalance -= transaction.Amount;
+                        wallet.LastModifiedAt = DateTime.UtcNow;
+                        walletRepo.Update(wallet);
                     }
+                }
+            }
+        }
 
-                    if (request.Place != null && request.Place.OwnerId.HasValue)
+        private async Task ProcessPlaceRefundDatabaseUpdates(PaymentTransaction transaction)
+        {
+            var request = await bookingRequestRepo.GetQueryable()
+                .Include(br => br.Place)
+                .FirstOrDefaultAsync(br => br.Id == transaction.ReferenceId);
+
+            if (request != null)
+            {
+                request.Status = RequestStatus.Cancelled;
+                bookingRequestRepo.Update(request);
+
+                var slot = await availabilityRepo.GetQueryable()
+                    .FirstOrDefaultAsync(s => s.PlaceId == request.PlaceId 
+                                           && s.Date == request.RequestedDate 
+                                           && s.StartTime == request.StartTime 
+                                           && s.EndTime == request.EndTime
+                                           && s.Status == PlaceStatus.Booked);
+
+                if (slot != null)
+                {
+                    slot.IsDeleted = true;
+                    slot.DeletedAt = DateTime.UtcNow;
+                    availabilityRepo.Update(slot);
+                }
+
+                if (request.Place != null && request.Place.OwnerId.HasValue)
+                {
+                    var ownerId = request.Place.OwnerId.Value;
+                    var wallet = await walletRepo.GetQueryable()
+                        .FirstOrDefaultAsync(w => w.UserId == ownerId);
+
+                    if (wallet != null)
                     {
-                        var ownerId = request.Place.OwnerId.Value;
-                        var wallet = await walletRepo.GetQueryable()
-                            .FirstOrDefaultAsync(w => w.UserId == ownerId);
-
-                        if (wallet != null)
-                        {
-                            var platformFee = transaction.Amount * 0.10m;
-                            var ownerShare = transaction.Amount - platformFee;
-                            wallet.AvailableBalance -= ownerShare;
-                            wallet.LastModifiedAt = DateTime.UtcNow;
-                            walletRepo.Update(wallet);
-                        }
+                        var platformFee = transaction.Amount * 0.10m;
+                        var ownerShare = transaction.Amount - platformFee;
+                        wallet.AvailableBalance -= ownerShare;
+                        wallet.LastModifiedAt = DateTime.UtcNow;
+                        walletRepo.Update(wallet);
                     }
                 }
             }
