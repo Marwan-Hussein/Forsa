@@ -1,19 +1,56 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { EventCard } from "../../components/EventCard";
 import { PageHeader } from "../../components/PageHeader";
 import { useWishlist } from "../../hooks/useWishlist";
-import { mockEvents } from "../../data/mockData";
+import { apiGet } from "../../api/api";
+import { mapEventDetailsDtoToEvent } from "../../utils/mappers";
+import type { Event as EventType } from "../../types/index";
 
 export default function EventsPage() {
+  const [searchParams] = useSearchParams();
+  
   const [selectedDiscovery, setSelectedDiscovery] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "All");
   const [selectedDate, setSelectedDate] = useState("All");
   const [priceRange, setPriceRange] = useState("All");
-  const [locationFilter, setLocationFilter] = useState("");
+  const [locationFilter, setLocationFilter] = useState(searchParams.get("location") || "");
   const [showFilters, setShowFilters] = useState(false);
   const { toggle: toggleWishlist, has: isInWishlist } = useWishlist();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  const [events, setEvents] = useState<EventType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, selectedDate, priceRange, locationFilter, selectedDiscovery]);
+
+  useEffect(() => {
+    setSearchQuery(searchParams.get("search") || "");
+    setSelectedCategory(searchParams.get("category") || "All");
+    setLocationFilter(searchParams.get("location") || "");
+  }, [searchParams]);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setLoading(true);
+        const data = await apiGet("/api/events") as any[];
+        setEvents(data.map(mapEventDetailsDtoToEvent));
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   const discoveryFilters = ["All", "Recommended", "Near Me"];
   const categories = ["All", "Business", "Music", "Art", "Sports", "Food", "Education"];
@@ -22,7 +59,12 @@ export default function EventsPage() {
   const recommendedCategories = new Set(["Business", "Music", "Sports", "Education"]);
   const nearbyLocationKeywords = ["san francisco", "oakland", "san jose", "bay area"];
 
-  const filteredEvents = mockEvents.filter((event) => {
+  const filteredEvents = events.filter((event) => {
+    // Status filter - only show Approved or Published events
+    if (event.status !== "Approved" && event.status !== "Published") {
+      return false;
+    }
+
     // Search filter
     const matchesSearch =
       searchQuery === "" ||
@@ -313,24 +355,72 @@ export default function EventsPage() {
         </div>
 
         {/* Events Grid */}
-        {displayEvents.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayEvents.map((event, index) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                animationIndex={index}
-                onToggleWishlist={toggleWishlist}
-                isInWishlist={isInWishlist(event.id)}
-              />
-            ))}
+        {loading ? (
+          <div className="bg-white rounded-[14px] border border-slate-200 shadow-sm p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
+             <div className="w-10 h-10 border-4 border-[#1E3D61] border-t-transparent rounded-full animate-spin mb-4"></div>
+             <p className="font-semibold text-lg text-slate-800 mb-2">
+               Discovering events...
+             </p>
           </div>
+        ) : displayEvents.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayEvents.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((event, index) => (
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  animationIndex={index}
+                  onToggleWishlist={toggleWishlist}
+                  isInWishlist={isInWishlist(event.id)}
+                />
+              ))}
+            </div>
+            
+            {Math.ceil(displayEvents.length / itemsPerPage) > 1 && (
+              <div className="flex justify-center mt-12 gap-2">
+                <button 
+                  disabled={currentPage === 1}
+                  onClick={() => {
+                    setCurrentPage(p => p - 1);
+                    window.scrollTo({ top: 400, behavior: 'smooth' });
+                  }}
+                  className="px-4 py-2 border border-slate-200 rounded-lg disabled:opacity-50 font-medium text-slate-600 hover:bg-slate-50 transition-colors bg-white shadow-sm"
+                >
+                  Previous
+                </button>
+                <div className="flex gap-1 overflow-x-auto max-w-[200px] sm:max-w-none no-scrollbar">
+                  {Array.from({ length: Math.ceil(displayEvents.length / itemsPerPage) }).map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        setCurrentPage(i + 1);
+                        window.scrollTo({ top: 400, behavior: 'smooth' });
+                      }}
+                      className={`min-w-[40px] h-10 rounded-lg font-bold transition-all flex items-center justify-center ${currentPage === i + 1 ? 'bg-[#1E3D61] text-white shadow-md' : 'text-slate-600 bg-white shadow-sm hover:bg-slate-50 border border-slate-200'}`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+                <button 
+                  disabled={currentPage === Math.ceil(displayEvents.length / itemsPerPage)}
+                  onClick={() => {
+                    setCurrentPage(p => p + 1);
+                    window.scrollTo({ top: 400, behavior: 'smooth' });
+                  }}
+                  className="px-4 py-2 border border-slate-200 rounded-lg disabled:opacity-50 font-medium text-slate-600 hover:bg-slate-50 transition-colors bg-white shadow-sm"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         ) : (
-          <div className="bg-white rounded-[14px] border border-border p-12 text-center">
-            <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-2">
+          <div className="bg-white rounded-[14px] border border-slate-200 shadow-sm p-12 text-center">
+            <p className="font-semibold text-lg text-slate-800 mb-2">
               No events found
             </p>
-            <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
+            <p className="text-sm text-slate-500">
               Try adjusting your filters or search query
             </p>
           </div>

@@ -378,5 +378,33 @@ namespace Application.Services.OrganizerServices
             _bookingRepository.Update(booking);
             await _unitOfWork.SaveChangesAsync();
         }
+        public async Task<OrganizerProfileDto> GetOrganizerProfileAsync(int organizerId)
+        {
+            var organizer = await _organizerRepo.GetQueryable()
+                .Include(o => o.AttendeeSubsOrganizers)
+                .Include(o => o.OrganiztionTypeWithOrganizers)
+                    .ThenInclude(ot => ot.OrganiztionType)
+                .FirstOrDefaultAsync(o => o.Id == organizerId);
+
+            if (organizer == null)
+                throw new KeyNotFoundException("Organizer not found");
+
+            var eventsCount = await _eventRepository.GetQueryable()
+                .CountAsync(e => e.OrganizerId == organizerId && !e.IsDeleted);
+
+            return new OrganizerProfileDto
+            {
+                Id = organizer.Id,
+                OrganizationName = organizer.OrganizationName,
+                FirstName = organizer.FirstName,
+                LastName = organizer.LastName,
+                FullName = organizer.FullName,
+                Email = organizer.Email,
+                PhoneNumber = organizer.PhoneNumber,
+                AverageRating = organizer.AverageRating,
+                ReviewsCount = organizer.ReviewsCount
+                // You can add more fields if needed
+            };
+        }
     }
 }

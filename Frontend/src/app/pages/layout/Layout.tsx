@@ -4,6 +4,7 @@ import { AnimatedOutlet } from "../../components/AnimatedOutlet";
 import { Navigation } from "../../components/Navigation";
 import { SiteFooter } from "../../components/SiteFooter";
 import { Toaster } from "../../components/ui/sonner";
+import { AiChatbot } from "../../components/AiChatbot";
 
 export default function Layout() {
   const { pathname } = useLocation();
@@ -119,6 +120,7 @@ export default function Layout() {
       </main>
       {showAppChrome && <SiteFooter />}
       <Toaster />
+      <AiChatbot />
 
       {/* Floating Action Buttons using user-provided SVG and attributes */}
       <div

@@ -10,10 +10,7 @@ import ProfilePage from "./pages/attendee/ProfilePage";
 import InterestsPage from "./pages/attendee/InterestsPage";
 import EventsPage from "./pages/events/EventsPage";
 import EventDetailsPage from "./pages/events/EventDetailsPage";
-import MyEventsPage from "./pages/attendee/MyEventsPage";
-import WishlistPage from "./pages/attendee/WishlistPage";
-import RecommendationsPage from "./pages/attendee/RecommendationsPage";
-import CalendarPage from "./pages/attendee/CalendarPage";
+
 import OrganizationsPage from "./pages/organizations/OrganizationsPage";
 import NotificationsPage from "./pages/attendee/NotificationsPage";
 import FeedbackPage from "./pages/events/FeedbackPage";
@@ -23,6 +20,8 @@ import BookingRequestFormPage from "./pages/places/BookingRequestFormPage";
 import MyBookingRequestsPage from "./pages/places/MyBookingRequestsPage";
 import SubmitOrgToOwnerFeedbackPage from "./pages/places/SubmitOrgToOwnerFeedbackPage";
 import ViewFeedbackRatingPage from "./pages/places/ViewFeedbackRatingPage";
+import AboutPage from "./pages/home/AboutPage";
+import ContactUsPage from "./pages/home/ContactUsPage";
 
 import AdminLoginPage from "./pages/auth/AdminLoginPage";
 
@@ -102,22 +101,7 @@ export const router = createBrowserRouter([
         path: "events/:eventId/feedback",
         Component: FeedbackPage,
       },
-      {
-        path: "my-events",
-        Component: MyEventsPage,
-      },
-      {
-        path: "wishlist",
-        Component: WishlistPage,
-      },
-      {
-        path: "recommendations",
-        Component: RecommendationsPage,
-      },
-      {
-        path: "calendar",
-        Component: CalendarPage,
-      },
+
       {
         path: "organizations",
         Component: OrganizationsPage,
@@ -129,6 +113,14 @@ export const router = createBrowserRouter([
       {
         path: "notifications",
         Component: NotificationsPage,
+      },
+      {
+        path: "about",
+        Component: AboutPage,
+      },
+      {
+        path: "contact",
+        Component: ContactUsPage,
       },
     ],
   },

@@ -19,5 +19,9 @@ namespace Application.Core.DTOs.Event
         public decimal? PlaceLongitude { get; set; }
         public string? GooglePlaceId { get; set; }
         public string AvailabilityStatus { get; set; }  // Calculated based on remaining tickets
+        public string? ImageUrl { get; set; }
+        public int OrganizerId { get; set; }
+        public string OrganizerName { get; set; }
+        public int OrganizerFollowersCount { get; set; }
     }
 }

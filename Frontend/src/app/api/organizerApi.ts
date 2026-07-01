@@ -63,6 +63,28 @@ export const organizerApi = {
     return await apiPost('/api/organizers/events', dto);
   },
 
+  uploadEventMedia: async (eventId: number, organizerId: number, file: File): Promise<any> => {
+    const formData = new FormData();
+    formData.append('organizerId', organizerId.toString());
+    formData.append('files', file);
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/organizers/events/${eventId}/media`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(errorData || 'Failed to upload event media');
+    }
+
+    return await response.json();
+  },
+
   updateEventDetails: async (eventId: number, dto: UpdateEventDto): Promise<Event> => {
     return await apiPut(`/api/organizers/events/${eventId}`, dto);
   },

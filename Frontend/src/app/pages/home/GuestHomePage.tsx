@@ -1,6 +1,6 @@
 import type { MouseEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { motion, useScroll, useTransform, AnimatePresence } from "motion/react";
 import { ForSaLogo } from "../../components/ForSaLogo";
 import { ScrollReveal } from "../../components/ScrollReveal";
@@ -23,6 +23,7 @@ import {
 import { EventCard } from "../../components/EventCard";
 import { apiGet } from "../../api/api";
 import type { Event as EventType } from "../../types/index";
+import { mapEventDetailsDtoToEvent } from "../../utils/mappers";
 
 // Premium Color Palette Constants
 const DEEP_NAVY = "#1E3D61";
@@ -50,10 +51,13 @@ const itemVariants = {
 };
 
 export default function GuestHomePage() {
+  const navigate = useNavigate();
   const [eventFilter, setEventFilter] = useState<"all" | "week" | "month" | "featured">("featured");
   const [navElevated, setNavElevated] = useState(false);
   const [events, setEvents] = useState<EventType[]>([]);
   const [eventCategories, setEventCategories] = useState<{name: string, icon: any, count: string, color: string}[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchLocation, setSearchLocation] = useState("");
 
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 100]);
@@ -66,17 +70,9 @@ export default function GuestHomePage() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const handleProtectedAction = (e: MouseEvent) => {
-    e.preventDefault();
-    window.location.href = "/login";
+  const handleSearch = () => {
+    navigate(`/events?search=${encodeURIComponent(searchQuery)}&location=${encodeURIComponent(searchLocation)}`);
   };
-
-  const stats = [
-    { label: "Successful Events Hosted", value: "10K+", icon: Calendar },
-    { label: "Community Members", value: "50K+", icon: Users },
-    { label: "Verified Premium Venues", value: "500+", icon: MapPin },
-    { label: "Secure Ticket Bookings", value: "1M+", icon: Ticket },
-  ];
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -128,12 +124,29 @@ export default function GuestHomePage() {
   }, []);
 
   const filteredEvents = useMemo(() => {
-    const list = [...events];
+    const list = [...events].filter(e => (e as any).status === "Approved" || (e as any).status === "Published");
+    const now = new Date();
+    const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    let filtered = list;
     if (eventFilter === "featured") {
-      // If we had featured events in db, we'd filter here. For now, just slice.
-      return list.slice(0, 6);
+      filtered = list.slice(0, 6);
+    } else if (eventFilter === "week") {
+      filtered = list.filter(e => {
+        const d = new Date((e as any).startDate);
+        return d >= now && d <= oneWeekFromNow;
+      });
+    } else if (eventFilter === "month") {
+      filtered = list.filter(e => {
+        const d = new Date((e as any).startDate);
+        return d >= now && d <= oneMonthFromNow;
+      });
     }
-    return list.slice(0, 6);
+    
+    // Map backend EventDetailsDto to Event contract
+    return filtered
+      .map(e => mapEventDetailsDtoToEvent(e as any));
   }, [eventFilter, events]);
 
   const eventTabs: { id: typeof eventFilter; label: string }[] = [
@@ -183,103 +196,149 @@ export default function GuestHomePage() {
         </div>
 
         <motion.div 
-          className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8 flex flex-col items-center text-center"
+          className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center text-left"
           style={{ y: heroY, opacity: heroOpacity }}
         >
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-8 hover:bg-white/10 transition-colors cursor-pointer"
-          >
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
-            </span>
-            <span className="text-sm font-semibold text-white tracking-wide opacity-90 uppercase">The Premier Event Platform in 2026</span>
-          </motion.div>
-
-          <motion.h1 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="text-5xl md:text-7xl lg:text-[84px] font-extrabold text-white tracking-tight leading-[1.05] max-w-5xl"
-          >
-            Discover & Book <br/>
-            <motion.span 
-              animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-              className="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-300 to-white bg-[length:200%_auto]"
+          {/* Left Column - Content & Search */}
+          <div className="lg:col-span-7 flex flex-col items-start">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-8 hover:bg-white/10 transition-colors cursor-pointer"
             >
-              Exceptional Events
-            </motion.span>
-          </motion.h1>
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+              </span>
+              <span className="text-sm font-semibold text-white tracking-wide opacity-90 uppercase">The Premier Event Platform in 2026</span>
+            </motion.div>
 
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-8 text-lg md:text-xl text-slate-300 max-w-2xl font-light leading-relaxed"
-          >
-            Elevate your experiences. Gain access to exclusive gatherings, professional summits, and vibrant festivals all in one beautifully curated platform.
-          </motion.p>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3, type: "spring", stiffness: 200, damping: 20 }}
-            className="mt-14 w-full max-w-3xl relative group"
-          >
-            <div className="absolute -inset-1 bg-gradient-to-r from-white/10 to-white/5 rounded-full blur-md group-hover:blur-lg transition-all duration-500 opacity-50 group-hover:opacity-100"></div>
-            <div className="relative flex flex-col sm:flex-row items-center p-2.5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl md:rounded-full shadow-2xl transition-all duration-300">
-              <div className="flex-1 flex items-center w-full px-5 py-3 sm:py-0 border-b sm:border-b-0 sm:border-r border-white/10">
-                <Search className="w-6 h-6 text-white/80" />
-                <input 
-                  type="text" 
-                  placeholder="What are you looking for?" 
-                  className="w-full bg-transparent border-none text-white placeholder-slate-300 focus:outline-none focus:ring-0 px-4 py-2 text-base md:text-lg font-medium"
-                />
-              </div>
-              <div className="flex-1 flex items-center w-full px-5 py-3 sm:py-0">
-                <MapPin className="w-6 h-6 text-white/80" />
-                <input 
-                  type="text" 
-                  placeholder="Location" 
-                  className="w-full bg-transparent border-none text-white placeholder-slate-300 focus:outline-none focus:ring-0 px-4 py-2 text-base md:text-lg font-medium"
-                />
-              </div>
-              <button 
-                className="w-full sm:w-auto px-10 py-4 rounded-2xl md:rounded-full font-bold text-[#1E3D61] bg-white transition-all duration-300 hover:bg-slate-50 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] active:scale-[0.98] mt-3 sm:mt-0 flex items-center justify-center gap-2"
+            <motion.h1 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.05] max-w-2xl"
+            >
+              Discover & Book <br/>
+              <motion.span 
+                animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                className="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-300 to-white bg-[length:200%_auto]"
               >
-                Search <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
-          </motion.div>
-        </motion.div>
-      </section>
+                Exceptional Events
+              </motion.span>
+            </motion.h1>
 
-      {/* Stats Section with Overlapping Cards (No Skew, Clean overlap) */}
-      <section className="relative z-20 px-6 lg:px-8 transform -translate-y-16">
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="max-w-7xl mx-auto"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((stat, idx) => (
-              <motion.div key={idx} variants={itemVariants} className="bg-white rounded-2xl p-8 shadow-[0_10px_40px_rgb(0,0,0,0.08)] border border-slate-100 flex flex-col items-center text-center group transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgb(30,61,97,0.12)]">
-                <div className="w-14 h-14 rounded-2xl bg-[#F8FAFC] flex items-center justify-center mb-5 group-hover:bg-[#1E3D61] transition-colors duration-500">
-                  <stat.icon className="w-7 h-7 text-[#1E3D61] group-hover:text-white transition-colors duration-500" strokeWidth={1.5} />
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="mt-8 text-base md:text-lg text-slate-300 max-w-xl font-light leading-relaxed text-left"
+            >
+              Elevate your experiences. Gain access to exclusive gatherings, professional summits, and vibrant festivals all in one beautifully curated platform.
+            </motion.p>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3, type: "spring", stiffness: 200, damping: 20 }}
+              className="mt-10 w-full max-w-2xl relative group"
+            >
+              <div className="absolute -inset-1 bg-gradient-to-r from-white/10 to-white/5 rounded-2xl blur-md group-hover:blur-lg transition-all duration-500 opacity-50 group-hover:opacity-100"></div>
+              <div className="relative flex flex-col sm:flex-row items-center p-2.5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl transition-all duration-300">
+                <div className="flex-1 flex items-center w-full px-5 py-3 sm:py-0 border-b sm:border-b-0 sm:border-r border-white/10">
+                  <Search className="w-5 h-5 text-white/80" />
+                  <input 
+                    type="text" 
+                    placeholder="Search events..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    className="w-full bg-transparent border-none text-white placeholder-slate-300 focus:outline-none focus:ring-0 px-4 py-2 text-sm font-medium"
+                  />
                 </div>
-                <h3 className="text-3xl font-bold text-[#0F172A] mb-2 tracking-tight">{stat.value}</h3>
-                <p className="text-sm font-medium text-slate-500">{stat.label}</p>
-              </motion.div>
-            ))}
+                <div className="flex-1 flex items-center w-full px-5 py-3 sm:py-0">
+                  <MapPin className="w-5 h-5 text-white/80" />
+                  <input 
+                    type="text" 
+                    placeholder="Location" 
+                    value={searchLocation}
+                    onChange={(e) => setSearchLocation(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    className="w-full bg-transparent border-none text-white placeholder-slate-300 focus:outline-none focus:ring-0 px-4 py-2 text-sm font-medium"
+                  />
+                </div>
+                <button 
+                  onClick={handleSearch}
+                  className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-bold text-[#1E3D61] bg-white transition-all duration-300 hover:bg-slate-50 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] active:scale-[0.98] mt-3 sm:mt-0 flex items-center justify-center gap-2 text-sm shrink-0"
+                >
+                  Search <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Right Column - Visual Mockup representation of event ticketing */}
+          <div className="lg:col-span-5 hidden lg:flex flex-col items-center relative">
+            <div className="relative w-80 h-96 select-none pointer-events-none">
+              {/* Fake Event Card Mockup */}
+              <div className="absolute top-0 left-0 w-72 h-80 bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 shadow-2xl rotate-[-6deg] transform hover:rotate-0 transition-transform duration-500">
+                <div className="h-36 rounded-xl overflow-hidden bg-slate-900/40 relative">
+                  <img 
+                    src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&q=80" 
+                    alt="Event"
+                    className="w-full h-full object-cover opacity-80" 
+                  />
+                  <div className="absolute top-3 left-3 bg-[#1E3D61] text-white text-[9px] font-bold uppercase px-2 py-0.5 rounded-md">
+                    Featured Event
+                  </div>
+                </div>
+                <div className="mt-4 text-white">
+                  <h4 className="font-bold text-sm leading-snug line-clamp-2">Creative Design & AI Conference 2026</h4>
+                  <div className="flex items-center gap-1.5 text-white/60 text-[10px] mt-3">
+                    <Calendar className="w-3.5 h-3.5 text-blue-300" />
+                    <span>March 25, 2026</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
+                    <span className="font-bold text-xs">$150.00</span>
+                    <span className="text-[9px] font-bold text-emerald-400 uppercase">Available</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Fake Passbook Ticket Mockup */}
+              <div className="absolute bottom-4 right-0 w-64 bg-[#1E3D61] border border-white/10 rounded-2xl p-4 shadow-2xl rotate-[8deg] transform hover:rotate-0 transition-transform duration-500 flex flex-col justify-between">
+                <div className="border-b border-dashed border-white/15 pb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[8px] font-mono text-white/50">TICKET PASS</span>
+                    <span className="text-[8px] font-bold text-amber-400">LOYALTY PASS</span>
+                  </div>
+                  <h5 className="font-bold text-xs text-white truncate">Global Tech Summit</h5>
+                  <div className="flex gap-4 mt-2">
+                    <div>
+                      <p className="text-[7px] text-white/40 font-bold uppercase">DATE</p>
+                      <p className="text-[9px] text-white font-bold">AUG 11</p>
+                    </div>
+                    <div>
+                      <p className="text-[7px] text-white/40 font-bold uppercase">TIME</p>
+                      <p className="text-[9px] text-white font-bold">10:00 AM</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="pt-3">
+                  <div className="flex items-center gap-0.5 justify-center h-8 opacity-75">
+                    {[1, 2, 1, 3, 2, 4, 1, 2, 3, 1, 2, 4, 1, 2, 1, 3].map((w, i) => (
+                      <div key={i} className="bg-white rounded-sm shrink-0" style={{ width: `${w}px`, height: "100%" }} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </motion.div>
       </section>
+
 
       {/* Elegant Categories Section */}
       <section className="py-16 px-6 lg:px-8">
@@ -311,7 +370,7 @@ export default function GuestHomePage() {
               <motion.button 
                 key={cat.name}
                 variants={itemVariants}
-                onClick={handleProtectedAction}
+                onClick={() => navigate(`/events?category=${encodeURIComponent(cat.name)}`)}
                 className="w-full bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-[#1E3D61]/30 hover:-translate-y-1 transition-all duration-300 flex items-center gap-5 group text-left"
               >
                 <div className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-300 shrink-0 ${cat.color.split(' ')[1]} group-hover:opacity-80`}>
@@ -330,13 +389,30 @@ export default function GuestHomePage() {
       {/* Featured Events */}
       <section className="py-24 px-6 lg:px-8 bg-white border-y border-slate-100">
         <div className="max-w-7xl mx-auto">
-          <ScrollReveal y={20} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
+          <ScrollReveal y={20} className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-8 h-1 bg-[#1E3D61] rounded-full"></span>
                 <span className="text-[#1E3D61] font-semibold tracking-wider text-sm uppercase">Trending</span>
               </div>
               <h2 className="text-3xl md:text-4xl font-bold text-[#0F172A] tracking-tight">Curated For You</h2>
+            </div>
+            
+            {/* Filter Tabs */}
+            <div className="flex bg-slate-100 p-1.5 rounded-xl gap-1 shrink-0">
+              {eventTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setEventFilter(tab.id)}
+                  className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all ${
+                    eventFilter === tab.id
+                      ? "bg-[#1E3D61] text-white shadow-sm"
+                      : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
           </ScrollReveal>
 

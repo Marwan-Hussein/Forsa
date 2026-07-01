@@ -19,14 +19,10 @@ export function useGoogleMaps() {
       return;
     }
 
-    const onScriptLoad = () => {
-      isScriptLoaded = true;
-      setIsLoaded(true);
-      callbacks.forEach((cb) => cb());
-    };
+    const handleLoaded = () => setIsLoaded(true);
 
     if (isScriptLoading) {
-      callbacks.push(onScriptLoad);
+      callbacks.push(handleLoaded);
       return;
     }
 
@@ -35,7 +31,12 @@ export function useGoogleMaps() {
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
     script.async = true;
     script.defer = true;
-    script.onload = onScriptLoad;
+    script.onload = () => {
+      isScriptLoaded = true;
+      setIsLoaded(true);
+      callbacks.forEach((cb) => cb());
+      callbacks.length = 0;
+    };
     document.head.appendChild(script);
 
     return () => {

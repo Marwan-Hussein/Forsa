@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
-import { apiPost } from "../../api/api";
+import { apiPost, apiGet, getUserIdFromToken } from "../../api/api";
 import MapDisplay from "../../components/map/MapDisplay";
 import {
   ArrowLeft,
@@ -15,7 +15,6 @@ import {
   Ticket,
   Building2,
 } from "lucide-react";
-import { mockEvents, mockOrganizations } from "../../data/mockData";
 import { ImageWithFallback } from "../../components/ImageWithFallback";
 import {
   DURATION_FAST,
@@ -25,14 +24,50 @@ import {
   pageTransition,
   pageVariants,
 } from "../../lib/motion";
+import { mapEventDetailsDtoToEvent } from "../../utils/mappers";
 
 export default function EventDetailsPage() {
   const { eventId } = useParams<{ eventId: string }>();
-  const event = mockEvents.find((e) => e.id === eventId);
+  const [event, setEvent] = useState<any>(null);
+  const [organization, setOrganization] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
   const [ticketCount, setTicketCount] = useState(1);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+
+  useEffect(() => {
+    const fetchDetails = async () => {
+      try {
+        setLoading(true);
+        const dto = await apiGet(`/api/events/${eventId}/details`) as any;
+        setEvent(mapEventDetailsDtoToEvent(dto));
+        
+        // Use real organization data from the event details response
+        setOrganization({ 
+          name: dto.organizerName || "Organizer", 
+          logo: "🏛️", 
+          id: dto.organizerId || "org1", 
+          description: "Event Organizer", 
+          followersCount: dto.organizerFollowersCount || 0 
+        });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (eventId) fetchDetails();
+  }, [eventId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-[#1E3D61] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   if (!event) {
     return (
@@ -55,12 +90,23 @@ export default function EventDetailsPage() {
     );
   }
 
-  const organization = mockOrganizations.find((org) => org.id === event.organizerId);
   const totalPrice = event.price === "Free" ? 0 : (event.price as number) * ticketCount;
 
   const handleBooking = async () => {
     try {
-      await apiPost(`/api/Events/${eventId}/deduct-tickets?quantity=${ticketCount}`, {});
+      const token = localStorage.getItem("forsa_token");
+      if (!token) {
+        toast.error("Please login to book tickets");
+        return;
+      }
+      const userId = getUserIdFromToken();
+
+      await apiPost(`/api/bookings`, {
+        attendeeId: userId,
+        eventId: Number(eventId),
+        numberOfTickets: ticketCount,
+        specialRequests: ""
+      });
       setShowBookingModal(false);
       toast.success("Booking confirmed", {
         description: `${ticketCount} ticket(s) for ${event.title}.`,
@@ -74,7 +120,7 @@ export default function EventDetailsPage() {
 
   const handleShare = (platform: string) => {
     toast.message(`Share to ${platform}`, {
-      description: "This is a demo — no external app opened.",
+      description: "This is a demo - no external app opened.",
     });
     setShowShareModal(false);
   };
@@ -121,11 +167,19 @@ export default function EventDetailsPage() {
             {/* Event Image */}
             <div className="overflow-hidden rounded-2xl border border-[rgba(82,109,130,0.14)] bg-white shadow-[0_8px_30px_-12px_rgba(39,55,77,0.15)]">
               <div className="relative h-[400px]">
-                <ImageWithFallback
-                  alt={event.title}
-                  className="h-full w-full object-cover"
-                  query={event.image}
-                />
+                {event.image && (event.image.startsWith("http") || event.image.startsWith("/")) ? (
+                  <ImageWithFallback
+                    alt={event.title}
+                    className="h-full w-full object-cover"
+                    src={event.image.startsWith("/") ? `http://localhost:5000${event.image}` : event.image}
+                  />
+                ) : (
+                  <ImageWithFallback
+                    alt={event.title}
+                    className="h-full w-full object-cover"
+                    query={event.image}
+                  />
+                )}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#27374d]/40 via-transparent to-transparent" />
                 <div className="absolute top-4 right-4 flex gap-2">
                   <motion.button
@@ -158,9 +212,22 @@ export default function EventDetailsPage() {
                 <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[30px] text-foreground">
                   {event.title}
                 </h1>
-                <span className="px-3 py-1 bg-[#155dfc] text-white rounded-[8px] text-[12px] font-['Inter:Medium',sans-serif] font-medium">
-                  {event.category}
-                </span>
+                <div className="flex gap-2 items-center">
+                  {event.status && (
+                    <span className={`px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider ${
+                      event.status === 'Approved' ? 'bg-green-100 text-green-700' :
+                      event.status === 'Pending' ? 'bg-orange-100 text-orange-700' :
+                      event.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                      event.status === 'Completed' ? 'bg-gray-100 text-gray-700' :
+                      'bg-blue-100 text-blue-700'
+                    }`}>
+                      {event.status}
+                    </span>
+                  )}
+                  <span className="px-3 py-1 bg-[#155dfc] text-white rounded-[8px] text-[12px] font-['Inter:Medium',sans-serif] font-medium">
+                    {event.category}
+                  </span>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -275,7 +342,7 @@ export default function EventDetailsPage() {
                   Ticket Price
                 </p>
                 <p className="font-['Inter:Bold',sans-serif] font-bold text-[32px] text-foreground">
-                  {event.price === "Free" ? "Free" : `$${event.price}`}
+                  {event.price === "Free" ? "Free" : `${event.price} EGP`}
                 </p>
               </div>
 
@@ -404,20 +471,18 @@ export default function EventDetailsPage() {
               </div>
 
               <div className="mb-6 rounded-xl bg-background/90 p-4 ring-1 ring-[#27374d]/5">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">Ticket Price:</span>
-                  <span className="font-['Inter:Semi_Bold',sans-serif] text-[14px] font-semibold text-foreground">
-                    {event.price === "Free" ? "Free" : `$${event.price}`}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-['Inter:Semi_Bold',sans-serif] text-[16px] font-semibold text-foreground">
-                    Total:
-                  </span>
-                  <span className="font-['Inter:Bold',sans-serif] text-[20px] font-bold text-foreground">
-                    {totalPrice === 0 ? "Free" : `$${totalPrice}`}
-                  </span>
-                </div>
+                  <div className="flex justify-between items-center text-[14px] mb-2">
+                    <span className="text-muted-foreground">Price per ticket</span>
+                    <span className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-foreground">
+                      {event.price === "Free" ? "Free" : `${event.price} EGP`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-[16px] pt-2 border-t border-[rgba(82,109,130,0.14)]">
+                    <span className="font-['Inter:Medium',sans-serif] font-medium text-foreground">Total</span>
+                    <span className="font-['Inter:Bold',sans-serif] font-bold text-primary">
+                      {totalPrice === 0 ? "Free" : `${totalPrice} EGP`}
+                    </span>
+                  </div>
               </div>
 
               <div className="flex gap-3">

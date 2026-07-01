@@ -22,5 +22,6 @@ namespace Application.Core.Interfaces.OrganizerInterfaces
         Task<OrganizerDashboardStatsDto> GetOrganizerDashboardStatsAsync(int organizerId);
         Task<List<EventAttendeeDto>> GetEventAttendeesAsync(int eventId);
         Task ManualCheckInAsync(int bookingId);
+        Task<OrganizerProfileDto> GetOrganizerProfileAsync(int organizerId);
     }
 }
