@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Sparkles,
@@ -66,6 +67,24 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
   const [showQR, setShowQR] = useState(false);
   const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [loadingQr, setLoadingQr] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  
+  const now = new Date();
+  const timeDiff = date.getTime() - now.getTime();
+  const hoursDiff = timeDiff / (1000 * 3600);
+  const isCancelled = String(booking.status).toLowerCase() === "cancelled";
+  const canCancel = hoursDiff > 24 && !isCancelled;
+
+  const handleCancel = async () => {
+    setShowCancelModal(false);
+    try {
+      await attendeeApi.cancelBooking(booking.bookingId);
+      toast.success("Booking cancelled successfully.");
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to cancel booking.");
+    }
+  };
 
   const handleViewTicket = async () => {
     setShowQR(true);
@@ -96,9 +115,15 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
         <div className="flex-1 p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> Confirmed Booking
-              </span>
+              {isCancelled ? (
+                <span className="bg-rose-50 text-rose-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                  <X className="w-3 h-3" /> Cancelled
+                </span>
+              ) : (
+                <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Confirmed Booking
+                </span>
+              )}
               <span className="bg-slate-50 text-slate-600 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
                 {booking.eventCategory}
               </span>
@@ -159,12 +184,71 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
           
           <button 
             onClick={handleViewTicket}
-            className="w-full mt-4 bg-white hover:bg-[#1E3D61] text-[#1E3D61] hover:text-white border border-[#1E3D61]/15 hover:border-transparent font-bold text-xs py-2 px-3 rounded-lg shadow-sm hover:shadow-md transition-all text-center flex items-center justify-center gap-1.5"
+            disabled={isCancelled}
+            className={`w-full mt-4 border font-bold text-xs py-2 px-3 rounded-lg shadow-sm transition-all text-center flex items-center justify-center gap-1.5 ${
+              isCancelled 
+                ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" 
+                : "bg-white hover:bg-[#1E3D61] text-[#1E3D61] hover:text-white border-[#1E3D61]/15 hover:border-transparent hover:shadow-md"
+            }`}
           >
             <QrCode className="w-4 h-4" /> View Ticket
           </button>
+          
+          {canCancel && (
+             <button 
+               onClick={() => setShowCancelModal(true)}
+               className="w-full mt-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 hover:border-rose-300 font-bold text-[11px] py-1.5 px-3 rounded-lg transition-all text-center"
+             >
+               Cancel Booking
+             </button>
+          )}
         </div>
       </motion.div>
+
+      {/* Cancel Confirmation Modal */}
+      <AnimatePresence>
+        {showCancelModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+              onClick={() => setShowCancelModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 overflow-hidden z-10"
+            >
+              <div className="text-center">
+                <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <X className="w-8 h-8 text-rose-500" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">Cancel Booking?</h3>
+                <p className="text-sm text-slate-500 mb-6">
+                  Are you sure you want to cancel your booking for <span className="font-semibold text-slate-700">{booking.eventTitle}</span>? This action cannot be undone.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowCancelModal(false)}
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-colors"
+                  >
+                    Keep Booking
+                  </button>
+                  <button
+                    onClick={handleCancel}
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-rose-500 text-white font-semibold text-sm hover:bg-rose-600 shadow-sm transition-colors"
+                  >
+                    Yes, Cancel
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* QR Code Modal */}
       <AnimatePresence>
