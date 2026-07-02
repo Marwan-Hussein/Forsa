@@ -134,7 +134,7 @@ export function Navigation() {
                     }`}
                   >
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center font-['Inter:Bold',sans-serif] text-sm overflow-hidden ${
-                      shouldElevate ? 'bg-gradient-to-br from-[#1E3D61] to-[#152D4A] text-white' : 'bg-white text-[#1E3D61]'
+                      shouldElevate ? 'bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-hover)] text-white' : 'bg-white text-[var(--brand-navy)]'
                     }`}>
                       {localStorage.getItem("forsa_profile_picture") ? (
                         <img src={`${import.meta.env.VITE_API_BASE_URL || ""}${localStorage.getItem("forsa_profile_picture")}`} alt="Profile" className="w-full h-full object-cover" />
