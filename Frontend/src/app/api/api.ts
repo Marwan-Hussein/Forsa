@@ -13,6 +13,21 @@ export class ApiError extends Error {
     this.data = data;
   }
 }
+ // 
+export function getUserIdFromToken(): number | null {
+  const token = localStorage.getItem("forsa_token");
+  if (!token) return null;
+
+  try {
+    const payload = token.split('.')[1];
+    const decoded = JSON.parse(atob(payload));
+    const nameId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] || decoded.nameid || decoded.sub;
+    return nameId ? parseInt(nameId, 10) : null;
+  } catch (e) {
+    console.error("Failed to decode token", e);
+    return null;
+  }
+}
 
 async function readResponseBody(response: Response): Promise<unknown> {
   const contentType = response.headers.get("content-type") ?? "";
@@ -98,5 +113,11 @@ export async function apiPatch<T>(path: string, body: unknown): Promise<T> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
+  });
+}
+
+export async function apiDelete<T>(path: string): Promise<T> {
+  return request<T>(path, {
+    method: "DELETE",
   });
 }
