@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router";
+import { toast } from "sonner";
 import { ImageWithFallback } from "../../components/ImageWithFallback";
 import MapDisplay from "../../components/map/MapDisplay";
 import { placeApi, PlaceDetails } from "../../api/placeApi";
@@ -409,8 +410,29 @@ export default function PlaceDetailsPage() {
                     <Clock className="w-5 h-5 mr-2" /> Request Pending
                   </button>
                 ) : existingRequest?.status === 1 ? (
-                  <button disabled className="w-full flex items-center justify-center py-4 bg-emerald-50/80 text-emerald-800 border border-emerald-250/60 font-bold text-lg rounded-2xl mb-4 cursor-not-allowed">
-                    <CheckCircle className="w-5 h-5 mr-2" /> Request Approved
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const res = await organizerApi.processPlaceCheckout(existingRequest.id || existingRequest.requestId);
+                        if (res && res.clientSecret) {
+                          if (res.clientSecret.startsWith("mock_")) {
+                            toast.success("Mock Payment Success", { description: "Simulated payment for testing." });
+                          } else if (res.clientSecret.startsWith("http")) {
+                            window.location.href = res.clientSecret;
+                          } else {
+                            const pubKey = res.publicKey || "pk_test_placeholder";
+                            window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${pubKey}&clientSecret=${res.clientSecret}`;
+                          }
+                        } else {
+                          toast.error("Could not initiate payment.");
+                        }
+                      } catch (err: any) {
+                        toast.error("Payment initiation failed", { description: err.message });
+                      }
+                    }}
+                    className="w-full flex items-center justify-center py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-lg rounded-2xl transition-all shadow-md hover:shadow-lg hover:shadow-emerald-500/20 active:scale-[0.98] mb-4"
+                  >
+                    <DollarSign className="w-5 h-5 mr-2" /> Pay Now
                   </button>
                 ) : (
                   <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>

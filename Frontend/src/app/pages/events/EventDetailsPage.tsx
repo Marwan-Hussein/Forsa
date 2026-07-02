@@ -101,12 +101,38 @@ export default function EventDetailsPage() {
       }
       const userId = getUserIdFromToken();
 
-      await apiPost(`/api/bookings`, {
+      const bookingResult = await apiPost(`/api/bookings`, {
         attendeeId: userId,
         eventId: Number(eventId),
         numberOfTickets: ticketCount,
         specialRequests: ""
-      });
+      }) as any;
+
+      if (totalPrice > 0) {
+        // Not free, proceed to checkout
+        try {
+          const paymentResult = await apiPost(`/api/bookings/${bookingResult.bookingId}/checkout`, {}) as any;
+          if (paymentResult.clientSecret) {
+            if (paymentResult.clientSecret.startsWith("mock_")) {
+              toast.success("Mock Payment Success", { description: "Simulated payment for testing." });
+            } else if (paymentResult.clientSecret.startsWith("http")) {
+              window.location.href = paymentResult.clientSecret;
+              return;
+            } else {
+              const pubKey = paymentResult.publicKey || "pk_test_placeholder";
+              window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${pubKey}&clientSecret=${paymentResult.clientSecret}`;
+              return;
+            }
+          }
+        } catch (paymentError) {
+          toast.error("Booking created but failed to initiate payment.", {
+            description: "You may need to try paying from your dashboard.",
+          });
+          setShowBookingModal(false);
+          return;
+        }
+      }
+
       setShowBookingModal(false);
       toast.success("Booking confirmed", {
         description: `${ticketCount} ticket(s) for ${event.title}.`,

@@ -301,6 +301,32 @@ export default function MyBookingRequestsPage() {
                             <Trash2 className="w-5 h-5" />
                           </button>
                         )}
+                        {status === "approved" && (
+                          <button 
+                            onClick={async () => {
+                              try {
+                                const res = await organizerApi.processPlaceCheckout(request.requestId);
+                                if (res && res.clientSecret) {
+                                  if (res.clientSecret.startsWith("mock_")) {
+                                    toast.success("Mock Payment Success: Simulated payment for testing.");
+                                  } else if (res.clientSecret.startsWith("http")) {
+                                    window.location.href = res.clientSecret;
+                                  } else {
+                                    const pubKey = res.publicKey || "pk_test_placeholder";
+                                    window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${pubKey}&clientSecret=${res.clientSecret}`;
+                                  }
+                                } else {
+                                  toast.error("Could not initiate payment.");
+                                }
+                              } catch (err: any) {
+                                toast.error("Payment initiation failed: " + err.message);
+                              }
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-['Inter:Medium',sans-serif] text-sm"
+                          >
+                            Pay Now
+                          </button>
+                        )}
                       </div>
                     </div>
 

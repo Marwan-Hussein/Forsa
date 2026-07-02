@@ -131,5 +131,9 @@ export const organizerApi = {
 
   manualCheckIn: async (bookingId: number): Promise<void> => {
     return await apiPost(`/api/organizers/bookings/${bookingId}/check-in`, {});
+  },
+
+  processPlaceCheckout: async (requestId: number): Promise<any> => {
+    return await apiPost(`/api/organizers/booking-requests/${requestId}/checkout`, {});
   }
 };

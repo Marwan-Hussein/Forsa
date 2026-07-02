@@ -111,6 +111,7 @@ namespace Application.Services
                         IsSuccess = true,
                         Message = "Payment process initiated successfully.",
                         ClientSecret = clientSecret,
+                        PublicKey = configuration["PaymentGateway:PayMob:PublicKey"],
                         BookingId = transaction.ReferenceId
                     };
                 }
