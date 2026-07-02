@@ -166,5 +166,9 @@ export const ownerApi = {
     if (!response.ok) throw new Error("Failed to upload image");
     const data = await response.json();
     return data.url;
+  },
+
+  submitOrganizerFeedback: async (bookingRequestId: number, data: { rating: number; comment: string }): Promise<any> => {
+    return await apiPost(`/api/owner/booking-requests/${bookingRequestId}/feedback`, data);
   }
 };
