@@ -48,9 +48,14 @@ export default function OwnerPlacesPage() {
   };
 
   const handleDelete = async (id: number) => {
-    toast.success("Venue removed successfully.");
-    setPlaces(places.filter(p => p.id !== id));
-    setDeletingId(null);
+    try {
+      await ownerApi.deletePlace(id);
+      toast.success("Venue removed successfully.");
+      setPlaces(places.filter(p => p.id !== id));
+      setDeletingId(null);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to remove venue.");
+    }
   };
 
   const filteredPlaces = places.filter(place =>
