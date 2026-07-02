@@ -13,6 +13,7 @@ import EventDetailsPage from "./pages/events/EventDetailsPage";
 
 import OrganizationsPage from "./pages/organizations/OrganizationsPage";
 import NotificationsPage from "./pages/attendee/NotificationsPage";
+import CalendarPage from "./pages/attendee/CalendarPage";
 import FeedbackPage from "./pages/events/FeedbackPage";
 import PlaceDetailsPage from "./pages/places/PlaceDetailsPage";
 import PlacesPage from "./pages/places/PlacesPage";
@@ -113,6 +114,10 @@ export const router = createBrowserRouter([
       {
         path: "notifications",
         Component: NotificationsPage,
+      },
+      {
+        path: "calendar",
+        Component: CalendarPage,
       },
       {
         path: "about",

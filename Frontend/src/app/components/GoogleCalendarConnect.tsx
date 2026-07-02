@@ -5,7 +5,6 @@ import { apiGet } from "../api/api";
 interface GoogleCalendarConnectProps {
   /**
    * Backend endpoint that starts the OAuth process.
-   *
    * Defaults to the API path that calls `GenerateAuthorizationUrl`.
    */
   endpoint?: string;
@@ -74,96 +73,72 @@ const GoogleCalendarConnect: React.FC<GoogleCalendarConnectProps> = ({
 
   return (
     <>
-      <style>{`
-        .gc-container{
-            position:fixed;
-            right:24px;
-            bottom:24px;
-            z-index:9999;
-        }
-
-        .gc-button{
-            display:flex;
-            align-items:center;
-            justify-content:center;
-
-            width:64px;
-            height:64px;
-
-            border:none;
-            outline:none;
-
-            border-radius:999px;
-
-            background:#2b79f2;
-
-            box-shadow:
-                0 6px 20px rgba(0,0,0,.2);
-
-            cursor:pointer;
-
-            overflow:hidden;
-
-            transition:all .35s ease;
-        }
-
-        .gc-button:hover{
-            width:270px;
-            justify-content:flex-start;
-            padding-left:18px;
-        }
-
-        .gc-text{
-            margin-left:14px;
-            white-space:nowrap;
-
-            opacity:0;
-            width:0;
-
-            overflow:hidden;
-
-            transition:all .3s ease;
-
-            font-family:Arial, Helvetica, sans-serif;
-            font-size:15px;
-            font-weight:600;
-            color:#333;
-        }
-
-        .gc-button:hover .gc-text{
-            opacity:1;
-            width:190px;
-        }
-
-        .gc-button:disabled{
-            cursor:not-allowed;
-            opacity:.8;
-        }
-
-        .gc-icon{
-            flex-shrink:0;
-        }
-      `}</style>
-
-      <div className="gc-container">
-        <button
-          className="gc-button"
-          onClick={connectGoogleCalendar}
-          disabled={loading}
-        >
-          {/* Google Calendar SVG */}
-          <img
+      return (
+        <div className="fixed bottom-6 right-6 z-50">
+          <button
+            onClick={connectGoogleCalendar}
+            disabled={loading}
+            className="
+              group
+              flex
+              h-14
+              w-14
+              hover:w-72
+              items-center
+              justify-center
+              hover:justify-start
+              rounded-full
+              bg-[#4285F4]/40
+              hover:bg-[#4285F4]
+              backdrop-blur-sm
+              shadow-2xl
+              hover:shadow-[0_8px_24px_rgba(66,133,244,0.35)]
+              transition-all
+              duration-300
+              ease-in-out
+              overflow-hidden
+              px-4
+              disabled:opacity-80
+              disabled:cursor-not-allowed
+            "
+          >
+            <img
               src={GoogleCalendarLogo}
               alt="Google Calendar"
-              className="gc-icon"
+              className="
+                w-10
+                h-10
+                min-w-10
+                object-contain
+                transition-transform
+                duration-300
+                ease-in-out
+                group-hover:scale-125
+                group-hover:rotate-12
+              "
             />
-          <span className="gc-text">
-            {loading
-              ? "Connecting..."
-              : "Connect Google Calendar"}
-          </span>
-        </button>
-      </div>
+
+            <span
+              className="
+                opacity-0
+                max-w-0
+                group-hover:opacity-100
+                group-hover:max-w-xs
+                group-hover:ml-3
+                transition-all
+                duration-300
+                ease-in-out
+                whitespace-nowrap
+                text-white
+                font-semibold
+                text-sm
+              "
+            >
+              {loading ? "Connecting..." : "Connect Google Calendar"}
+            </span>
+          </button>
+        </div>
+      );
     </>
   );
 };
