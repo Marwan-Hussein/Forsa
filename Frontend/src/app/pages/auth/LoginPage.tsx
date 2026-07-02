@@ -137,7 +137,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0B1120] overflow-hidden selection:bg-blue-500/30">
+    <div className="flex min-h-screen bg-[var(--brand-deep-navy)] overflow-hidden selection:bg-[var(--brand-blue-accent)]/30">
       {/* Left Panel - Visual/Animation */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col p-12 border-r border-white/5">
         {/* Stunning Image Background */}
@@ -148,8 +148,8 @@ export default function LoginPage() {
             className="w-full h-full object-cover"
           />
           {/* Lighter Gradient Overlays for better visibility */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/40 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0B1120] via-[#0B1120]/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--brand-deep-navy)] via-[var(--brand-deep-navy)]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[var(--brand-deep-navy)] via-[var(--brand-deep-navy)]/20 to-transparent" />
           <div className="absolute inset-0 opacity-[0.02] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px]" />
         </div>
 
@@ -195,7 +195,7 @@ export default function LoginPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative">
         {/* Mobile Background */}
         <div className="lg:hidden absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0B1120] to-[#1E3D61]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--brand-deep-navy)] to-[var(--brand-navy)]" />
           <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px] opacity-[0.03]" />
         </div>
 
@@ -265,7 +265,7 @@ export default function LoginPage() {
                     setEmail(e.target.value);
                     if (errors.email) setErrors((p) => ({ ...p, email: undefined }));
                   }}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 font-['Inter:Regular',sans-serif] text-white transition-all duration-300 ease-out focus:border-[#3b82f6] focus:bg-white/10 focus:ring-1 focus:ring-[#3b82f6]/50 focus:outline-none placeholder:text-slate-500"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 font-['Inter:Regular',sans-serif] text-white transition-all duration-300 ease-out focus:border-[var(--brand-blue-accent)] focus:bg-white/10 focus:ring-1 focus:ring-[var(--brand-blue-accent)]/50 focus:outline-none placeholder:text-slate-500"
                   placeholder="you@example.com"
                 />
               </div>
@@ -296,7 +296,7 @@ export default function LoginPage() {
                     setPassword(e.target.value);
                     if (errors.password) setErrors((p) => ({ ...p, password: undefined }));
                   }}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 py-4 pl-12 pr-12 font-['Inter:Regular',sans-serif] text-white transition-all duration-300 ease-out focus:border-[#3b82f6] focus:bg-white/10 focus:ring-1 focus:ring-[#3b82f6]/50 focus:outline-none placeholder:text-slate-500"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 py-4 pl-12 pr-12 font-['Inter:Regular',sans-serif] text-white transition-all duration-300 ease-out focus:border-[var(--brand-blue-accent)] focus:bg-white/10 focus:ring-1 focus:ring-[var(--brand-blue-accent)]/50 focus:outline-none placeholder:text-slate-500"
                   placeholder="Enter your password"
                 />
                 <button
@@ -321,7 +321,7 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 rounded border-white/20 bg-white/10 text-[#3b82f6] focus:ring-[#3b82f6]/30"
+                  className="h-4 w-4 rounded border-white/20 bg-white/10 text-[var(--brand-blue-accent)] focus:ring-[var(--brand-blue-accent)]/30"
                 />
                 Remember me
               </label>
@@ -355,7 +355,7 @@ export default function LoginPage() {
 
           <motion.button
             type="button"
-            className="mt-6 flex w-full items-center justify-center rounded-xl border border-white/10 bg-white/5 py-4 font-['Inter:Medium',sans-serif] text-[15px] font-medium text-white transition-all duration-300 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/20 active:scale-[0.98] cursor-pointer"
+            className="mt-6 flex w-full items-center justify-center rounded-xl border border-white/10 bg-white/5 py-4 font-['Inter:Medium',sans-serif] text-[15px] font-medium text-white transition-all duration-300 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue-accent)]/20 active:scale-[0.98] cursor-pointer"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.75 }}
@@ -395,7 +395,7 @@ export default function LoginPage() {
             Don&apos;t have an account?{" "}
             <Link
               to="/register"
-              className="font-['Inter:Medium',sans-serif] font-medium text-white hover:text-[#3b82f6] transition-colors duration-300"
+              className="font-['Inter:Medium',sans-serif] font-medium text-white hover:text-[var(--brand-blue-accent)] transition-colors duration-300"
             >
               Create one
             </Link>

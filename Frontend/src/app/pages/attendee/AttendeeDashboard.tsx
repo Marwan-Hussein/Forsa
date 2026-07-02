@@ -105,11 +105,11 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
     <>
       <motion.div 
         variants={itemVariants}
-        className="relative flex flex-col md:flex-row bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-xl hover:shadow-[#1E3D61]/5 hover:-translate-y-0.5 transition-all duration-300 group"
+        className="relative flex flex-col md:flex-row bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-xl hover:shadow-[var(--brand-shadow-soft)] hover:-translate-y-0.5 transition-all duration-300 group"
       >
         {/* Decorative ticket notch side cuts */}
-        <div className="absolute left-full md:left-[70%] top-1/2 md:top-auto md:bottom-full w-5 h-5 bg-[#F8FAFC] rounded-full border border-slate-100 -translate-x-2.5 md:-translate-y-2.5 z-10 hidden sm:block" />
-        <div className="absolute right-full md:right-[30%] top-1/2 md:top-auto md:top-full w-5 h-5 bg-[#F8FAFC] rounded-full border border-slate-100 translate-x-2.5 md:-translate-y-2.5 z-10 hidden sm:block" />
+        <div className="absolute left-full md:left-[70%] top-1/2 md:top-auto md:bottom-full w-5 h-5 bg-[var(--brand-page-background)] rounded-full border border-slate-100 -translate-x-2.5 md:-translate-y-2.5 z-10 hidden sm:block" />
+        <div className="absolute right-full md:right-[30%] top-1/2 md:top-auto md:top-full w-5 h-5 bg-[var(--brand-page-background)] rounded-full border border-slate-100 translate-x-2.5 md:-translate-y-2.5 z-10 hidden sm:block" />
 
         {/* Main Stub */}
         <div className="flex-1 p-6 flex flex-col justify-between">
@@ -130,7 +130,7 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
             </div>
             
             <Link to={`/events/${booking.eventId}`}>
-              <h3 className="text-lg font-bold text-slate-800 mb-2 group-hover:text-[#1E3D61] transition-colors leading-snug">
+              <h3 className="text-lg font-bold text-slate-800 mb-2 group-hover:text-[var(--brand-navy)] transition-colors leading-snug">
                 {booking.eventTitle}
               </h3>
             </Link>
@@ -138,7 +138,7 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-                  <Calendar className="w-3.5 h-3.5 text-[#1E3D61]" />
+                  <Calendar className="w-3.5 h-3.5 text-[var(--brand-navy)]" />
                 </div>
                 <div>
                   <p className="text-[9px] uppercase font-bold text-slate-400">Date</p>
@@ -188,12 +188,12 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
             className={`w-full mt-4 border font-bold text-xs py-2 px-3 rounded-lg shadow-sm transition-all text-center flex items-center justify-center gap-1.5 ${
               isCancelled 
                 ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" 
-                : "bg-white hover:bg-[#1E3D61] text-[#1E3D61] hover:text-white border-[#1E3D61]/15 hover:border-transparent hover:shadow-md"
+                : "bg-white hover:bg-[var(--brand-navy)] text-[var(--brand-navy)] hover:text-white border-[var(--brand-navy)]/15 hover:border-transparent hover:shadow-md"
             }`}
           >
             <QrCode className="w-4 h-4" /> View Ticket
           </button>
-          
+       
           {canCancel && (
              <button 
                onClick={() => setShowCancelModal(true)}
@@ -282,7 +282,7 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
               <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex items-center justify-center aspect-square relative">
                 {loadingQr ? (
                   <div className="flex flex-col items-center">
-                    <Loader2 className="w-8 h-8 text-[#1E3D61] animate-spin mb-3" />
+                    <Loader2 className="w-8 h-8 text-[var(--brand-navy)] animate-spin mb-3" />
                     <p className="text-xs text-slate-500 font-medium">Loading ticket...</p>
                   </div>
                 ) : qrUrl ? (
@@ -313,7 +313,7 @@ function CleanCard({ event, isInWishlist, onToggle }: { event: EventDetailsDto; 
   return (
     <motion.div 
       variants={itemVariants}
-      className="bg-white rounded-2xl overflow-hidden border border-slate-100 hover:border-[#1E3D61]/20 hover:shadow-xl hover:shadow-[#1E3D61]/5 hover:-translate-y-0.5 transition-all duration-300 flex flex-col h-full group"
+      className="bg-white rounded-2xl overflow-hidden border border-slate-100 hover:border-[var(--brand-navy)]/20 hover:shadow-xl hover:shadow-[var(--brand-shadow-soft)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col h-full group"
     >
       <div className="relative h-44 bg-slate-100 overflow-hidden shrink-0">
         <img
@@ -328,7 +328,7 @@ function CleanCard({ event, isInWishlist, onToggle }: { event: EventDetailsDto; 
         >
           <Heart className={`w-3.5 h-3.5 transition-colors ${isInWishlist ? "fill-rose-500 text-rose-500" : "text-slate-500"}`} />
         </button>
-        <span className="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-[#1E3D61] text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-sm">
+        <span className="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-[var(--brand-navy)] text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-sm">
           {event.category}
         </span>
         <div className="absolute bottom-4 left-4 flex items-center gap-1.5 text-white text-xs font-semibold drop-shadow-sm">
@@ -338,7 +338,7 @@ function CleanCard({ event, isInWishlist, onToggle }: { event: EventDetailsDto; 
       </div>
       <div className="p-4 flex-1 flex flex-col">
         <Link to={`/events/${event.eventId}`} className="flex-1">
-          <h3 className="font-bold text-slate-800 text-sm leading-snug line-clamp-2 mb-2 group-hover:text-[#1E3D61] transition-colors">
+          <h3 className="font-bold text-slate-800 text-sm leading-snug line-clamp-2 mb-2 group-hover:text-[var(--brand-navy)] transition-colors">
             {event.title}
           </h3>
         </Link>
@@ -347,7 +347,7 @@ function CleanCard({ event, isInWishlist, onToggle }: { event: EventDetailsDto; 
           <span className="truncate font-medium">{event.placeLocation || event.place || "Location TBD"}</span>
         </div>
         <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-50">
-          <span className="font-bold text-[#1E3D61] text-sm">
+          <span className="font-bold text-[var(--brand-navy)] text-sm">
             {event.ticketPrice === 0 ? "Free" : `$${event.ticketPrice}`}
           </span>
           <span className={`text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ${
@@ -381,7 +381,7 @@ function OverviewView({
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "My Bookings", value: stats.upcoming, icon: Ticket, color: "text-[#1E3D61]", bg: "bg-[#1E3D61]/5" },
+          { label: "My Bookings", value: stats.upcoming, icon: Ticket, color: "text-[var(--brand-navy)]", bg: "bg-[var(--brand-navy)]/5" },
           { label: "Wishlist", value: stats.wishlist, icon: Heart, color: "text-rose-500", bg: "bg-rose-50" },
           { label: "Attended", value: stats.attended, icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50" },
           { label: "Forsa points", value: stats.points, icon: Star, color: "text-amber-500", bg: "bg-amber-50" },
@@ -436,10 +436,10 @@ function OverviewView({
                     <img src={eventImg} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-slate-800 text-xs line-clamp-1 group-hover:text-[#1E3D61] transition-colors">{event.title}</p>
+                    <p className="font-bold text-slate-800 text-xs line-clamp-1 group-hover:text-[var(--brand-navy)] transition-colors">{event.title}</p>
                     <p className="text-slate-400 text-[10px] mt-1 font-medium">{event.category} · {event.ticketPrice === 0 ? "Free" : `$${event.ticketPrice}`}</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#1E3D61] group-hover:translate-x-0.5 transition-all" />
+                  <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[var(--brand-navy)] group-hover:translate-x-0.5 transition-all" />
                 </Link>
               );
             }) : (
@@ -456,15 +456,15 @@ function OverviewView({
 }
 
 function TicketsView({ events, isLoading }: { events: AttendeeBookingDto[]; isLoading: boolean }) {
-  if (isLoading) return <div className="py-20 text-center text-slate-400"><Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#1E3D61]" /><p>Loading tickets...</p></div>;
+  if (isLoading) return <div className="py-20 text-center text-slate-400"><Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[var(--brand-navy)]" /><p>Loading tickets...</p></div>;
   if (events.length === 0) return (
     <div className="py-16 text-center bg-white rounded-2xl border border-slate-100 p-8 shadow-sm">
       <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-        <Ticket className="w-6 h-6 text-[#1E3D61]" />
+        <Ticket className="w-6 h-6 text-[var(--brand-navy)]" />
       </div>
       <h3 className="text-base font-bold text-slate-800 mb-1.5">No tickets yet</h3>
       <p className="text-slate-400 text-xs max-w-xs mx-auto mb-5">You haven't booked any tickets yet. Explore upcoming premium events and make your first booking.</p>
-      <Link to="/events" className="inline-flex items-center justify-center px-5 py-2.5 bg-[#1E3D61] text-white text-xs font-bold rounded-lg hover:bg-[#152D4A] transition-colors shadow-md">
+      <Link to="/events" className="inline-flex items-center justify-center px-5 py-2.5 bg-[var(--brand-navy)] text-white text-xs font-bold rounded-lg hover:bg-[var(--brand-navy-hover)] transition-colors shadow-md">
         Explore Events
       </Link>
     </div>
@@ -480,7 +480,7 @@ function TicketsView({ events, isLoading }: { events: AttendeeBookingDto[]; isLo
 }
 
 function WishlistView({ events, wishlist, toggleWishlist, isLoading }: { events: EventDetailsDto[]; wishlist: string[]; toggleWishlist: (id: string | number) => void; isLoading: boolean }) {
-  if (isLoading) return <div className="py-20 text-center text-slate-400"><Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#1E3D61]" /><p>Loading wishlist...</p></div>;
+  if (isLoading) return <div className="py-20 text-center text-slate-400"><Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[var(--brand-navy)]" /><p>Loading wishlist...</p></div>;
   
   const wishlistedEvents = events.filter(e => wishlist.includes(e.eventId.toString()));
   
@@ -491,7 +491,7 @@ function WishlistView({ events, wishlist, toggleWishlist, isLoading }: { events:
       </div>
       <h3 className="text-base font-bold text-slate-800 mb-1.5">Your wishlist is empty</h3>
       <p className="text-slate-400 text-xs max-w-xs mx-auto mb-5">Discover events you like and tap the heart icon to save them here for quick planning.</p>
-      <Link to="/events" className="inline-flex items-center justify-center px-5 py-2.5 bg-[#1E3D61] text-white text-xs font-bold rounded-lg hover:bg-[#152D4A] transition-colors shadow-md">
+      <Link to="/events" className="inline-flex items-center justify-center px-5 py-2.5 bg-[var(--brand-navy)] text-white text-xs font-bold rounded-lg hover:bg-[var(--brand-navy-hover)] transition-colors shadow-md">
         Explore Events
       </Link>
     </div>
@@ -507,7 +507,7 @@ function WishlistView({ events, wishlist, toggleWishlist, isLoading }: { events:
 }
 
 function RecommendationsView({ events, wishlist, toggleWishlist, isLoading }: { events: EventDetailsDto[]; wishlist: string[]; toggleWishlist: (id: string | number) => void; isLoading: boolean }) {
-  if (isLoading) return <div className="py-20 text-center text-slate-400"><Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#1E3D61]" /><p>Curating recommendations...</p></div>;
+  if (isLoading) return <div className="py-20 text-center text-slate-400"><Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[var(--brand-navy)]" /><p>Curating recommendations...</p></div>;
   
   if (events.length === 0) return (
     <div className="py-16 text-center bg-white rounded-2xl border border-slate-100 p-8 shadow-sm">
@@ -525,7 +525,7 @@ function RecommendationsView({ events, wishlist, toggleWishlist, isLoading }: { 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-5">
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <div className="w-10 h-10 bg-white text-[#1E3D61] rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+        <div className="w-10 h-10 bg-white text-[var(--brand-navy)] rounded-xl flex items-center justify-center shrink-0 shadow-sm">
           <Sparkles className="w-5 h-5" />
         </div>
         <div>
@@ -635,7 +635,7 @@ export default function AttendeeDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-24 pt-20">
+    <div className="min-h-screen bg-[var(--brand-page-background)] pb-24 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Modern SaaS Grid Container */}
@@ -645,7 +645,7 @@ export default function AttendeeDashboard() {
           <aside className="lg:col-span-1 bg-white rounded-2xl border border-slate-100 p-5 shadow-sm sticky top-24 z-10">
             {/* User Profile Mini Badge */}
             <div className="flex flex-col items-center text-center pb-5 border-b border-slate-100">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#1E3D61] to-[#152D4A] text-white flex items-center justify-center font-bold text-lg shadow-md shadow-[#1E3D61]/15 mb-3">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-hover)] text-white flex items-center justify-center font-bold text-lg shadow-md shadow-[var(--brand-navy)]/15 mb-3">
                 {userName.charAt(0)}
               </div>
               <h3 className="font-bold text-slate-800 text-sm leading-snug truncate max-w-full">{userName}</h3>
@@ -666,16 +666,16 @@ export default function AttendeeDashboard() {
                     onClick={() => handleTabChange(item.id)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all relative ${
                       isActive 
-                        ? "bg-[#1E3D61]/5 text-[#1E3D61]" 
+                        ? "bg-[var(--brand-navy)]/5 text-[var(--brand-navy)]" 
                         : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
                     }`}
                   >
-                    <item.icon className={`w-4 h-4 ${isActive ? "text-[#1E3D61]" : "text-slate-400"}`} />
+                    <item.icon className={`w-4 h-4 ${isActive ? "text-[var(--brand-navy)]" : "text-slate-400"}`} />
                     <span>{item.label}</span>
                     {isActive && (
                       <motion.div 
                         layoutId="sidebarActive" 
-                        className="absolute left-0 top-3 bottom-3 w-1 bg-[#1E3D61] rounded-r-full"
+                        className="absolute left-0 top-3 bottom-3 w-1 bg-[var(--brand-navy)] rounded-r-full"
                       />
                     )}
                   </button>
@@ -698,7 +698,7 @@ export default function AttendeeDashboard() {
           <main className="lg:col-span-3 space-y-6">
             
             {/* Elegant Hero Greeting Panel */}
-            <div className="bg-gradient-to-br from-[#0B1929] via-[#1E3D61] to-[#0F2847] rounded-2xl p-6 text-white relative overflow-hidden shadow-md shadow-[#1E3D61]/5">
+            <div className="bg-gradient-to-br from-[var(--brand-hero-deep)] via-[var(--brand-navy)] to-[var(--brand-hero-dark)] rounded-2xl p-6 text-white relative overflow-hidden shadow-md shadow-[var(--brand-navy)]/5">
               <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-400 via-indigo-900 to-slate-900" />
               <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -729,7 +729,7 @@ export default function AttendeeDashboard() {
                     onClick={() => handleTabChange(item.id)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
                       isActive 
-                        ? "bg-[#1E3D61] text-white shadow-sm" 
+                        ? "bg-[var(--brand-navy)] text-white shadow-sm" 
                         : "text-slate-500 hover:bg-slate-50"
                     }`}
                   >

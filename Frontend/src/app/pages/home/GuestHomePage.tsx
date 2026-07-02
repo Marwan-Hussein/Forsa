@@ -26,9 +26,9 @@ import type { Event as EventType } from "../../types/index";
 import { mapEventDetailsDtoToEvent } from "../../utils/mappers";
 
 // Premium Color Palette Constants
-const DEEP_NAVY = "#1E3D61";
+const DEEP_NAVY = "var(--brand-navy)";
 
-const HERO_GRADIENT = `linear-gradient(135deg, #0B1120 0%, ${DEEP_NAVY} 100%)`;
+const HERO_GRADIENT = `linear-gradient(135deg, var(--brand-deep-navy) 0%, ${DEEP_NAVY} 100%)`;
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -112,7 +112,7 @@ export default function GuestHomePage() {
           name,
           icon: categoryIconMap[name] || Calendar,
           count: `${count} Event${count !== 1 ? 's' : ''}`,
-          color: categoryColorMap[name] || "text-[#1E3D61] bg-[#F8FAFC]",
+          color: categoryColorMap[name] || "text-[var(--brand-navy)] bg-[var(--brand-page-background)]",
         }));
         
         setEventCategories(categories);
@@ -157,12 +157,12 @@ export default function GuestHomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#1E3D61] selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--brand-page-background)] text-[var(--brand-text-dark)] font-sans selection:bg-[var(--brand-navy)] selection:text-white overflow-x-hidden">
       
 
 
       {/* Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center pt-24 pb-32 overflow-hidden bg-[#0B1120]">
+      <section className="relative min-h-[85vh] flex items-center pt-24 pb-32 overflow-hidden bg-[var(--brand-deep-navy)]">
         <div className="absolute inset-0 z-0" style={{ background: HERO_GRADIENT }} />
         
         {/* Elegant Animated Background Elements (Adding 'حركات') */}
@@ -185,7 +185,7 @@ export default function GuestHomePage() {
                opacity: [0.05, 0.1, 0.05]
              }}
              transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-             className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[#3b82f6] rounded-full filter blur-[100px]" 
+             className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[var(--brand-blue-accent)] rounded-full filter blur-[100px]" 
            />
            {/* Subtle moving grid */}
            <motion.div 
@@ -271,7 +271,7 @@ export default function GuestHomePage() {
                 </div>
                 <button 
                   onClick={handleSearch}
-                  className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-bold text-[#1E3D61] bg-white transition-all duration-300 hover:bg-slate-50 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] active:scale-[0.98] mt-3 sm:mt-0 flex items-center justify-center gap-2 text-sm shrink-0"
+                  className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-bold text-[var(--brand-navy)] bg-white transition-all duration-300 hover:bg-slate-50 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] active:scale-[0.98] mt-3 sm:mt-0 flex items-center justify-center gap-2 text-sm shrink-0"
                 >
                   Search <ArrowRight className="w-4 h-4" />
                 </button>
@@ -290,7 +290,7 @@ export default function GuestHomePage() {
                     alt="Event"
                     className="w-full h-full object-cover opacity-80" 
                   />
-                  <div className="absolute top-3 left-3 bg-[#1E3D61] text-white text-[9px] font-bold uppercase px-2 py-0.5 rounded-md">
+                  <div className="absolute top-3 left-3 bg-[var(--brand-navy)] text-white text-[9px] font-bold uppercase px-2 py-0.5 rounded-md">
                     Featured Event
                   </div>
                 </div>
@@ -308,7 +308,7 @@ export default function GuestHomePage() {
               </div>
 
               {/* Fake Passbook Ticket Mockup */}
-              <div className="absolute bottom-4 right-0 w-64 bg-[#1E3D61] border border-white/10 rounded-2xl p-4 shadow-2xl rotate-[8deg] transform hover:rotate-0 transition-transform duration-500 flex flex-col justify-between">
+              <div className="absolute bottom-4 right-0 w-64 bg-[var(--brand-navy)] border border-white/10 rounded-2xl p-4 shadow-2xl rotate-[8deg] transform hover:rotate-0 transition-transform duration-500 flex flex-col justify-between">
                 <div className="border-b border-dashed border-white/15 pb-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[8px] font-mono text-white/50">TICKET PASS</span>
@@ -346,14 +346,14 @@ export default function GuestHomePage() {
           <ScrollReveal y={20} className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="w-8 h-1 bg-[#1E3D61] rounded-full"></span>
-                <span className="text-[#1E3D61] font-semibold tracking-wider text-sm uppercase">Browse By Category</span>
+                <span className="w-8 h-1 bg-[var(--brand-navy)] rounded-full"></span>
+                <span className="text-[var(--brand-navy)] font-semibold tracking-wider text-sm uppercase">Browse By Category</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-[#0F172A] tracking-tight mb-2">Explore Experiences</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-[var(--brand-text-dark)] tracking-tight mb-2">Explore Experiences</h2>
             </div>
-            <Link to="/events" className="group text-[#1E3D61] font-semibold flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Link to="/events" className="group text-[var(--brand-navy)] font-semibold flex items-center gap-2 hover:opacity-80 transition-opacity">
               View All Categories 
-              <span className="bg-[#1E3D61]/10 group-hover:bg-[#1E3D61]/20 p-1.5 rounded-full transition-colors">
+              <span className="bg-[var(--brand-navy)]/10 group-hover:bg-[var(--brand-navy)]/20 p-1.5 rounded-full transition-colors">
                 <ArrowRight className="w-4 h-4" />
               </span>
             </Link>
@@ -371,7 +371,7 @@ export default function GuestHomePage() {
                 key={cat.name}
                 variants={itemVariants}
                 onClick={() => navigate(`/events?category=${encodeURIComponent(cat.name)}`)}
-                className="w-full bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-[#1E3D61]/30 hover:-translate-y-1 transition-all duration-300 flex items-center gap-5 group text-left"
+                className="w-full bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-[var(--brand-navy)]/30 hover:-translate-y-1 transition-all duration-300 flex items-center gap-5 group text-left"
               >
                 <div className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-300 shrink-0 ${cat.color.split(' ')[1]} group-hover:opacity-80`}>
                   <cat.icon className={`w-6 h-6 transition-colors duration-300 ${cat.color.split(' ')[0]}`} strokeWidth={1.5} />
@@ -392,10 +392,10 @@ export default function GuestHomePage() {
           <ScrollReveal y={20} className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="w-8 h-1 bg-[#1E3D61] rounded-full"></span>
-                <span className="text-[#1E3D61] font-semibold tracking-wider text-sm uppercase">Trending</span>
+                <span className="w-8 h-1 bg-[var(--brand-navy)] rounded-full"></span>
+                <span className="text-[var(--brand-navy)] font-semibold tracking-wider text-sm uppercase">Trending</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-[#0F172A] tracking-tight">Curated For You</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-[var(--brand-text-dark)] tracking-tight">Curated For You</h2>
             </div>
             
             {/* Filter Tabs */}
@@ -406,7 +406,7 @@ export default function GuestHomePage() {
                   onClick={() => setEventFilter(tab.id)}
                   className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all ${
                     eventFilter === tab.id
-                      ? "bg-[#1E3D61] text-white shadow-sm"
+                      ? "bg-[var(--brand-navy)] text-white shadow-sm"
                       : "text-slate-500 hover:text-slate-700"
                   }`}
                 >
@@ -433,9 +433,9 @@ export default function GuestHomePage() {
       </section>
 
       {/* Premium CTA Section */}
-      <section className="py-32 px-6 lg:px-8 relative overflow-hidden bg-[#0B1120]">
+      <section className="py-32 px-6 lg:px-8 relative overflow-hidden bg-[var(--brand-deep-navy)]">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiLz48L3N2Zz4=')] opacity-30" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#1E3D61] rounded-full mix-blend-screen filter blur-[150px] opacity-40 pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--brand-navy)] rounded-full mix-blend-screen filter blur-[150px] opacity-40 pointer-events-none" />
         
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           <ScrollReveal y={30} className="flex flex-col items-center">
@@ -452,7 +452,7 @@ export default function GuestHomePage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
               <Link
                 to="/register"
-                className="w-full sm:w-auto px-10 py-4 rounded-full text-[#1E3D61] bg-white font-bold text-lg shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300 hover:-translate-y-1"
+                className="w-full sm:w-auto px-10 py-4 rounded-full text-[var(--brand-navy)] bg-white font-bold text-lg shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300 hover:-translate-y-1"
               >
                 Join ForSa Now
               </Link>

@@ -259,7 +259,7 @@ export default function OwnerPlaceMediaPage() {
                         </div>
                       )}
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120]/90 via-[#0B1120]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="absolute inset-0 bg-gradient-to-t from-[var(--brand-deep-navy)]/90 via-[var(--brand-deep-navy)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div className="absolute bottom-0 left-0 right-0 p-5 flex items-center justify-end gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                           <button 
                             onClick={() => {

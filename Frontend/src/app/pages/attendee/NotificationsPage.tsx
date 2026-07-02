@@ -81,9 +81,9 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-[var(--brand-page-background)]">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-[#0B1929] via-[#1E3D61] to-[#0F2847] pt-24 pb-10 px-4 sm:px-6 lg:px-8">
+      <div className="bg-gradient-to-br from-[var(--brand-hero-deep)] via-[var(--brand-navy)] to-[var(--brand-hero-dark)] pt-24 pb-10 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <Link to="/dashboard" className="inline-flex items-center gap-2 text-blue-200 hover:text-white text-sm font-medium mb-6 group transition-colors">
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -118,7 +118,7 @@ export default function NotificationsPage() {
                 onClick={() => setFilter(f)}
                 className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all capitalize ${
                   filter === f
-                    ? f === "unread" ? "bg-[#1E3D61] text-white shadow-sm" : "bg-slate-800 text-white shadow-sm"
+                    ? f === "unread" ? "bg-[var(--brand-navy)] text-white shadow-sm" : "bg-slate-800 text-white shadow-sm"
                     : "text-slate-500 hover:text-slate-700"
                 }`}
               >
@@ -127,7 +127,7 @@ export default function NotificationsPage() {
             ))}
           </div>
           {unreadCount > 0 && (
-            <button onClick={markAllAsRead} className="flex items-center gap-1.5 text-sm font-semibold text-[#1E3D61] hover:text-blue-700 transition-colors">
+            <button onClick={markAllAsRead} className="flex items-center gap-1.5 text-sm font-semibold text-[var(--brand-navy)] hover:text-blue-700 transition-colors">
               <Check className="w-4 h-4" /> Mark all read
             </button>
           )}
@@ -150,7 +150,7 @@ export default function NotificationsPage() {
                   }`}
                 >
                   {/* Unread bar */}
-                  {!n.read && <div className="w-1 bg-[#1E3D61] shrink-0 rounded-l-2xl" />}
+                  {!n.read && <div className="w-1 bg-[var(--brand-navy)] shrink-0 rounded-l-2xl" />}
 
                   <div className="flex gap-4 p-4 sm:p-5 flex-1">
                     {/* Icon */}
@@ -171,7 +171,7 @@ export default function NotificationsPage() {
                       <p className="text-slate-500 text-sm mb-3 line-clamp-2">{n.message}</p>
                       <div className="flex items-center gap-3">
                         {n.link && (
-                          <Link to={n.link} className="text-[#1E3D61] font-semibold text-xs hover:underline">
+                          <Link to={n.link} className="text-[var(--brand-navy)] font-semibold text-xs hover:underline">
                             View {"->"}
                           </Link>
                         )}
@@ -192,8 +192,8 @@ export default function NotificationsPage() {
               ))
             ) : (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-2xl border border-slate-100 p-16 text-center">
-                <div className="w-20 h-20 bg-[#1E3D61]/5 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                  <BellOff className="w-10 h-10 text-[#1E3D61]/30" />
+                <div className="w-20 h-20 bg-[var(--brand-navy)]/5 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                  <BellOff className="w-10 h-10 text-[var(--brand-navy)]/30" />
                 </div>
                 <h3 className="font-bold text-slate-800 text-xl mb-2">All caught up!</h3>
                 <p className="text-slate-400 text-sm max-w-xs mx-auto">

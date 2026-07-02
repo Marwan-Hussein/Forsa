@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Bot, User, Loader2 } from "lucide-react";
+import { X, Send, Bot, Loader2 } from "lucide-react"; // Removed MessageCircle, User since they aren't used
 import { apiPost } from "../api/api";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
@@ -65,14 +65,25 @@ export function AiChatbot() {
 
   return (
     <>
+      {/* Floating Button Container */}
       <div className="fixed bottom-6 left-6 z-50">
         <button
           onClick={() => setIsOpen(true)}
-          className={`w-14 h-14 rounded-full bg-[#1E3D61] text-white flex items-center justify-center shadow-2xl hover:scale-110 transition-transform ${
+          className={`group h-14 w-14 hover:w-48 bg-gradient-to-r from-[#0ffff2] to-[#995cff] text-white flex items-center justify-center hover:justify-start rounded-full shadow-2xl transition-all duration-300 ease-in-out p-4 overflow-hidden ${
             isOpen ? "hidden" : "flex"
           }`}
         >
-          <MessageCircle className="w-6 h-6" />
+          {/* Logo Icon */}
+          <img 
+            src="src/assets/ForsaChatBotIcon.svg" 
+            alt="Forsa AI Logo" 
+            className="w-12 h-12 min-w-12 object-contain transition-transform duration-300 ease-in-out group-hover:-rotate-12"
+          />
+
+          {/* Text that shows on hover */}
+          <span className="opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-xs group-hover:ml-3 transition-all duration-300 ease-in-out whitespace-nowrap font-medium text-sm text-slate-900">
+            Ask ForsaGPT
+          </span>
         </button>
       </div>
 

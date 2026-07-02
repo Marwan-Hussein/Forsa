@@ -109,7 +109,7 @@ export function EventCard({
           )}
         </div>
         <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#1E3D61]/50 via-slate-900/10 to-transparent"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--brand-navy)]/50 via-slate-900/10 to-transparent"
           aria-hidden
         />
         {/* Category Badge */}

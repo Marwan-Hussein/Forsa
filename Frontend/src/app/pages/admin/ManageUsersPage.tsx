@@ -110,7 +110,7 @@ function RoleBadge({ role }: { role: string | null }) {
     admin:     { label: "Admin",       bg: "#FFF1F2", color: "#E11D48" },
   };
   const key = role?.toLowerCase() ?? "";
-  const cfg = map[key] ?? { label: role ?? "User", bg: "#F8FAFC", color: "#64748B" };
+  const cfg = map[key] ?? { label: role ?? "User", bg: "var(--brand-page-background)", color: "#64748B" };
 
   return (
     <span
@@ -215,7 +215,7 @@ export default function ManageUsersPage() {
             icon: Users,
             label: "Total Users",
             value: users.length,
-            accent: "#3b82f6",
+            accent: "var(--brand-blue-accent)",
             bg: "#EFF6FF",
           },
           {

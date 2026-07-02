@@ -167,7 +167,7 @@ export default function OrganizationDashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="bg-gradient-to-br from-[#0B1120] to-[#1E3D61] rounded-2xl p-6 sm:p-8 shadow-lg shadow-[#1E3D61]/20 flex flex-col text-white relative overflow-hidden"
+          className="bg-gradient-to-br from-[var(--brand-deep-navy)] to-[var(--brand-navy)] rounded-2xl p-6 sm:p-8 shadow-lg shadow-[var(--brand-navy)]/20 flex flex-col text-white relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-violet-500/20 rounded-full filter blur-[60px] pointer-events-none" />
           

@@ -165,9 +165,9 @@ export default function InterestsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-[var(--brand-page-background)]">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-[#0B1929] via-[#1E3D61] to-[#0F2847] pt-24 pb-10 px-4 sm:px-6 lg:px-8">
+      <div className="bg-gradient-to-br from-[var(--brand-hero-deep)] via-[var(--brand-navy)] to-[var(--brand-hero-dark)] pt-24 pb-10 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <Link to="/profile" className="inline-flex items-center gap-2 text-blue-200 hover:text-white text-sm font-medium mb-6 group transition-colors">
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -219,7 +219,7 @@ export default function InterestsPage() {
           <h2 className="font-bold text-lg text-slate-800">
             Select Interests
           </h2>
-          <span className="bg-[#1E3D61]/5 text-[#1E3D61] px-3 py-1 rounded-full font-bold text-xs border border-[#1E3D61]/10">
+          <span className="bg-[var(--brand-navy)]/5 text-[var(--brand-navy)] px-3 py-1 rounded-full font-bold text-xs border border-[var(--brand-navy)]/10">
             {selectedInterests.length} Selected
           </span>
         </div>
@@ -236,8 +236,8 @@ export default function InterestsPage() {
                 onClick={() => toggleInterest(interest.id)}
                 className={`relative overflow-hidden p-5 rounded-2xl border-2 transition-all cursor-pointer text-left h-36 flex flex-col justify-end group ${
                   isSelected
-                    ? "border-transparent shadow-xl shadow-[#1E3D61]/20"
-                    : "border-slate-100 bg-white hover:border-[#1E3D61]/30 hover:shadow-md"
+                    ? "border-transparent shadow-xl shadow-[var(--brand-navy)]/20"
+                    : "border-slate-100 bg-white hover:border-[var(--brand-navy)]/30 hover:shadow-md"
                 }`}
               >
                 {/* Background Gradient for Selected */}

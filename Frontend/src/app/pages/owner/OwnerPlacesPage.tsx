@@ -105,7 +105,7 @@ export default function OwnerPlacesPage() {
           <div className="flex items-center gap-3">
             <Link
               to="/owner/places/new"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 hover:shadow-lg shadow-blue-500/25 bg-gradient-to-r from-[#3b82f6] to-[#1E3D61]"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 hover:shadow-lg shadow-blue-500/25 bg-gradient-to-r from-[var(--brand-blue-accent)] to-[var(--brand-navy)]"
             >
               <Plus className="w-4 h-4" />
               Add New Venue
