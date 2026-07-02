@@ -446,27 +446,9 @@ export default function EventDetailsPage() {
                   Number of Tickets
                 </label>
                 <div className="flex items-center gap-4">
-                  <motion.button
-                    type="button"
-                    whileTap={{ scale: 0.94 }}
-                    transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
-                    onClick={() => setTicketCount(Math.max(1, ticketCount - 1))}
-                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-background font-['Inter:Bold',sans-serif] text-[18px] text-foreground transition-colors duration-300 ease-in-out hover:bg-[#dde6ed]"
-                  >
-                    -
-                  </motion.button>
-                  <span className="min-w-[2rem] text-center font-['Inter:Semi_Bold',sans-serif] text-[20px] font-semibold text-foreground">
-                    {ticketCount}
+                  <span className="font-['Inter:Semi_Bold',sans-serif] text-[18px] font-semibold text-foreground bg-background px-4 py-2 rounded-lg ring-1 ring-[#27374d]/5">
+                    1 Ticket
                   </span>
-                  <motion.button
-                    type="button"
-                    whileTap={{ scale: 0.94 }}
-                    transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
-                    onClick={() => setTicketCount(ticketCount + 1)}
-                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-background font-['Inter:Bold',sans-serif] text-[18px] text-foreground transition-colors duration-300 ease-in-out hover:bg-[#dde6ed]"
-                  >
-                    +
-                  </motion.button>
                 </div>
               </div>
 

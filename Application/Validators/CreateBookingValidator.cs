@@ -16,10 +16,8 @@ namespace Application.Validators
                 .WithMessage("EventId must be a valid positive number.");
 
             RuleFor(x => x.NumberOfTickets)
-                .GreaterThan(0)
-                .WithMessage("You must book at least 1 ticket.")
-                .LessThanOrEqualTo(10)
-                .WithMessage("You cannot book more than 10 tickets at once.");
+                .Equal(1)
+                .WithMessage("You can only book exactly 1 ticket per booking.");
         }
     }
 }
