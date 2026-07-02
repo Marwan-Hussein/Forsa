@@ -69,7 +69,7 @@ export default function PlaceDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0B1120] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--brand-deep-navy)] flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
           <div className="h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
           <p className="text-white/70 font-medium">Loading venue details...</p>
@@ -80,7 +80,7 @@ export default function PlaceDetailsPage() {
 
   if (error || !place) {
     return (
-      <div className="min-h-screen bg-[#0B1120] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[var(--brand-deep-navy)] flex items-center justify-center p-4">
         <div className="bg-white/10 backdrop-blur border border-white/10 rounded-3xl p-8 max-w-md text-center">
           <div className="h-16 w-16 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
             <Shield className="h-8 w-8" />

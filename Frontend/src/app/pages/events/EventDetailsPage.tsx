@@ -64,7 +64,7 @@ export default function EventDetailsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#1E3D61] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-[var(--brand-navy)] border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -140,11 +140,11 @@ export default function EventDetailsPage() {
       transition={pageTransition}
     >
       {/* Dark Header Background for Navbar */}
-      <div className="bg-[#0B1120] pt-32 pb-24 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E3D61 100%)" }} />
+      <div className="bg-[var(--brand-deep-navy)] pt-32 pb-24 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, var(--brand-deep-navy) 0%, var(--brand-navy) 100%)" }} />
         <div className="absolute inset-0 z-0 overflow-hidden mix-blend-screen pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full filter blur-[100px]" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#3b82f6]/20 rounded-full filter blur-[100px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[var(--brand-blue-accent)]/20 rounded-full filter blur-[100px]" />
           <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px]" />
         </div>
         <div className="relative max-w-6xl mx-auto">
@@ -180,7 +180,7 @@ export default function EventDetailsPage() {
                     query={event.image}
                   />
                 )}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#27374d]/40 via-transparent to-transparent" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--brand-slate-contrast)]/40 via-transparent to-transparent" />
                 <div className="absolute top-4 right-4 flex gap-2">
                   <motion.button
                     type="button"
@@ -224,7 +224,7 @@ export default function EventDetailsPage() {
                       {event.status}
                     </span>
                   )}
-                  <span className="px-3 py-1 bg-[#155dfc] text-white rounded-[8px] text-[12px] font-['Inter:Medium',sans-serif] font-medium">
+                  <span className="px-3 py-1 bg-[var(--brand-blue-strong)] text-white rounded-[8px] text-[12px] font-['Inter:Medium',sans-serif] font-medium">
                     {event.category}
                   </span>
                 </div>
@@ -352,7 +352,7 @@ export default function EventDetailsPage() {
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[#27374d] to-[#1e2936] py-3 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-[#dde6ed] shadow-lg ring-1 ring-white/10 transition-shadow duration-300 ease-in-out hover:shadow-xl"
+                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[var(--brand-slate-contrast)] to-[#1e2936] py-3 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-[#dde6ed] shadow-lg ring-1 ring-white/10 transition-shadow duration-300 ease-in-out hover:shadow-xl"
               >
                 <Ticket className="h-5 w-5" />
                 Book Tickets
@@ -446,13 +446,13 @@ export default function EventDetailsPage() {
                   Number of Tickets
                 </label>
                 <div className="flex items-center gap-4">
-                  <span className="font-['Inter:Semi_Bold',sans-serif] text-[18px] font-semibold text-foreground bg-background px-4 py-2 rounded-lg ring-1 ring-[#27374d]/5">
+                  <span className="font-['Inter:Semi_Bold',sans-serif] text-[18px] font-semibold text-foreground bg-background px-4 py-2 rounded-lg ring-1 ring-[var(--brand-slate-contrast)]/5">
                     1 Ticket
                   </span>
                 </div>
               </div>
 
-              <div className="mb-6 rounded-xl bg-background/90 p-4 ring-1 ring-[#27374d]/5">
+              <div className="mb-6 rounded-xl bg-background/90 p-4 ring-1 ring-[var(--brand-slate-contrast)]/5">
                   <div className="flex justify-between items-center text-[14px] mb-2">
                     <span className="text-muted-foreground">Price per ticket</span>
                     <span className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-foreground">

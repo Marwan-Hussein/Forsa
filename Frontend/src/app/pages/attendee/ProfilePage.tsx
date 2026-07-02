@@ -202,9 +202,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-[var(--brand-page-background)]">
       {/* Cover Hero */}
-      <div className="bg-gradient-to-br from-[#0B1929] via-[#1E3D61] to-[#0F2847] pt-24 pb-24 px-4 sm:px-6 lg:px-8">
+      <div className="bg-gradient-to-br from-[var(--brand-hero-deep)] via-[var(--brand-navy)] to-[var(--brand-hero-dark)] pt-24 pb-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
           <Link to="/dashboard" className="inline-flex items-center gap-2 text-blue-200 hover:text-white text-sm font-medium mb-6 group transition-colors">
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -236,17 +236,17 @@ export default function ProfilePage() {
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-[#1E3D61]/5 overflow-hidden text-center"
+              className="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-[var(--brand-navy)]/5 overflow-hidden text-center"
             >
               <div className="relative pt-8 pb-6 px-8">
                 <div className="relative mb-4 inline-block">
-                  <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#1E3D61] to-[#0F2847] flex items-center justify-center border-4 border-white shadow-lg mx-auto">
+                  <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-hero-dark)] flex items-center justify-center border-4 border-white shadow-lg mx-auto">
                     <span className="text-4xl font-bold text-white">
                       {formData.fullName.charAt(0) || "U"}
                     </span>
                   </div>
                   {isEditing && (
-                    <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#1E3D61] rounded-xl flex items-center justify-center text-white shadow-md hover:bg-[#152D4A] transition-colors">
+                    <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-[var(--brand-navy)] rounded-xl flex items-center justify-center text-white shadow-md hover:bg-[var(--brand-navy-hover)] transition-colors">
                       <Camera className="w-4 h-4" />
                     </button>
                   )}
@@ -267,7 +267,7 @@ export default function ProfilePage() {
                   <p className="text-slate-500 text-xs mt-0.5">Attended</p>
                 </div>
                 <div className="py-4">
-                  <p className="font-bold text-xl text-[#1E3D61]">-</p>
+                  <p className="font-bold text-xl text-[var(--brand-navy)]">-</p>
                   <p className="text-slate-500 text-xs mt-0.5">Upcoming</p>
                 </div>
               </div>
@@ -314,7 +314,7 @@ export default function ProfilePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-[#1E3D61]/5 overflow-hidden"
+              className="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-[var(--brand-navy)]/5 overflow-hidden"
             >
               <div className="flex items-center justify-between p-6 border-b border-slate-100">
                 <div>
@@ -324,7 +324,7 @@ export default function ProfilePage() {
                 {!isEditing ? (
                   <button
                     onClick={handleEdit}
-                    className="bg-[#1E3D61]/5 text-[#1E3D61] px-5 py-2 rounded-xl font-semibold text-sm hover:bg-[#1E3D61]/10 transition-colors"
+                    className="bg-[var(--brand-navy)]/5 text-[var(--brand-navy)] px-5 py-2 rounded-xl font-semibold text-sm hover:bg-[var(--brand-navy)]/10 transition-colors"
                   >
                     Edit Profile
                   </button>
@@ -336,7 +336,7 @@ export default function ProfilePage() {
                     <button
                       onClick={handleSave}
                       disabled={isSaving}
-                      className="bg-[#1E3D61] text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-[#152D4A] transition-colors flex items-center gap-2 disabled:opacity-70 shadow-sm"
+                      className="bg-[var(--brand-navy)] text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-[var(--brand-navy-hover)] transition-colors flex items-center gap-2 disabled:opacity-70 shadow-sm"
                     >
                       <Save className="w-4 h-4" />
                       {isSaving ? "Saving..." : "Save Changes"}
@@ -351,11 +351,11 @@ export default function ProfilePage() {
                   <div>
                     <label htmlFor="fullName" className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Full Name</label>
                     <div className="relative">
-                      <User className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isEditing ? 'text-[#1E3D61]' : 'text-slate-300'}`} />
+                      <User className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isEditing ? 'text-[var(--brand-navy)]' : 'text-slate-300'}`} />
                       <input
                         type="text" id="fullName" name="fullName" value={formData.fullName} onChange={handleChange} disabled={!isEditing}
                         className={`w-full pl-10 pr-4 py-3 rounded-xl border text-sm transition-all outline-none ${
-                          isEditing ? "border-slate-200 focus:border-[#1E3D61] focus:ring-2 focus:ring-[#1E3D61]/10 bg-white text-slate-800" : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
+                          isEditing ? "border-slate-200 focus:border-[var(--brand-navy)] focus:ring-2 focus:ring-[var(--brand-navy)]/10 bg-white text-slate-800" : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
                         }`}
                       />
                     </div>
@@ -366,11 +366,11 @@ export default function ProfilePage() {
                   <div>
                     <label htmlFor="userName" className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Username</label>
                     <div className="relative">
-                      <span className={`absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-sm ${isEditing ? 'text-[#1E3D61]' : 'text-slate-300'}`}>@</span>
+                      <span className={`absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-sm ${isEditing ? 'text-[var(--brand-navy)]' : 'text-slate-300'}`}>@</span>
                       <input
                         type="text" id="userName" name="userName" value={formData.userName} onChange={handleChange} disabled={!isEditing}
                         className={`w-full pl-9 pr-4 py-3 rounded-xl border text-sm transition-all outline-none ${
-                          isEditing ? "border-slate-200 focus:border-[#1E3D61] focus:ring-2 focus:ring-[#1E3D61]/10 bg-white text-slate-800" : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
+                          isEditing ? "border-slate-200 focus:border-[var(--brand-navy)] focus:ring-2 focus:ring-[var(--brand-navy)]/10 bg-white text-slate-800" : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
                         }`}
                       />
                     </div>
@@ -381,11 +381,11 @@ export default function ProfilePage() {
                   <div className="md:col-span-2">
                     <label htmlFor="email" className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Email Address</label>
                     <div className="relative">
-                      <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isEditing ? 'text-[#1E3D61]' : 'text-slate-300'}`} />
+                      <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isEditing ? 'text-[var(--brand-navy)]' : 'text-slate-300'}`} />
                       <input
                         type="email" id="email" name="email" value={formData.email} onChange={handleChange} disabled={!isEditing}
                         className={`w-full pl-10 pr-4 py-3 rounded-xl border text-sm transition-all outline-none ${
-                          isEditing ? "border-slate-200 focus:border-[#1E3D61] focus:ring-2 focus:ring-[#1E3D61]/10 bg-white text-slate-800" : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
+                          isEditing ? "border-slate-200 focus:border-[var(--brand-navy)] focus:ring-2 focus:ring-[var(--brand-navy)]/10 bg-white text-slate-800" : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
                         }`}
                       />
                     </div>
@@ -396,11 +396,11 @@ export default function ProfilePage() {
                   <div>
                     <label htmlFor="phoneNumber" className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Phone Number</label>
                     <div className="relative">
-                      <Phone className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isEditing ? 'text-[#1E3D61]' : 'text-slate-300'}`} />
+                      <Phone className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isEditing ? 'text-[var(--brand-navy)]' : 'text-slate-300'}`} />
                       <input
                         type="tel" id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} disabled={!isEditing}
                         className={`w-full pl-10 pr-4 py-3 rounded-xl border text-sm transition-all outline-none ${
-                          isEditing ? "border-slate-200 focus:border-[#1E3D61] focus:ring-2 focus:ring-[#1E3D61]/10 bg-white text-slate-800" : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
+                          isEditing ? "border-slate-200 focus:border-[var(--brand-navy)] focus:ring-2 focus:ring-[var(--brand-navy)]/10 bg-white text-slate-800" : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
                         }`}
                       />
                     </div>
@@ -411,11 +411,11 @@ export default function ProfilePage() {
                   <div>
                     <label htmlFor="location" className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Location</label>
                     <div className="relative">
-                      <MapPin className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isEditing ? 'text-[#1E3D61]' : 'text-slate-300'}`} />
+                      <MapPin className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isEditing ? 'text-[var(--brand-navy)]' : 'text-slate-300'}`} />
                       <input
                         type="text" id="location" name="location" value={formData.location} onChange={handleChange} disabled={!isEditing}
                         className={`w-full pl-10 pr-4 py-3 rounded-xl border text-sm transition-all outline-none ${
-                          isEditing ? "border-slate-200 focus:border-[#1E3D61] focus:ring-2 focus:ring-[#1E3D61]/10 bg-white text-slate-800" : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
+                          isEditing ? "border-slate-200 focus:border-[var(--brand-navy)] focus:ring-2 focus:ring-[var(--brand-navy)]/10 bg-white text-slate-800" : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
                         }`}
                       />
                     </div>
@@ -426,11 +426,11 @@ export default function ProfilePage() {
                   <div className="md:col-span-2">
                     <label htmlFor="birthDate" className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Date of Birth</label>
                     <div className="relative">
-                      <Calendar className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isEditing ? 'text-[#1E3D61]' : 'text-slate-300'}`} />
+                      <Calendar className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isEditing ? 'text-[var(--brand-navy)]' : 'text-slate-300'}`} />
                       <input
                         type="date" id="birthDate" name="birthDate" value={formData.birthDate} onChange={handleChange} disabled={!isEditing}
                         className={`w-full pl-10 pr-4 py-3 rounded-xl border text-sm transition-all outline-none ${
-                          isEditing ? "border-slate-200 focus:border-[#1E3D61] focus:ring-2 focus:ring-[#1E3D61]/10 bg-white text-slate-800" : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
+                          isEditing ? "border-slate-200 focus:border-[var(--brand-navy)] focus:ring-2 focus:ring-[var(--brand-navy)]/10 bg-white text-slate-800" : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
                         }`}
                       />
                     </div>

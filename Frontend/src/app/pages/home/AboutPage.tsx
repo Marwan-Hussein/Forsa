@@ -3,17 +3,17 @@ import { Info, Target, Users, Sparkles, MapPin } from "lucide-react";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 pt-28 pb-20">
+    <div className="min-h-screen bg-[var(--brand-page-background)] text-slate-800 pt-28 pb-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          <span className="inline-block py-1 px-3 rounded-full bg-blue-100 text-[#1E3D61] text-xs font-bold tracking-widest uppercase mb-4">
+          <span className="inline-block py-1 px-3 rounded-full bg-blue-100 text-[var(--brand-navy)] text-xs font-bold tracking-widest uppercase mb-4">
             Our Story
           </span>
-          <h1 className="text-4xl md:text-5xl font-black text-[#1E3D61] mb-6">
+          <h1 className="text-4xl md:text-5xl font-black text-[var(--brand-navy)] mb-6">
             Connecting People Through <br className="hidden md:block"/> Exceptional Events
           </h1>
           <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
@@ -31,7 +31,7 @@ export default function AboutPage() {
             <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6">
               <Target className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-bold text-[#1E3D61] mb-3">Our Mission</h3>
+            <h3 className="text-xl font-bold text-[var(--brand-navy)] mb-3">Our Mission</h3>
             <p className="text-slate-500 leading-relaxed">
               To make discovering and attending incredible events seamless and joyful. We're bridging the gap between passionate organizers and enthusiastic attendees.
             </p>
@@ -46,7 +46,7 @@ export default function AboutPage() {
             <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mb-6">
               <Sparkles className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-bold text-[#1E3D61] mb-3">Our Vision</h3>
+            <h3 className="text-xl font-bold text-[var(--brand-navy)] mb-3">Our Vision</h3>
             <p className="text-slate-500 leading-relaxed">
               To become the global hub for cultural, educational, and entertainment experiences, empowering everyone to find their perfect moment.
             </p>
@@ -57,7 +57,7 @@ export default function AboutPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-gradient-to-br from-[#1E3D61] to-[#152D4A] rounded-3xl p-10 text-white relative overflow-hidden"
+          className="bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-hover)] rounded-3xl p-10 text-white relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">

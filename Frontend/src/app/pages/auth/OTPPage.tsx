@@ -208,7 +208,7 @@ export default function OTPPage() {
   const formattedTime = `${Math.floor(timer / 60).toString().padStart(2, "0")}:${(timer % 60).toString().padStart(2, "0")}`;
 
   return (
-    <div className="flex min-h-screen bg-[#0B1120] overflow-hidden selection:bg-blue-500/30">
+    <div className="flex min-h-screen bg-[var(--brand-deep-navy)] overflow-hidden selection:bg-blue-500/30">
       {/* Left Panel - Visual/Animation */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col p-12 border-r border-white/5">
         {/* Stunning Image Background */}
@@ -219,8 +219,8 @@ export default function OTPPage() {
             className="w-full h-full object-cover"
           />
           {/* Lighter Gradient Overlays for better visibility */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/40 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0B1120] via-[#0B1120]/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--brand-deep-navy)] via-[var(--brand-deep-navy)]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[var(--brand-deep-navy)] via-[var(--brand-deep-navy)]/20 to-transparent" />
           <div className="absolute inset-0 opacity-[0.02] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px]" />
         </div>
 
@@ -254,7 +254,7 @@ export default function OTPPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative">
         {/* Mobile Background */}
         <div className="lg:hidden absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0B1120] to-[#1E3D61]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--brand-deep-navy)] to-[var(--brand-navy)]" />
           <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px] opacity-[0.03]" />
         </div>
 
@@ -307,7 +307,7 @@ export default function OTPPage() {
                 transition={{ duration: 0.45, delay: 0.3 }}
               >
                 <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
-                  <Mail className="w-4 h-4 text-[#3b82f6]" />
+                  <Mail className="w-4 h-4 text-[var(--brand-blue-accent)]" />
                   <span className="font-['Inter:Medium',sans-serif] text-[14px] text-white">
                     {maskedEmail}
                   </span>
@@ -350,9 +350,9 @@ export default function OTPPage() {
                           disabled={isVerifying}
                           className={`w-full aspect-square text-center font-['Inter:Bold',sans-serif] text-[24px] sm:text-[28px] rounded-xl border transition-all duration-300 bg-white/5 focus:outline-none ${
                             focusedIndex === index
-                              ? "border-[#3b82f6] bg-white/10 ring-1 ring-[#3b82f6]/50 text-white shadow-inner"
+                              ? "border-[var(--brand-blue-accent)] bg-white/10 ring-1 ring-[var(--brand-blue-accent)]/50 text-white shadow-inner"
                               : digit
-                              ? "border-[#3b82f6]/50 text-white"
+                              ? "border-[var(--brand-blue-accent)]/50 text-white"
                               : "border-white/10 text-slate-400 hover:border-white/20"
                           } ${error ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/20 text-red-400" : ""} ${isVerifying ? "opacity-60" : ""}`}
                         />
@@ -410,7 +410,7 @@ export default function OTPPage() {
                   className={`flex items-center gap-2 font-['Inter:Medium',sans-serif] text-[14px] transition-all duration-300 ${
                     timer > 0
                       ? "text-slate-500 cursor-not-allowed"
-                      : "text-[#3b82f6] hover:text-[#60a5fa] transition-colors"
+                      : "text-[var(--brand-blue-accent)] hover:text-[#60a5fa] transition-colors"
                   }`}
                 >
                   {isResending ? (

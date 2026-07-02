@@ -1,8 +1,10 @@
-export const brandNavy = "#1e3d61";
+export const brandNavy = "var(--brand-navy)";
 
-export const brandCtaBlue = "#1e3d61";
+export const brandCtaBlue = "var(--brand-navy)";
 
-export const brandNavyElevated = "rgba(30, 61, 97, 0.85)";
+export const brandNavyElevated = "var(--brand-navy-elevated)";
+
+export const brandNavyHover = "var(--brand-navy-hover)";
 
 
 

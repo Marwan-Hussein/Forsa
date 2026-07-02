@@ -77,11 +77,11 @@ export default function OrganizationsPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Hero Section */}
-      <div className={`relative bg-[#0B1120] pt-36 pb-28 px-4 overflow-hidden`}>
-        <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E3D61 100%)" }} />
+      <div className={`relative bg-[var(--brand-deep-navy)] pt-36 pb-28 px-4 overflow-hidden`}>
+        <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, var(--brand-deep-navy) 0%, var(--brand-navy) 100%)" }} />
         <div className="absolute inset-0 z-0 overflow-hidden mix-blend-screen pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full filter blur-[100px]" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#3b82f6]/20 rounded-full filter blur-[100px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[var(--brand-blue-accent)]/20 rounded-full filter blur-[100px]" />
           <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px]" />
         </div>
         
@@ -122,7 +122,7 @@ export default function OrganizationsPage() {
 
         {/* Info Card */}
         <div
-          className={`bg-white rounded-2xl shadow-xl shadow-[#1E3D61]/5 border border-slate-100 p-6 mb-8 ${
+          className={`bg-white rounded-2xl shadow-xl shadow-[var(--brand-navy)]/5 border border-slate-100 p-6 mb-8 ${
             isSpecificOrg ? "hidden" : ""
           }`}
         >
@@ -209,7 +209,7 @@ export default function OrganizationsPage() {
                     onClick={() => toggleSubscription(org.id)}
                     className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
                       isSubscribed
-                        ? "bg-[#1E3D61] text-white shadow-md hover:bg-[#1a365d] active:scale-95"
+                        ? "bg-[var(--brand-navy)] text-white shadow-md hover:bg-[#1a365d] active:scale-95"
                         : "bg-slate-100 text-slate-700 hover:bg-slate-200 active:scale-95"
                     }`}
                   >

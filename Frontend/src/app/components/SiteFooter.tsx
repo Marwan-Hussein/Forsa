@@ -3,7 +3,7 @@ import { ForSaLogo } from "./ForSaLogo";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto w-full bg-[#0B1120] border-t border-white/10 pt-20 pb-10 px-6 lg:px-8">
+    <footer className="mt-auto w-full bg-[var(--brand-deep-navy)] border-t border-white/10 pt-20 pb-10 px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-2">

@@ -149,11 +149,11 @@ export default function EventsPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Hero Section */}
-      <div className="relative bg-[#0B1120] pt-36 pb-28 px-4 overflow-hidden">
-        <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E3D61 100%)" }} />
+      <div className="relative bg-[var(--brand-deep-navy)] pt-36 pb-28 px-4 overflow-hidden">
+        <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, var(--brand-deep-navy) 0%, var(--brand-navy) 100%)" }} />
         <div className="absolute inset-0 z-0 overflow-hidden mix-blend-screen pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full filter blur-[100px]" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#3b82f6]/20 rounded-full filter blur-[100px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[var(--brand-blue-accent)]/20 rounded-full filter blur-[100px]" />
           <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px]" />
         </div>
         
@@ -173,23 +173,23 @@ export default function EventsPage() {
 
       <div className="max-w-7xl mx-auto px-4 -mt-12 relative z-10 pb-20">
         {/* Search and Filter Bar */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-[#1E3D61]/5 border border-slate-100 p-6 mb-8">
+        <div className="bg-white rounded-2xl shadow-xl shadow-[var(--brand-shadow-soft)] border border-slate-100 p-6 mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[#1E3D61] transition-colors" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[var(--brand-navy)] transition-colors" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search events by name, location, or keyword..."
-                className="w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 focus:outline-none focus:border-[#1E3D61] focus:ring-1 focus:ring-[#1E3D61]/30 font-medium text-slate-800 transition-all duration-300 bg-slate-50 focus:bg-white"
+                className="w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 focus:outline-none focus:border-[var(--brand-navy)] focus:ring-1 focus:ring-[var(--brand-navy)]/30 font-medium text-slate-800 transition-all duration-300 bg-slate-50 focus:bg-white"
               />
             </div>
 
             {/* Filter Toggle Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-8 py-4 bg-[#1E3D61] text-white rounded-xl font-bold hover:bg-[#1a365d] transition-all shadow-md hover:shadow-lg active:scale-95"
+              className="flex items-center gap-2 px-8 py-4 bg-[var(--brand-navy)] text-white rounded-xl font-bold hover:bg-[var(--brand-navy)]/90 transition-all shadow-md hover:shadow-lg active:scale-95"
             >
               <SlidersHorizontal className="w-5 h-5" />
               Filters
@@ -220,7 +220,7 @@ export default function EventsPage() {
                         onClick={() => setSelectedDiscovery(mode)}
                         className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
                           isActive
-                            ? "bg-[#1E3D61] text-white shadow-md shadow-[#1E3D61]/20 scale-105"
+                            ? "bg-[var(--brand-navy)] text-white shadow-md shadow-[var(--brand-navy)]/20 scale-105"
                             : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800"
                         }`}
                       >
@@ -316,7 +316,7 @@ export default function EventsPage() {
                   value={locationFilter}
                   onChange={(e) => setLocationFilter(e.target.value)}
                   placeholder="Enter city, neighborhood, or venue..."
-                  className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[#1E3D61] focus:ring-1 focus:ring-[#1E3D61]/30 font-medium text-slate-800 transition-all duration-300 bg-slate-50 focus:bg-white"
+                  className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[var(--brand-navy)] focus:ring-1 focus:ring-[var(--brand-navy)]/30 font-medium text-slate-800 transition-all duration-300 bg-slate-50 focus:bg-white"
                 />
               </div>
 
@@ -350,14 +350,14 @@ export default function EventsPage() {
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-xl font-bold text-slate-800">Trending Now</h2>
           <p className="font-medium text-sm text-slate-500 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
-            Found <span className="text-[#1E3D61] font-bold">{displayEvents.length}</span> event{displayEvents.length !== 1 ? "s" : ""}
+            Found <span className="text-[var(--brand-navy)] font-bold">{displayEvents.length}</span> event{displayEvents.length !== 1 ? "s" : ""}
           </p>
         </div>
 
         {/* Events Grid */}
         {loading ? (
           <div className="bg-white rounded-[14px] border border-slate-200 shadow-sm p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
-             <div className="w-10 h-10 border-4 border-[#1E3D61] border-t-transparent rounded-full animate-spin mb-4"></div>
+             <div className="w-10 h-10 border-4 border-[var(--brand-navy)] border-t-transparent rounded-full animate-spin mb-4"></div>
              <p className="font-semibold text-lg text-slate-800 mb-2">
                Discovering events...
              </p>
@@ -396,7 +396,7 @@ export default function EventsPage() {
                         setCurrentPage(i + 1);
                         window.scrollTo({ top: 400, behavior: 'smooth' });
                       }}
-                      className={`min-w-[40px] h-10 rounded-lg font-bold transition-all flex items-center justify-center ${currentPage === i + 1 ? 'bg-[#1E3D61] text-white shadow-md' : 'text-slate-600 bg-white shadow-sm hover:bg-slate-50 border border-slate-200'}`}
+                      className={`min-w-[40px] h-10 rounded-lg font-bold transition-all flex items-center justify-center ${currentPage === i + 1 ? 'bg-[var(--brand-navy)] text-white shadow-md' : 'text-slate-600 bg-white shadow-sm hover:bg-slate-50 border border-slate-200'}`}
                     >
                       {i + 1}
                     </button>

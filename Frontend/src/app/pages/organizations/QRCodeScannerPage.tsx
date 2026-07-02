@@ -236,7 +236,7 @@ export default function QRCodeScannerPage() {
       </div>
 
       {/* Header Card */}
-      <div className="bg-gradient-to-br from-[#0B1120] to-[#1E3D61] rounded-2xl p-8 text-white relative overflow-hidden shadow-lg shadow-[#1E3D61]/20">
+      <div className="bg-gradient-to-br from-[var(--brand-deep-navy)] to-[var(--brand-navy)] rounded-2xl p-8 text-white relative overflow-hidden shadow-lg shadow-[var(--brand-navy)]/20">
         <div className="absolute top-0 right-0 w-64 h-64 bg-violet-500/30 rounded-full filter blur-[80px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-fuchsia-500/20 rounded-full filter blur-[80px] pointer-events-none" />
         

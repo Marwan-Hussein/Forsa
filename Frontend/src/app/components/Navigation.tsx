@@ -89,11 +89,11 @@ export function Navigation() {
                 key={item.path}
                 to={item.path} 
                 className={`relative font-['Inter:Medium',sans-serif] text-sm font-semibold tracking-wide transition-colors group ${
-                  shouldElevate ? 'text-slate-600 hover:text-[#1E3D61]' : 'text-white/80 hover:text-white drop-shadow-sm'
+                  shouldElevate ? 'text-slate-600 hover:text-[var(--brand-navy)]' : 'text-white/80 hover:text-white drop-shadow-sm'
                 }`}
               >
                 {item.label}
-                <span className={`absolute -bottom-1 left-0 w-0 h-0.5 rounded-full transition-all duration-300 group-hover:w-full ${shouldElevate ? 'bg-[#1E3D61]' : 'bg-white'}`}></span>
+                <span className={`absolute -bottom-1 left-0 w-0 h-0.5 rounded-full transition-all duration-300 group-hover:w-full ${shouldElevate ? 'bg-[var(--brand-navy)]' : 'bg-white'}`}></span>
               </Link>
             ))}
           </div>
@@ -119,7 +119,7 @@ export function Navigation() {
                     }`}
                   >
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center font-['Inter:Bold',sans-serif] text-sm ${
-                      shouldElevate ? 'bg-gradient-to-br from-[#1E3D61] to-[#152D4A] text-white' : 'bg-white text-[#1E3D61]'
+                      shouldElevate ? 'bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-hover)] text-white' : 'bg-white text-[var(--brand-navy)]'
                     }`}>
                       {userName.charAt(0)}
                     </div>
@@ -142,7 +142,7 @@ export function Navigation() {
                           <p className="text-xs font-['Inter:Medium',sans-serif] text-slate-500 truncate">{userEmail}</p>
                         </div>
                         <div className="p-2">
-                          <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-[#1E3D61] transition-colors">
+                          <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-[var(--brand-navy)] transition-colors">
                             <LayoutDashboard className="w-4 h-4" /> Dashboard
                           </Link>
                         </div>
@@ -161,8 +161,8 @@ export function Navigation() {
                 to="/login"
                 className={`relative overflow-hidden text-sm font-['Inter:Bold',sans-serif] font-bold px-8 py-2.5 rounded-full shadow-lg transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 group ${
                   shouldElevate 
-                    ? 'bg-[#1E3D61] text-white hover:bg-[#152D4A] shadow-[#1E3D61]/20' 
-                    : 'bg-white text-[#1E3D61] hover:bg-slate-50'
+                    ? 'bg-[var(--brand-navy)] text-white hover:bg-[var(--brand-navy-hover)] shadow-[var(--brand-navy)]/20' 
+                    : 'bg-white text-[var(--brand-navy)] hover:bg-slate-50'
                 }`}
               >
                 <span className="relative z-10 flex items-center gap-2">Sign In <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
@@ -228,7 +228,7 @@ export function Navigation() {
                   <div className="pt-4 mt-2 border-t border-slate-100">
                     <Link
                       to="/login"
-                      className="flex justify-center items-center gap-2 rounded-xl px-4 py-3 font-['Inter:Bold',sans-serif] text-white bg-[#1E3D61] hover:bg-[#152D4A]"
+                      className="flex justify-center items-center gap-2 rounded-xl px-4 py-3 font-['Inter:Bold',sans-serif] text-white bg-[var(--brand-navy)] hover:bg-[var(--brand-navy-hover)]"
                     >
                       Sign In <ArrowRight className="w-4 h-4" />
                     </Link>

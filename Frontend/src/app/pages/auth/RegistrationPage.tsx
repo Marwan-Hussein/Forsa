@@ -121,7 +121,7 @@ export default function RegistrationPage() {
       title: "Register as Attendee",
       description: "Join thousands of event-goers and start your journey today",
       icon: User,
-      accentColor: "#3b82f6",
+      accentColor: "var(--brand-blue-accent)",
     },
     organization: {
       title: "Register as Organization",
@@ -140,7 +140,7 @@ export default function RegistrationPage() {
   const config = typeConfig[registrationType as keyof typeof typeConfig] || typeConfig.attendee;
 
   const registrationTypes = [
-    { id: "attendee", label: "Attendee", icon: User, color: "#3b82f6" },
+    { id: "attendee", label: "Attendee", icon: User, color: "var(--brand-blue-accent)" },
     { id: "organization", label: "Organization", icon: Building2, color: "#10b981" },
     { id: "place", label: "Place Owner", icon: Home, color: "#f59e0b" },
   ];
@@ -160,7 +160,7 @@ export default function RegistrationPage() {
   const currentFields = formFields.filter(f => f.step === currentStep);
 
   return (
-    <div className="flex min-h-screen bg-[#0B1120] overflow-hidden selection:bg-blue-500/30">
+    <div className="flex min-h-screen bg-[var(--brand-deep-navy)] overflow-hidden selection:bg-blue-500/30">
       {/* Left Panel - Visual/Animation */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col p-12 border-r border-white/5">
         {/* Stunning Image Background */}
@@ -171,8 +171,8 @@ export default function RegistrationPage() {
             className="w-full h-full object-cover"
           />
           {/* Lighter Gradient Overlays for better visibility */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/40 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0B1120] via-[#0B1120]/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--brand-deep-navy)] via-[var(--brand-deep-navy)]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[var(--brand-deep-navy)] via-[var(--brand-deep-navy)]/20 to-transparent" />
           <div className="absolute inset-0 opacity-[0.02] bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px]" />
         </div>
 
@@ -229,7 +229,7 @@ export default function RegistrationPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative overflow-y-auto custom-scrollbar">
         {/* Mobile Background */}
         <div className="lg:hidden absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0B1120] to-[#1E3D61]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--brand-deep-navy)] to-[var(--brand-navy)]" />
           <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:40px_40px] opacity-[0.03]" />
         </div>
 
@@ -308,7 +308,7 @@ export default function RegistrationPage() {
         <div className="flex items-center justify-between mb-8">
             <div className="flex gap-2">
                 {[1, 2, 3].map((step) => (
-                    <div key={step} className={`h-1.5 rounded-full transition-all duration-500 ${step === currentStep ? 'w-8 bg-[#3b82f6]' : step < currentStep ? 'w-4 bg-[#3b82f6]/60' : 'w-4 bg-white/10'}`} />
+                    <div key={step} className={`h-1.5 rounded-full transition-all duration-500 ${step === currentStep ? 'w-8 bg-[var(--brand-blue-accent)]' : step < currentStep ? 'w-4 bg-[var(--brand-blue-accent)]/60' : 'w-4 bg-white/10'}`} />
                 ))}
             </div>
             <span className="text-xs text-slate-400 font-medium tracking-widest uppercase">Step {currentStep} of {totalSteps}</span>
@@ -372,7 +372,7 @@ export default function RegistrationPage() {
                           onChange={handleChange}
                           onFocus={() => setFocusedField(field.name)}
                           onBlur={() => setFocusedField(null)}
-                          className={`w-full pl-12 py-4 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:border-[#3b82f6] focus:bg-white/10 focus:ring-1 focus:ring-[#3b82f6]/50 font-['Inter:Regular',sans-serif] text-[15px] text-white placeholder:text-slate-500 transition-all duration-300 ${(field.name === "password" || field.name === "confirmPassword") ? 'pr-12' : 'pr-4'}`}
+                          className={`w-full pl-12 py-4 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:border-[var(--brand-blue-accent)] focus:bg-white/10 focus:ring-1 focus:ring-[var(--brand-blue-accent)]/50 font-['Inter:Regular',sans-serif] text-[15px] text-white placeholder:text-slate-500 transition-all duration-300 ${(field.name === "password" || field.name === "confirmPassword") ? 'pr-12' : 'pr-4'}`}
                           placeholder={field.placeholder}
                         />
                         {(field.name === "password" || field.name === "confirmPassword") && (
@@ -422,7 +422,7 @@ export default function RegistrationPage() {
                           onChange={handleChange}
                           onFocus={() => setFocusedField("birthdate")}
                           onBlur={() => setFocusedField(null)}
-                          className="w-full pl-12 pr-4 py-4 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:border-[#3b82f6] focus:bg-white/10 focus:ring-1 focus:ring-[#3b82f6]/50 font-['Inter:Regular',sans-serif] text-[15px] text-white placeholder:text-slate-500 transition-all duration-300"
+                          className="w-full pl-12 pr-4 py-4 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:border-[var(--brand-blue-accent)] focus:bg-white/10 focus:ring-1 focus:ring-[var(--brand-blue-accent)]/50 font-['Inter:Regular',sans-serif] text-[15px] text-white placeholder:text-slate-500 transition-all duration-300"
                         />
                       </div>
                       {errors.birthdate && (
@@ -436,7 +436,7 @@ export default function RegistrationPage() {
                       <input
                         type="checkbox"
                         id="terms"
-                        className="mt-1 w-4 h-4 rounded border-white/20 bg-white/10 text-[#3b82f6] focus:ring-[#3b82f6]/30"
+                        className="mt-1 w-4 h-4 rounded border-white/20 bg-white/10 text-[var(--brand-blue-accent)] focus:ring-[var(--brand-blue-accent)]/30"
                         required
                       />
                       <label
@@ -483,7 +483,7 @@ export default function RegistrationPage() {
               Already have an account?{" "}
               <Link
                 to="/login"
-                className="font-['Inter:Medium',sans-serif] font-medium text-white hover:text-[#3b82f6] transition-colors duration-300"
+                className="font-['Inter:Medium',sans-serif] font-medium text-white hover:text-[var(--brand-blue-accent)] transition-colors duration-300"
               >
                 Sign In
               </Link>
