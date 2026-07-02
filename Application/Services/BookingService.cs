@@ -60,6 +60,9 @@ namespace Application.Services
 
         public async Task<BookingResponseDto> CreateBookingAsync(CreateBookingRequestDto dto)
         {
+            
+            dto.NumberOfTickets = 1;
+
             // Get event and validate
             var eventEntity = await _eventRepository.GetQueryable()
                 .FirstOrDefaultAsync(e => e.Id == dto.EventId && !e.IsDeleted);
