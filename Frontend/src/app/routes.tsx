@@ -42,6 +42,7 @@ import OwnerAddPlacePage from "./pages/owner/OwnerAddPlacePage";
 import OwnerEditPlacePage from "./pages/owner/OwnerEditPlacePage";
 import OwnerPlaceMediaPage from "./pages/owner/OwnerPlaceMediaPage";
 import OwnerBookingsPage from "./pages/owner/OwnerBookingsPage";
+import OwnerProfilePage from "./pages/owner/OwnerProfilePage";
 
 // Organizer Portal Imports
 import OrganizerLayout from "./pages/layout/OrganizerLayout";
@@ -52,6 +53,7 @@ import EditEventPage from "./pages/organizer/EditEventPage";
 import BookingRequestsPage from "./pages/organizations/BookingRequestsPage";
 import ManageAttendeesPage from "./pages/organizations/ManageAttendeesPage";
 import QRCodeScannerPage from "./pages/organizations/QRCodeScannerPage";
+import OrganizerProfilePage from "./pages/organizations/OrganizerProfilePage";
 
 export const router = createBrowserRouter([
   {
@@ -191,6 +193,10 @@ export const router = createBrowserRouter([
         path: "bookings",
         Component: OwnerBookingsPage,
       },
+      {
+        path: "profile",
+        Component: OwnerProfilePage,
+      },
     ],
   },
   {
@@ -252,6 +258,10 @@ export const router = createBrowserRouter([
       {
         path: "places/:placeId/reviews",
         Component: ViewFeedbackRatingPage,
+      },
+      {
+        path: "profile",
+        Component: OrganizerProfilePage,
       },
     ],
   },

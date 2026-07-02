@@ -52,5 +52,20 @@ namespace Forsa.Controllers
                 return StatusCode(500, "An error occurred while updating organizer profile.");
             }
         }
+        [HttpPost("{id}/profile-picture")]
+        [Authorize(Roles = "Organizer")]
+        public async Task<ActionResult> UploadProfilePicture(int id, IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0) return BadRequest("File is empty");
+                var result = await _profileService.UploadProfilePictureAsync(id, file);
+                return Ok(new { url = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

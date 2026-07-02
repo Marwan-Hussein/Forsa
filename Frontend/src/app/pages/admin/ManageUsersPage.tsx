@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
   Search, Shield, UserX, CheckCircle, Filter,
-  Loader2, ChevronDown, Users, TrendingUp, Ban
+  Loader2, ChevronDown, Users, TrendingUp, Ban, Eye, Calendar, MapPin
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
@@ -129,6 +129,7 @@ export default function ManageUsersPage() {
   const [loading, setLoading]       = useState(true);
   const [search, setSearch]         = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [userToView, setUserToView] = useState<ApplicationUserDTO | null>(null);
 
   async function fetchUsers() {
     setLoading(true);
@@ -338,27 +339,41 @@ export default function ManageUsersPage() {
 
                       {/* Action */}
                       <td className="px-6 py-4 text-right">
-                        {user.role?.toLowerCase() === "admin" ? (
-                          <span className="text-[12px] font-['Inter:SemiBold',sans-serif] text-slate-400 px-3 py-1.5 bg-slate-100 rounded-lg">
-                            Protected
-                          </span>
-                        ) : user.isBlocked ? (
+                        <div className="flex items-center justify-end gap-2">
                           <button
-                            onClick={() => toggleBlock(user)}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-['Inter:Bold',sans-serif] bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+                            onClick={() => setUserToView(user)}
+                            className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="View Details"
                           >
-                            <CheckCircle className="w-4 h-4" />
-                            Unblock
+                            <Eye className="w-4 h-4" />
                           </button>
-                        ) : (
-                          <button
-                            onClick={() => toggleBlock(user)}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-['Inter:Bold',sans-serif] bg-white border-2 border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shadow-sm hover:shadow-md"
-                          >
-                            <UserX className="w-4 h-4" />
-                            Block
-                          </button>
-                        )}
+                          
+                          {user.role?.toLowerCase() === "admin" ? (
+                            <span className="text-[12px] font-['Inter:SemiBold',sans-serif] text-slate-400 px-3 py-1.5 bg-slate-100 rounded-lg">
+                              Protected
+                            </span>
+                          ) : (
+                            <>
+                              {user.isBlocked ? (
+                                <button
+                                  onClick={() => toggleBlock(user)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-['Inter:Bold',sans-serif] bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm transition-all duration-200"
+                                >
+                                  <CheckCircle className="w-3.5 h-3.5" />
+                                  Unblock
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => toggleBlock(user)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-['Inter:Bold',sans-serif] bg-white border-2 border-rose-200 text-rose-600 hover:bg-rose-50 transition-all duration-200 shadow-sm"
+                                >
+                                  <UserX className="w-3.5 h-3.5" />
+                                  Block
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </td>
                     </motion.tr>
                   );
@@ -387,6 +402,83 @@ export default function ManageUsersPage() {
           </table>
         </div>
       </motion.div>
+
+      {/* ── View User Modal ─────────────────────────────────────────── */}
+      <AnimatePresence>
+        {userToView && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setUserToView(null)}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                <h3 className="text-xl font-['Inter:Bold',sans-serif] text-slate-900">User Details</h3>
+                <button onClick={() => setUserToView(null)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition-colors">
+                  <UserX className="w-5 h-5 rotate-45" />
+                </button>
+              </div>
+              <div className="p-6 overflow-y-auto space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-['Inter:Bold',sans-serif] flex-shrink-0" style={{ backgroundColor: getAvatarColors(userToView.fullName ?? userToView.userName ?? "U").bg, color: getAvatarColors(userToView.fullName ?? userToView.userName ?? "U").text }}>
+                    {(userToView.fullName ?? userToView.userName ?? "U").charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-['Inter:Bold',sans-serif] text-slate-900">{userToView.fullName || userToView.userName || "N/A"}</h4>
+                    <p className="text-slate-500 font-['Inter:Medium',sans-serif]">{userToView.email}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-[12px] font-['Inter:Bold',sans-serif] text-slate-400 uppercase tracking-wider mb-1">Role</p>
+                    <RoleBadge role={userToView.role} />
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-[12px] font-['Inter:Bold',sans-serif] text-slate-400 uppercase tracking-wider mb-1">Status</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`w-2 h-2 rounded-full ${userToView.isBlocked ? "bg-rose-500" : "bg-emerald-500"}`} />
+                      <span className={`text-[14px] font-['Inter:SemiBold',sans-serif] ${userToView.isBlocked ? "text-rose-600" : "text-emerald-600"}`}>
+                        {userToView.isBlocked ? "Blocked" : "Active"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-[12px] font-['Inter:Bold',sans-serif] text-slate-400 uppercase tracking-wider mb-1">Joined Date</p>
+                    <div className="flex items-center gap-2 mt-1 text-slate-700 font-['Inter:Medium',sans-serif]">
+                      <Calendar className="w-4 h-4 text-slate-400" />
+                      {new Date(userToView.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-[12px] font-['Inter:Bold',sans-serif] text-slate-400 uppercase tracking-wider mb-1">Location</p>
+                    <div className="flex items-center gap-2 mt-1 text-slate-700 font-['Inter:Medium',sans-serif]">
+                      <MapPin className="w-4 h-4 text-slate-400" />
+                      {userToView.location || "Not specified"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6 border-t border-slate-100 bg-slate-50">
+                <button
+                  onClick={() => setUserToView(null)}
+                  className="w-full py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-['Inter:Bold',sans-serif] hover:bg-slate-100 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

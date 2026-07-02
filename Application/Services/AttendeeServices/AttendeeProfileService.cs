@@ -1,4 +1,4 @@
-﻿using Application.Core.DTOs.AttendeeDTOs;
+using Application.Core.DTOs.AttendeeDTOs;
 using Application.Core.Interfaces.AttendeeInterfaces;
 using AutoMapper;
 using Domain.Entities.AttendeeEntities;
@@ -35,10 +35,6 @@ namespace Application.Services.AttendeeServices
             if (attendee == null) return null;
 
             attendee.FullName = request.FullName.Trim();
-            attendee.UserName = request.UserName.Trim();
-            attendee.NormalizedUserName = attendee.UserName.ToUpperInvariant();
-            attendee.Email = request.Email.Trim();
-            attendee.NormalizedEmail = attendee.Email.ToUpperInvariant();
             attendee.PhoneNumber = request.PhoneNumber.Trim();
             attendee.Location = request.Location.Trim();
             attendee.BirthDate = request.BirthDate;

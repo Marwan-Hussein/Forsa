@@ -5,6 +5,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState, useRef } from "react";
 import { ForSaLogo } from "./ForSaLogo";
 import { EASE_IN_OUT } from "../lib/motion";
+import { attendeeApi } from "../api/attendeeApi";
+import { getUserIdFromToken } from "../api/api";
 
 export function Navigation() {
   const location = useLocation();
@@ -23,6 +25,18 @@ export function Navigation() {
       setIsLoggedIn(true);
       setUserName(localStorage.getItem("forsa_user_name") || "User");
       setUserEmail(localStorage.getItem("forsa_user_email") || "user@forsa.com");
+      
+      const role = localStorage.getItem("role");
+      if (role === "Attendee") {
+        const userId = getUserIdFromToken();
+        if (userId) {
+          attendeeApi.getProfile(userId).then(profile => {
+            if (profile.profilePicture) {
+              localStorage.setItem("forsa_profile_picture", profile.profilePicture);
+            }
+          }).catch(() => {});
+        }
+      }
     }
     const onScroll = () => setNavElevated(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -35,6 +49,7 @@ export function Navigation() {
     localStorage.removeItem("forsa_refresh_token");
     localStorage.removeItem("forsa_user_name");
     localStorage.removeItem("forsa_user_email");
+    localStorage.removeItem("forsa_profile_picture");
     localStorage.removeItem("role");
     window.location.href = "/login";
   };
@@ -118,10 +133,15 @@ export function Navigation() {
                       shouldElevate ? 'hover:bg-slate-100 border border-transparent' : 'bg-white/10 hover:bg-white/20 border border-white/20'
                     }`}
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-['Inter:Bold',sans-serif] text-sm ${
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-['Inter:Bold',sans-serif] text-sm overflow-hidden ${
+
                       shouldElevate ? 'bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-hover)] text-white' : 'bg-white text-[var(--brand-navy)]'
                     }`}>
-                      {userName.charAt(0)}
+                      {localStorage.getItem("forsa_profile_picture") ? (
+                        <img src={`${import.meta.env.VITE_API_BASE_URL || ""}${localStorage.getItem("forsa_profile_picture")}`} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        userName.charAt(0)
+                      )}
                     </div>
                     <span className={`text-sm font-['Inter:Medium',sans-serif] ${shouldElevate ? 'text-slate-700' : 'text-white'}`}>
                       {userName}

@@ -9,6 +9,7 @@ namespace Application.Core.Interfaces
         // Generic profile (works for any role)
         Task<UserProfileDto?> GetProfileAsync(int userId);
         Task<UserProfileDto?> UpdateProfileAsync(int userId, UpdateUserProfileDto dto);
+        Task<string> UploadProfilePictureAsync(int userId, Microsoft.AspNetCore.Http.IFormFile file);
 
         // Organizer-specific
         Task<OrganizerProfileDto?> GetOrganizerProfileAsync(int organizerId);
