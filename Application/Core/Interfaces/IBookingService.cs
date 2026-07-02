@@ -14,7 +14,7 @@ namespace Application.Core.Interfaces
 
 
         Task<byte[]> GetTicketFromQr(int bookingId);
-        Task VerifyAttendanceViaQrCodeAsync(int eventId, string qrCode);
+        Task<VerifyAttendanceResponseDto> VerifyAttendanceViaQrCodeAsync(int eventId, string qrCode);
         Task BlockAttendeeFromEventAsync(int eventId, int attendeeId);
     }
 }

@@ -22,6 +22,9 @@ namespace Infrastructure.Data.Configurations
             builder.Property(b => b.QRCode)
                    .HasMaxLength(500);
 
+            builder.Property(b => b.CheckedInAt)
+                   .IsRequired(false);
+
             // Booking & Attendee
             // restrict because when the Attendee is deleted we want to keep the Booking records for reference purposes?
             builder.HasOne(b => b.Attendee)

@@ -125,8 +125,8 @@ export const organizerApi = {
     return await apiPost(`/api/bookings/${bookingId}/reject`, { reason });
   },
 
-  verifyAttendance: async (eventId: number, qrCode: string): Promise<void> => {
-    return await apiPost(`/api/bookings/verify-attendance?eventId=${eventId}&qrCode=${encodeURIComponent(qrCode)}`, {});
+  verifyAttendance: async (eventId: number, qrCode: string): Promise<any> => {
+    return await apiPost(`/api/bookings/verify-attendance`, { eventId, qrCode });
   },
 
   manualCheckIn: async (bookingId: number): Promise<void> => {

@@ -185,8 +185,8 @@ namespace Forsa.Controllers
         {
             try
             {
-                await _bookingService.VerifyAttendanceViaQrCodeAsync(request.EventId, request.QrCode);
-                return Ok(new { message = "Attendance verified successfully." });
+                var result = await _bookingService.VerifyAttendanceViaQrCodeAsync(request.EventId, request.QrCode);
+                return Ok(result);
             }
             catch (ArgumentException ex)
             {

@@ -15,6 +15,7 @@ namespace Forsa.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Organizer,Admin")]
     public class OrganizersController : ControllerBase
     {
         private readonly IOrganizerService _organizerService;
