@@ -1,4 +1,4 @@
-﻿using Application.Core.DTOs.CommonDTOs;
+using Application.Core.DTOs.CommonDTOs;
 using Domain.Common.Interfaces;
 using Domain.Entities;
 using Domain.ENUMs;

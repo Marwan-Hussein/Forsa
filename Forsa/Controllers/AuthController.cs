@@ -120,6 +120,10 @@ namespace Forsa.Controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
+            catch (Exception ex) when (ex.Message.Contains("blocked"))
+            {
+                return StatusCode(403, new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new 

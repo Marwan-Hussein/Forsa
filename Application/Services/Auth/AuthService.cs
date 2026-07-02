@@ -187,6 +187,10 @@ namespace Application.Services.Auth
             if (!passwordValid)
                 throw new Exception("Invalid email or password.");
 
+            // Enforce block status
+            if (user.IsBlocked == true)
+                throw new Exception("Your account has been blocked by an administrator.");
+
             var refreshToken = refreshTokenService.GenerateToken();
             if (user.RefreshTokens == null)
             {
