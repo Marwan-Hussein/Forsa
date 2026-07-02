@@ -18,10 +18,27 @@ export const attendeeApi = {
   getInterests: (id: number) => apiGet<InterestDto[]>(`/api/attendees/${id}/interests`),
   getAllInterests: () => apiGet<InterestDto[]>(`/api/interests`),
   updateInterests: (id: number, data: UpdateAttendeeInterestsDto) => apiPut<AttendeeProfileDto>(`/api/attendees/${id}/interests`, data),
+  uploadProfilePicture: async (id: number, file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+    const token = localStorage.getItem("forsa_token");
+    const response = await fetch(`${baseUrl}/api/attendees/${id}/profile-picture`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+    if (!response.ok) throw new Error("Failed to upload image");
+    const data = await response.json();
+    return data.url;
+  },
 
   // Bookings & Calendar
   getBookings: (id: number) => apiGet<AttendeeBookingDto[]>(`/api/attendees/${id}/bookings`),
   getAttendedEvents: (id: number) => apiGet<AttendeeBookingDto[]>(`/api/attendees/${id}/bookings/attended`),
+  cancelBooking: (bookingId: number) => apiDelete(`/api/bookings/${bookingId}`),
   getTicketQr: async (bookingId: number) => {
     const response = await fetch(`/api/bookings/${bookingId}/ticket`, {
       headers: {

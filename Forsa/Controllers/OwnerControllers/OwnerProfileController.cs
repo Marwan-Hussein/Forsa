@@ -98,5 +98,20 @@ namespace Forsa.Controllers.OwnerControllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpPost("{id}/profile-picture")]
+        [Authorize(Roles = "Owner,PlaceOwner")]
+        public async Task<ActionResult> UploadProfilePicture(int id, IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0) return BadRequest("File is empty");
+                var result = await _profileService.UploadProfilePictureAsync(id, file);
+                return Ok(new { url = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

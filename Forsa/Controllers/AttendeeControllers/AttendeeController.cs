@@ -13,15 +13,18 @@ namespace Forsa.Controllers.AttendeeControllers
     public class AttendeesController : ControllerBase
     {
         private readonly IAttendeeProfileService _service;
+        private readonly Application.Core.Interfaces.IUserProfileService _userProfileService;
         private readonly IValidator<UpdateAttendeeProfileDto> _updateProfileValidator;
         private readonly IValidator<UpdateAttendeeInterestsDto> _updateInterestsValidator;
 
         public AttendeesController(
             IAttendeeProfileService service,
+            Application.Core.Interfaces.IUserProfileService userProfileService,
             IValidator<UpdateAttendeeProfileDto> updateProfileValidator,
             IValidator<UpdateAttendeeInterestsDto> updateInterestsValidator)
         {
             _service = service;
+            _userProfileService = userProfileService;
             _updateProfileValidator = updateProfileValidator;
             _updateInterestsValidator = updateInterestsValidator;
         }
@@ -67,6 +70,22 @@ namespace Forsa.Controllers.AttendeeControllers
             catch (Exception)
             {
                 return StatusCode(500, "An error occurred while updating attendee profile");
+            }
+        }
+
+        [HttpPost("{id:int}/profile-picture")]
+        [Authorize(Policy = "AttendeeOnly")]
+        public async Task<ActionResult> UploadProfilePicture(int id, IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0) return BadRequest("File is empty");
+                var result = await _userProfileService.UploadProfilePictureAsync(id, file);
+                return Ok(new { url = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 

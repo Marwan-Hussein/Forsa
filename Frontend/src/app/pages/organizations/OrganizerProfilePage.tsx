@@ -3,15 +3,14 @@ import { Link, useNavigate } from "react-router";
 import { User, Mail, Phone, MapPin, Calendar, Save, ArrowLeft, Camera, Shield, Bell, Star } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "../../api/api";
-import { attendeeApi } from "../../api/attendeeApi";
-import { AttendeeProfileDto, UpdateAttendeeProfileDto } from "../../types";
+import { organizerApi } from "../../api/organizerApi";
+
 import { getUserIdFromToken } from "../../api/api";
 import { motion } from "motion/react";
 
-type ProfileFormData = UpdateAttendeeProfileDto & { userName: string; email: string };
-
-const emptyFormData: ProfileFormData = {
+const emptyFormData: any = {
   fullName: "",
+  organizationName: "",
   userName: "",
   email: "",
   phoneNumber: "",
@@ -19,16 +18,20 @@ const emptyFormData: ProfileFormData = {
   birthDate: "",
 };
 
-const validationFieldMap: Record<string, keyof ProfileFormData> = {
+const validationFieldMap: Record<string, string> = {
   FullName: "fullName",
+  OrganizationName: "organizationName",
+  UserName: "userName",
+  Email: "email",
   PhoneNumber: "phoneNumber",
   Location: "location",
   BirthDate: "birthDate",
 };
 
-function mapProfileToForm(profile: AttendeeProfileDto): ProfileFormData {
+function mapProfileToForm(profile: any): any {
   return {
     fullName: profile.fullName ?? "",
+    organizationName: profile.organizationName ?? "",
     userName: profile.userName ?? "",
     email: profile.email ?? "",
     phoneNumber: profile.phoneNumber ?? "",
@@ -39,20 +42,20 @@ function mapProfileToForm(profile: AttendeeProfileDto): ProfileFormData {
 
 function getValidationErrors(error: unknown) {
   if (!(error instanceof ApiError) || typeof error.data !== "object" || error.data === null) {
-    return {} as Partial<Record<keyof ProfileFormData, string>>;
+    return {} as Partial<Record<string, string>>;
   }
 
   const rawErrors = (error.data as { errors?: Record<string, string[]> }).errors;
-  if (!rawErrors) return {} as Partial<Record<keyof ProfileFormData, string>>;
+  if (!rawErrors) {
+    return {} as Partial<Record<string, string>>;
+  }
 
-  const nextErrors: Partial<Record<keyof ProfileFormData, string>> = {};
+  const nextErrors: Partial<Record<string, string>> = {};
 
   for (const [field, messages] of Object.entries(rawErrors)) {
-    const mappedField = validationFieldMap[field] as keyof ProfileFormData;
-    if (mappedField) {
+    const mappedField = validationFieldMap[field];
+    if (mappedField && Array.isArray(messages) && typeof messages[0] === "string") {
       nextErrors[mappedField] = messages[0];
-    } else {
-      nextErrors[field as keyof ProfileFormData] = messages[0];
     }
   }
 
@@ -69,20 +72,20 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
-export default function ProfilePage() {
-  const attendeeId = getUserIdFromToken();
+export default function OrganizerProfilePage() {
+  const organizerId = getUserIdFromToken();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<ProfileFormData>(emptyFormData);
-  const [originalData, setOriginalData] = useState<ProfileFormData>(emptyFormData);
-  const [errors, setErrors] = useState<Partial<Record<keyof ProfileFormData, string>>>({});
+  const [formData, setFormData] = useState<any>(emptyFormData);
+  const [originalData, setOriginalData] = useState<any>(emptyFormData);
+  const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!attendeeId) {
+    if (!organizerId) {
       navigate("/login");
       return;
     }
@@ -93,7 +96,7 @@ export default function ProfilePage() {
         setIsLoading(true);
         setLoadError(null);
 
-        const profile = await attendeeApi.getProfile(attendeeId!);
+        const profile = await organizerApi.getProfile(organizerId!);
         if (!isActive) return;
 
         const mappedProfile = mapProfileToForm(profile);
@@ -110,11 +113,11 @@ export default function ProfilePage() {
 
     loadProfile();
     return () => { isActive = false; };
-  }, [attendeeId]);
+  }, [organizerId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const fieldName = name as keyof ProfileFormData;
+    const fieldName = name;
 
     setFormData((prev: any) => ({ ...prev, [fieldName]: value }));
     if (errors[fieldName]) {
@@ -127,8 +130,9 @@ export default function ProfilePage() {
   };
 
   const validateForm = () => {
-    const newErrors: Partial<Record<keyof ProfileFormData, string>> = {};
+    const newErrors: Partial<Record<string, string>> = {};
     if (!formData.fullName?.trim()) newErrors.fullName = "Full name is required";
+    if (!formData.organizationName?.trim()) newErrors.organizationName = "Organization name is required";
     if (!formData.phoneNumber?.trim()) newErrors.phoneNumber = "Phone number is required";
     if (!formData.location?.trim()) newErrors.location = "Location is required";
     if (!formData.birthDate) newErrors.birthDate = "Birthdate is required";
@@ -154,7 +158,7 @@ export default function ProfilePage() {
     try {
       setIsSaving(true);
       const { userName, email, ...updateDto } = formData;
-      const updatedProfile = await attendeeApi.updateProfile(attendeeId!, updateDto);
+      const updatedProfile = await organizerApi.updateProfile(organizerId!, updateDto);
       const mappedProfile = mapProfileToForm(updatedProfile);
       setFormData(mappedProfile);
       setOriginalData(mappedProfile);
@@ -174,7 +178,7 @@ export default function ProfilePage() {
     if (!e.target.files || !e.target.files[0]) return;
     const file = e.target.files[0];
     try {
-      const url = await attendeeApi.uploadProfilePicture(attendeeId!, file);
+      const url = await organizerApi.uploadProfilePicture(organizerId!, file);
       setProfilePictureUrl(url);
       toast.success("Profile picture updated");
     } catch (err: any) {
@@ -225,9 +229,6 @@ export default function ProfilePage() {
               <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">My Profile</h1>
               <p className="text-blue-100/70 mt-1">Manage your account and preferences</p>
             </div>
-            <Link to="/interests" className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all">
-              <Bell className="w-4 h-4" /> Manage Interests
-            </Link>
           </div>
         </div>
       </div>
@@ -254,8 +255,8 @@ export default function ProfilePage() {
                     {profilePictureUrl ? (
                       <img src={`${import.meta.env.VITE_API_BASE_URL || ""}${profilePictureUrl}`} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-4xl font-bold text-slate-400">
-                        {formData.fullName?.charAt(0) || "U"}
+                      <span className="text-4xl font-bold text-white">
+                        {formData.fullName.charAt(0) || "U"}
                       </span>
                     )}
                   </div>
@@ -276,30 +277,9 @@ export default function ProfilePage() {
                   </div>
                 )}
               </div>
-              <div className="grid grid-cols-2 divide-x divide-slate-100 border-t border-slate-100">
-                <div className="py-4">
-                  <p className="font-bold text-xl text-slate-800">-</p>
-                  <p className="text-slate-500 text-xs mt-0.5">Attended</p>
-                </div>
-                <div className="py-4">
-                  <p className="font-bold text-xl text-[#1E3D61]">-</p>
-                  <p className="text-slate-500 text-xs mt-0.5">Upcoming</p>
-                </div>
-              </div>
             </motion.div>
 
-            {/* Quick Links */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-              <Link to="/interests" className="w-full flex items-center gap-3 p-4 hover:bg-slate-50 transition-colors border-b border-slate-100 group text-left">
-                <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center">
-                  <Star className="w-4 h-4 text-amber-500" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-slate-700 text-sm">My Interests</p>
-                  <p className="text-slate-400 text-xs">Personalize recommendations</p>
-                </div>
-                <ArrowLeft className="w-4 h-4 text-slate-300 rotate-180" />
-              </Link>
               <Link to="/notifications" className="w-full flex items-center gap-3 p-4 hover:bg-slate-50 transition-colors border-b border-slate-100 group text-left">
                 <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
                   <Bell className="w-4 h-4 text-blue-500" />
@@ -362,19 +342,42 @@ export default function ProfilePage() {
 
               <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {/* Full Name */}
-                  <div>
-                    <label htmlFor="fullName" className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Full Name</label>
-                    <div className="relative">
-                      <User className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${isEditing ? 'text-[#1E3D61]' : 'text-slate-300'}`} />
+                  <div className="md:col-span-2 space-y-4">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">
+                        Full Name
+                      </label>
                       <input
-                        type="text" id="fullName" name="fullName" value={formData.fullName} onChange={handleChange} disabled={!isEditing}
-                        className={`w-full pl-10 pr-4 py-3 rounded-xl border text-sm transition-all outline-none ${
-                          isEditing ? "border-slate-200 focus:border-[#1E3D61] focus:ring-2 focus:ring-[#1E3D61]/10 bg-white text-slate-800" : "border-transparent bg-slate-50 text-slate-500 cursor-not-allowed"
-                        }`}
+                        type="text"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        className={`w-full px-4 py-2.5 rounded-xl border bg-slate-50/50 text-sm font-semibold transition-all ${
+                          errors.fullName ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10" : "border-slate-200 focus:border-[#1E3D61] focus:ring-4 focus:ring-[#1E3D61]/10"
+                        } disabled:opacity-70 disabled:cursor-not-allowed`}
+                        placeholder="John Doe"
                       />
+                      {errors.fullName && <p className="text-rose-500 text-xs font-medium mt-1 ml-1">{errors.fullName}</p>}
                     </div>
-                    {errors.fullName && <p className="text-xs text-rose-500 mt-1">{errors.fullName}</p>}
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">
+                        Organization Name
+                      </label>
+                      <input
+                        type="text"
+                        name="organizationName"
+                        value={formData.organizationName}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        className={`w-full px-4 py-2.5 rounded-xl border bg-slate-50/50 text-sm font-semibold transition-all ${
+                          errors.organizationName ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10" : "border-slate-200 focus:border-[#1E3D61] focus:ring-4 focus:ring-[#1E3D61]/10"
+                        } disabled:opacity-70 disabled:cursor-not-allowed`}
+                        placeholder="My Organization"
+                      />
+                      {errors.organizationName && <p className="text-rose-500 text-xs font-medium mt-1 ml-1">{errors.organizationName}</p>}
+                    </div>
                   </div>
 
                   {/* Username */}
@@ -454,3 +457,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

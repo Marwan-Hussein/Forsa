@@ -14,11 +14,13 @@ namespace Application.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
+        private readonly Microsoft.AspNetCore.Hosting.IWebHostEnvironment _env;
 
-        public UserProfileService(UserManager<ApplicationUser> userManager, IMapper mapper)
+        public UserProfileService(UserManager<ApplicationUser> userManager, IMapper mapper, Microsoft.AspNetCore.Hosting.IWebHostEnvironment env)
         {
             _userManager = userManager;
             _mapper = mapper;
+            _env = env;
         }
 
         public async Task<UserProfileDto?> GetProfileAsync(int userId)
@@ -97,14 +99,49 @@ namespace Application.Services
             return _mapper.Map<OwnerProfileDto>(owner);
         }
 
+        // Owner
+
+        public async Task<string> UploadProfilePictureAsync(int userId, Microsoft.AspNetCore.Http.IFormFile file)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null || user.IsDeleted) throw new KeyNotFoundException("User not found");
+
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+            if (!allowedExtensions.Contains(extension))
+                throw new InvalidOperationException("Invalid image format. Allowed: .jpg, .jpeg, .png");
+
+            var uploadsDir = Path.Combine(_env.WebRootPath ?? "wwwroot", "uploads", "profiles", userId.ToString());
+            Directory.CreateDirectory(uploadsDir);
+
+            var fileName = $"{Guid.NewGuid()}{extension}";
+            var filePath = Path.Combine(uploadsDir, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var relativePath = $"/uploads/profiles/{userId}/{fileName}";
+            
+            // Delete old picture if exists
+            if (!string.IsNullOrEmpty(user.ProfilePicture))
+            {
+                var oldPath = Path.Combine(_env.WebRootPath ?? "wwwroot", user.ProfilePicture.TrimStart('/'));
+                if (File.Exists(oldPath)) File.Delete(oldPath);
+            }
+
+            user.ProfilePicture = relativePath;
+            user.LastModifiedAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
+
+            return relativePath;
+        }
+
         // Private helpers
         private void ApplyBaseUpdates(ApplicationUser user, UpdateUserProfileDto dto)
         {
             user.FullName = dto.FullName.Trim();
-            user.UserName = dto.UserName.Trim();
-            user.NormalizedUserName = user.UserName.ToUpperInvariant();
-            user.Email = dto.Email.Trim();
-            user.NormalizedEmail = user.Email.ToUpperInvariant();
             user.PhoneNumber = dto.PhoneNumber.Trim();
             user.Location = dto.Location.Trim();
             user.BirthDate = dto.BirthDate;

@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPut, apiPatch } from './api';
+import { apiGet, apiPost, apiPut, apiPatch, apiDelete } from './api';
 
 export interface OwnerDashboardStats {
   totalPlaces: number;
@@ -63,22 +63,22 @@ export const ownerApi = {
   },
 
   getPlaces: async (): Promise<Place[]> => {
-    const data = await apiGet('/api/owner/places');
+    const data = await apiGet<any[]>('/api/owner/places');
     return data.map((p: any) => ({ ...p, id: p.placeId || p.id }));
   },
 
   addPlace: async (dto: AddPlaceDto): Promise<Place> => {
-    const p = await apiPost('/api/owner/places', dto);
+    const p = await apiPost<any>('/api/owner/places', dto);
     return { ...p, id: p.placeId || p.id };
   },
 
   getPlaceById: async (id: number): Promise<Place & AddPlaceDto> => {
-    const p = await apiGet(`/api/owner/places/${id}`);
+    const p = await apiGet<any>(`/api/owner/places/${id}`);
     return { ...p, id: p.placeId || p.id };
   },
 
   updatePlace: async (id: number, dto: UpdatePlaceDto): Promise<Place> => {
-    const p = await apiPut(`/api/owner/places/${id}`, dto);
+    const p = await apiPut<any>(`/api/owner/places/${id}`, dto);
     return { ...p, id: p.placeId || p.id };
   },
 
@@ -137,5 +137,34 @@ export const ownerApi = {
     if (!response.ok) {
       throw new Error("Failed to delete media");
     }
+  },
+
+  deletePlace: async (placeId: number): Promise<void> => {
+    await apiDelete(`/api/owner/places/${placeId}`);
+  },
+
+  getProfile: async (id: number): Promise<any> => {
+    return await apiGet(`/api/owner/${id}/profile`);
+  },
+
+  updateProfile: async (id: number, data: any): Promise<any> => {
+    return await apiPut(`/api/owner/${id}/profile`, data);
+  },
+
+  uploadProfilePicture: async (id: number, file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+    const token = localStorage.getItem("forsa_token");
+    const response = await fetch(`${baseUrl}/api/owner/${id}/profile-picture`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+    if (!response.ok) throw new Error("Failed to upload image");
+    const data = await response.json();
+    return data.url;
   }
 };

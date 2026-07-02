@@ -131,5 +131,30 @@ export const organizerApi = {
 
   manualCheckIn: async (bookingId: number): Promise<void> => {
     return await apiPost(`/api/organizers/bookings/${bookingId}/check-in`, {});
+  },
+
+  getProfile: async (id: number): Promise<any> => {
+    return await apiGet(`/api/organizers/${id}/profile`);
+  },
+
+  updateProfile: async (id: number, data: any): Promise<any> => {
+    return await apiPut(`/api/organizers/${id}/profile`, data);
+  },
+
+  uploadProfilePicture: async (id: number, file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+    const token = localStorage.getItem("forsa_token");
+    const response = await fetch(`${baseUrl}/api/organizers/${id}/profile-picture`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+    if (!response.ok) throw new Error("Failed to upload image");
+    const data = await response.json();
+    return data.url;
   }
 };
