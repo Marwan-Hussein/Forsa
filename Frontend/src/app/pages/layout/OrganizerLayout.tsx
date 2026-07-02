@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router";
+import { NavLink, Outlet, useNavigate, Link } from "react-router";
 import { 
   LayoutDashboard, 
   CalendarDays, 
@@ -10,13 +10,30 @@ import {
   X,
   ScanLine
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ForSaLogo } from "../../components/ForSaLogo";
 import { motion } from "motion/react";
+import { getUserIdFromToken } from "../../api/api";
+import { organizerApi } from "../../api/organizerApi";
 
 export default function OrganizerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const id = getUserIdFromToken();
+        if (!id) return;
+        const profile = await organizerApi.getProfile(id);
+        if (profile.profilePicture) {
+          setProfilePictureUrl(profile.profilePicture);
+        }
+      } catch (err) {}
+    };
+    fetchProfile();
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("forsa_token");
@@ -33,7 +50,8 @@ export default function OrganizerLayout() {
     { name: "Browse Venues", path: "/organizer/places", icon: MapPin },
     { name: "Venue Requests", path: "/organizer/venue-requests", icon: MapPin },
     { name: "Ticket Requests", path: "/organizer/ticket-requests", icon: Bell },
-    { name: "Scan QR Tickets", path: "/organizer/events/1/scan", icon: ScanLine }, // Mocking eventId 1 for now
+    { name: "Scan QR Tickets", path: "/organizer/events/1/scan", icon: ScanLine },
+    { name: "Profile", path: "/organizer/profile", icon: Settings },
   ];
 
   return (
@@ -126,16 +144,17 @@ export default function OrganizerLayout() {
           </div>
           
           <div className="flex items-center gap-3 sm:gap-5">
-            <button className="relative p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
+            <Link to="/notifications" className="relative p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
               <Bell className="w-5 h-5" />
               <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-violet-500 rounded-full border-2 border-white"></span>
-            </button>
-            <button className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all hidden sm:block">
-              <Settings className="w-5 h-5" />
-            </button>
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center text-white font-bold border-2 border-white shadow-md ml-2 cursor-pointer hover:scale-105 transition-transform">
-              ORG
-            </div>
+            </Link>
+            <Link to="/organizer/profile" className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center text-white font-bold border-2 border-white shadow-md ml-2 cursor-pointer hover:scale-105 transition-transform overflow-hidden">
+              {profilePictureUrl ? (
+                <img src={`${import.meta.env.VITE_API_BASE_URL || ""}${profilePictureUrl}`} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                "ORG"
+              )}
+            </Link>
           </div>
         </header>
 
