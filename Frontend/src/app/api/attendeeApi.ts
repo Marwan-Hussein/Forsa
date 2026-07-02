@@ -22,6 +22,16 @@ export const attendeeApi = {
   // Bookings & Calendar
   getBookings: (id: number) => apiGet<AttendeeBookingDto[]>(`/api/attendees/${id}/bookings`),
   getAttendedEvents: (id: number) => apiGet<AttendeeBookingDto[]>(`/api/attendees/${id}/bookings/attended`),
+  getTicketQr: async (bookingId: number) => {
+    const response = await fetch(`/api/bookings/${bookingId}/ticket`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('forsa_token')}`
+      }
+    });
+    if (!response.ok) throw new Error('Failed to load ticket QR');
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
+  },
   getCalendar: (id: number, from?: string, to?: string) => {
     let url = `/api/attendees/${id}/calendar`;
     const params = new URLSearchParams();

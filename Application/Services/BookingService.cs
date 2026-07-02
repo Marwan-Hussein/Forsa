@@ -272,21 +272,38 @@ namespace Application.Services
                 .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
             if(bookingInfo == null)
                 throw new KeyNotFoundException("Booking not found");
-            string qrPayload = bookingInfo.QRCode; 
+            var qrPayload = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                eventId = bookingInfo.EventId,
+                token = bookingInfo.QRCode
+            });
             byte[] qrImage = _qrService.GenerateQrImage(qrPayload);
             return qrImage; 
         }
 
-        public async Task VerifyAttendanceViaQrCodeAsync(int eventId, string qrCode)
+        public async Task<VerifyAttendanceResponseDto> VerifyAttendanceViaQrCodeAsync(int eventId, string qrCode)
         {
             if(string.IsNullOrWhiteSpace(qrCode))
                 throw new ArgumentException("Scanned token cannot be empty.", nameof(qrCode));
 
             string finalToken = qrCode;
 
-            if (qrCode.Contains("token="))
+            // Try to parse JSON QR payload (new format: {"eventId":5,"token":"abc123"})
+            try
             {
-                var uri = new Uri(qrCode);
+                var jsonDoc = System.Text.Json.JsonDocument.Parse(qrCode);
+                if (jsonDoc.RootElement.TryGetProperty("token", out var tokenProp))
+                    finalToken = tokenProp.GetString()?.Trim() ?? qrCode;
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                // Not JSON so treat as raw token (backward compatibility)
+            }
+
+            // Also handle legacy URL format with query params
+            if (finalToken.Contains("token="))
+            {
+                var uri = new Uri(finalToken);
                 var queryDictionary = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
                 finalToken = queryDictionary["token"].ToString();
             }
@@ -295,6 +312,7 @@ namespace Application.Services
 
             var bookingInfo = await _bookingRepository.GetQueryable()
                 .Include(b => b.Event)
+                .Include(b => b.Attendee)
                 .FirstOrDefaultAsync(b => b.EventId == eventId && b.QRCode == finalToken && !b.IsDeleted);
 
             if (bookingInfo == null)
@@ -313,10 +331,22 @@ namespace Application.Services
                 throw new InvalidOperationException("This ticket has already been used for check-in.");
 
             bookingInfo.Status = BookingStatus.Attended;
+            bookingInfo.CheckedInAt = DateTime.UtcNow;
             _bookingRepository.Update(bookingInfo);
 
             await _unitOfWork.SaveChangesAsync();
 
+            return new VerifyAttendanceResponseDto
+            {
+                BookingId = bookingInfo.Id,
+                AttendeeId = bookingInfo.AttendeeId,
+                AttendeeName = bookingInfo.Attendee?.FullName ?? "Unknown",
+                AttendeeEmail = bookingInfo.Attendee?.Email ?? "Unknown",
+                EventTitle = bookingInfo.Event?.Title ?? "Unknown",
+                NumberOfTickets = bookingInfo.NumberOfTickets,
+                Status = bookingInfo.Status.ToString(),
+                CheckedInAt = bookingInfo.CheckedInAt.Value
+            };
         }
 
 

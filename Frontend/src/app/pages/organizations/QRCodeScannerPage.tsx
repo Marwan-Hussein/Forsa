@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useParams } from "react-router";
 import {
   QrCode,
@@ -12,11 +12,13 @@ import {
   UserCheck,
   Clock,
   Smartphone,
-  MapPin
+  MapPin,
+  CameraOff
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { organizerApi } from "../../api/organizerApi";
 import { toast } from "react-toastify";
+import { Html5Qrcode } from "html5-qrcode";
 
 interface ScanResult {
   id: string;
@@ -31,6 +33,7 @@ interface ScanResult {
 export default function QRCodeScannerPage() {
   const { eventId } = useParams();
   const [isScanning, setIsScanning] = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
   const [scanResults, setScanResults] = useState<ScanResult[]>([]);
   const [eventDetails, setEventDetails] = useState<any>(null);
   const [stats, setStats] = useState({ totalScanned: 0, failedScans: 0, lastScanTime: null as string | null });
@@ -39,10 +42,17 @@ export default function QRCodeScannerPage() {
   const [showManualModal, setShowManualModal] = useState(false);
   const [manualCode, setManualCode] = useState("");
 
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const isProcessingRef = useRef(false);
+
   useEffect(() => {
     if (eventId) {
       loadData();
     }
+    // Cleanup camera on unmount
+    return () => {
+      stopCamera();
+    };
   }, [eventId]);
 
   const loadData = async () => {
@@ -54,7 +64,7 @@ export default function QRCodeScannerPage() {
       ]);
       setEventDetails(event);
       
-      const checkedIn = attendees.filter((a: any) => a.checkInStatus === "checked-in");
+      const checkedIn = attendees.filter((a: any) => a.checkInStatus === "Attended");
       setStats(prev => ({
         ...prev,
         totalScanned: checkedIn.length,
@@ -69,19 +79,21 @@ export default function QRCodeScannerPage() {
   };
 
   const processScan = async (qrCode: string) => {
-    if (!eventId) return;
+    if (!eventId || isProcessingRef.current) return;
+    isProcessingRef.current = true;
+
     try {
       setIsScanning(true);
-      await organizerApi.verifyAttendance(Number(eventId), qrCode);
+      const result = await organizerApi.verifyAttendance(Number(eventId), qrCode);
       
       // Success
-      toast.success("Ticket scanned successfully!");
+      toast.success(`${result.attendeeName} checked in!`);
       
       const newScan: ScanResult = {
         id: Date.now().toString(),
-        attendeeName: "Ticket Approved", // the api doesn't return attendee info directly for now
+        attendeeName: result.attendeeName || "Verified",
         ticketType: "Event Ticket",
-        ticketCount: 1,
+        ticketCount: result.numberOfTickets || 1,
         scanTime: new Date().toISOString(),
         status: "success",
       };
@@ -95,7 +107,7 @@ export default function QRCodeScannerPage() {
       
     } catch (err: any) {
       // Failed scan
-      const errorMessage = err.response?.data?.message || err.response?.data || err.message || "Invalid ticket";
+      const errorMessage = err.data?.message || err.message || "Invalid ticket";
       toast.error(typeof errorMessage === 'string' ? errorMessage : "Invalid ticket");
       
       const newScan: ScanResult = {
@@ -116,20 +128,73 @@ export default function QRCodeScannerPage() {
       }));
     } finally {
       setIsScanning(false);
+      // Allow next scan after a short delay
+      setTimeout(() => {
+        isProcessingRef.current = false;
+      }, 2000);
     }
   };
 
+  const startCamera = async () => {
+    try {
+      const qrReader = new Html5Qrcode("qr-reader");
+      scannerRef.current = qrReader;
+
+      await qrReader.start(
+        { facingMode: "environment" }, // Prefer rear camera
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+        },
+        (decodedText) => {
+          // On successful QR decode
+          let token = decodedText;
+          try {
+            const data = JSON.parse(decodedText);
+            token = data.token || decodedText;
+          } catch {
+            // Raw GUID format (backward compatible)
+          }
+          processScan(token);
+        },
+        () => {
+          // On scan failure (each frame without QR) do nothing
+        }
+      );
+
+      setCameraActive(true);
+    } catch (err: any) {
+      console.error("Camera error:", err);
+      toast.error("Unable to access camera. Please check browser permissions or use Manual Entry.");
+      setCameraActive(false);
+    }
+  };
+
+  const stopCamera = async () => {
+    try {
+      if (scannerRef.current) {
+        const isRunning = scannerRef.current.isScanning;
+        if (isRunning) {
+          await scannerRef.current.stop();
+        }
+        scannerRef.current.clear();
+        scannerRef.current = null;
+      }
+    } catch (err) {
+      console.error("Error stopping camera:", err);
+    }
+    setCameraActive(false);
+  };
+
   const handleStartScanning = () => {
-    // For now, we simulate camera by showing the manual entry modal 
-    // but giving the user a "Scanning..." effect in the background
-    setIsScanning(true);
-    setTimeout(() => {
-      setShowManualModal(true);
-    }, 500);
+    if (cameraActive) {
+      stopCamera();
+    } else {
+      startCamera();
+    }
   };
 
   const handleManualEntry = () => {
-    setIsScanning(false);
     setShowManualModal(true);
   };
 
@@ -144,7 +209,6 @@ export default function QRCodeScannerPage() {
   const cancelManualEntry = () => {
     setManualCode("");
     setShowManualModal(false);
-    setIsScanning(false);
   };
 
   if (loading) {
@@ -238,23 +302,30 @@ export default function QRCodeScannerPage() {
             <div className="absolute inset-0 bg-gradient-to-b from-violet-50/50 to-white pointer-events-none" />
             <h2 className="text-xl font-['Inter:Bold',sans-serif] font-bold text-slate-800 mb-6 relative z-10">Scan QR Code</h2>
             
-            <div className="relative aspect-square max-w-sm mx-auto bg-slate-50 rounded-3xl border-4 border-dashed border-violet-200 flex flex-col items-center justify-center mb-8 relative z-10">
-              {isScanning ? (
-                <div className="text-center">
-                  <div className="relative w-32 h-32 mx-auto mb-6">
-                    <div className="absolute inset-0 border-4 border-violet-500 rounded-2xl animate-ping opacity-75" />
-                    <div className="absolute inset-0 bg-violet-100 rounded-2xl flex items-center justify-center">
-                      <Camera className="w-12 h-12 text-violet-600 animate-pulse" />
+            {/* Camera Feed / Placeholder */}
+            <div className="relative aspect-square max-w-sm mx-auto rounded-3xl border-4 border-dashed border-violet-200 overflow-hidden mb-8 relative z-10">
+              {/* This div is the camera target — html5-qrcode renders into it */}
+              <div id="qr-reader" className="w-full h-full" />
+              
+              {!cameraActive && (
+                <div className="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center">
+                  {isScanning ? (
+                    <div className="text-center">
+                      <div className="relative w-32 h-32 mx-auto mb-6">
+                        <div className="absolute inset-0 border-4 border-violet-500 rounded-2xl animate-ping opacity-75" />
+                        <div className="absolute inset-0 bg-violet-100 rounded-2xl flex items-center justify-center">
+                          <Camera className="w-12 h-12 text-violet-600 animate-pulse" />
+                        </div>
+                      </div>
+                      <p className="font-['Inter:Bold',sans-serif] text-violet-600 text-lg">Processing...</p>
                     </div>
-                  </div>
-                  <p className="font-['Inter:Bold',sans-serif] text-violet-600 text-lg">Scanning...</p>
-                  <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-500 mt-1">Point camera at QR code</p>
-                </div>
-              ) : (
-                <div className="text-center p-6">
-                  <QrCode className="w-24 h-24 text-slate-300 mx-auto mb-6 group-hover:text-violet-300 transition-colors" />
-                  <p className="font-['Inter:Bold',sans-serif] text-slate-700 text-lg mb-1">Ready to Scan</p>
-                  <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-500">Tap below to activate camera</p>
+                  ) : (
+                    <div className="text-center p-6">
+                      <QrCode className="w-24 h-24 text-slate-300 mx-auto mb-6 group-hover:text-violet-300 transition-colors" />
+                      <p className="font-['Inter:Bold',sans-serif] text-slate-700 text-lg mb-1">Ready to Scan</p>
+                      <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-500">Tap below to activate camera</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -262,11 +333,23 @@ export default function QRCodeScannerPage() {
             <div className="space-y-3 relative z-10 max-w-sm mx-auto">
               <button
                 onClick={handleStartScanning}
-                disabled={isScanning}
-                className="w-full px-6 py-4 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white font-['Inter:Bold',sans-serif] font-bold rounded-xl hover:shadow-lg hover:shadow-violet-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className={`w-full px-6 py-4 font-['Inter:Bold',sans-serif] font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                  cameraActive
+                    ? "bg-gradient-to-r from-rose-500 to-orange-600 text-white hover:shadow-lg hover:shadow-rose-500/30"
+                    : "bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white hover:shadow-lg hover:shadow-violet-500/30"
+                }`}
               >
-                <Camera className="w-5 h-5" />
-                {isScanning ? "Scanning..." : "Start Camera"}
+                {cameraActive ? (
+                  <>
+                    <CameraOff className="w-5 h-5" />
+                    Stop Camera
+                  </>
+                ) : (
+                  <>
+                    <Camera className="w-5 h-5" />
+                    Start Camera
+                  </>
+                )}
               </button>
               <button
                 onClick={handleManualEntry}
@@ -286,7 +369,8 @@ export default function QRCodeScannerPage() {
             <ul className="space-y-2 text-sm font-['Inter:Medium',sans-serif] text-amber-700">
               <li className="flex gap-2"><span className="font-bold opacity-50">1.</span> Tap "Start Camera" and allow browser permissions.</li>
               <li className="flex gap-2"><span className="font-bold opacity-50">2.</span> Hold the attendee's QR ticket steady in the frame.</li>
-              <li className="flex gap-2"><span className="font-bold opacity-50">3.</span> Wait for the green success confirmation sound/alert.</li>
+              <li className="flex gap-2"><span className="font-bold opacity-50">3.</span> Wait for the green success confirmation.</li>
+              <li className="flex gap-2"><span className="font-bold opacity-50">4.</span> Tap "Stop Camera" when done scanning.</li>
             </ul>
           </div>
         </div>

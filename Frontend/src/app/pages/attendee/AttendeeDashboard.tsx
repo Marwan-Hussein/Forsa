@@ -17,12 +17,13 @@ import {
   LayoutDashboard,
   Settings,
   QrCode,
-  TicketX
+  TicketX,
+  X
 } from "lucide-react";
 import { useWishlist } from "../../hooks/useWishlist";
 import { eventsApi } from "../../api/eventsApi";
 import { attendeeApi } from "../../api/attendeeApi";
-import { EventDetailsDto } from "../../types";
+import { EventDetailsDto, AttendeeBookingDto } from "../../types";
 import { getUserIdFromToken } from "../../api/api";
 
 // --- Framer Motion Configurations ---
@@ -36,7 +37,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { y: 10, opacity: 0 },
-  show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 120, damping: 15 } }
+  show: { y: 0, opacity: 1, transition: { type: "spring" as const, stiffness: 120, damping: 15 } }
 };
 
 // --- Custom Subcomponents for SaaS UI ---
@@ -55,96 +56,168 @@ function Barcode() {
   );
 }
 
-function PassbookTicket({ event }: { event: EventDetailsDto }) {
-  const date = new Date(event.startDate);
+function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
+  const date = new Date(booking.eventStartDate);
   const month = date.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
   const day = date.getDate();
   const year = date.getFullYear();
   const time = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-  const eventImg = (event as any).imageUrl || "";
+  
+  const [showQR, setShowQR] = useState(false);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
+  const [loadingQr, setLoadingQr] = useState(false);
+
+  const handleViewTicket = async () => {
+    setShowQR(true);
+    if (!qrUrl) {
+      try {
+        setLoadingQr(true);
+        const url = await attendeeApi.getTicketQr(booking.bookingId);
+        setQrUrl(url);
+      } catch (err) {
+        console.error("Failed to load QR code", err);
+      } finally {
+        setLoadingQr(false);
+      }
+    }
+  };
 
   return (
-    <motion.div 
-      variants={itemVariants}
-      className="relative flex flex-col md:flex-row bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-xl hover:shadow-[#1E3D61]/5 hover:-translate-y-0.5 transition-all duration-300 group"
-    >
-      {/* Decorative ticket notch side cuts */}
-      <div className="absolute left-full md:left-[70%] top-1/2 md:top-auto md:bottom-full w-5 h-5 bg-[#F8FAFC] rounded-full border border-slate-100 -translate-x-2.5 md:-translate-y-2.5 z-10 hidden sm:block" />
-      <div className="absolute right-full md:right-[30%] top-1/2 md:top-auto md:top-full w-5 h-5 bg-[#F8FAFC] rounded-full border border-slate-100 translate-x-2.5 md:-translate-y-2.5 z-10 hidden sm:block" />
+    <>
+      <motion.div 
+        variants={itemVariants}
+        className="relative flex flex-col md:flex-row bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-xl hover:shadow-[#1E3D61]/5 hover:-translate-y-0.5 transition-all duration-300 group"
+      >
+        {/* Decorative ticket notch side cuts */}
+        <div className="absolute left-full md:left-[70%] top-1/2 md:top-auto md:bottom-full w-5 h-5 bg-[#F8FAFC] rounded-full border border-slate-100 -translate-x-2.5 md:-translate-y-2.5 z-10 hidden sm:block" />
+        <div className="absolute right-full md:right-[30%] top-1/2 md:top-auto md:top-full w-5 h-5 bg-[#F8FAFC] rounded-full border border-slate-100 translate-x-2.5 md:-translate-y-2.5 z-10 hidden sm:block" />
 
-      {/* Main Stub */}
-      <div className="flex-1 p-6 flex flex-col justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3" /> Confirmed Booking
-            </span>
-            <span className="bg-slate-50 text-slate-600 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
-              {event.category}
-            </span>
-          </div>
-          
-          <Link to={`/events/${event.eventId}`}>
-            <h3 className="text-lg font-bold text-slate-800 mb-2 group-hover:text-[#1E3D61] transition-colors leading-snug">
-              {event.title}
-            </h3>
-          </Link>
-          
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-                <Calendar className="w-3.5 h-3.5 text-[#1E3D61]" />
+        {/* Main Stub */}
+        <div className="flex-1 p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" /> Confirmed Booking
+              </span>
+              <span className="bg-slate-50 text-slate-600 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
+                {booking.eventCategory}
+              </span>
+            </div>
+            
+            <Link to={`/events/${booking.eventId}`}>
+              <h3 className="text-lg font-bold text-slate-800 mb-2 group-hover:text-[#1E3D61] transition-colors leading-snug">
+                {booking.eventTitle}
+              </h3>
+            </Link>
+            
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                  <Calendar className="w-3.5 h-3.5 text-[#1E3D61]" />
+                </div>
+                <div>
+                  <p className="text-[9px] uppercase font-bold text-slate-400">Date</p>
+                  <p className="text-xs font-bold text-slate-700">{month} {day}, {year}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-[9px] uppercase font-bold text-slate-400">Date</p>
-                <p className="text-xs font-bold text-slate-700">{month} {day}, {year}</p>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
+                  <Clock className="w-3.5 h-3.5 text-rose-500" />
+                </div>
+                <div>
+                  <p className="text-[9px] uppercase font-bold text-slate-400">Time</p>
+                  <p className="text-xs font-bold text-slate-700">{time}</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
-                <Clock className="w-3.5 h-3.5 text-rose-500" />
-              </div>
-              <div>
-                <p className="text-[9px] uppercase font-bold text-slate-400">Time</p>
-                <p className="text-xs font-bold text-slate-700">{time}</p>
-              </div>
+          </div>
+
+          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-dashed border-slate-200">
+            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="text-xs text-slate-500 font-medium truncate">
+              {booking.eventPlace || "Location Details in Email"}
+            </span>
+          </div>
+        </div>
+
+        {/* Ticket Divider */}
+        <div className="w-full md:w-auto flex md:flex-col items-center justify-between px-6 py-1 md:py-6 bg-slate-50/50 md:bg-transparent border-t border-b md:border-t-0 md:border-b-0 md:border-l md:border-r border-dashed border-slate-200 shrink-0">
+          <div className="w-2 h-2 rounded-full bg-slate-200 hidden md:block" />
+          <div className="h-[1px] md:h-12 w-full md:w-[1px] bg-slate-200 border-dashed" />
+          <div className="w-2 h-2 rounded-full bg-slate-200 hidden md:block" />
+        </div>
+
+        {/* Barcode Stub */}
+        <div className="w-full md:w-56 bg-slate-50 p-6 flex flex-col justify-between items-center text-slate-700">
+          <div className="text-center w-full">
+            <p className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-2">Gate Pass Code</p>
+            <div className="text-slate-800">
+              <Barcode />
             </div>
+            <p className="text-[9px] font-mono text-slate-400 mt-1">FORSA-{booking.eventId}-{day}{month}</p>
           </div>
+          
+          <button 
+            onClick={handleViewTicket}
+            className="w-full mt-4 bg-white hover:bg-[#1E3D61] text-[#1E3D61] hover:text-white border border-[#1E3D61]/15 hover:border-transparent font-bold text-xs py-2 px-3 rounded-lg shadow-sm hover:shadow-md transition-all text-center flex items-center justify-center gap-1.5"
+          >
+            <QrCode className="w-4 h-4" /> View Ticket
+          </button>
         </div>
+      </motion.div>
 
-        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-dashed border-slate-200">
-          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-          <span className="text-xs text-slate-500 font-medium truncate">
-            {event.placeLocation || event.place || "Location Details in Email"}
-          </span>
-        </div>
-      </div>
+      {/* QR Code Modal */}
+      <AnimatePresence>
+        {showQR && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              onClick={() => setShowQR(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-auto"
+            >
+              <button 
+                onClick={() => setShowQR(false)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              
+              <div className="text-center mb-6">
+                <h3 className="font-bold text-xl text-slate-800 mb-1">Your Ticket</h3>
+                <p className="text-sm text-slate-500 font-medium">{booking.eventTitle}</p>
+              </div>
 
-      {/* Ticket Divider */}
-      <div className="w-full md:w-auto flex md:flex-col items-center justify-between px-6 py-1 md:py-6 bg-slate-50/50 md:bg-transparent border-t border-b md:border-t-0 md:border-b-0 md:border-l md:border-r border-dashed border-slate-200 shrink-0">
-        <div className="w-2 h-2 rounded-full bg-slate-200 hidden md:block" />
-        <div className="h-[1px] md:h-12 w-full md:w-[1px] bg-slate-200 border-dashed" />
-        <div className="w-2 h-2 rounded-full bg-slate-200 hidden md:block" />
-      </div>
-
-      {/* Barcode Stub */}
-      <div className="w-full md:w-56 bg-slate-50 p-6 flex flex-col justify-between items-center text-slate-700">
-        <div className="text-center w-full">
-          <p className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-2">Gate Pass Code</p>
-          <div className="text-slate-800">
-            <Barcode />
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex items-center justify-center aspect-square relative">
+                {loadingQr ? (
+                  <div className="flex flex-col items-center">
+                    <Loader2 className="w-8 h-8 text-[#1E3D61] animate-spin mb-3" />
+                    <p className="text-xs text-slate-500 font-medium">Loading ticket...</p>
+                  </div>
+                ) : qrUrl ? (
+                  <img src={qrUrl} alt="Ticket QR" className="w-full h-full object-contain" />
+                ) : (
+                  <p className="text-rose-500 text-sm font-medium">Failed to load QR code</p>
+                )}
+              </div>
+              
+              <div className="mt-6 text-center">
+                <p className="text-xs text-slate-400 font-medium max-w-[200px] mx-auto">
+                  Show this QR code at the entrance to check in
+                </p>
+              </div>
+            </motion.div>
           </div>
-          <p className="text-[9px] font-mono text-slate-400 mt-1">FORSA-{event.eventId}-{day}{month}</p>
-        </div>
-        
-        <Link 
-          to={`/events/${event.eventId}`}
-          className="w-full mt-4 bg-white hover:bg-[#1E3D61] text-[#1E3D61] hover:text-white border border-[#1E3D61]/15 hover:border-transparent font-bold text-xs py-2 px-3 rounded-lg shadow-sm hover:shadow-md transition-all text-center flex items-center justify-center gap-1.5"
-        >
-          <QrCode className="w-4 h-4" /> View Ticket
-        </Link>
-      </div>
-    </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -298,7 +371,7 @@ function OverviewView({
   );
 }
 
-function TicketsView({ events, isLoading }: { events: EventDetailsDto[]; isLoading: boolean }) {
+function TicketsView({ events, isLoading }: { events: AttendeeBookingDto[]; isLoading: boolean }) {
   if (isLoading) return <div className="py-20 text-center text-slate-400"><Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#1E3D61]" /><p>Loading tickets...</p></div>;
   if (events.length === 0) return (
     <div className="py-16 text-center bg-white rounded-2xl border border-slate-100 p-8 shadow-sm">
@@ -316,7 +389,7 @@ function TicketsView({ events, isLoading }: { events: EventDetailsDto[]; isLoadi
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-4">
       {events.map((evt) => (
-        <PassbookTicket key={evt.eventId} event={evt} />
+        <PassbookTicket key={evt.bookingId} booking={evt} />
       ))}
     </motion.div>
   );
@@ -397,7 +470,7 @@ export default function AttendeeDashboard() {
   const [userName, setUserName] = useState("there");
   const [userEmail, setUserEmail] = useState("attendee@forsa.com");
   const [allEvents, setAllEvents] = useState<EventDetailsDto[]>([]);
-  const [myTickets, setMyTickets] = useState<EventDetailsDto[]>([]);
+  const [myTickets, setMyTickets] = useState<AttendeeBookingDto[]>([]);
   const [recommendedEvents, setRecommendedEvents] = useState<EventDetailsDto[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [stats, setStats] = useState({ upcoming: 0, attended: 0, wishlist: 0, points: 0 });

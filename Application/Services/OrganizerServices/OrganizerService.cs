@@ -393,7 +393,7 @@ namespace Application.Services.OrganizerServices
                 TicketType = "General", // Placeholder for actual logic
                 BookingDate = b.BookingDate,
                 CheckInStatus = b.Status.ToString(), 
-                CheckInTime = b.Status == BookingStatus.Attended ? b.BookingDate.ToString("yyyy-MM-dd HH:mm") : null,
+                CheckInTime = b.CheckedInAt?.ToString("yyyy-MM-dd HH:mm"),
                 PaymentStatus = "paid" // Adjust based on logic
             }).ToList();
         }
@@ -419,6 +419,7 @@ namespace Application.Services.OrganizerServices
                 throw new InvalidOperationException("Attendee has already checked in");
 
             booking.Status = BookingStatus.Attended;
+            booking.CheckedInAt = DateTime.UtcNow;
             _bookingRepository.Update(booking);
             await _unitOfWork.SaveChangesAsync();
         }
