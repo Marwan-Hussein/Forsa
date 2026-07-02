@@ -118,14 +118,35 @@ export default function EventDetailsPage() {
     }
   };
 
-  const handleShare = (platform: string) => {
-    toast.message(`Share to ${platform}`, {
-      description: "This is a demo - no external app opened.",
-    });
+  const fetchShareData = async () => {
+    try {
+      const data = await apiGet(`/api/events/${eventId}/share`) as any;
+      return data;
+    } catch (err) {
+      toast.error("Failed to generate shareable link");
+      return null;
+    }
+  };
+
+  const handleShare = async (platform: string) => {
+    // Instead of using backend-generated shareUrl (which is the API endpoint), we use the frontend URL
+    const frontendUrl = window.location.href;
+    const text = `Check out "${event?.title}" on Forsa!`;
+
+    let url = "";
+    if (platform === "Facebook") url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(frontendUrl)}`;
+    if (platform === "Twitter") url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(frontendUrl)}&text=${encodeURIComponent(text)}`;
+    if (platform === "LinkedIn") url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(frontendUrl)}`;
+
+    if (url) window.open(url, "_blank", "width=600,height=400");
     setShowShareModal(false);
   };
 
-  const copyEventLink = () => {
+  const copyEventLink = async () => {
+    const shareData = await fetchShareData();
+    if (!shareData) return;
+    
+    // Use frontend URL for copying so users can paste it and open the react app directly
     void navigator.clipboard.writeText(window.location.href);
     toast.success("Link copied", { description: "Paste it anywhere to share this event." });
     setShowShareModal(false);
@@ -307,7 +328,7 @@ export default function EventDetailsPage() {
                   Tags
                 </h2>
                 <div className="flex flex-wrap gap-2">
-                  {event.tags.map((tag) => (
+                  {event.tags.map((tag: string) => (
                     <span
                       key={tag}
                       className="px-3 py-1 bg-background text-foreground rounded-[8px] text-[12px] font-['Inter:Medium',sans-serif] font-medium"
