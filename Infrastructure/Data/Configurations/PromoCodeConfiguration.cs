@@ -12,9 +12,13 @@ namespace Infrastructure.Data.Configurations
 
             builder.HasKey(p => p.Id);
 
+            builder.Property(p => p.DiscountValue)
+                   .HasColumnType("decimal(18,2)")
+                   .IsRequired();
+
             // PromoCode & Organizer
             builder.HasOne(p => p.Organizer)
-                   .WithMany()
+                   .WithMany(o => o.PromoCodes)
                    .HasForeignKey(p => p.OrganizerId)
                    .OnDelete(DeleteBehavior.NoAction);
         }

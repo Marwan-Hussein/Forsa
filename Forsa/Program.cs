@@ -22,9 +22,17 @@ namespace Forsa
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-           
+
             builder.Services.AddDbContext<ForsaDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("DefaultConnection"),
+                    sqlOptions => sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(10),
+                        errorNumbersToAdd: null
+                    )
+                )
+            );
             builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>()
                             .AddEntityFrameworkStores<ForsaDbContext>()
                             .AddDefaultTokenProviders();
@@ -127,6 +135,8 @@ namespace Forsa
             });
 
             var app = builder.Build();
+
+            //await DatabaseSeeder.EnsureDatabaseSchemaAsync(app.Services);
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
