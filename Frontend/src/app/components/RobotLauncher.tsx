@@ -42,40 +42,39 @@ export function RobotLauncher({ isOpen, onOpen }: RobotLauncherProps) {
     return () => clearTimeout(t);
   }, []);
 
-  // --- Looping greeting cycle: wave -> bubble in -> pause -> bubble out -> wait -> repeat ---
-  useEffect(() => {
-    if (!hasEntered || isOpen) return;
-    if (prefersReducedMotion.current) return; // don't force a repeating animation
+  // // --- Looping greeting cycle: wave -> bubble in -> pause -> bubble out -> wait -> repeat ---
+  // useEffect(() => {
+  //   if (!hasEntered || isOpen) return;
+  //   if (prefersReducedMotion.current) return; // don't force a repeating animation
 
-    const clearAll = () => {
-      loopTimeouts.current.forEach(clearTimeout);
-      loopTimeouts.current = [];
-    };
+  //   const clearAll = () => {
+  //     loopTimeouts.current.forEach(clearTimeout);
+  //     loopTimeouts.current = [];
+  //   };
 
-    const BUBBLE_VISIBLE_MS = 3500;
-    const WAIT_BETWEEN_MS = 2500;
+  //   const BUBBLE_VISIBLE_MS = 3500;
+  //   const WAIT_BETWEEN_MS = 2500;
 
-    const runCycle = () => {
-      setIsWaving(true);
-      const t1 = setTimeout(() => setShowBubble(true), 300);
-      const t2 = setTimeout(() => {
-        setShowBubble(false);
-        setIsWaving(false);
-      }, 300 + BUBBLE_VISIBLE_MS);
-      const t3 = setTimeout(runCycle, 300 + BUBBLE_VISIBLE_MS + WAIT_BETWEEN_MS);
-      loopTimeouts.current.push(t1, t2, t3);
-    };
+  //   const runCycle = () => {
+  //     setIsWaving(true);
+  //     const t1 = setTimeout(() => setShowBubble(true), 300);
+  //     const t2 = setTimeout(() => {
+  //       setShowBubble(false);
+  //       setIsWaving(false);
+  //     }, 300 + BUBBLE_VISIBLE_MS);
+  //     const t3 = setTimeout(runCycle, 300 + BUBBLE_VISIBLE_MS + WAIT_BETWEEN_MS);
+  //     loopTimeouts.current.push(t1, t2, t3);
+  //   };
 
-    const initialDelay = setTimeout(runCycle, 400);
-    loopTimeouts.current.push(initialDelay);
+  //   const initialDelay = setTimeout(runCycle, 400);
+  //   loopTimeouts.current.push(initialDelay);
 
-    return clearAll;
-  }, [hasEntered, isOpen]);
+  //   return clearAll;
+  // }, [hasEntered, isOpen]);
 
   // Hide the greeting the moment the chat opens.
   useEffect(() => {
     if (isOpen) {
-      setShowBubble(false);
       setIsWaving(false);
     }
   }, [isOpen]);
@@ -92,7 +91,6 @@ export function RobotLauncher({ isOpen, onOpen }: RobotLauncherProps) {
   const handleActivate = () => {
     if (isClicked) return;
     setIsClicked(true);
-    setShowBubble(false);
     spawnParticles();
     setTimeout(() => {
       setIsClicked(false);
@@ -112,7 +110,7 @@ export function RobotLauncher({ isOpen, onOpen }: RobotLauncherProps) {
   return (
     <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start">
       <AnimatePresence>
-        {showBubble && (
+        {isHovered  && (
           <motion.div
             initial={{ opacity: 0, y: 12, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -145,7 +143,7 @@ export function RobotLauncher({ isOpen, onOpen }: RobotLauncherProps) {
         className={[
           "robot-launcher",
           isHovered ? "robot-hovered" : "",
-          isWaving ? "robot-waving" : "",
+          isHovered ? "robot-waving" : "",
           isClicked ? "robot-clicked" : "",
         ]
           .filter(Boolean)
