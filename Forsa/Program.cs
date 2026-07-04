@@ -39,7 +39,6 @@ namespace Forsa
             //    });
             //builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
             var redisConnection = builder.Configuration.GetConnectionString("Redis");
-
             if (!string.IsNullOrWhiteSpace(redisConnection))
             {
                 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
