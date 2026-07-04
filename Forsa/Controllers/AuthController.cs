@@ -176,13 +176,13 @@ namespace Forsa.Controllers
             };
 
             var result = await _externalAuth.ProcessExternalLoginAsync(authDto);
-
+            var frontEndHost = 
             if (!result.IsSuccess)
             {
-                return Redirect($"http://localhost:5173/login?error={Uri.EscapeDataString(result.Message)}");
+                return Redirect($"https://forsaweb.vercel.app/login?error={Uri.EscapeDataString(result.Message)}");
             }
 
-            return Redirect($"http://localhost:5173/login?token={result.User.Token}&refreshToken={result.User.RefreshToken}&fullName={Uri.EscapeDataString(result.User.FullName)}&email={Uri.EscapeDataString(result.User.Email)}");
+            return Redirect($"https://forsaweb.vercel.app/login?token={result.User.Token}&refreshToken={result.User.RefreshToken}&fullName={Uri.EscapeDataString(result.User.FullName)}&email={Uri.EscapeDataString(result.User.Email)}");
         }
 
         [HttpPost("refresh-token")]

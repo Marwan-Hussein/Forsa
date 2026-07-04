@@ -52,7 +52,7 @@ namespace Forsa
             {
                 options.AddPolicy("Frontend", policy =>
                 {
-                    policy.WithOrigins("http://localhost:5173") // Vite dev server port
+                    policy.WithOrigins("https://forsaweb.vercel.app") // Vite dev server port
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
