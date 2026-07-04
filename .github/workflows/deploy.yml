@@ -27,6 +27,13 @@ jobs:
         working-directory: Frontend
         run: npm install
 
+      - name: Create Frontend .env
+        working-directory: Frontend
+        run: |
+          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env
+          echo "VITE_GOOGLE_MAPS_API_KEY=${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}" >> .env
+          echo "VITE_USE_API_PROXY=${{ secrets.VITE_USE_API_PROXY }}" >> .env
+
       - name: Build React
         working-directory: Frontend
         run: npm run build
