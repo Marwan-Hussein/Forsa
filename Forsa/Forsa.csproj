@@ -43,19 +43,16 @@
 
 
 	<Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
-		<Exec Command="npm install" WorkingDirectory="../../Frontend" />
-
-		<Exec Command="npm run build" WorkingDirectory="../../Frontend" />
-
-		<ItemGroup>
-			<DistFiles Include="../../Frontend/dist/**/*.*" />
-
-			<ResolvedFileToPublish Include="@(DistFiles)">
-				<RelativePath>wwwroot/%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
-				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-				<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-			</ResolvedFileToPublish>
-		</ItemGroup>
-	</Target>
+    <Exec Command="npm install" WorkingDirectory="..\Frontend" />
+    <Exec Command="npm run build" WorkingDirectory="..\Frontend" />
+    <ItemGroup>
+        <DistFiles Include="../../Frontend/dist/**/*.*" />
+        <ResolvedFileToPublish Include="@(DistFiles)">
+            <RelativePath>wwwroot/%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        </ResolvedFileToPublish>
+    </ItemGroup>
+</Target>
 
 </Project>
