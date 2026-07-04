@@ -3,6 +3,7 @@ import { X, Send, Bot, Loader2 } from "lucide-react"; // Removed MessageCircle, 
 import { apiPost } from "../api/api";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
+import ForsaChatBotIcon from "../../assets/ForsaChatBotIcon.svg";
 
 interface ChatMessage {
   content: string;
@@ -74,10 +75,10 @@ export function AiChatbot() {
           }`}
         >
           {/* Logo Icon */}
-          <img 
-            src="src/assets/ForsaChatBotIcon.svg" 
-            alt="Forsa AI Logo" 
-            className="w-12 h-12 min-w-12 object-contain transition-transform duration-300 ease-in-out group-hover:-rotate-12"
+          <img
+          src={ForsaChatBotIcon}
+          alt="Forsa AI Logo"
+          className="w-12 h-12 min-w-12 object-contain transition-transform duration-300 ease-in-out group-hover:-rotate-12"
           />
 
           {/* Text that shows on hover */}
