@@ -11,6 +11,12 @@ export default defineConfig({
     },
   },
   assetsInclude: ["**/*.svg", "**/*.csv"],
+
+  build: {
+    outDir: "../Forsa/wwwroot",
+    emptyOutDir: true
+  },
+
   server: {
     port: 5173,
     proxy: {
