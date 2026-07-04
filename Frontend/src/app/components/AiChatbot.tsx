@@ -83,7 +83,7 @@ export function AiChatbot() {
 
           {/* Text that shows on hover */}
           <span className="opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-xs group-hover:ml-3 transition-all duration-300 ease-in-out whitespace-nowrap font-medium text-sm text-slate-900">
-            Ask ForsaGPT
+            Ask Forsa AI Assistant
           </span>
         </button>
       </div>
