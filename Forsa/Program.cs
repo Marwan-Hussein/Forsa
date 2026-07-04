@@ -31,13 +31,17 @@ namespace Forsa
 
             // redis
             var redisConnection = builder.Configuration.GetConnectionString("Redis");
-            builder.Services.AddSingleton<IConnectionMultiplexer>(sp=>
+            if (!string.IsNullOrWhiteSpace(redisConnection))
+            {
+                builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
                 {
                     var configuration = ConfigurationOptions.Parse(redisConnection);
-                    configuration.AbortOnConnectFail = false; // This prevents the crash
+                    configuration.AbortOnConnectFail = false;
                     return ConnectionMultiplexer.Connect(configuration);
                 });
-            builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+            
+                builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+            }
 
             // Add Frontend CORS policy
             builder.Services.AddCors(options =>
