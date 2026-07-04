@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - githubdeployment
 
 jobs:
   deploy:
