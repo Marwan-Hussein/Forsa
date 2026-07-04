@@ -4,6 +4,7 @@ import { router } from "./routes";
 import TicketSpinner from "./components/TicketSpinner";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import { AiChatbot } from "./components/AiChatbot";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
