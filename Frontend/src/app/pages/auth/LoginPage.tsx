@@ -352,7 +352,7 @@ export default function LoginPage() {
             </span>
             <div className="h-px flex-1 bg-white/10"></div>
           </motion.div>
-
+          
           <motion.button
             type="button"
             className="mt-6 flex w-full items-center justify-center rounded-xl border border-white/10 bg-white/5 py-4 font-['Inter:Medium',sans-serif] text-[15px] font-medium text-white transition-all duration-300 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue-accent)]/20 active:scale-[0.98] cursor-pointer"

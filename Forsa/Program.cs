@@ -28,7 +28,7 @@ namespace Forsa
             builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>()
                             .AddEntityFrameworkStores<ForsaDbContext>()
                             .AddDefaultTokenProviders();
-
+            // comment
             //// redis
             //var redisConnection = builder.Configuration.GetConnectionString("Redis");
             //builder.Services.AddSingleton<IConnectionMultiplexer>(sp=>
