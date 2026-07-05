@@ -39,6 +39,8 @@ namespace Infrastructure.Data.Configurations
 
             builder.Property(e => e.EndDate)
                    .IsRequired();
+            builder.Property(e => e.CustomLocation)
+                .IsRequired(false);
 
             // 2. Event & EventMedia
             builder.HasMany(e => e.EventMedias)
