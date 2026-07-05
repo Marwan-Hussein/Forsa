@@ -31,6 +31,7 @@ export interface CreateEventDto {
   endDate: string;
   ticketPrice: number;
   totalTickets: number;
+  customLocation?: string;
 }
 
 export interface UpdateEventDto {
@@ -41,6 +42,7 @@ export interface UpdateEventDto {
   endDate: string;
   ticketPrice: number;
   totalTickets: number;
+  customLocation?: string;
 }
 
 export interface BookingRequestDto {
@@ -68,7 +70,7 @@ export const organizerApi = {
     formData.append('organizerId', organizerId.toString());
     formData.append('files', file);
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('forsa_token');
     const response = await fetch(`/api/organizers/events/${eventId}/media`, {
       method: 'POST',
       headers: {
@@ -133,6 +135,10 @@ export const organizerApi = {
     return await apiPost(`/api/organizers/bookings/${bookingId}/check-in`, {});
   },
 
+  undoCheckIn: async (bookingId: number): Promise<void> => {
+    return await apiPost(`/api/organizers/bookings/${bookingId}/undo-check-in`, {});
+  },
+
   getProfile: async (id: number): Promise<any> => {
     return await apiGet(`/api/organizers/${id}/profile`);
   },
@@ -156,5 +162,9 @@ export const organizerApi = {
     if (!response.ok) throw new Error("Failed to upload image");
     const data = await response.json();
     return data.url;
+  },
+
+  processPlaceCheckout: async (requestId: number): Promise<any> => {
+    return await apiPost(`/api/organizers/booking-requests/${requestId}/checkout`, {});
   }
 };

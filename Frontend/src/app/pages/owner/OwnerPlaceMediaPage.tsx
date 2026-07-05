@@ -307,7 +307,7 @@ export default function OwnerPlaceMediaPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/75"
               onClick={() => setDeleteConfirmId(null)}
             />
             <motion.div 

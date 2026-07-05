@@ -116,7 +116,7 @@ export default function ViewFeedbackRatingPage() {
       <main className="flex-1 px-6 py-8 max-w-7xl mx-auto w-full">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-          <Link to="/owner-dashboard" className="hover:text-accent">Dashboard</Link>
+          <Link to="/owner" className="hover:text-accent">Dashboard</Link>
           <ChevronRight className="size-4" />
           <Link to="/my-places" className="hover:text-accent">My Venues</Link>
           <ChevronRight className="size-4" />

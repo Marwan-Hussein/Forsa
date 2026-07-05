@@ -261,6 +261,29 @@ namespace Forsa.Controllers
             }
         }
 
+        // POST: api/organizers/bookings/{bookingId}/undo-check-in
+        [HttpPost("bookings/{bookingId}/undo-check-in")]
+        public async Task<ActionResult> UndoCheckIn(int bookingId)
+        {
+            try
+            {
+                await _organizerService.UndoCheckInAsync(bookingId);
+                return Ok(new { message = "Check-in successfully reversed." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred during reversing check-in: {ex.Message}" });
+            }
+        }
+
         // POST: api/organizers/booking-requests/{requestId}/checkout
         [Authorize(Policy = "OrganizerOnly")]
         [HttpPost("booking-requests/{requestId:int}/checkout")]

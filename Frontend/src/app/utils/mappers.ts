@@ -21,7 +21,10 @@ export function mapEventDetailsDtoToEvent(dto: EventDetailsDto): Event {
     description: dto.description || "",
     isFeatured: dto.status === "Featured",
     capacity: dto.totalTickets || 0,
-    tags: []
+    tags: [],
+    placeLatitude: dto.placeLatitude ?? null,
+    placeLongitude: dto.placeLongitude ?? null,
+    googlePlaceId: dto.googlePlaceId ?? null,
   };
 }
 

@@ -23,6 +23,7 @@ import SubmitOrgToOwnerFeedbackPage from "./pages/places/SubmitOrgToOwnerFeedbac
 import ViewFeedbackRatingPage from "./pages/places/ViewFeedbackRatingPage";
 import AboutPage from "./pages/home/AboutPage";
 import ContactUsPage from "./pages/home/ContactUsPage";
+import PaymentResultPage from "./pages/payment/PaymentResultPage";
 
 import AdminLoginPage from "./pages/auth/AdminLoginPage";
 
@@ -43,6 +44,7 @@ import OwnerEditPlacePage from "./pages/owner/OwnerEditPlacePage";
 import OwnerPlaceMediaPage from "./pages/owner/OwnerPlaceMediaPage";
 import OwnerBookingsPage from "./pages/owner/OwnerBookingsPage";
 import OwnerProfilePage from "./pages/owner/OwnerProfilePage";
+import OwnerPlaceCalendarPage from "./pages/owner/OwnerPlaceCalendarPage";
 
 // Organizer Portal Imports
 import OrganizerLayout from "./pages/layout/OrganizerLayout";
@@ -129,6 +131,10 @@ export const router = createBrowserRouter([
         path: "contact",
         Component: ContactUsPage,
       },
+      {
+        path: "payment-result",
+        Component: PaymentResultPage,
+      },
     ],
   },
   {
@@ -188,6 +194,10 @@ export const router = createBrowserRouter([
       {
         path: "places/:placeId/media",
         Component: OwnerPlaceMediaPage,
+      },
+      {
+        path: "places/:placeId/calendar",
+        Component: OwnerPlaceCalendarPage,
       },
       {
         path: "bookings",

@@ -7,6 +7,7 @@ import { ForSaLogo } from "./ForSaLogo";
 import { EASE_IN_OUT } from "../lib/motion";
 import { attendeeApi } from "../api/attendeeApi";
 import { getUserIdFromToken } from "../api/api";
+import { getDashboardPath, getUserRole } from "../utils/roleRouting";
 
 export function Navigation() {
   const location = useLocation();
@@ -18,6 +19,7 @@ export function Navigation() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("Guest");
   const [userEmail, setUserEmail] = useState("user@forsa.com");
+  const dashboardPath = getDashboardPath(getUserRole());
 
   useEffect(() => {
     const token = localStorage.getItem("forsa_token");
@@ -92,10 +94,7 @@ export function Navigation() {
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group outline-none">
-            <ForSaLogo className={`h-8 md:h-9 w-auto transition-all duration-500 ${shouldElevate ? 'brightness-0' : 'brightness-0 invert'}`} />
-            <span className={`text-2xl font-['Inter:Bold',sans-serif] font-bold tracking-tight transition-colors duration-500 ${shouldElevate ? 'text-[#0A1625]' : 'text-white'}`}>
-              ForSa
-            </span>
+            <ForSaLogo className={`h-12 md:h-14 w-auto transition-all duration-500 ${shouldElevate ? 'brightness-0' : 'brightness-0 invert'}`} />
           </Link>
           
           <div className="hidden md:flex items-center gap-8">
@@ -116,15 +115,7 @@ export function Navigation() {
           <div className="hidden md:flex items-center gap-6">
             {isLoggedIn ? (
               <>
-                <Link 
-                  to="/notifications" 
-                  className={`relative p-2 rounded-full transition-colors ${
-                    shouldElevate ? 'text-slate-500 hover:bg-slate-100' : 'text-white hover:bg-white/10'
-                  }`}
-                >
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white shadow-sm"></span>
-                </Link>
+
 
                 <div className="relative" ref={userMenuRef}>
                   <button 
@@ -162,7 +153,7 @@ export function Navigation() {
                           <p className="text-xs font-['Inter:Medium',sans-serif] text-slate-500 truncate">{userEmail}</p>
                         </div>
                         <div className="p-2">
-                          <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-[var(--brand-navy)] transition-colors">
+                          <Link to={dashboardPath} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-[var(--brand-navy)] transition-colors">
                             <LayoutDashboard className="w-4 h-4" /> Dashboard
                           </Link>
                         </div>
@@ -191,17 +182,7 @@ export function Navigation() {
           </div>
 
           <div className="md:hidden flex items-center gap-4">
-            {isLoggedIn && (
-              <Link 
-                to="/notifications" 
-                className={`relative p-2 rounded-full transition-colors ${
-                  shouldElevate ? 'text-slate-500' : 'text-white'
-                }`}
-              >
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white shadow-sm"></span>
-              </Link>
-            )}
+
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -236,7 +217,7 @@ export function Navigation() {
                 {isLoggedIn ? (
                   <>
                     <div className="my-2 border-t border-slate-100"></div>
-                    <Link to="/dashboard" className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50">
+                    <Link to={dashboardPath} className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50">
                       <LayoutDashboard className="w-5 h-5" /> Dashboard
                     </Link>
 

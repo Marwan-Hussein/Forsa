@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Link } from "react-router";
-import { ArrowLeft, Calendar, Tag, FileText, Ticket, DollarSign, LayoutList, RefreshCw, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Calendar, Tag, FileText, Ticket, DollarSign, LayoutList, RefreshCw, Image as ImageIcon, MapPin } from "lucide-react";
 import { motion } from "motion/react";
 import { organizerApi } from "../../api/organizerApi";
 import { getUserIdFromToken } from "../../api/api";
@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
+import MapPicker from "../../components/map/MapPicker";
 
 export default function EditEventPage() {
   const navigate = useNavigate();
@@ -25,11 +26,20 @@ export default function EditEventPage() {
     description: "",
     category: "",
     ticketPrice: "",
-    totalTickets: ""
+    totalTickets: "",
+    customLocation: ""
   });
+  const [hasOwnPlace, setHasOwnPlace] = useState(false);
+  const [mapLatitude, setMapLatitude] = useState<number | null>(null);
+  const [mapLongitude, setMapLongitude] = useState<number | null>(null);
+  const [hasPlaceId, setHasPlaceId] = useState(false);
+  const [eventPlaceName, setEventPlaceName] = useState("");
+  const [eventPlaceLocation, setEventPlaceLocation] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -40,10 +50,20 @@ export default function EditEventPage() {
           description: data.description || "",
           category: data.category || "",
           ticketPrice: data.ticketPrice?.toString() || "",
-          totalTickets: data.totalTickets?.toString() || ""
+          totalTickets: data.totalTickets?.toString() || "",
+          customLocation: data.customLocation || ""
         });
         if (data.startDate) setStartDate(new Date(data.startDate));
         if (data.endDate) setEndDate(new Date(data.endDate));
+        if (data.imageUrl) setExistingImageUrl(data.imageUrl);
+        if (data.placeId) {
+          setHasPlaceId(true);
+          setEventPlaceName(data.place || "Booked Venue");
+          setEventPlaceLocation(data.placeLocation || "");
+        } else {
+          setHasPlaceId(false);
+          setHasOwnPlace(!!data.customLocation);
+        }
       } catch (err: any) {
         toast.error("Failed to load event details: " + err.message);
         navigate("/organizer/events");
@@ -55,9 +75,16 @@ export default function EditEventPage() {
   }, [eventId, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    let cleanedValue = value;
+    if (name === "ticketPrice" || name === "totalTickets") {
+      if (value.startsWith("0") && value.length > 1 && value[1] !== ".") {
+        cleanedValue = value.replace(/^0+/, "");
+      }
+    }
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: cleanedValue
     }));
   };
 
@@ -67,7 +94,9 @@ export default function EditEventPage() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setImageFile(file);
+      setImagePreviewUrl(URL.createObjectURL(file));
     }
   };
 
@@ -99,7 +128,8 @@ export default function EditEventPage() {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         ticketPrice: parseFloat(formData.ticketPrice),
-        totalTickets: parseInt(formData.totalTickets, 10)
+        totalTickets: parseInt(formData.totalTickets, 10),
+        customLocation: hasPlaceId ? undefined : (hasOwnPlace ? formData.customLocation : undefined)
       };
 
       await organizerApi.updateEventDetails(Number(eventId), dto);
@@ -211,8 +241,29 @@ export default function EditEventPage() {
           <div className="space-y-2">
             <label className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700 flex items-center gap-2">
               <ImageIcon className="w-4 h-4 text-indigo-500" />
-              Add/Replace Cover Image
+              Event Cover Image
             </label>
+            
+            {(imagePreviewUrl || existingImageUrl) ? (
+              <div className="relative w-full max-w-md h-52 rounded-2xl overflow-hidden border border-slate-200 group shadow-sm bg-slate-50 mb-3">
+                <img 
+                  src={imagePreviewUrl || existingImageUrl || ""} 
+                  alt="Event Cover" 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent flex items-end p-4">
+                  <span className="bg-white/90 backdrop-blur-md text-slate-800 text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-sm border border-white/20">
+                    {imagePreviewUrl ? "New Preview" : "Current Cover Image"}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl p-6 bg-slate-50/50 text-slate-400 mb-3">
+                <ImageIcon className="w-10 h-10 mb-2 stroke-[1.5]" />
+                <span className="text-xs font-semibold">No cover image uploaded yet</span>
+              </div>
+            )}
+
             <input 
               type="file" 
               accept="image/*"
@@ -222,7 +273,7 @@ export default function EditEventPage() {
             {imageFile && (
               <p className="text-sm text-green-600 font-medium">Selected: {imageFile.name}</p>
             )}
-            <p className="text-xs text-slate-500 mt-1">Uploading a new image will replace the current cover image (if any).</p>
+            <p className="text-xs text-slate-500 mt-1">Uploading a new image will replace the current cover image.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -241,6 +292,85 @@ export default function EditEventPage() {
               <DateTimePicker date={endDate} setDate={setEndDate} />
             </div>
           </div>
+
+          {/* Location / Venue Section */}
+          {hasPlaceId ? (
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+              <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider block mb-1 font-['Inter:Bold',sans-serif]">Booked ForSa Venue</span>
+              <p className="font-bold text-slate-800 text-base font-['Inter:Bold',sans-serif]">{eventPlaceName}</p>
+              <p className="text-xs text-slate-500 mt-1 font-['Inter:Regular',sans-serif] flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                {eventPlaceLocation}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <label className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700">
+                  Event Venue / Location
+                </label>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setHasOwnPlace(false)}
+                    className={`flex-1 p-5 rounded-2xl border-2 text-left flex flex-col gap-2 transition-all ${!hasOwnPlace ? 'border-indigo-500 bg-indigo-50/10' : 'border-slate-200 hover:border-slate-300'}`}
+                  >
+                    <span className="font-bold text-slate-800 text-sm font-['Inter:Bold',sans-serif]">Book a Registered ForSa Venue</span>
+                    <span className="text-xs text-slate-500 leading-relaxed font-['Inter:Regular',sans-serif]">Submit a booking request to one of our premium venue owners. The event will remain a draft until booking is paid.</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHasOwnPlace(true)}
+                    className={`flex-1 p-5 rounded-2xl border-2 text-left flex flex-col gap-2 transition-all ${hasOwnPlace ? 'border-indigo-500 bg-indigo-50/10' : 'border-slate-200 hover:border-slate-300'}`}
+                  >
+                    <span className="font-bold text-slate-800 text-sm font-['Inter:Bold',sans-serif]">Use My Own Venue / Location</span>
+                    <span className="text-xs text-slate-500 leading-relaxed font-['Inter:Regular',sans-serif]">Specify your own address directly. The event will be published immediately on creation.</span>
+                  </button>
+                </div>
+              </div>
+
+              {hasOwnPlace && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-indigo-500" />
+                      Custom Location Address
+                    </label>
+                    <div className="relative">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                      <input 
+                        type="text" 
+                        name="customLocation"
+                        required
+                        value={formData.customLocation}
+                        onChange={handleChange}
+                        placeholder="e.g. 28 Falaki St, Bab Al Louq, Cairo" 
+                        className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 shadow-sm rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-slate-500 mb-2 font-['Inter:Medium',sans-serif]">Pinpoint exact location on map</p>
+                    <MapPicker
+                      address={formData.customLocation}
+                      latitude={mapLatitude}
+                      longitude={mapLongitude}
+                      googlePlaceId={null}
+                      onChange={(data) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          customLocation: data.address
+                        }));
+                        setMapLatitude(data.latitude);
+                        setMapLongitude(data.longitude);
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2">

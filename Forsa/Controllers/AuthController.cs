@@ -137,11 +137,14 @@ namespace Forsa.Controllers
 
 
         [HttpGet("external-login")]
-        public IActionResult ExternalLogin(string provider, string role = "Attendee")
+        public IActionResult ExternalLogin(string provider, string? role = null)
         {
             var redirectUrl = Url.Action(nameof(ExternalCallBack), "Auth");
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
-            properties.Items["requestedRole"] = role;
+            if (role != null)
+            {
+                properties.Items["requestedRole"] = role;
+            }
             return Challenge(properties, provider);
         }
 
@@ -156,7 +159,7 @@ namespace Forsa.Controllers
             }
             var requestedRole = info.AuthenticationProperties.Items.ContainsKey("requestedRole")
                         ? info.AuthenticationProperties.Items["requestedRole"]
-                        : "Attendee";
+                        : null;
 
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
             var name = info.Principal.FindFirstValue(ClaimTypes.Name);
@@ -179,10 +182,25 @@ namespace Forsa.Controllers
 
             if (!result.IsSuccess)
             {
+                if (result.NeedsRoleSelection)
+                {
+                    return Redirect($"http://localhost:5173/login?externalRegister=true&provider={Uri.EscapeDataString(result.Provider)}&providerKey={Uri.EscapeDataString(result.ProviderKey)}&email={Uri.EscapeDataString(result.Email)}&name={Uri.EscapeDataString(result.Name ?? "")}");
+                }
                 return Redirect($"http://localhost:5173/login?error={Uri.EscapeDataString(result.Message)}");
             }
 
             return Redirect($"http://localhost:5173/login?token={result.User.Token}&refreshToken={result.User.RefreshToken}&fullName={Uri.EscapeDataString(result.User.FullName)}&email={Uri.EscapeDataString(result.User.Email)}");
+        }
+
+        [HttpPost("external-register")]
+        public async Task<IActionResult> ExternalRegister([FromBody] ExternalAuthDto request)
+        {
+            var result = await _externalAuth.ProcessExternalLoginAsync(request);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { message = result.Message });
+            }
+            return Ok(result.User);
         }
 
         [HttpPost("refresh-token")]

@@ -12,12 +12,14 @@ function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  numberOfMonths = 1,
   ...props
 }: React.ComponentProps<typeof DayPicker>) {
   return (
     <>
       <DayPicker
       showOutsideDays={showOutsideDays}
+      numberOfMonths={numberOfMonths}
       className={cn("p-3", className)}
       classNames={{
         months: "flex flex-col sm:flex-row gap-2",

@@ -7,6 +7,9 @@ using Domain.Interfaces;
 using Domain.Interfaces.BookingInterfaces;
 using Microsoft.AspNetCore.Identity;
 
+using Microsoft.EntityFrameworkCore;
+using Domain.Entities.PaymentEntities;
+
 namespace Application.Services.AdminServices
 {
     public class AdminDashboardService : IAdminDashboardService
@@ -16,19 +19,22 @@ namespace Application.Services.AdminServices
         private readonly IEventRepository _eventRepo;
         private readonly IFeedbackRepository _feedbackRepo;
         private readonly IBookingRepository _bookingRepo;
+        private readonly IQueryableRepository<PaymentTransaction> _transactionRepo;
 
         public AdminDashboardService(
             UserManager<ApplicationUser> userManager,
             IPlaceRepository placeRepo,
             IEventRepository eventRepo,
             IFeedbackRepository feedbackRepo,
-            IBookingRepository bookingRepo)
+            IBookingRepository bookingRepo,
+            IQueryableRepository<PaymentTransaction> transactionRepo)
         {
             _userManager = userManager;
             _placeRepo = placeRepo;
             _eventRepo = eventRepo;
             _feedbackRepo = feedbackRepo;
             _bookingRepo = bookingRepo;
+            _transactionRepo = transactionRepo;
         }
 
         public async Task<DashboardStatsDto> GetDashboardStatsAsync()
@@ -83,7 +89,9 @@ namespace Application.Services.AdminServices
                 CompletedEvents = completedEvents,
                 TotalReviews = totalReviews,
                 AverageRating = Math.Round(avgRating, 1),
-                TotalEarnings = 0, // Requires Event navigation property - will add later
+                TotalEarnings = await _transactionRepo.GetQueryable()
+                    .Where(t => t.TransactionStatus == TransactionStatus.Completed)
+                    .SumAsync(t => t.Amount),
                 TotalBookings = totalBookings
             };
         }

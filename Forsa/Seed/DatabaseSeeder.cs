@@ -82,13 +82,13 @@ namespace Forsa.Seed
                 interests = await context.Set<AttendeeInterest>().ToListAsync();
             }
 
-            // 4. Seed Users
+            // 3. Seed Users
             // A. Seed Admin
             const string adminEmail = "admin@forsa.com";
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
             if (adminUser == null)
             {
-                var admin = new Admin
+                var admin = new ApplicationUser
                 {
                     FullName = "System Admin",
                     UserName = adminEmail,
@@ -98,7 +98,7 @@ namespace Forsa.Seed
                     EmailConfirmed = true,
                     PhoneNumber = "01000000000",
                     Location = "Cairo, Egypt",
-                    BirthDate = new DateTime(2000, 1, 1),
+                    BirthDate = new DateTime(1985, 1, 1),
                     ProfilePicture = string.Empty,
                     CreatedAt = DateTime.UtcNow,
                     IsDeleted = false
@@ -108,88 +108,77 @@ namespace Forsa.Seed
                 await userManager.AddToRoleAsync(admin, "Admin");
             }
 
-            // B. Seed Organizer
-            const string organizerEmail = "organizer@forsa.com";
-            var organizerUser = await userManager.FindByEmailAsync(organizerEmail) as Organizer;
-            if (organizerUser == null)
+            // B. Seed Organizers
+            var organizersToSeed = new[]
             {
-                var organizer = new Organizer
-                {
-                    FullName = "Test Organizer",
-                    UserName = organizerEmail,
-                    NormalizedUserName = organizerEmail.ToUpperInvariant(),
-                    Email = organizerEmail,
-                    NormalizedEmail = organizerEmail.ToUpperInvariant(),
-                    EmailConfirmed = true,
-                    PhoneNumber = "01100000000",
-                    Location = "Cairo, Egypt",
-                    BirthDate = new DateTime(1990, 5, 15),
-                    ProfilePicture = string.Empty,
-                    CreatedAt = DateTime.UtcNow,
-                    IsDeleted = false,
-                    OrganizationName = "Tech Summit Org",
-                    AverageRating = 4.8,
-                    ReviewsCount = 10
-                };
-                var createResult = await userManager.CreateAsync(organizer, "Test@1234");
-                ThrowIfFailed(createResult, "Failed to create Organizer user");
-                await userManager.AddToRoleAsync(organizer, "Organizer");
-                organizerUser = organizer;
+                new { Email = "iti@forsa.com", Name = "Information Technology Institute (ITI)", OrgName = "Information Technology Institute (ITI)", TypeName = "Education", Phone = "01122334455" },
+                new { Email = "alx@forsa.com", Name = "ALX Egypt", OrgName = "ALX Egypt", TypeName = "Education", Phone = "01234567890" },
+                new { Email = "riseup@forsa.com", Name = "RiseUp", OrgName = "RiseUp", TypeName = "Business", Phone = "01001122334" },
+                new { Email = "wuzzuf@forsa.com", Name = "WUZZUF", OrgName = "WUZZUF", TypeName = "Business", Phone = "01555667788" },
+                new { Email = "techne@forsa.com", Name = "Techne Summit", OrgName = "Techne Summit", TypeName = "Tech", Phone = "01099887766" }
+            };
 
-                // Add to OrganiztionTypeWithOrganizer
-                if (orgTypes.Any())
+            var seededOrganizers = new List<Organizer>();
+            foreach (var orgData in organizersToSeed)
+            {
+                var orgUser = await userManager.FindByEmailAsync(orgData.Email) as Organizer;
+                if (orgUser == null)
                 {
-                    await context.Set<OrganiztionTypeWithOrganizer>().AddAsync(new OrganiztionTypeWithOrganizer
+                    orgUser = new Organizer
                     {
-                        OrganizerId = organizer.Id,
-                        OrganizationTypeId = orgTypes.First().Id
-                    });
-                    await context.SaveChangesAsync();
+                        FullName = orgData.Name,
+                        UserName = orgData.Email,
+                        NormalizedUserName = orgData.Email.ToUpperInvariant(),
+                        Email = orgData.Email,
+                        NormalizedEmail = orgData.Email.ToUpperInvariant(),
+                        EmailConfirmed = true,
+                        PhoneNumber = orgData.Phone,
+                        Location = "Egypt",
+                        BirthDate = new DateTime(1995, 1, 1),
+                        ProfilePicture = string.Empty,
+                        CreatedAt = DateTime.UtcNow,
+                        IsDeleted = false,
+                        OrganizationName = orgData.OrgName,
+                        AverageRating = 4.9,
+                        ReviewsCount = 12
+                    };
+                    var createResult = await userManager.CreateAsync(orgUser, "Test@1234");
+                    ThrowIfFailed(createResult, $"Failed to create Organizer {orgData.Name}");
+                    await userManager.AddToRoleAsync(orgUser, "Organizer");
+
+                    // Link to Organization Type
+                    var matchingType = orgTypes.FirstOrDefault(t => t.Name == orgData.TypeName) ?? orgTypes.FirstOrDefault();
+                    if (matchingType != null)
+                    {
+                        await context.Set<OrganiztionTypeWithOrganizer>().AddAsync(new OrganiztionTypeWithOrganizer
+                        {
+                            OrganizerId = orgUser.Id,
+                            OrganizationTypeId = matchingType.Id
+                        });
+                        await context.SaveChangesAsync();
+                    }
                 }
+                seededOrganizers.Add(orgUser);
             }
 
-            // C. Seed Owner
-            const string ownerEmail = "owner@forsa.com";
-            var ownerUser = await userManager.FindByEmailAsync(ownerEmail) as Owner;
-            if (ownerUser == null)
-            {
-                var owner = new Owner
-                {
-                    FullName = "Test Owner",
-                    UserName = ownerEmail,
-                    NormalizedUserName = ownerEmail.ToUpperInvariant(),
-                    Email = ownerEmail,
-                    NormalizedEmail = ownerEmail.ToUpperInvariant(),
-                    EmailConfirmed = true,
-                    PhoneNumber = "01200000000",
-                    Location = "Alexandria, Egypt",
-                    BirthDate = new DateTime(1985, 10, 20),
-                    ProfilePicture = string.Empty,
-                    CreatedAt = DateTime.UtcNow,
-                    IsDeleted = false
-                };
-                var createResult = await userManager.CreateAsync(owner, "Test@1234");
-                ThrowIfFailed(createResult, "Failed to create Owner user");
-                await userManager.AddToRoleAsync(owner, "Owner");
-                ownerUser = owner;
-            }
+            var organizerUser = seededOrganizers.FirstOrDefault(o => o.Email == "iti@forsa.com") ?? seededOrganizers.First();
 
-            // D. Seed Attendees
+            // C. Seed Attendee
             const string attendeeEmail1 = "attendee1@forsa.com";
-            var attendeeUser1 = await userManager.FindByEmailAsync(attendeeEmail1) as Attendee;
+            var attendeeUser1 = await userManager.FindByEmailAsync(attendeeEmail1);
             if (attendeeUser1 == null)
             {
                 var attendee = new Attendee
                 {
-                    FullName = "Test Attendee One",
+                    FullName = "Mohamed Kotb",
                     UserName = attendeeEmail1,
                     NormalizedUserName = attendeeEmail1.ToUpperInvariant(),
                     Email = attendeeEmail1,
                     NormalizedEmail = attendeeEmail1.ToUpperInvariant(),
                     EmailConfirmed = true,
-                    PhoneNumber = "01500000001",
+                    PhoneNumber = "01200000000",
                     Location = "Giza, Egypt",
-                    BirthDate = new DateTime(1995, 3, 25),
+                    BirthDate = new DateTime(1998, 10, 20),
                     ProfilePicture = string.Empty,
                     CreatedAt = DateTime.UtcNow,
                     IsDeleted = false,
@@ -198,34 +187,23 @@ namespace Forsa.Seed
                 var createResult = await userManager.CreateAsync(attendee, "Test@1234");
                 ThrowIfFailed(createResult, "Failed to create Attendee 1 user");
                 await userManager.AddToRoleAsync(attendee, "Attendee");
-                attendeeUser1 = attendee;
-
-                // Bind interests
-                if (interests.Any())
-                {
-                    await context.Set<AttendeeInterestesWithAttendee>().AddRangeAsync(
-                        new AttendeeInterestesWithAttendee { AttendeeId = attendee.Id, AttendeeInterestId = interests[0].Id },
-                        new AttendeeInterestesWithAttendee { AttendeeId = attendee.Id, AttendeeInterestId = interests[1].Id }
-                    );
-                    await context.SaveChangesAsync();
-                }
             }
 
             const string attendeeEmail2 = "attendee2@forsa.com";
-            var attendeeUser2 = await userManager.FindByEmailAsync(attendeeEmail2) as Attendee;
+            var attendeeUser2 = await userManager.FindByEmailAsync(attendeeEmail2);
             if (attendeeUser2 == null)
             {
                 var attendee = new Attendee
                 {
-                    FullName = "Test Attendee Two",
+                    FullName = "Heba Ahmed",
                     UserName = attendeeEmail2,
                     NormalizedUserName = attendeeEmail2.ToUpperInvariant(),
                     Email = attendeeEmail2,
                     NormalizedEmail = attendeeEmail2.ToUpperInvariant(),
                     EmailConfirmed = true,
-                    PhoneNumber = "01500000002",
-                    Location = "Mansoura, Egypt",
-                    BirthDate = new DateTime(1998, 8, 12),
+                    PhoneNumber = "01500000000",
+                    Location = "Alexandria, Egypt",
+                    BirthDate = new DateTime(2000, 2, 14),
                     ProfilePicture = string.Empty,
                     CreatedAt = DateTime.UtcNow,
                     IsDeleted = false,
@@ -237,7 +215,33 @@ namespace Forsa.Seed
                 attendeeUser2 = attendee;
             }
 
-            // 5. Seed Places (owned by Owner)
+            // D. Seed Owner
+            const string ownerEmail = "owner@forsa.com";
+            var ownerUser = await userManager.FindByEmailAsync(ownerEmail) as Owner;
+            if (ownerUser == null)
+            {
+                var owner = new Owner
+                {
+                    FullName = "Hassan Ibrahim",
+                    UserName = ownerEmail,
+                    NormalizedUserName = ownerEmail.ToUpperInvariant(),
+                    Email = ownerEmail,
+                    NormalizedEmail = ownerEmail.ToUpperInvariant(),
+                    EmailConfirmed = true,
+                    PhoneNumber = "01099999999",
+                    Location = "Cairo, Egypt",
+                    BirthDate = new DateTime(1980, 11, 30),
+                    ProfilePicture = string.Empty,
+                    CreatedAt = DateTime.UtcNow,
+                    IsDeleted = false
+                };
+                var createResult = await userManager.CreateAsync(owner, "Test@1234");
+                ThrowIfFailed(createResult, "Failed to create Owner user");
+                await userManager.AddToRoleAsync(owner, "Owner");
+                ownerUser = owner;
+            }
+
+            // 4. Seed Places (owned by Owner)
             var places = new List<Place>();
             if (!await context.Set<Place>().AnyAsync() && ownerUser != null)
             {
@@ -245,30 +249,70 @@ namespace Forsa.Seed
                 {
                     new Place
                     {
-                        Name = "Main Hall, Tech Center",
-                        Location = "Tech Park, Cairo",
-                        Capacity = 500,
-                        Description = "Large high-tech hall suitable for conferences and workshops.",
-                        HourlyPrice = 50.00m,
-                        DailyPrice = 400.00m,
+                        Name = "The Greek Campus",
+                        Location = "28 Falaki St, Bab Al Louq, Cairo",
+                        Capacity = 800,
+                        Description = "The Greek Campus is Cairo's first science and technology park, hosting startups, SMEs, and educational tech events.",
+                        HourlyPrice = 120.00m,
+                        DailyPrice = 900.00m,
                         Status = PlaceStatus.Available,
                         FacilityName = FacilityName.WiFi,
                         IsLocked = false,
                         OwnerId = ownerUser.Id,
+                        Latitude = 30.0441m,
+                        Longitude = 31.2397m,
+                        GooglePlaceId = "ChIJ6Yt3wW8fWBQR3uFq2q-F890",
                         CreatedAt = DateTime.UtcNow
                     },
                     new Place
                     {
-                        Name = "Conference Center B",
-                        Location = "Business District, Cairo",
-                        Capacity = 300,
-                        Description = "Corporate environment with great connectivity and audio/visual setup.",
+                        Name = "AUC Tahrir Square - Ewart Hall",
+                        Location = "Tahrir Square, Downtown Cairo",
+                        Capacity = 1000,
+                        Description = "Ewart Memorial Hall is a historic, premium hall at the American University in Cairo (AUC), downtown.",
+                        HourlyPrice = 250.00m,
+                        DailyPrice = 2000.00m,
+                        Status = PlaceStatus.Available,
+                        FacilityName = FacilityName.WiFi,
+                        IsLocked = false,
+                        OwnerId = ownerUser.Id,
+                        Latitude = 30.0428m,
+                        Longitude = 31.2403m,
+                        GooglePlaceId = "ChIJN-SjRmsfWBQRgE_X20xH4M4",
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new Place
+                    {
+                        Name = "CREATIVA Innovation Hub Giza",
+                        Location = "Giza Governorate, close to Cairo University",
+                        Capacity = 250,
+                        Description = "A creative hub supported by the Ministry of Communications and IT (MCIT) for learning and hacking.",
                         HourlyPrice = 40.00m,
                         DailyPrice = 300.00m,
                         Status = PlaceStatus.Available,
                         FacilityName = FacilityName.WiFi,
                         IsLocked = false,
                         OwnerId = ownerUser.Id,
+                        Latitude = 30.0263m,
+                        Longitude = 31.2081m,
+                        GooglePlaceId = "ChIJT_2fX3YfWBQRb_5W6p3h0i0",
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new Place
+                    {
+                        Name = "Smart Village Conference Center",
+                        Location = "KM 28 Cairo-Alexandria Desert Road, Giza",
+                        Capacity = 1200,
+                        Description = "World-class business park conference facility in the heart of Egypt's tech district.",
+                        HourlyPrice = 350.00m,
+                        DailyPrice = 2500.00m,
+                        Status = PlaceStatus.Available,
+                        FacilityName = FacilityName.WiFi,
+                        IsLocked = false,
+                        OwnerId = ownerUser.Id,
+                        Latitude = 30.0716m,
+                        Longitude = 31.0182m,
+                        GooglePlaceId = "ChIJk-tqO14fWBQRJ70FhT3f-vI",
                         CreatedAt = DateTime.UtcNow
                     }
                 });
@@ -282,57 +326,84 @@ namespace Forsa.Seed
 
             // 6. Seed Events (organized by Organizer, hosted at Place)
             var events = new List<Event>();
-            if (!await context.Set<Event>().AnyAsync() && organizerUser != null && places.Any())
+            if (!await context.Set<Event>().AnyAsync() && seededOrganizers.Any() && places.Any())
             {
+                var itiOrg = seededOrganizers.FirstOrDefault(o => o.Email == "iti@forsa.com") ?? seededOrganizers.First();
+                var alxOrg = seededOrganizers.FirstOrDefault(o => o.Email == "alx@forsa.com") ?? seededOrganizers.First();
+                var wuzzufOrg = seededOrganizers.FirstOrDefault(o => o.Email == "wuzzuf@forsa.com") ?? seededOrganizers.First();
+                var techneOrg = seededOrganizers.FirstOrDefault(o => o.Email == "techne@forsa.com") ?? seededOrganizers.First();
+
+                var greekCampus = places.FirstOrDefault(p => p.Name.Contains("Greek")) ?? places[0];
+                var aucTahrir = places.FirstOrDefault(p => p.Name.Contains("AUC")) ?? places[0];
+                var creativa = places.FirstOrDefault(p => p.Name.Contains("CREATIVA")) ?? places[0];
+                var smartVillage = places.FirstOrDefault(p => p.Name.Contains("Smart")) ?? places[0];
+
                 events.AddRange(new[]
                 {
                     new Event
                     {
-                        Title = "Tech Innovators Summit",
-                        Description = "A summit for technology innovators to share ideas and connect.",
+                        Title = "Techshift Summit Cairo 2026",
+                        Description = "The largest summit for tech careers and digital shift in Cairo. Meet industry leaders, discover tech trends, and find job opportunities.",
                         Category = "Technology",
-                        TicketPrice = 150.00,
-                        TotalTickets = 500,
-                        RemainingTickets = 450,
-                        StartDate = DateTime.UtcNow.AddDays(30),
-                        EndDate = DateTime.UtcNow.AddDays(32),
-                        PlaceId = places[0].Id,
-                        Place = places[0],
-                        OrganizerId = organizerUser.Id,
-                        Status = EventStatus.Published,
-                        IsDeleted = false,
-                        CreatedAt = DateTime.UtcNow
-                    },
-                    new Event
-                    {
-                        Title = "Global Business Conference",
-                        Description = "An international conference on modern business strategies.",
-                        Category = "Business",
-                        TicketPrice = 200.00,
-                        TotalTickets = 300,
-                        RemainingTickets = 150,
-                        StartDate = DateTime.UtcNow.AddDays(45),
-                        EndDate = DateTime.UtcNow.AddDays(47),
-                        PlaceId = places[1].Id,
-                        Place = places[1],
-                        OrganizerId = organizerUser.Id,
-                        Status = EventStatus.Published,
-                        IsDeleted = false,
-                        CreatedAt = DateTime.UtcNow
-                    },
-                    new Event
-                    {
-                        Title = "Fullstack .NET Session",
-                        Description = "A great session with expert mentors covering .NET Core.",
-                        Category = "Technology",
-                        TicketPrice = 50.00,
-                        TotalTickets = 100,
-                        RemainingTickets = 100,
+                        TicketPrice = 250.00,
+                        TotalTickets = 800,
+                        RemainingTickets = 750,
                         StartDate = DateTime.UtcNow.AddDays(15),
-                        EndDate = DateTime.UtcNow.AddDays(15).AddHours(4),
-                        PlaceId = places[0].Id,
-                        Place = places[0],
-                        OrganizerId = organizerUser.Id,
+                        EndDate = DateTime.UtcNow.AddDays(15).AddHours(8),
+                        PlaceId = greekCampus.Id,
+                        Place = greekCampus,
+                        OrganizerId = techneOrg.Id,
+                        Status = EventStatus.Published,
+                        IsDeleted = false,
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new Event
+                    {
+                        Title = "Wuzzuf Annual Tech Career Fair 2026",
+                        Description = "Egypt's number one tech employment event. Connect face-to-face with top employers, attend tech talks, and take your career to the next level.",
+                        Category = "Business",
+                        TicketPrice = 0.00,
+                        TotalTickets = 1000,
+                        RemainingTickets = 850,
+                        StartDate = DateTime.UtcNow.AddDays(30),
+                        EndDate = DateTime.UtcNow.AddDays(30).AddHours(9),
+                        PlaceId = aucTahrir.Id,
+                        Place = aucTahrir,
+                        OrganizerId = wuzzufOrg.Id,
+                        Status = EventStatus.Published,
+                        IsDeleted = false,
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new Event
+                    {
+                        Title = "ITI AI & Web Development Hackathon",
+                        Description = "A 48-hour challenge organized by the Information Technology Institute to build next-generation web applications powered by generative AI.",
+                        Category = "Education",
+                        TicketPrice = 50.00,
+                        TotalTickets = 200,
+                        RemainingTickets = 190,
+                        StartDate = DateTime.UtcNow.AddDays(10),
+                        EndDate = DateTime.UtcNow.AddDays(12),
+                        PlaceId = creativa.Id,
+                        Place = creativa,
+                        OrganizerId = itiOrg.Id,
+                        Status = EventStatus.Published,
+                        IsDeleted = false,
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new Event
+                    {
+                        Title = "ALX Software Engineering Graduation & Pitch Day",
+                        Description = "Celebrate the graduation of ALX software engineering cohort. Watch them pitch innovative projects to venture capitalists and recruiters.",
+                        Category = "Technology",
+                        TicketPrice = 100.00,
+                        TotalTickets = 500,
+                        RemainingTickets = 500,
+                        StartDate = DateTime.UtcNow.AddDays(45),
+                        EndDate = DateTime.UtcNow.AddDays(45).AddHours(6),
+                        PlaceId = smartVillage.Id,
+                        Place = smartVillage,
+                        OrganizerId = alxOrg.Id,
                         Status = EventStatus.Published,
                         IsDeleted = false,
                         CreatedAt = DateTime.UtcNow

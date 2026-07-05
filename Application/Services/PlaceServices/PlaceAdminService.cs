@@ -3,6 +3,7 @@ using Application.Core.DTOs.Place;
 using Application.Core.Interfaces.PlaceInterfaces;
 using AutoMapper;
 using Domain.ENUMs;
+using Domain.Entities.PlaceEntities;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,17 +12,20 @@ namespace Application.Services.PlaceServices
     public class PlaceAdminService : IPlaceAdminService
     {
         private readonly IPlaceRepository _placeRepo;
+        private readonly IQueryableRepository<PlaceAvailability> _availabilityRepo;
         private readonly IFeedbackRepository _feedbackRepo;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
 
         public PlaceAdminService(
             IPlaceRepository placeRepo,
+            IQueryableRepository<PlaceAvailability> availabilityRepo,
             IFeedbackRepository feedbackRepo,
             IMapper mapper,
             IUnitOfWork unitOfWork)
         {
             _placeRepo = placeRepo;
+            _availabilityRepo = availabilityRepo;
             _feedbackRepo = feedbackRepo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
@@ -34,6 +38,7 @@ namespace Application.Services.PlaceServices
 
             // Include all places except those that are soft deleted
             var query = _placeRepo.GetQueryable()
+                                  .Include(p => p.PlaceMedias)
                                   .Where(p => !p.IsDeleted);
 
             if (!string.IsNullOrWhiteSpace(parameters.Name))
@@ -66,6 +71,7 @@ namespace Application.Services.PlaceServices
             parameters ??= new PlaceSearchParameterDto();
 
             var query = _placeRepo.GetQueryable()
+                                  .Include(p => p.PlaceMedias)
                                   .Where(p => !p.IsDeleted && p.Status == PlaceStatus.Pending);
 
             if (!string.IsNullOrWhiteSpace(parameters.Name))
@@ -121,6 +127,17 @@ namespace Application.Services.PlaceServices
                                         .FirstOrDefaultAsync(p => p.Id == placeId && !p.IsDeleted);
             if (place == null)
                 return false;
+
+            var availabilities = await _availabilityRepo.GetQueryable()
+                .Where(a => a.PlaceId == placeId && !a.IsDeleted)
+                .ToListAsync();
+
+            foreach (var availability in availabilities)
+            {
+                availability.IsDeleted = true;
+                availability.DeletedAt = DateTime.UtcNow;
+                _availabilityRepo.Update(availability);
+            }
 
             place.IsDeleted = true;
             place.DeletedAt = DateTime.UtcNow;
@@ -178,8 +195,8 @@ namespace Application.Services.PlaceServices
             if (feedback == null)
                 return false;
 
-            feedback.IsDeleted  = true;
-            feedback.DeletedAt  = DateTime.UtcNow;
+            feedback.IsDeleted = true;
+            feedback.DeletedAt = DateTime.UtcNow;
 
             _feedbackRepo.Update(feedback);
             await _unitOfWork.SaveChangesAsync();

@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from "react-router";
 import { useEffect, useState } from "react";
 import TicketSpinner from "./TicketSpinner";
+import { getDashboardPath } from "../utils/roleRouting";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -63,7 +64,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   if (allowedRoles && allowedRoles.length > 0) {
     if (!userRole || !allowedRoles.includes(userRole)) {
       // Role not allowed
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to={getDashboardPath(userRole)} replace />;
     }
   }
 

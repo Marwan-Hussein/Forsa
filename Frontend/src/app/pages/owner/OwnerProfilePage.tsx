@@ -216,7 +216,7 @@ export default function OwnerProfilePage() {
       {/* Cover Hero */}
       <div className="bg-gradient-to-br from-[#0B1929] via-[#1E3D61] to-[#0F2847] pt-24 pb-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
-          <Link to="/dashboard" className="inline-flex items-center gap-2 text-blue-200 hover:text-white text-sm font-medium mb-6 group transition-colors">
+          <Link to="/owner" className="inline-flex items-center gap-2 text-blue-200 hover:text-white text-sm font-medium mb-6 group transition-colors">
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Dashboard
           </Link>

@@ -21,6 +21,7 @@ export interface Place {
   status: number | string;
   facilityName: string;
   reason?: string;
+  availableDays?: string;
 }
 
 export interface AddPlaceDto {
@@ -32,6 +33,7 @@ export interface AddPlaceDto {
   capacity: number;
   dailyPrice: number;
   hourlyPrice: number;
+  availableDays?: string;
 }
 
 export type UpdatePlaceDto = AddPlaceDto;
@@ -80,6 +82,24 @@ export const ownerApi = {
   updatePlace: async (id: number, dto: UpdatePlaceDto): Promise<Place> => {
     const p = await apiPut<any>(`/api/owner/places/${id}`, dto);
     return { ...p, id: p.placeId || p.id };
+  },
+
+  getPlaceCalendar: async (placeId: number, fromDate?: string, toDate?: string): Promise<any[]> => {
+    let url = `/api/owner/places/${placeId}/calendar`;
+    const params = [];
+    if (fromDate) params.push(`fromDate=${fromDate}`);
+    if (toDate) params.push(`toDate=${toDate}`);
+    if (params.length > 0) url += `?${params.join("&")}`;
+    return await apiGet(url);
+  },
+
+  setPlaceAvailability: async (placeId: number, dto: { date: string; startTime?: string; endTime?: string; status: number }): Promise<any> => {
+    return await apiPost(`/api/owner/places/${placeId}/calendar`, dto);
+  },
+
+  removePlaceAvailability: async (placeId: number, slotId: number): Promise<boolean> => {
+    await apiDelete(`/api/owner/places/${placeId}/calendar/${slotId}`);
+    return true;
   },
 
   getBookingRequests: async (): Promise<BookingRequest[]> => {

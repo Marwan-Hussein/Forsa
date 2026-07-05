@@ -7,5 +7,8 @@ namespace Application.Core.DTOs.Organizer
         public string OrganizationName { get; set; }
         public double AverageRating { get; set; }
         public int ReviewsCount { get; set; }
+        public int FollowersCount { get; set; }
+        public int EventsCount { get; set; }
+        public bool IsSubscribed { get; set; }
     }
 }

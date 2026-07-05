@@ -209,7 +209,7 @@ export default function AdminLoginPage() {
           </motion.div>
           
           <div className="mt-8 text-center flex items-center justify-center">
-            <ForSaLogo className="h-6 text-slate-600 opacity-50 grayscale" />
+            <ForSaLogo className="h-9 text-slate-600 opacity-50 grayscale" />
           </div>
         </motion.div>
       </div>

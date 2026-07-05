@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
-import { Search, MapPin, Calendar, DollarSign, CheckCircle, XCircle, Loader2, Sparkles, AlertCircle, Trash2, List, Ticket } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Search, MapPin, Calendar, DollarSign, CheckCircle, XCircle, Loader2, Sparkles, AlertCircle, Trash2, List, Ticket, Eye, Image as ImageIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { adminApi, EventDetailsDTO } from "../../api/adminApi";
+import MapDisplay from "../../components/map/MapDisplay";
 
 type TabView = "pending" | "all";
 
@@ -15,6 +16,30 @@ export default function ManageEventsPage() {
   const [rejectingEvent, setRejectingEvent] = useState<EventDetailsDTO | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [deletingEvent, setDeletingEvent] = useState<EventDetailsDTO | null>(null);
+  const [selectedEventForDetails, setSelectedEventForDetails] = useState<EventDetailsDTO | null>(null);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const eventStatusDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsStatusDropdownOpen(false);
+  }, [selectedEventForDetails]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        eventStatusDropdownRef.current &&
+        !eventStatusDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsStatusDropdownOpen(false);
+      }
+    }
+    if (isStatusDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isStatusDropdownOpen]);
 
   async function fetchEvents() {
     setLoading(true);
@@ -50,14 +75,14 @@ export default function ManageEventsPage() {
 
   async function handleApprove(event: EventDetailsDTO) {
     try {
-      await adminApi.updateEventStatus(event.eventId, 2); // 2 = Approved
+      await adminApi.updateEventStatus(event.eventId, 4); // 4 = Published
       toast.success(
         <div className="flex items-center gap-2">
           <CheckCircle className="w-5 h-5 text-emerald-500" />
-          <span><strong className="text-slate-800">{event.title}</strong> has been approved.</span>
+          <span><strong className="text-slate-800">{event.title}</strong> has been approved and published.</span>
         </div>
       );
-      setEvents(prev => prev.map(e => e.eventId === event.eventId ? { ...e, status: "Approved" } : e));
+      setEvents(prev => prev.map(e => e.eventId === event.eventId ? { ...e, status: "Published" } : e));
     } catch (e: any) {
       toast.error(`Approval failed: ${e.message}`);
     }
@@ -221,35 +246,52 @@ export default function ManageEventsPage() {
       </motion.div>
 
       {/* Main Content */}
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-32 bg-white/50 backdrop-blur-xl rounded-[2rem] border border-white shadow-sm">
-          <div className="w-16 h-16 relative flex items-center justify-center">
-            <div className="absolute inset-0 border-4 border-purple-100 rounded-full" />
-            <div className="absolute inset-0 border-4 border-purple-500 rounded-full border-t-transparent animate-spin" />
-          </div>
-          <p className="text-slate-600 font-['Inter:Bold',sans-serif] mt-4 tracking-wide text-sm">FETCHING EVENTS</p>
-        </div>
-      ) : filtered.length === 0 ? (
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center py-32 bg-white/60 backdrop-blur-xl rounded-[2rem] border border-white shadow-sm"
-        >
-          <div className="w-24 h-24 bg-gradient-to-br from-slate-50 to-slate-100 rounded-full flex items-center justify-center mb-6 shadow-inner border border-slate-200/50">
-            <Ticket className="w-10 h-10 text-slate-300" />
-          </div>
-          <h3 className="text-slate-900 font-['Inter:Bold',sans-serif] text-[20px] mb-2 tracking-tight">Queue is Empty</h3>
-          <p className="text-slate-500 font-['Inter:Medium',sans-serif] text-[15px] max-w-md text-center">
-            {search 
-              ? "No events match your search." 
-              : activeTab === "pending" 
-                ? "Awesome! You've reviewed all pending events."
-                : "There are no events available on the platform yet."}
-          </p>
-        </motion.div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          <AnimatePresence>
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.div 
+            key="loading"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="flex flex-col items-center justify-center py-32 bg-white/50 backdrop-blur-xl rounded-[2rem] border border-white shadow-sm w-full"
+          >
+            <div className="w-16 h-16 relative flex items-center justify-center">
+              <div className="absolute inset-0 border-4 border-purple-100 rounded-full" />
+              <div className="absolute inset-0 border-4 border-purple-500 rounded-full border-t-transparent animate-spin" />
+            </div>
+            <p className="text-slate-600 font-['Inter:Bold',sans-serif] mt-4 tracking-wide text-sm">FETCHING EVENTS</p>
+          </motion.div>
+        ) : filtered.length === 0 ? (
+          <motion.div 
+            key={`empty-${activeTab}`}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="flex flex-col items-center justify-center py-32 bg-white/60 backdrop-blur-xl rounded-[2rem] border border-white shadow-sm w-full"
+          >
+            <div className="w-24 h-24 bg-gradient-to-br from-slate-50 to-slate-100 rounded-full flex items-center justify-center mb-6 shadow-inner border border-slate-200/50">
+              <Ticket className="w-10 h-10 text-slate-300" />
+            </div>
+            <h3 className="text-slate-900 font-['Inter:Bold',sans-serif] text-[20px] mb-2 tracking-tight">Queue is Empty</h3>
+            <p className="text-slate-500 font-['Inter:Medium',sans-serif] text-[15px] max-w-md text-center">
+              {search 
+                ? "No events match your search." 
+                : activeTab === "pending" 
+                  ? "Awesome! You've reviewed all pending events."
+                  : "There are no events available on the platform yet."}
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div 
+            key={`grid-${activeTab}`}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.25 }}
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 w-full"
+          >
             {filtered.map((event, i) => (
               <motion.div
                 layout
@@ -315,6 +357,13 @@ export default function ManageEventsPage() {
                   </div>
                 </div>
 
+                <button 
+                  onClick={() => setSelectedEventForDetails(event)}
+                  className="w-full flex items-center justify-center gap-2 py-3 mb-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-['Inter:Bold',sans-serif] text-[14px] hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200 transition-all hover:-translate-y-0.5 shadow-sm"
+                >
+                  <Eye className="w-4.5 h-4.5" /> View Details
+                </button>
+
                 {/* Actions */}
                 <div className="grid grid-cols-2 gap-3 mt-auto">
                   {event.status.toLowerCase() === "pending" ? (
@@ -343,9 +392,9 @@ export default function ManageEventsPage() {
                 </div>
               </motion.div>
             ))}
-          </AnimatePresence>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Reject Confirmation Modal */}
       <AnimatePresence>
@@ -355,7 +404,7 @@ export default function ManageEventsPage() {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/60"
               onClick={() => !submitting && setRejectingEvent(null)}
             />
             <motion.div 
@@ -404,7 +453,7 @@ export default function ManageEventsPage() {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/60"
               onClick={() => !submitting && setDeletingEvent(null)}
             />
             <motion.div 
@@ -439,6 +488,247 @@ export default function ManageEventsPage() {
                 >
                   Cancel
                 </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Event Details Modal */}
+      <AnimatePresence>
+        {selectedEventForDetails && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="absolute inset-0 bg-slate-900/75"
+              onClick={() => setSelectedEventForDetails(null)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 md:p-8 border border-slate-100 flex flex-col gap-6"
+            >
+              {/* Header Info */}
+              <div className="flex justify-between items-start border-b border-slate-100 pb-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="bg-purple-50 text-purple-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                      {selectedEventForDetails.category}
+                    </span>
+                    {renderStatusBadge(selectedEventForDetails.status)}
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-['Inter:Bold',sans-serif] text-slate-900 leading-tight">
+                    {selectedEventForDetails.title}
+                  </h2>
+                </div>
+                <button 
+                  onClick={() => setSelectedEventForDetails(null)}
+                  className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 overflow-y-auto pr-1">
+                {/* Left Column: Media & Description */}
+                <div className="space-y-6">
+                  {selectedEventForDetails.imageUrl ? (
+                    <div className="w-full h-64 rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-50">
+                      <img 
+                        src={selectedEventForDetails.imageUrl} 
+                        alt={selectedEventForDetails.title} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-full h-64 rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 bg-slate-50">
+                      <ImageIcon className="w-12 h-12 stroke-[1.5] mb-2" />
+                      <span className="text-xs font-semibold">No cover image uploaded</span>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-800 uppercase tracking-wider">About the Event</h4>
+                    <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-line">
+                      {selectedEventForDetails.description}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right Column: Time, Location, Tickets & Map */}
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                    <div>
+                      <p className="text-[10px] font-['Inter:Bold',sans-serif] font-bold text-slate-400 uppercase tracking-wider mb-1">Start Date</p>
+                      <p className="text-xs font-semibold text-slate-700">{formatDate(selectedEventForDetails.startDate)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-['Inter:Bold',sans-serif] font-bold text-slate-400 uppercase tracking-wider mb-1">End Date</p>
+                      <p className="text-xs font-semibold text-slate-700">{formatDate(selectedEventForDetails.endDate)}</p>
+                    </div>
+                    <div className="pt-2 border-t border-slate-200/50">
+                      <p className="text-[10px] font-['Inter:Bold',sans-serif] font-bold text-slate-400 uppercase tracking-wider mb-1">Ticket Price</p>
+                      <p className="text-sm font-bold text-purple-600">
+                        {selectedEventForDetails.ticketPrice > 0 ? `${selectedEventForDetails.ticketPrice} EGP` : 'Free'}
+                      </p>
+                    </div>
+                    <div className="pt-2 border-t border-slate-200/50">
+                      <p className="text-[10px] font-['Inter:Bold',sans-serif] font-bold text-slate-400 uppercase tracking-wider mb-1">Capacity / Left</p>
+                      <p className="text-xs font-semibold text-slate-700">
+                        {selectedEventForDetails.remainingTickets} / {selectedEventForDetails.totalTickets}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-800 uppercase tracking-wider">Location Details</h4>
+                    <MapDisplay 
+                      address={selectedEventForDetails.placeLocation || selectedEventForDetails.place || "Location Details"}
+                      latitude={selectedEventForDetails.placeLatitude}
+                      longitude={selectedEventForDetails.placeLongitude}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Status Manager Block */}
+              <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 flex-shrink-0">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-['Inter:Bold',sans-serif] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Manage Status</h4>
+                    <p className="text-[11px] font-['Inter:SemiBold',sans-serif] font-semibold text-slate-400">Update event publication and moderation state</p>
+                  </div>
+                </div>
+                
+                 <div className="relative" ref={eventStatusDropdownRef}>
+                  {/* Dropdown Trigger Button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                    className="flex items-center justify-between gap-3 px-4 py-2.5 bg-white border border-slate-200 rounded-2xl shadow-sm text-xs font-bold text-slate-700 min-w-[160px] hover:bg-slate-50 hover:border-slate-300 transition-all focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${
+                        selectedEventForDetails.status.toLowerCase() === "draft" || selectedEventForDetails.status === "0" ? "bg-slate-400" :
+                        selectedEventForDetails.status.toLowerCase() === "pending" || selectedEventForDetails.status === "1" ? "bg-amber-400" :
+                        selectedEventForDetails.status.toLowerCase() === "approved" || selectedEventForDetails.status === "2" ? "bg-emerald-400" :
+                        selectedEventForDetails.status.toLowerCase() === "rejected" || selectedEventForDetails.status === "3" ? "bg-rose-400" :
+                        selectedEventForDetails.status.toLowerCase() === "published" || selectedEventForDetails.status === "4" ? "bg-purple-400" :
+                        selectedEventForDetails.status.toLowerCase() === "completed" || selectedEventForDetails.status === "5" ? "bg-blue-400" :
+                        "bg-slate-500"
+                      }`} />
+                      {
+                        selectedEventForDetails.status.toLowerCase() === "draft" || selectedEventForDetails.status === "0" ? "Draft" :
+                        selectedEventForDetails.status.toLowerCase() === "pending" || selectedEventForDetails.status === "1" ? "Pending" :
+                        selectedEventForDetails.status.toLowerCase() === "approved" || selectedEventForDetails.status === "2" ? "Approved" :
+                        selectedEventForDetails.status.toLowerCase() === "rejected" || selectedEventForDetails.status === "3" ? "Rejected" :
+                        selectedEventForDetails.status.toLowerCase() === "published" || selectedEventForDetails.status === "4" ? "Published" :
+                        selectedEventForDetails.status.toLowerCase() === "completed" || selectedEventForDetails.status === "5" ? "Completed" :
+                        selectedEventForDetails.status.toLowerCase() === "cancelled" || selectedEventForDetails.status === "6" ? "Cancelled" :
+                        "Pending"
+                      }
+                    </span>
+                    {isStatusDropdownOpen ? (
+                      <ChevronUp className="w-4 h-4 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    )}
+                  </button>
+
+                  {/* Dropdown Options List */}
+                  <AnimatePresence>
+                    {isStatusDropdownOpen && (
+                      <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute right-0 bottom-full mb-2 sm:bottom-auto sm:top-full sm:mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-xl z-20 py-2 overflow-hidden"
+                        >
+                          {[
+                            { value: 0, label: "Draft", dotColor: "bg-slate-400" },
+                            { value: 1, label: "Pending", dotColor: "bg-amber-400" },
+                            { value: 2, label: "Approved", dotColor: "bg-emerald-400" },
+                            { value: 3, label: "Rejected", dotColor: "bg-rose-400" },
+                            { value: 4, label: "Published", dotColor: "bg-purple-400" },
+                            { value: 5, label: "Completed", dotColor: "bg-blue-400" },
+                            { value: 6, label: "Cancelled", dotColor: "bg-slate-500" }
+                          ].map((opt) => (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={async () => {
+                                setIsStatusDropdownOpen(false);
+                                if (opt.value === 3) {
+                                  setRejectingEvent(selectedEventForDetails);
+                                  setSelectedEventForDetails(null);
+                                  return;
+                                }
+                                try {
+                                  await adminApi.updateEventStatus(selectedEventForDetails.eventId, opt.value);
+                                  toast.success("Event status updated successfully!");
+                                  const statusStrings = ["Draft", "Pending", "Approved", "Rejected", "Published", "Completed", "Cancelled"];
+                                  setSelectedEventForDetails({
+                                    ...selectedEventForDetails,
+                                    status: statusStrings[opt.value]
+                                  });
+                                  fetchEvents();
+                                } catch (err: any) {
+                                  toast.error(err.message || "Failed to update status");
+                                }
+                              }}
+                              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                            >
+                              <span className={`w-2 h-2 rounded-full ${opt.dotColor}`} />
+                              {opt.label}
+                            </button>
+                          ))}
+                        </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* Approve/Reject inside the Modal */}
+              <div className="border-t border-slate-100 pt-4 flex justify-end gap-3">
+                {selectedEventForDetails.status.toLowerCase() === "pending" ? (
+                  <>
+                    <button 
+                      onClick={() => {
+                        setRejectingEvent(selectedEventForDetails);
+                        setSelectedEventForDetails(null);
+                      }}
+                      className="px-6 py-3 rounded-xl bg-white border-2 border-rose-100 text-rose-600 font-['Inter:Bold',sans-serif] text-sm hover:bg-rose-50 hover:border-rose-200 transition-all shadow-sm"
+                    >
+                      Reject Event
+                    </button>
+                    <button 
+                      onClick={async () => {
+                        await handleApprove(selectedEventForDetails);
+                        setSelectedEventForDetails(null);
+                      }}
+                      className="px-6 py-3 rounded-xl bg-emerald-500 text-white font-['Inter:Bold',sans-serif] text-sm hover:bg-emerald-600 shadow-[0_4px_15px_rgba(16,185,129,0.3)] transition-all"
+                    >
+                      Approve & Publish
+                    </button>
+                  </>
+                ) : (
+                  <button 
+                    onClick={() => {
+                      setDeletingEvent(selectedEventForDetails);
+                      setSelectedEventForDetails(null);
+                    }}
+                    className="px-6 py-3 rounded-xl bg-white border-2 border-red-100 text-red-600 font-['Inter:Bold',sans-serif] text-sm hover:bg-red-50 hover:border-red-200 transition-all shadow-sm"
+                  >
+                    Delete Event
+                  </button>
+                )}
               </div>
             </motion.div>
           </div>

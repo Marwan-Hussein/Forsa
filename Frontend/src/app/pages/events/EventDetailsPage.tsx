@@ -45,11 +45,22 @@ export default function EventDetailsPage() {
         setEvent(mapEventDetailsDtoToEvent(dto));
         
         // Use real organization data from the event details response
+        const name = dto.organizerName || "Organizer";
+        const getOrgLogoEmoji = (orgName: string): string => {
+          const lowercaseName = orgName.toLowerCase();
+          if (lowercaseName.includes("iti") || lowercaseName.includes("institute")) return "🎓";
+          if (lowercaseName.includes("alx")) return "💻";
+          if (lowercaseName.includes("riseup")) return "🚀";
+          if (lowercaseName.includes("wuzzuf")) return "💼";
+          if (lowercaseName.includes("techne") || lowercaseName.includes("summit")) return "⚡";
+          return "🏛️";
+        };
+
         setOrganization({ 
-          name: dto.organizerName || "Organizer", 
-          logo: "🏛️", 
+          name: name, 
+          logo: getOrgLogoEmoji(name), 
           id: dto.organizerId || "org1", 
-          description: "Event Organizer", 
+          description: `Official ForSa Partner: ${name}. Join us for outstanding educational and networking events in Egypt.`, 
           followersCount: dto.organizerFollowersCount || 0 
         });
       } catch (err) {
@@ -101,12 +112,38 @@ export default function EventDetailsPage() {
       }
       const userId = getUserIdFromToken();
 
-      await apiPost(`/api/bookings`, {
+      const bookingResult = await apiPost(`/api/bookings`, {
         attendeeId: userId,
         eventId: Number(eventId),
         numberOfTickets: ticketCount,
         specialRequests: ""
-      });
+      }) as any;
+
+      if (totalPrice > 0) {
+        // Not free, proceed to checkout
+        try {
+          const paymentResult = await apiPost(`/api/bookings/${bookingResult.bookingId}/checkout`, {}) as any;
+          if (paymentResult.clientSecret) {
+            if (paymentResult.clientSecret.startsWith("mock_")) {
+              toast.success("Mock Payment Success", { description: "Simulated payment for testing." });
+            } else if (paymentResult.clientSecret.startsWith("http")) {
+              window.location.href = paymentResult.clientSecret;
+              return;
+            } else {
+              const pubKey = paymentResult.publicKey || "pk_test_placeholder";
+              window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${pubKey}&clientSecret=${paymentResult.clientSecret}`;
+              return;
+            }
+          }
+        } catch (paymentError) {
+          toast.error("Booking created but failed to initiate payment.", {
+            description: "You may need to try paying from your dashboard.",
+          });
+          setShowBookingModal(false);
+          return;
+        }
+      }
+
       setShowBookingModal(false);
       toast.success("Booking confirmed", {
         description: `${ticketCount} ticket(s) for ${event.title}.`,
@@ -345,12 +382,36 @@ export default function EventDetailsPage() {
               <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-4">
                 Venue Location Map
               </h2>
-              <MapDisplay
-                address={event.location}
-                latitude={event.placeLatitude ?? null}
-                longitude={event.placeLongitude ?? null}
-                googlePlaceId={event.googlePlaceId ?? null}
-              />
+              {(() => {
+                const getCoords = () => {
+                  if (event.placeLatitude && event.placeLongitude) {
+                    return { lat: event.placeLatitude, lng: event.placeLongitude };
+                  }
+                  const loc = (event.location || "").toLowerCase();
+                  if (loc.includes("greek campus")) {
+                    return { lat: 30.0441, lng: 31.2397 };
+                  }
+                  if (loc.includes("ewart") || loc.includes("auc tahrir")) {
+                    return { lat: 30.0428, lng: 31.2403 };
+                  }
+                  if (loc.includes("creativa")) {
+                    return { lat: 30.0263, lng: 31.2081 };
+                  }
+                  if (loc.includes("smart village")) {
+                    return { lat: 30.0716, lng: 31.0182 };
+                  }
+                  return { lat: 30.0444, lng: 31.2357 }; // Default to Cairo
+                };
+                const coords = getCoords();
+                return (
+                  <MapDisplay
+                    address={event.location}
+                    latitude={coords.lat}
+                    longitude={coords.lng}
+                    googlePlaceId={event.googlePlaceId ?? null}
+                  />
+                );
+              })()}
             </div>
           </div>
 

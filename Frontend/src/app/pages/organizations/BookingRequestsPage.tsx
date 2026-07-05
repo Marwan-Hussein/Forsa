@@ -309,7 +309,7 @@ export default function BookingRequestsPage() {
 
       {/* Details Modal */}
       {selectedRequest && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-6 z-[60] cursor-pointer" onClick={() => setSelectedRequest(null)}>
+        <div className="fixed inset-0 bg-slate-900/80 flex items-center justify-center p-6 z-[60] cursor-pointer" onClick={() => setSelectedRequest(null)}>
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -409,7 +409,7 @@ export default function BookingRequestsPage() {
       {/* Rejection Modal */}
       <AnimatePresence>
         {rejectingRequestId !== null && (
-          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-6 z-[70]">
+          <div className="fixed inset-0 bg-slate-900/80 flex items-center justify-center p-6 z-[70]">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}

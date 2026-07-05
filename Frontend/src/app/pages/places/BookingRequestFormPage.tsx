@@ -63,6 +63,17 @@ export default function BookingRequestFormPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+
+    if (name === "requestedDate" && value && place?.availabilities && place.availabilities.length > 0) {
+      const chosenDateStr = new Date(value).toISOString().split("T")[0];
+      const conflictSlot = place.availabilities.find(slot => {
+        const slotDateStr = new Date(slot.date).toISOString().split("T")[0];
+        return slotDateStr === chosenDateStr && (slot.status.toLowerCase() === "blocked" || slot.status.toLowerCase() === "booked");
+      });
+      if (conflictSlot) {
+        toast.warning(`Note: This date is marked as ${conflictSlot.status.toUpperCase()} in the venue's calendar.`);
+      }
+    }
   };
 
   const handleSelectEvent = (eventId: string) => {
@@ -75,6 +86,18 @@ export default function BookingRequestFormPage() {
     if (!formData.eventId) {
       toast.error("Please select an event");
       return;
+    }
+
+    if (formData.requestedDate && place?.availabilities && place.availabilities.length > 0) {
+      const chosenDateStr = new Date(formData.requestedDate).toISOString().split("T")[0];
+      const conflictSlot = place.availabilities.find(slot => {
+        const slotDateStr = new Date(slot.date).toISOString().split("T")[0];
+        return slotDateStr === chosenDateStr && (slot.status.toLowerCase() === "blocked" || slot.status.toLowerCase() === "booked");
+      });
+      if (conflictSlot) {
+        toast.error(`Submission blocked: This date is marked as ${conflictSlot.status.toUpperCase()} for this venue.`);
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -136,7 +159,7 @@ export default function BookingRequestFormPage() {
         >
           <Link to="/organizer/places" className="hover:text-violet-600 transition-colors">Places</Link>
           <ChevronRight className="w-4 h-4" />
-          <Link to={`/places/${placeId}`} className="hover:text-violet-600 transition-colors">{place.name}</Link>
+          <Link to={`/organizer/places/${placeId}`} className="hover:text-violet-600 transition-colors">{place.name}</Link>
           <ChevronRight className="w-4 h-4" />
           <span className="text-slate-800 font-bold">Request Booking</span>
         </motion.div>
@@ -326,9 +349,16 @@ export default function BookingRequestFormPage() {
                 <span className="leading-relaxed">{place.location}</span>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl mb-8">
-                <span className="font-bold text-slate-700">Price per day</span>
-                <span className="text-lg font-black text-slate-900">{place.dailyPrice} EGP</span>
+              <div className="space-y-3 p-4 bg-slate-50 rounded-2xl mb-8">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-slate-600 text-sm">Price per day</span>
+                  <span className="text-base font-bold text-slate-900">{place.dailyPrice} EGP</span>
+                </div>
+                <div className="h-px bg-slate-200/60" />
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-slate-600 text-sm">Price per hour</span>
+                  <span className="text-base font-bold text-slate-900">{place.hourlyPrice} EGP</span>
+                </div>
               </div>
 
               <div className="space-y-3">
@@ -352,7 +382,7 @@ export default function BookingRequestFormPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => navigate(`/places/${placeId}`)}
+                  onClick={() => navigate(`/organizer/places/${placeId}`)}
                   className="w-full py-4 bg-white text-slate-700 border-2 border-slate-200 font-bold text-lg rounded-2xl hover:bg-slate-50 hover:border-slate-300 transition-all"
                 >
                   Cancel

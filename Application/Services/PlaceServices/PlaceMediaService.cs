@@ -18,7 +18,7 @@ namespace Application.Services.PlaceServices
         private readonly IWebHostEnvironment _env;
 
         // Allowed extensions & size limits
-        private static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
+        private static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".jfif", ".webp" };
         private static readonly string[] AllowedVideoExtensions = { ".mp4", ".webm" };
         private const long MaxImageSizeBytes = 5 * 1024 * 1024;    // 5 MB
         private const long MaxVideoSizeBytes = 50 * 1024 * 1024;   // 50 MB

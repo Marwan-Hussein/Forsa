@@ -15,9 +15,10 @@ import {
   UserX,
   ChevronRight,
   Ticket,
-  Activity
+  Activity,
+  Loader2
 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { organizerApi } from "../../api/organizerApi";
 import { toast } from "react-toastify";
 
@@ -31,6 +32,9 @@ export default function ManageAttendeesPage() {
   const [attendees, setAttendees] = useState<any[]>([]);
   const [eventDetails, setEventDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [checkingInUser, setCheckingInUser] = useState<{ bookingId: number; fullName: string } | null>(null);
+  const [undoingUser, setUndoingUser] = useState<{ bookingId: number; fullName: string } | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -73,10 +77,13 @@ export default function ManageAttendeesPage() {
     window.location.href = `mailto:${attendee.email}`;
   };
 
-  const handleManualCheckIn = async (bookingId: number, fullName: string) => {
+  const handleManualCheckIn = async () => {
+    if (!checkingInUser) return;
     try {
-      await organizerApi.manualCheckIn(bookingId);
-      toast.success(`${fullName} has been checked in manually.`);
+      setActionLoading(true);
+      await organizerApi.manualCheckIn(checkingInUser.bookingId);
+      toast.success(`${checkingInUser.fullName} has been checked in manually.`);
+      setCheckingInUser(null);
       // Refresh attendees list
       if (eventId) {
         const attendeesRes = await organizerApi.getEventAttendees(Number(eventId));
@@ -84,6 +91,27 @@ export default function ManageAttendeesPage() {
       }
     } catch (err: any) {
       toast.error(err.response?.data?.message || err.message || "Failed to check in manually");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleManualUndoCheckIn = async () => {
+    if (!undoingUser) return;
+    try {
+      setActionLoading(true);
+      await organizerApi.undoCheckIn(undoingUser.bookingId);
+      toast.success(`${undoingUser.fullName}'s check-in has been reversed.`);
+      setUndoingUser(null);
+      // Refresh attendees list
+      if (eventId) {
+        const attendeesRes = await organizerApi.getEventAttendees(Number(eventId));
+        setAttendees(attendeesRes || []);
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || err.message || "Failed to undo check-in");
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -324,11 +352,20 @@ export default function ManageAttendeesPage() {
                         </button>
                         {attendee.checkInStatus === 'Confirmed' && (
                           <button
-                            onClick={() => handleManualCheckIn(attendee.bookingId, attendee.fullName)}
+                            onClick={() => setCheckingInUser({ bookingId: attendee.bookingId, fullName: attendee.fullName })}
                             title="Manual Check-in"
-                            className="p-2 bg-slate-50 hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 rounded-lg transition-colors border border-transparent hover:border-emerald-200"
+                            className="p-2 bg-slate-50 hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 rounded-lg transition-colors border border-transparent hover:border-emerald-200 cursor-pointer"
                           >
                             <UserCheck className="w-4 h-4" />
+                          </button>
+                        )}
+                        {attendee.checkInStatus === 'Attended' && (
+                          <button
+                            onClick={() => setUndoingUser({ bookingId: attendee.bookingId, fullName: attendee.fullName })}
+                            title="Undo Check-in"
+                            className="p-2 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-colors border border-transparent hover:border-rose-200 cursor-pointer"
+                          >
+                            <UserX className="w-4 h-4" />
                           </button>
                         )}
                       </div>
@@ -340,6 +377,134 @@ export default function ManageAttendeesPage() {
           </table>
         </div>
       </div>
+
+      {/* Manual Check-In Confirmation Modal */}
+      <AnimatePresence>
+        {checkingInUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-950/80"
+              onClick={() => !actionLoading && setCheckingInUser(null)}
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="relative w-full max-w-md rounded-3xl bg-[#162032] border border-white/10 p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] text-white overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+              
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400 shrink-0">
+                  <UserCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-['Outfit:Bold',sans-serif] text-lg font-bold">Manual Check-In</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">Confirm attendance record</p>
+                </div>
+              </div>
+              
+              <p className="text-sm text-slate-300 font-['Inter:Medium',sans-serif] leading-relaxed mb-6">
+                Are you sure you want to manually mark <span className="font-bold text-white">{checkingInUser.fullName}</span> as <span className="text-emerald-400 font-semibold">Checked In</span>? This will record their attendance without requiring a QR code scan.
+              </p>
+              
+              <div className="flex items-center justify-end gap-3 font-['Inter:Bold',sans-serif] text-sm">
+                <button
+                  type="button"
+                  disabled={actionLoading}
+                  onClick={() => setCheckingInUser(null)}
+                  className="px-5 py-3 rounded-xl border border-white/10 text-slate-300 hover:text-white hover:bg-white/5 transition-all disabled:opacity-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={actionLoading}
+                  onClick={handleManualCheckIn}
+                  className="px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                >
+                  {actionLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Checking in...
+                    </>
+                  ) : (
+                    "Confirm Check-In"
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Undo Check-In Confirmation Modal */}
+      <AnimatePresence>
+        {undoingUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-950/80"
+              onClick={() => !actionLoading && setUndoingUser(null)}
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="relative w-full max-w-md rounded-3xl bg-[#162032] border border-white/10 p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] text-white overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-rose-500/50 to-transparent" />
+              
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/25 flex items-center justify-center text-rose-400 shrink-0">
+                  <UserX className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-['Outfit:Bold',sans-serif] text-lg font-bold">Reverse Check-In</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">Undo check-in record</p>
+                </div>
+              </div>
+              
+              <p className="text-sm text-slate-300 font-['Inter:Medium',sans-serif] leading-relaxed mb-6">
+                Are you sure you want to reverse the attendance check-in for <span className="font-bold text-white">{undoingUser.fullName}</span>? This will change their status back to <span className="text-violet-400 font-semibold">Confirmed</span>.
+              </p>
+              
+              <div className="flex items-center justify-end gap-3 font-['Inter:Bold',sans-serif] text-sm">
+                <button
+                  type="button"
+                  disabled={actionLoading}
+                  onClick={() => setUndoingUser(null)}
+                  className="px-5 py-3 rounded-xl border border-white/10 text-slate-300 hover:text-white hover:bg-white/5 transition-all disabled:opacity-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={actionLoading}
+                  onClick={handleManualUndoCheckIn}
+                  className="px-5 py-3 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-bold transition-all shadow-[0_0_20px_rgba(244,63,94,0.2)] hover:shadow-[0_0_25px_rgba(244,63,94,0.3)] flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                >
+                  {actionLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Reversing...
+                    </>
+                  ) : (
+                    "Reverse Check-In"
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

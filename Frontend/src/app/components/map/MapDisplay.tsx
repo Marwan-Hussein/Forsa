@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGoogleMaps } from "../../hooks/useGoogleMaps";
 import { Loader2, MapPin, ExternalLink } from "lucide-react";
 
@@ -19,55 +19,98 @@ export default function MapDisplay({
   const mapInstance = useRef<google.maps.Map | null>(null);
   const markerInstance = useRef<google.maps.Marker | null>(null);
 
+  const [mapReady, setMapReady] = useState(false);
+
   useEffect(() => {
-    if (!isLoaded || !mapRef.current || latitude === null || longitude === null) {
+    const timer = setTimeout(() => {
+      setMapReady(true);
+    }, 450); // wait for modal transition (400ms) to complete
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!isLoaded || !mapRef.current || !mapReady) {
       return;
     }
 
-    const center = { lat: latitude, lng: longitude };
+    if (latitude !== null && longitude !== null) {
+      const center = { lat: latitude, lng: longitude };
 
-    if (!mapInstance.current) {
-      mapInstance.current = new google.maps.Map(mapRef.current, {
-        center,
-        zoom: 15,
-        zoomControl: true,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false,
-        gestureHandling: "cooperative", // scroll wheel won't hijack page scroll
-      });
+      if (!mapInstance.current) {
+        mapInstance.current = new google.maps.Map(mapRef.current, {
+          center,
+          zoom: 15,
+          zoomControl: true,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+          gestureHandling: "cooperative",
+        });
 
-      markerInstance.current = new google.maps.Marker({
-        position: center,
-        map: mapInstance.current,
-        animation: google.maps.Animation.DROP,
-      });
-    } else {
-      mapInstance.current.setCenter(center);
-      if (markerInstance.current) {
-        markerInstance.current.setPosition(center);
+        markerInstance.current = new google.maps.Marker({
+          position: center,
+          map: mapInstance.current,
+          animation: google.maps.Animation.DROP,
+        });
+      } else {
+        mapInstance.current.setCenter(center);
+        if (markerInstance.current) {
+          markerInstance.current.setPosition(center);
+        }
       }
-    }
-  }, [isLoaded, latitude, longitude]);
+    } else if (address) {
+      // Fallback: Geocode textual address to coordinates using Google Geocoding service
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address }, (results, status) => {
+        if (status === "OK" && results && results[0] && mapRef.current) {
+          const location = results[0].geometry.location;
 
-  if (latitude === null || longitude === null) {
+          if (!mapInstance.current) {
+            mapInstance.current = new google.maps.Map(mapRef.current, {
+              center: location,
+              zoom: 15,
+              zoomControl: true,
+              mapTypeControl: false,
+              streetViewControl: false,
+              fullscreenControl: false,
+              gestureHandling: "cooperative",
+            });
+
+            markerInstance.current = new google.maps.Marker({
+              position: location,
+              map: mapInstance.current,
+              animation: google.maps.Animation.DROP,
+            });
+          } else {
+            mapInstance.current.setCenter(location);
+            if (markerInstance.current) {
+              markerInstance.current.setPosition(location);
+            }
+          }
+        } else {
+          console.error("Geocoding failed for address:", address, status);
+        }
+      });
+    }
+  }, [isLoaded, latitude, longitude, address, mapReady]);
+
+  const hasCoordinates = latitude !== null && longitude !== null;
+
+  if (!hasCoordinates && !address) {
     return (
       <div className="w-full border border-slate-200 bg-slate-50/50 p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-2">
         <div className="p-3 bg-slate-100 rounded-xl text-slate-400">
           <MapPin className="w-6 h-6" />
         </div>
-        <p className="font-['Inter:Bold',sans-serif] font-bold text-slate-700">Coordinates Not Set</p>
+        <p className="font-['Inter:Bold',sans-serif] font-bold text-slate-700">Location Not Set</p>
         <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-500 max-w-sm">
-          No map pin was saved for this location. You can find the textual address below:
-        </p>
-        <p className="text-sm font-['Inter:Semi_Bold',sans-serif] font-semibold text-slate-700 bg-white border border-slate-100 px-4 py-2 rounded-lg mt-1 shadow-sm">
-          {address || "Address details not available"}
+          No location details were saved for this event.
         </p>
       </div>
     );
   }
 
-  if (!isLoaded) {
+  if (!isLoaded || !mapReady) {
     return (
       <div className="w-full h-64 flex flex-col items-center justify-center border border-slate-200 bg-slate-50/50 rounded-2xl gap-3">
         <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
@@ -76,7 +119,9 @@ export default function MapDisplay({
     );
   }
 
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+  const mapsUrl = hasCoordinates
+    ? `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
   return (
     <div className="relative group rounded-2xl border border-slate-200 overflow-hidden shadow-sm bg-white">
