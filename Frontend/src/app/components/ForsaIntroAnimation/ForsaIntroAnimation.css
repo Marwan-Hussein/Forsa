@@ -1,0 +1,1275 @@
+/* ==========================================================================
+   Forsa Intro Animation — Cinematic entrance overlay and premium ticket
+   ========================================================================== */
+
+.forsa-intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #030712; /* Sleek, very deep dark background */
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    rgba(37, 99, 235, 0.12) 0%,
+    rgba(3, 7, 18, 0) 70%
+  );
+  overflow: hidden;
+}
+
+/* Ambient glow container behind the ticket */
+.forsa-bg-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.18) 0%,
+    rgba(37, 99, 235, 0.04) 50%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---------- Ticket Container ---------- */
+.forsa-ticket-container {
+  position: relative;
+  width: 240px;
+  height: 150px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform, opacity;
+}
+
+.forsa-ticket-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  /* Glassmorphism backing */
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.4),
+    0 10px 20px rgba(37, 99, 235, 0.08),
+    inset 0 1px 0px rgba(255, 255, 255, 0.6);
+}
+
+/* Responsive SVG ticket shape containing the glass color & borders */
+.forsa-ticket-shape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Glass Reflection Sweep */
+.forsa-ticket-reflection {
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.02) 20%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0.02) 80%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  pointer-events: none;
+  z-index: 2;
+  animation: forsa-reflection-sweep 4s ease-in-out infinite;
+}
+
+/* Perforation Line (Dashed separator) */
+.forsa-ticket-perforation {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 58px;
+  width: 0;
+  border-left: 2px dashed rgba(37, 99, 235, 0.15);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Core Ticket Content Layout */
+.forsa-ticket-content {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding-left: 24px;
+}
+
+/* Logo styling with primary blue gradient */
+.forsa-ticket-logo {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #3B82F6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.1));
+}
+
+/* ---------- Character Face ---------- */
+.forsa-face {
+  position: absolute;
+  bottom: 24px;
+  left: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 60px;
+}
+
+.forsa-eyes {
+  display: flex;
+  gap: 16px;
+}
+
+.forsa-eye {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #1E40AF;
+  transform-origin: center;
+  animation: forsa-blink 4s infinite;
+}
+
+/* Cute eye reflection */
+.forsa-eye::after {
+  content: '';
+  position: absolute;
+  top: 1.5px;
+  left: 1.5px;
+  width: 2.5px;
+  height: 2.5px;
+  border-radius: 50%;
+  background-color: #ffffff;
+}
+
+.forsa-mouth {
+  overflow: visible;
+}
+
+.forsa-mouth-path {
+  transition: d 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------- Ticket Stub (Right Area) ---------- */
+.forsa-ticket-stub {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 58px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Miniature decorative barcode representing modern ticket entry */
+.forsa-barcode {
+  display: flex;
+  gap: 3.5px;
+  transform: rotate(90deg);
+  opacity: 0.45;
+}
+
+.forsa-barcode-line {
+  width: 2px;
+  height: 28px;
+  background-color: #1E40AF;
+  border-radius: 1px;
+}
+
+.forsa-barcode-line.line-thin {
+  width: 1px;
+}
+
+.forsa-barcode-line.line-thick {
+  width: 3.5px;
+}
+
+/* ---------- Arms & Hands ---------- */
+.forsa-arm {
+  position: absolute;
+  top: 45%;
+  width: 30px;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 50%, #e5e7eb 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  z-index: -1;
+}
+
+.forsa-arm-left {
+  left: -22px;
+  transform-origin: right center;
+}
+
+.forsa-arm-right {
+  right: -22px;
+  transform-origin: left center;
+}
+
+.forsa-hand {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 50%, #2563EB 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+  transform: translateY(-50%);
+}
+
+.forsa-arm-left .forsa-hand {
+  left: -7px;
+}
+
+.forsa-arm-right .forsa-hand {
+  right: -7px;
+}
+
+/* Glow effect emitted from right hand pointing */
+.forsa-hand-glow {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: radial-gradient(
+    circle,
+    rgba(96, 165, 250, 0.7) 0%,
+    rgba(37, 99, 235, 0) 70%
+  );
+  filter: blur(2px);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* ---------- Particles ---------- */
+.forsa-intro-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.forsa-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #60A5FA;
+  box-shadow: 0 0 8px 1.5px rgba(59, 130, 246, 0.6);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: forsa-particle-float 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Floating animation delays and offsets */
+.forsa-particle-0 { --tx: -80px; --ty: -60px; animation-delay: 0.1s; }
+.forsa-particle-1 { --tx: 70px; --ty: -80px; animation-delay: 0.2s; }
+.forsa-particle-2 { --tx: -50px; --ty: 50px; animation-delay: 0.3s; }
+.forsa-particle-3 { --tx: 90px; --ty: 40px; animation-delay: 0.4s; }
+.forsa-particle-4 { --tx: -90px; --ty: 10px; animation-delay: 0.5s; }
+.forsa-particle-5 { --tx: 40px; --ty: -90px; animation-delay: 0.6s; }
+.forsa-particle-6 { --tx: -30px; --ty: -80px; animation-delay: 0.7s; }
+.forsa-particle-7 { --tx: 100px; --ty: -20px; animation-delay: 0.8s; }
+
+/* ---------- Animations ---------- */
+@keyframes forsa-reflection-sweep {
+  0% {
+    left: -150%;
+  }
+  35%, 100% {
+    left: 150%;
+  }
+}
+
+@keyframes forsa-blink {
+  0%, 92%, 100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes forsa-particle-float {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  20% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) scale(1.2);
+  }
+}
+
+/* ---------- Responsive Design ---------- */
+@media (max-width: 768px) {
+  .forsa-ticket-container {
+    width: 210px;
+    height: 130px;
+  }
+
+  .forsa-ticket-logo {
+    font-size: 24px;
+  }
+
+  .forsa-ticket-perforation {
+    right: 50px;
+  }
+
+  .forsa-ticket-stub {
+    width: 50px;
+  }
+
+  .forsa-face {
+    bottom: 20px;
+    left: 24px;
+    width: 50px;
+  }
+
+  .forsa-eyes {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .forsa-ticket-container {
+    width: 180px;
+    height: 110px;
+  }
+
+  .forsa-ticket-logo {
+    font-size: 20px;
+  }
+
+  .forsa-ticket-perforation {
+    right: 44px;
+  }
+
+  .forsa-ticket-stub {
+    width: 44px;
+  }
+
+  .forsa-face {
+    bottom: 16px;
+    left: 20px;
+    width: 44px;
+  }
+
+  .forsa-eyes {
+    gap: 10px;
+  }
+
+  .forsa-eye {
+    width: 6px;
+    height: 6px;
+  }
+
+  .forsa-eye::after {
+    top: 1px;
+    left: 1px;
+    width: 1.5px;
+    height: 1.5px;
+  }
+
+  .forsa-barcode-line {
+    height: 20px;
+  }
+}
+
+/* ---------- Accessibility (Reduced Motion) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .forsa-ticket-reflection,
+  .forsa-eye,
+  .forsa-particle {
+    animation: none !important;
+  }
+}
+/* ==========================================================================
+   Forsa Intro Animation — Cinematic entrance overlay and premium ticket
+   ========================================================================== */
+
+.forsa-intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #030712; /* Sleek, very deep dark background */
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    rgba(37, 99, 235, 0.12) 0%,
+    rgba(3, 7, 18, 0) 70%
+  );
+  overflow: hidden;
+}
+
+/* Ambient glow container behind the ticket */
+.forsa-bg-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.18) 0%,
+    rgba(37, 99, 235, 0.04) 50%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---------- Ticket Container ---------- */
+.forsa-ticket-container {
+  position: relative;
+  width: 240px;
+  height: 150px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform, opacity;
+}
+
+.forsa-ticket-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  /* Glassmorphism backing */
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.4),
+    0 10px 20px rgba(37, 99, 235, 0.08),
+    inset 0 1px 0px rgba(255, 255, 255, 0.6);
+}
+
+/* Responsive SVG ticket shape containing the glass color & borders */
+.forsa-ticket-shape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Glass Reflection Sweep */
+.forsa-ticket-reflection {
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.02) 20%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0.02) 80%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  pointer-events: none;
+  z-index: 2;
+  animation: forsa-reflection-sweep 4s ease-in-out infinite;
+}
+
+/* Perforation Line (Dashed separator) */
+.forsa-ticket-perforation {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 58px;
+  width: 0;
+  border-left: 2px dashed rgba(37, 99, 235, 0.15);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Core Ticket Content Layout */
+.forsa-ticket-content {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding-left: 24px;
+}
+
+/* Logo styling with primary blue gradient */
+.forsa-ticket-logo {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #3B82F6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.1));
+}
+
+/* ---------- Character Face ---------- */
+.forsa-face {
+  position: absolute;
+  bottom: 24px;
+  left: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 60px;
+}
+
+.forsa-eyes {
+  display: flex;
+  gap: 16px;
+}
+
+.forsa-eye {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #1E40AF;
+  transform-origin: center;
+  animation: forsa-blink 4s infinite;
+}
+
+/* Cute eye reflection */
+.forsa-eye::after {
+  content: '';
+  position: absolute;
+  top: 1.5px;
+  left: 1.5px;
+  width: 2.5px;
+  height: 2.5px;
+  border-radius: 50%;
+  background-color: #ffffff;
+}
+
+.forsa-mouth {
+  overflow: visible;
+}
+
+.forsa-mouth-path {
+  transition: d 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------- Ticket Stub (Right Area) ---------- */
+.forsa-ticket-stub {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 58px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Miniature decorative barcode representing modern ticket entry */
+.forsa-barcode {
+  display: flex;
+  gap: 3.5px;
+  transform: rotate(90deg);
+  opacity: 0.45;
+}
+
+.forsa-barcode-line {
+  width: 2px;
+  height: 28px;
+  background-color: #1E40AF;
+  border-radius: 1px;
+}
+
+.forsa-barcode-line.line-thin {
+  width: 1px;
+}
+
+.forsa-barcode-line.line-thick {
+  width: 3.5px;
+}
+
+/* ---------- Arms & Hands ---------- */
+.forsa-arm {
+  position: absolute;
+  top: 45%;
+  width: 30px;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 50%, #e5e7eb 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  z-index: -1;
+}
+
+.forsa-arm-left {
+  left: -22px;
+  transform-origin: right center;
+}
+
+.forsa-arm-right {
+  right: -22px;
+  transform-origin: left center;
+}
+
+.forsa-hand {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 50%, #2563EB 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+  transform: translateY(-50%);
+}
+
+.forsa-arm-left .forsa-hand {
+  left: -7px;
+}
+
+.forsa-arm-right .forsa-hand {
+  right: -7px;
+}
+
+/* Glow effect emitted from right hand pointing */
+.forsa-hand-glow {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: radial-gradient(
+    circle,
+    rgba(96, 165, 250, 0.7) 0%,
+    rgba(37, 99, 235, 0) 70%
+  );
+  filter: blur(2px);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* ---------- Particles ---------- */
+.forsa-intro-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.forsa-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #60A5FA;
+  box-shadow: 0 0 8px 1.5px rgba(59, 130, 246, 0.6);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: forsa-particle-float 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Floating animation delays and offsets */
+.forsa-particle-0 { --tx: -80px; --ty: -60px; animation-delay: 0.1s; }
+.forsa-particle-1 { --tx: 70px; --ty: -80px; animation-delay: 0.2s; }
+.forsa-particle-2 { --tx: -50px; --ty: 50px; animation-delay: 0.3s; }
+.forsa-particle-3 { --tx: 90px; --ty: 40px; animation-delay: 0.4s; }
+.forsa-particle-4 { --tx: -90px; --ty: 10px; animation-delay: 0.5s; }
+.forsa-particle-5 { --tx: 40px; --ty: -90px; animation-delay: 0.6s; }
+.forsa-particle-6 { --tx: -30px; --ty: -80px; animation-delay: 0.7s; }
+.forsa-particle-7 { --tx: 100px; --ty: -20px; animation-delay: 0.8s; }
+
+/* ---------- Animations ---------- */
+@keyframes forsa-reflection-sweep {
+  0% {
+    left: -150%;
+  }
+  35%, 100% {
+    left: 150%;
+  }
+}
+
+@keyframes forsa-blink {
+  0%, 92%, 100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes forsa-particle-float {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  20% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) scale(1.2);
+  }
+}
+
+/* ---------- Responsive Design ---------- */
+@media (max-width: 768px) {
+  .forsa-ticket-container {
+    width: 210px;
+    height: 130px;
+  }
+
+  .forsa-ticket-logo {
+    font-size: 24px;
+  }
+
+  .forsa-ticket-perforation {
+    right: 50px;
+  }
+
+  .forsa-ticket-stub {
+    width: 50px;
+  }
+
+  .forsa-face {
+    bottom: 20px;
+    left: 24px;
+    width: 50px;
+  }
+
+  .forsa-eyes {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .forsa-ticket-container {
+    width: 180px;
+    height: 110px;
+  }
+
+  .forsa-ticket-logo {
+    font-size: 20px;
+  }
+
+  .forsa-ticket-perforation {
+    right: 44px;
+  }
+
+  .forsa-ticket-stub {
+    width: 44px;
+  }
+
+  .forsa-face {
+    bottom: 16px;
+    left: 20px;
+    width: 44px;
+  }
+
+  .forsa-eyes {
+    gap: 10px;
+  }
+
+  .forsa-eye {
+    width: 6px;
+    height: 6px;
+  }
+
+  .forsa-eye::after {
+    top: 1px;
+    left: 1px;
+    width: 1.5px;
+    height: 1.5px;
+  }
+
+  .forsa-barcode-line {
+    height: 20px;
+  }
+}
+
+/* ---------- Accessibility (Reduced Motion) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .forsa-ticket-reflection,
+  .forsa-eye,
+  .forsa-particle {
+    animation: none !important;
+  }
+}
+/* ==========================================================================
+   Forsa Intro Animation — Cinematic entrance overlay and premium ticket
+   ========================================================================== */
+
+.forsa-intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #030712; /* Sleek, very deep dark background */
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    rgba(37, 99, 235, 0.12) 0%,
+    rgba(3, 7, 18, 0) 70%
+  );
+  overflow: hidden;
+}
+
+/* Ambient glow container behind the ticket */
+.forsa-bg-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.18) 0%,
+    rgba(37, 99, 235, 0.04) 50%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---------- Ticket Container ---------- */
+.forsa-ticket-container {
+  position: relative;
+  width: 240px;
+  height: 150px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform, opacity;
+}
+
+.forsa-ticket-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  /* Glassmorphism backing */
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.4),
+    0 10px 20px rgba(37, 99, 235, 0.08),
+    inset 0 1px 0px rgba(255, 255, 255, 0.6);
+}
+
+/* Responsive SVG ticket shape containing the glass color & borders */
+.forsa-ticket-shape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Glass Reflection Sweep */
+.forsa-ticket-reflection {
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.02) 20%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0.02) 80%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  pointer-events: none;
+  z-index: 2;
+  animation: forsa-reflection-sweep 4s ease-in-out infinite;
+}
+
+/* Perforation Line (Dashed separator) */
+.forsa-ticket-perforation {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 58px;
+  width: 0;
+  border-left: 2px dashed rgba(37, 99, 235, 0.15);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Core Ticket Content Layout */
+.forsa-ticket-content {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding-left: 24px;
+}
+
+/* Logo styling with primary blue gradient */
+.forsa-ticket-logo {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #3B82F6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.1));
+}
+
+/* ---------- Character Face ---------- */
+.forsa-face {
+  position: absolute;
+  bottom: 24px;
+  left: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 60px;
+}
+
+.forsa-eyes {
+  display: flex;
+  gap: 16px;
+}
+
+.forsa-eye {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #1E40AF;
+  transform-origin: center;
+  animation: forsa-blink 4s infinite;
+}
+
+/* Cute eye reflection */
+.forsa-eye::after {
+  content: '';
+  position: absolute;
+  top: 1.5px;
+  left: 1.5px;
+  width: 2.5px;
+  height: 2.5px;
+  border-radius: 50%;
+  background-color: #ffffff;
+}
+
+.forsa-mouth {
+  overflow: visible;
+}
+
+.forsa-mouth-path {
+  transition: d 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------- Ticket Stub (Right Area) ---------- */
+.forsa-ticket-stub {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 58px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Miniature decorative barcode representing modern ticket entry */
+.forsa-barcode {
+  display: flex;
+  gap: 3.5px;
+  transform: rotate(90deg);
+  opacity: 0.45;
+}
+
+.forsa-barcode-line {
+  width: 2px;
+  height: 28px;
+  background-color: #1E40AF;
+  border-radius: 1px;
+}
+
+.forsa-barcode-line.line-thin {
+  width: 1px;
+}
+
+.forsa-barcode-line.line-thick {
+  width: 3.5px;
+}
+
+/* ---------- Arms & Hands ---------- */
+.forsa-arm {
+  position: absolute;
+  top: 45%;
+  width: 30px;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 50%, #e5e7eb 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  z-index: -1;
+}
+
+.forsa-arm-left {
+  left: -22px;
+  transform-origin: right center;
+}
+
+.forsa-arm-right {
+  right: -22px;
+  transform-origin: left center;
+}
+
+.forsa-hand {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 50%, #2563EB 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+  transform: translateY(-50%);
+}
+
+.forsa-arm-left .forsa-hand {
+  left: -7px;
+}
+
+.forsa-arm-right .forsa-hand {
+  right: -7px;
+}
+
+/* Glow effect emitted from right hand pointing */
+.forsa-hand-glow {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: radial-gradient(
+    circle,
+    rgba(96, 165, 250, 0.7) 0%,
+    rgba(37, 99, 235, 0) 70%
+  );
+  filter: blur(2px);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* ---------- Particles ---------- */
+.forsa-intro-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.forsa-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #60A5FA;
+  box-shadow: 0 0 8px 1.5px rgba(59, 130, 246, 0.6);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: forsa-particle-float 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Floating animation delays and offsets */
+.forsa-particle-0 { --tx: -80px; --ty: -60px; animation-delay: 0.1s; }
+.forsa-particle-1 { --tx: 70px; --ty: -80px; animation-delay: 0.2s; }
+.forsa-particle-2 { --tx: -50px; --ty: 50px; animation-delay: 0.3s; }
+.forsa-particle-3 { --tx: 90px; --ty: 40px; animation-delay: 0.4s; }
+.forsa-particle-4 { --tx: -90px; --ty: 10px; animation-delay: 0.5s; }
+.forsa-particle-5 { --tx: 40px; --ty: -90px; animation-delay: 0.6s; }
+.forsa-particle-6 { --tx: -30px; --ty: -80px; animation-delay: 0.7s; }
+.forsa-particle-7 { --tx: 100px; --ty: -20px; animation-delay: 0.8s; }
+
+/* ---------- Animations ---------- */
+@keyframes forsa-reflection-sweep {
+  0% {
+    left: -150%;
+  }
+  35%, 100% {
+    left: 150%;
+  }
+}
+
+@keyframes forsa-blink {
+  0%, 92%, 100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes forsa-particle-float {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  20% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) scale(1.2);
+  }
+}
+
+/* ---------- Responsive Design ---------- */
+@media (max-width: 768px) {
+  .forsa-ticket-container {
+    width: 210px;
+    height: 130px;
+  }
+
+  .forsa-ticket-logo {
+    font-size: 24px;
+  }
+
+  .forsa-ticket-perforation {
+    right: 50px;
+  }
+
+  .forsa-ticket-stub {
+    width: 50px;
+  }
+
+  .forsa-face {
+    bottom: 20px;
+    left: 24px;
+    width: 50px;
+  }
+
+  .forsa-eyes {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .forsa-ticket-container {
+    width: 180px;
+    height: 110px;
+  }
+
+  .forsa-ticket-logo {
+    font-size: 20px;
+  }
+
+  .forsa-ticket-perforation {
+    right: 44px;
+  }
+
+  .forsa-ticket-stub {
+    width: 44px;
+  }
+
+  .forsa-face {
+    bottom: 16px;
+    left: 20px;
+    width: 44px;
+  }
+
+  .forsa-eyes {
+    gap: 10px;
+  }
+
+  .forsa-eye {
+    width: 6px;
+    height: 6px;
+  }
+
+  .forsa-eye::after {
+    top: 1px;
+    left: 1px;
+    width: 1.5px;
+    height: 1.5px;
+  }
+
+  .forsa-barcode-line {
+    height: 20px;
+  }
+}
+
+/* ---------- Accessibility (Reduced Motion) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .forsa-ticket-reflection,
+  .forsa-eye,
+  .forsa-particle {
+    animation: none !important;
+  }
+}

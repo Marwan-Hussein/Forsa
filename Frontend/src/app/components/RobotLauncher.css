@@ -1,0 +1,292 @@
+/* ==========================================================================
+   Forsa AI Robot Launcher
+   Premium 3D-look robot assistant button — CSS + GPU-accelerated transforms.
+   ========================================================================== */
+
+.robot-launcher {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.robot-launcher:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 6px;
+  border-radius: 9999px;
+}
+
+/* ---------- Ambient glow halo behind the robot ---------- */
+.robot-glow {
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(96, 165, 250, 0.55) 0%,
+    rgba(37, 99, 235, 0.25) 45%,
+    rgba(37, 99, 235, 0) 75%
+  );
+  filter: blur(6px);
+  z-index: -1;
+  animation: robot-glow-pulse 3.2s ease-in-out infinite;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  will-change: transform, opacity;
+}
+
+.robot-hovered .robot-glow,
+.robot-launcher:hover .robot-glow {
+  opacity: 1;
+  transform: scale(1.25);
+}
+
+/* ---------- Body ---------- */
+.robot-body {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 42% 42% 46% 46% / 46% 46% 42% 42%;
+  background: linear-gradient(160deg, #ffffff 0%, #eaf2ff 55%, #dbe9ff 100%);
+  box-shadow:
+    0 10px 24px rgba(37, 99, 235, 0.28),
+    0 2px 6px rgba(15, 23, 42, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -3px 6px rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  animation: robot-idle 3.6s ease-in-out infinite;
+  transform-origin: center bottom;
+  will-change: transform;
+}
+
+.robot-hovered .robot-body,
+.robot-launcher:hover .robot-body {
+  transform: translateY(-3px) rotate(-3deg) scale(1.03);
+}
+
+.robot-launcher.robot-clicked .robot-body {
+  animation: none;
+  transform: scale(0.86);
+}
+
+/* ---------- Antenna ---------- */
+.robot-antenna {
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 2px;
+  height: 10px;
+  background: linear-gradient(180deg, #93c5fd, #2563eb);
+  transform: translateX(-50%);
+  border-radius: 2px;
+}
+
+.robot-antenna-tip {
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #bfe0ff, #3b82f6 70%);
+  box-shadow: 0 0 8px 2px rgba(59, 130, 246, 0.8);
+  transform: translateX(-50%);
+  animation: robot-antenna-blink 2.4s ease-in-out infinite;
+}
+
+/* ---------- Head / eyes ---------- */
+.robot-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.robot-eye {
+  width: 7px;
+  height: 15px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #60a5fa, #2563eb);
+  box-shadow: 0 0 8px 1px rgba(59, 130, 246, 0.75);
+  animation: robot-blink 4.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+.robot-eye-right {
+  animation-delay: 0.08s;
+}
+
+.robot-hovered .robot-eye,
+.robot-launcher:hover .robot-eye {
+  box-shadow: 0 0 14px 3px rgba(59, 130, 246, 0.95);
+}
+
+/* ---------- Arms ---------- */
+.robot-arm {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 16px;
+  border-radius: 6px;
+  background: linear-gradient(160deg, #ffffff, #cfe1ff);
+  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  transform-origin: top center;
+}
+
+.robot-arm-left {
+  left: -6px;
+  transform: translateY(-20%) rotate(8deg);
+  animation: robot-arm-float 3.6s ease-in-out infinite;
+}
+
+.robot-arm-right {
+  right: -6px;
+  transform: translateY(-20%) rotate(-8deg);
+  animation: robot-arm-float-alt 3.6s ease-in-out infinite;
+}
+
+/* When waving, the right arm takes over with a greeting motion */
+.robot-waving .robot-arm-right {
+  animation: robot-wave 1.6s ease-in-out infinite;
+}
+
+/* ---------- Click particles ---------- */
+.robot-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #93c5fd, #2563eb);
+  box-shadow: 0 0 6px 1px rgba(59, 130, 246, 0.8);
+  animation: robot-particle-burst 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+/* ---------- Speech bubble ---------- */
+.robot-speech-bubble {
+  position: relative;
+  max-width: 220px;
+  padding: 10px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(96, 165, 250, 0.55);
+  box-shadow:
+    0 8px 24px rgba(37, 99, 235, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+}
+
+.robot-speech-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 22px;
+  width: 12px;
+  height: 12px;
+  background: inherit;
+  border-right: 1px solid rgba(96, 165, 250, 0.55);
+  border-bottom: 1px solid rgba(96, 165, 250, 0.55);
+  transform: rotate(45deg);
+  backdrop-filter: blur(14px);
+}
+
+.robot-speech-text {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 12.5px;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  background: linear-gradient(90deg, #ffffff, #93c5fd 60%, #3b82f6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 12px rgba(96, 165, 250, 0.5);
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes robot-idle {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(-1.5deg); }
+}
+
+@keyframes robot-glow-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.08); }
+}
+
+@keyframes robot-antenna-blink {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes robot-blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.12); }
+}
+
+@keyframes robot-arm-float {
+  0%, 100% { transform: translateY(-20%) rotate(8deg); }
+  50% { transform: translateY(-32%) rotate(14deg); }
+}
+
+@keyframes robot-arm-float-alt {
+  0%, 100% { transform: translateY(-20%) rotate(-8deg); }
+  50% { transform: translateY(-32%) rotate(-14deg); }
+}
+
+@keyframes robot-wave {
+  0%, 100% { transform: translateY(-20%) rotate(-10deg); }
+  30% { transform: translateY(-45%) rotate(-55deg); }
+  55% { transform: translateY(-40%) rotate(-30deg); }
+  75% { transform: translateY(-45%) rotate(-50deg); }
+}
+
+@keyframes robot-particle-burst {
+  0% { transform: rotate(var(--angle)) translateX(0); opacity: 1; }
+  100% { transform: rotate(var(--angle)) translateX(38px); opacity: 0; }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 480px) {
+  .robot-launcher {
+    width: 52px;
+    height: 52px;
+  }
+  .robot-body {
+    width: 46px;
+    height: 46px;
+  }
+  .robot-speech-bubble {
+    max-width: 170px;
+    padding: 8px 12px;
+  }
+  .robot-speech-text {
+    font-size: 11.5px;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .robot-body,
+  .robot-glow,
+  .robot-eye,
+  .robot-arm-left,
+  .robot-arm-right,
+  .robot-antenna-tip {
+    animation: none !important;
+  }
+}
