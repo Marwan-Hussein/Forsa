@@ -24,35 +24,39 @@ namespace Forsa
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDbContext<ForsaDbContext>(options =>
-                options.UseSqlServer(
-                    builder.Configuration.GetConnectionString("DefaultConnection"),
-                    sqlOptions => sqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: 5,
-                        maxRetryDelay: TimeSpan.FromSeconds(10),
-                        errorNumbersToAdd: null
-                    )
-                )
-            );
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>()
                             .AddEntityFrameworkStores<ForsaDbContext>()
                             .AddDefaultTokenProviders();
-
-            // redis
+            // comment
+            //// redis
+            //var redisConnection = builder.Configuration.GetConnectionString("Redis");
+            //builder.Services.AddSingleton<IConnectionMultiplexer>(sp=>
+            //    {
+            //        var configuration = ConfigurationOptions.Parse(redisConnection);
+            //        configuration.AbortOnConnectFail = false; // This prevents the crash
+            //        return ConnectionMultiplexer.Connect(configuration);
+            //    });
+            //builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
             var redisConnection = builder.Configuration.GetConnectionString("Redis");
-            builder.Services.AddSingleton<IConnectionMultiplexer>(sp=>
+            if (!string.IsNullOrWhiteSpace(redisConnection))
+            {
+                builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
                 {
                     var configuration = ConfigurationOptions.Parse(redisConnection);
-                    configuration.AbortOnConnectFail = false; // This prevents the crash
+                    configuration.AbortOnConnectFail = false;
                     return ConnectionMultiplexer.Connect(configuration);
                 });
-            builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+
+                builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+            }
 
             // Add Frontend CORS policy
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("Frontend", policy =>
                 {
-                    policy.WithOrigins("https://forsaweb.vercel.app") // Vite dev server port
+                    policy.WithOrigins("http://localhost:5173") // Vite dev server port
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
@@ -69,11 +73,11 @@ namespace Forsa
             })
             .AddCookie()
             .AddGoogle(options =>
-                {
-                    options.ClientId = google["GoogleId"]!;
-                    options.ClientSecret = google["GoogleSecret"]!;
-                    options.CallbackPath = "/signin-google";
-                }
+            {
+                options.ClientId = google["GoogleId"]!;
+                options.ClientSecret = google["GoogleSecret"]!;
+                options.CallbackPath = "/signin-google";
+            }
             );
 
             builder.Services.AddApplicationServices(builder.Configuration);
@@ -136,8 +140,6 @@ namespace Forsa
 
             var app = builder.Build();
 
-            //await DatabaseSeeder.EnsureDatabaseSchemaAsync(app.Services);
-
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
@@ -157,7 +159,7 @@ namespace Forsa
             app.UseAuthorization();
 
             app.MapControllers();
-
+            app.MapFallbackToFile("index.html");
             app.Run();
         }
     }
