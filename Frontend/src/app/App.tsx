@@ -1,25 +1,17 @@
-import { useState, useEffect } from "react";
 import { RouterProvider } from "react-router";
 import { router } from "./routes";
-import TicketSpinner from "./components/TicketSpinner";
 import { ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
+//import { ForsaIntroAnimation } from "./components/ForsaIntroAnimation/ForsaIntroAnimation";
 
 export default function App() {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setIsLoading(false);
-  }, []);
-
-  if (isLoading) {
-    return null; // Quick flicker, no need for spinner
-  }
-
   return (
     <>
+      {/* Plays once per real page load/refresh; never replays on SPA navigation. */}
+      {/*<ForsaIntroAnimation />*/}
+
       <RouterProvider router={router} />
-      <ToastContainer 
+      <ToastContainer
         position="bottom-right"
         autoClose={4000}
         hideProgressBar={false}
