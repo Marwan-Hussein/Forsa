@@ -1,0 +1,57 @@
+name: Deploy to MonsterASP
+
+on:
+  push:
+    branches:
+      - githubdeployment
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install React dependencies
+        working-directory: Frontend
+        run: npm install
+
+      - name: Create Frontend .env
+        working-directory: Frontend
+        run: |
+          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env
+          echo "VITE_GOOGLE_MAPS_API_KEY=${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}" >> .env
+          echo "VITE_USE_API_PROXY=${{ secrets.VITE_USE_API_PROXY }}" >> .env
+
+      - name: Build React
+        working-directory: Frontend
+        run: npm run build
+
+      - name: Restore .NET
+        run: dotnet restore Forsa/Forsa.csproj
+
+      - name: Publish .NET
+        run: dotnet publish Forsa/Forsa.csproj -c Release -o publish
+
+      - name: Deploy to MonsterASP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          local-dir: publish/
+          server-dir: /wwwroot/
