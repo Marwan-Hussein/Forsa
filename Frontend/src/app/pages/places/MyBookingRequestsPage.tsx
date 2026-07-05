@@ -242,6 +242,8 @@ export default function MyBookingRequestsPage() {
             ) : (
               filteredRequests.map((request, index) => {
                 const status = getStatusString(request.status);
+                const paidRequests = JSON.parse(localStorage.getItem("paid_booking_requests") || "[]");
+                const isPaid = paidRequests.includes(String(request.requestId));
                 return (
                   <motion.div 
                     key={request.requestId}
@@ -260,10 +262,11 @@ export default function MyBookingRequestsPage() {
                           </h3>
                           <span className={`px-2.5 py-1 rounded-md text-[11px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider ${
                             status === 'pending' ? 'bg-amber-100 text-amber-700 border border-amber-250/30' :
+                            isPaid ? 'bg-emerald-600 text-white shadow-sm' :
                             status === 'approved' ? 'bg-emerald-100 text-emerald-700 border border-emerald-250/30' :
                             'bg-rose-100 text-rose-700 border border-rose-250/30'
                           }`}>
-                            {status}
+                            {isPaid ? 'Paid' : status}
                           </span>
                         </div>
                         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-['Inter:Medium',sans-serif] text-slate-500">
@@ -301,14 +304,22 @@ export default function MyBookingRequestsPage() {
                             <Trash2 className="w-5 h-5" />
                           </button>
                         )}
-                        {status === "approved" && (
+                        {status === "approved" && !isPaid && (
                           <button 
                             onClick={async () => {
                               try {
                                 const res = await organizerApi.processPlaceCheckout(request.requestId);
                                 if (res && res.clientSecret) {
+                                  localStorage.setItem("pending_payment_request_id", String(request.requestId));
                                   if (res.clientSecret.startsWith("mock_")) {
+                                    const paidList = JSON.parse(localStorage.getItem("paid_booking_requests") || "[]");
+                                    if (!paidList.includes(String(request.requestId))) {
+                                      paidList.push(String(request.requestId));
+                                      localStorage.setItem("paid_booking_requests", JSON.stringify(paidList));
+                                    }
+                                    localStorage.removeItem("pending_payment_request_id");
                                     toast.success("Mock Payment Success: Simulated payment for testing.");
+                                    fetchRequests();
                                   } else if (res.clientSecret.startsWith("http")) {
                                     window.location.href = res.clientSecret;
                                   } else {

@@ -24,7 +24,8 @@ import { useWishlist } from "../../hooks/useWishlist";
 import { eventsApi } from "../../api/eventsApi";
 import { attendeeApi } from "../../api/attendeeApi";
 import { EventDetailsDto, AttendeeBookingDto } from "../../types";
-import { getUserIdFromToken } from "../../api/api";
+import { getUserIdFromToken, apiPost } from "../../api/api";
+import { toast } from "react-toastify";
 
 // --- Framer Motion Configurations ---
 const containerVariants = {
@@ -66,6 +67,7 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
   const [showQR, setShowQR] = useState(false);
   const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [loadingQr, setLoadingQr] = useState(false);
+  const [paying, setPaying] = useState(false);
 
   const handleViewTicket = async () => {
     setShowQR(true);
@@ -82,6 +84,75 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
     }
   };
 
+  const handlePayNow = async () => {
+    try {
+      setPaying(true);
+      const paymentResult = await apiPost<any>(`/api/bookings/${booking.bookingId}/checkout`, {});
+      if (paymentResult && paymentResult.clientSecret) {
+        if (paymentResult.clientSecret.startsWith("mock_")) {
+          toast.success("Mock payment initiated successfully!");
+        } else if (paymentResult.clientSecret.startsWith("http")) {
+          window.location.href = paymentResult.clientSecret;
+          return;
+        } else {
+          const pubKey = paymentResult.publicKey || "pk_test_placeholder";
+          window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${pubKey}&clientSecret=${paymentResult.clientSecret}`;
+          return;
+        }
+      }
+    } catch (err: any) {
+      console.error("Payment failed", err);
+      toast.error(err.message || "Failed to initiate payment. Please try again.");
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  const renderStatusBadge = () => {
+    const status = (booking.status || "").toLowerCase();
+    switch (status) {
+      case "confirmed":
+        return (
+          <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3" /> Confirmed Booking
+          </span>
+        );
+      case "pending":
+        return (
+          <span className="bg-amber-50 text-amber-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+            <Clock className="w-3 h-3 animate-pulse" /> Pending Payment
+          </span>
+        );
+      case "rejected":
+        return (
+          <span className="bg-rose-50 text-rose-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+            <TicketX className="w-3 h-3" /> Rejected Booking
+          </span>
+        );
+      case "attended":
+        return (
+          <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3" /> Attended Event
+          </span>
+        );
+      case "cancelled":
+        return (
+          <span className="bg-slate-100 text-slate-500 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+            <TicketX className="w-3 h-3" /> Cancelled
+          </span>
+        );
+      default:
+        return (
+          <span className="bg-slate-50 text-slate-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+            {booking.status}
+          </span>
+        );
+    }
+  };
+
+  const isPending = (booking.status || "").toLowerCase() === "pending";
+  const isInactive = (booking.status || "").toLowerCase() === "rejected" || (booking.status || "").toLowerCase() === "cancelled";
+
   return (
     <>
       <motion.div 
@@ -96,9 +167,7 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
         <div className="flex-1 p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> Confirmed Booking
-              </span>
+              {renderStatusBadge()}
               <span className="bg-slate-50 text-slate-600 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
                 {booking.eventCategory}
               </span>
@@ -147,23 +216,60 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
           <div className="w-2 h-2 rounded-full bg-slate-200 hidden md:block" />
         </div>
 
-        {/* Barcode Stub */}
-        <div className="w-full md:w-56 bg-slate-50 p-6 flex flex-col justify-between items-center text-slate-700">
-          <div className="text-center w-full">
-            <p className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-2">Gate Pass Code</p>
-            <div className="text-slate-800">
-              <Barcode />
+        {/* Stub Area */}
+        {isPending ? (
+          <div className="w-full md:w-56 bg-slate-50 p-6 flex flex-col justify-between items-center text-slate-700 shrink-0">
+            <div className="text-center w-full my-auto">
+              <p className="text-[10px] uppercase font-bold text-amber-500 tracking-wider mb-2">Awaiting Payment</p>
+              <p className="text-[11px] text-slate-500 font-medium mb-4 leading-relaxed">
+                Your spot is reserved. Complete payment to secure your Gate Pass.
+              </p>
             </div>
-            <p className="text-[9px] font-mono text-slate-400 mt-1">FORSA-{booking.eventId}-{day}{month}</p>
+            
+            <button 
+              onClick={handlePayNow}
+              disabled={paying}
+              className="w-full bg-[#1E3D61] hover:bg-[#152D4A] text-white border border-transparent font-bold text-xs py-2.5 px-3 rounded-lg shadow-sm hover:shadow-md transition-all text-center flex items-center justify-center gap-1.5 disabled:opacity-50"
+            >
+              {paying ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Processing...
+                </>
+              ) : (
+                <>
+                  <QrCode className="w-4 h-4" /> Pay Now
+                </>
+              )}
+            </button>
           </div>
-          
-          <button 
-            onClick={handleViewTicket}
-            className="w-full mt-4 bg-white hover:bg-[#1E3D61] text-[#1E3D61] hover:text-white border border-[#1E3D61]/15 hover:border-transparent font-bold text-xs py-2 px-3 rounded-lg shadow-sm hover:shadow-md transition-all text-center flex items-center justify-center gap-1.5"
-          >
-            <QrCode className="w-4 h-4" /> View Ticket
-          </button>
-        </div>
+        ) : isInactive ? (
+          <div className="w-full md:w-56 bg-slate-50 p-6 flex flex-col justify-center items-center text-slate-700 shrink-0">
+            <div className="text-center w-full">
+              <TicketX className="w-8 h-8 text-rose-400 mx-auto mb-2" />
+              <p className="text-[11px] font-bold text-rose-500 uppercase tracking-wider mb-1">Not Active</p>
+              <p className="text-[10px] text-slate-400 font-medium">
+                This booking is inactive and cannot be used.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="w-full md:w-56 bg-slate-50 p-6 flex flex-col justify-between items-center text-slate-700 shrink-0">
+            <div className="text-center w-full">
+              <p className="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-2">Gate Pass Code</p>
+              <div className="text-slate-800">
+                <Barcode />
+              </div>
+              <p className="text-[9px] font-mono text-slate-400 mt-1">FORSA-{booking.eventId}-{day}{month}</p>
+            </div>
+            
+            <button 
+              onClick={handleViewTicket}
+              className="w-full mt-4 bg-white hover:bg-[#1E3D61] text-[#1E3D61] hover:text-white border border-[#1E3D61]/15 hover:border-transparent font-bold text-xs py-2 px-3 rounded-lg shadow-sm hover:shadow-md transition-all text-center flex items-center justify-center gap-1.5"
+            >
+              <QrCode className="w-4 h-4" /> View Ticket
+            </button>
+          </div>
+        )}
       </motion.div>
 
       {/* QR Code Modal */}

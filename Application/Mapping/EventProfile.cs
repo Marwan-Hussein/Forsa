@@ -16,18 +16,20 @@ namespace Application.Mapping
                 .ForMember(dest => dest.PlaceId,
                            opt => opt.MapFrom(src => src.PlaceId))
                 .ForMember(dest => dest.Place,
-                           opt => opt.MapFrom(src => src.Place != null ? src.Place.Name : null))
+                           opt => opt.MapFrom(src => src.Place != null ? src.Place.Name : src.CustomLocation))
                 .ForMember(dest => dest.PlaceLocation,
-                           opt => opt.MapFrom(src => src.Place != null ? src.Place.Location : null))
+                           opt => opt.MapFrom(src => src.Place != null ? src.Place.Location : src.CustomLocation))
                 .ForMember(dest => dest.PlaceLatitude,
                            opt => opt.MapFrom(src => src.Place != null ? src.Place.Latitude : null))
                 .ForMember(dest => dest.PlaceLongitude,
                            opt => opt.MapFrom(src => src.Place != null ? src.Place.Longitude : null))
                 .ForMember(dest => dest.GooglePlaceId,
                            opt => opt.MapFrom(src => src.Place != null ? src.Place.GooglePlaceId : null))
+                .ForMember(dest => dest.CustomLocation,
+                           opt => opt.MapFrom(src => src.CustomLocation))
                 .ForMember(dest => dest.ImageUrl,
-                           opt => opt.MapFrom(src => src.EventMedias != null && src.EventMedias.Any() 
-                               ? src.EventMedias.FirstOrDefault().MediaUrl 
+                           opt => opt.MapFrom(src => src.EventMedias != null && src.EventMedias.Any(m => !m.IsDeleted) 
+                               ? src.EventMedias.FirstOrDefault(m => !m.IsDeleted).MediaUrl 
                                : null))
                 .ForMember(dest => dest.OrganizerId,
                            opt => opt.MapFrom(src => src.OrganizerId))

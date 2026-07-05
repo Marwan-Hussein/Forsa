@@ -138,12 +138,16 @@ namespace Application.Services
         public async Task<bool> ProcessPaymentCallbackAsync(PaymobWebhookDto webhookPayload)
         {
             // 1. Guard Clauses
-            if (webhookPayload?.Obj == null || string.IsNullOrEmpty(webhookPayload.Obj.IntentionId))
+            if (webhookPayload?.Obj == null)
+                return false;
+
+            var intentionId = webhookPayload.Obj.IntentionId ?? webhookPayload.Obj.PaymentKeyClaims?.NextPaymentIntention;
+            if (string.IsNullOrEmpty(intentionId))
                 return false;
 
             // 2. Fetch transaction
             var transaction = await transactionRepo.GetQueryable()
-                .FirstOrDefaultAsync(t => t.PaymobIntentionId == webhookPayload.Obj.IntentionId);
+                .FirstOrDefaultAsync(t => t.PaymobIntentionId == intentionId);
 
             if (transaction == null) return false;
 
@@ -237,6 +241,15 @@ namespace Application.Services
             {
                 transaction.TransactionStatus = TransactionStatus.Completed;
                 request.Status = RequestStatus.Accepted;
+
+                // Set PlaceId on the event and publish it
+                var ev = await eventRepo.GetQueryable().FirstOrDefaultAsync(e => e.Id == request.EventId);
+                if (ev != null)
+                {
+                    ev.PlaceId = request.PlaceId;
+                    ev.Status = EventStatus.Pending;
+                    eventRepo.Update(ev);
+                }
 
                 if (request.Place != null && request.Place.OwnerId.HasValue)
                 {

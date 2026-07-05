@@ -64,10 +64,6 @@ namespace Forsa.Controllers.AdminControllers
                 if (!Enum.IsDefined(typeof(PlaceStatus), request.Status))
                     return BadRequest(new { message = "Invalid place status value." });
 
-                // admin can only approve or reject
-                if (request.Status != PlaceStatus.Approved && request.Status != PlaceStatus.Rejected)
-                    return BadRequest(new { message = "Admin can only set status to Approved or Rejected." });
-
                 var updated = await _service.UpdateStatusAsync(id, request.Status, request.Reason);
 
                 if (!updated)

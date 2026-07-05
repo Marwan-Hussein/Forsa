@@ -34,6 +34,7 @@ namespace Application.Services.PlaceServices
 
             // Include all places except those that are soft deleted
             var query = _placeRepo.GetQueryable()
+                                  .Include(p => p.PlaceMedias)
                                   .Where(p => !p.IsDeleted);
 
             if (!string.IsNullOrWhiteSpace(parameters.Name))
@@ -66,6 +67,7 @@ namespace Application.Services.PlaceServices
             parameters ??= new PlaceSearchParameterDto();
 
             var query = _placeRepo.GetQueryable()
+                                  .Include(p => p.PlaceMedias)
                                   .Where(p => !p.IsDeleted && p.Status == PlaceStatus.Pending);
 
             if (!string.IsNullOrWhiteSpace(parameters.Name))

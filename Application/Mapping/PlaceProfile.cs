@@ -12,7 +12,10 @@ namespace Application.Mapping
             CreateMap<Place, PlaceDetailsDto>()
                 .ForMember(d => d.PlaceId, o => o.MapFrom(s => s.Id))
                 .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()))
-                .ForMember(d => d.FacilityName, o => o.MapFrom(s => s.FacilityName.ToString()));
+                .ForMember(d => d.FacilityName, o => o.MapFrom(s => s.FacilityName.ToString()))
+                .ForMember(d => d.Images, o => o.MapFrom(s => s.PlaceMedias != null 
+                    ? s.PlaceMedias.Where(m => !m.IsDeleted).Select(m => m.MediaURL).ToList() 
+                    : new List<string>()));
 
             CreateMap<AddPlaceDto, Place>()
                 .ForMember(d => d.FacilityName, o => o.MapFrom(s => (FacilityName)s.FacilityName));

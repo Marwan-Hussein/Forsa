@@ -1,6 +1,6 @@
 import { useState, useEffect, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
-import { Mail, Lock, Sparkles, GraduationCap, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Sparkles, GraduationCap, Eye, EyeOff, User, Building2, Home, ArrowLeft } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import { ForSaLogo } from "../../components/ForSaLogo";
@@ -15,8 +15,27 @@ export default function LoginPage() {
   const [searchParams] = useSearchParams();
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<"Attendee" | "Organizer" | "Owner">("Attendee");
+  const [externalRegData, setExternalRegData] = useState<{
+    provider: string;
+    providerKey: string;
+    email: string;
+    name: string;
+  } | null>(null);
 
   useEffect(() => {
+    const isExtReg = searchParams.get("externalRegister") === "true";
+    if (isExtReg) {
+      setExternalRegData({
+        provider: searchParams.get("provider") || "Google",
+        providerKey: searchParams.get("providerKey") || "",
+        email: searchParams.get("email") || "",
+        name: searchParams.get("name") || "",
+      });
+      navigate("/login", { replace: true });
+      return;
+    }
+
     const token = searchParams.get("token");
     const refreshToken = searchParams.get("refreshToken");
     const fullName = searchParams.get("fullName");
@@ -136,6 +155,43 @@ export default function LoginPage() {
     }
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const extRoles = [
+    { id: "Attendee", label: "Attendee", icon: User, color: "#3b82f6", desc: "Join events and explore experiences" },
+    { id: "Organizer", label: "Organizer", icon: Building2, color: "#10b981", desc: "Create events and manage your team" },
+    { id: "Owner", label: "Owner", icon: Home, color: "#f59e0b", desc: "List venues and host events" },
+  ];
+
+  const handleExternalRegister = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!externalRegData) return;
+    setIsSubmitting(true);
+    try {
+      const result = await apiPost<{ token: string; refreshToken: string; fullName: string; email: string }>("/api/Auth/external-register", {
+        provider: externalRegData.provider,
+        providerKey: externalRegData.providerKey,
+        email: externalRegData.email,
+        name: externalRegData.name,
+        requestedRole: selectedRole
+      });
+
+      localStorage.setItem("forsa_token", result.token);
+      localStorage.setItem("forsa_refresh_token", result.refreshToken);
+      if (result.fullName) localStorage.setItem("forsa_user_name", result.fullName);
+      if (result.email) localStorage.setItem("forsa_user_email", result.email);
+
+      localStorage.setItem("role", selectedRole);
+
+      toast.success("Successfully registered and signed in!");
+      navigate(routeByRole(selectedRole), { replace: true });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to complete registration.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-[#0B1120] overflow-hidden selection:bg-blue-500/30">
       {/* Left Panel - Visual/Animation */}
@@ -154,7 +210,7 @@ export default function LoginPage() {
         </div>
 
         <Link to="/" className="relative z-10 block mb-auto">
-          <ForSaLogo className="h-10 text-white drop-shadow-lg" />
+          <ForSaLogo className="h-14 text-white drop-shadow-lg" />
         </Link>
 
         <div className="relative z-10 max-w-xl pb-12">
@@ -210,7 +266,7 @@ export default function LoginPage() {
             to="/"
             className="mb-8 inline-block lg:hidden"
           >
-            <ForSaLogo className="h-10 text-white" />
+            <ForSaLogo className="h-14 text-white" />
           </Link>
 
           <motion.h1
@@ -219,7 +275,7 @@ export default function LoginPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.2 }}
           >
-            Welcome back
+            {externalRegData ? "Create Account" : "Welcome back"}
           </motion.h1>
           <motion.p
             className="font-['Inter:Regular',sans-serif] text-[16px] leading-relaxed text-slate-300"
@@ -227,7 +283,7 @@ export default function LoginPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.28 }}
           >
-            Sign in to your account to continue
+            {externalRegData ? "Choose your role to get started" : "Sign in to your account to continue"}
           </motion.p>
         </div>
 
@@ -240,166 +296,242 @@ export default function LoginPage() {
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/10 to-transparent" />
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <motion.div
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.4 }}
-            >
-              <label
-                htmlFor="login-email"
-                className="mb-2 block font-['Inter:Medium',sans-serif] text-sm font-medium text-slate-200"
-              >
-                Email address
-              </label>
-              <div className="relative group">
-                <Mail className={`absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 transition-colors duration-300 ${focusedField === "email" ? "text-white" : "text-slate-400"}`} />
-                <input
-                  id="login-email"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onFocus={() => setFocusedField("email")}
-                  onBlur={() => setFocusedField(null)}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (errors.email) setErrors((p) => ({ ...p, email: undefined }));
-                  }}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 font-['Inter:Regular',sans-serif] text-white transition-all duration-300 ease-out focus:border-[#3b82f6] focus:bg-white/10 focus:ring-1 focus:ring-[#3b82f6]/50 focus:outline-none placeholder:text-slate-500"
-                  placeholder="you@example.com"
-                />
+          {externalRegData ? (
+            <form onSubmit={handleExternalRegister} className="space-y-6">
+              <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center font-bold text-blue-400">
+                  {externalRegData.name ? externalRegData.name[0].toUpperCase() : externalRegData.email ? externalRegData.email[0].toUpperCase() : "G"}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">{externalRegData.name || "Google User"}</p>
+                  <p className="text-xs text-slate-400">{externalRegData.email}</p>
+                </div>
               </div>
-              {errors.email && <p className="mt-2 text-xs text-red-400">{errors.email}</p>}
-            </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.5 }}
-            >
-              <label
-                htmlFor="login-password"
-                className="mb-2 block font-['Inter:Medium',sans-serif] text-sm font-medium text-slate-200"
+              <div className="space-y-3">
+                {extRoles.map((role) => {
+                  const Icon = role.icon;
+                  const isActive = selectedRole === role.id;
+                  return (
+                    <button
+                      key={role.id}
+                      type="button"
+                      onClick={() => setSelectedRole(role.id as any)}
+                      className={`w-full text-left flex items-start gap-4 p-4 rounded-xl border transition-all duration-300 ease-out cursor-pointer ${
+                        isActive
+                          ? "text-white bg-white/5 border-transparent shadow-lg"
+                          : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
+                      }`}
+                      style={isActive ? { borderLeft: `4px solid ${role.color}`, borderColor: role.color } : undefined}
+                    >
+                      <div 
+                        className="p-2 rounded-lg flex items-center justify-center text-white"
+                        style={{ backgroundColor: role.color + "20", color: role.color }}
+                      >
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-sm text-white">{role.label}</h3>
+                        <p className="text-xs text-slate-400 mt-0.5">{role.desc}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <motion.button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-4 font-['Inter:Bold',sans-serif] text-[16px] font-bold text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] transition-all duration-300 hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
               >
-                Password
-              </label>
-              <div className="relative group">
-                <Lock className={`absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 transition-colors duration-300 ${focusedField === "password" ? "text-white" : "text-slate-400"}`} />
-                <input
-                  id="login-password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  value={password}
-                  onFocus={() => setFocusedField("password")}
-                  onBlur={() => setFocusedField(null)}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (errors.password) setErrors((p) => ({ ...p, password: undefined }));
-                  }}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 py-4 pl-12 pr-12 font-['Inter:Regular',sans-serif] text-white transition-all duration-300 ease-out focus:border-[#3b82f6] focus:bg-white/10 focus:ring-1 focus:ring-[#3b82f6]/50 focus:outline-none placeholder:text-slate-500"
-                  placeholder="Enter your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                  </>
+                ) : (
+                  "Complete Sign In"
+                )}
+              </motion.button>
+
+              <button
+                type="button"
+                onClick={() => setExternalRegData(null)}
+                className="w-full flex items-center justify-center gap-2 text-slate-400 hover:text-white transition-colors duration-300 text-sm font-medium cursor-pointer"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Cancel & Back to Login
+              </button>
+            </form>
+          ) : (
+            <>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <motion.div
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: 0.4 }}
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-              {errors.password && <p className="mt-2 text-xs text-red-400">{errors.password}</p>}
-            </motion.div>
+                  <label
+                    htmlFor="login-email"
+                    className="mb-2 block font-['Inter:Medium',sans-serif] text-sm font-medium text-slate-200"
+                  >
+                    Email address
+                  </label>
+                  <div className="relative group">
+                    <Mail className={`absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 transition-colors duration-300 ${focusedField === "email" ? "text-white" : "text-slate-400"}`} />
+                    <input
+                      id="login-email"
+                      type="email"
+                      autoComplete="email"
+                      value={email}
+                      onFocus={() => setFocusedField("email")}
+                      onBlur={() => setFocusedField(null)}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (errors.email) setErrors((p) => ({ ...p, email: undefined }));
+                      }}
+                      className="w-full rounded-xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 font-['Inter:Regular',sans-serif] text-white transition-all duration-300 ease-out focus:border-[#3b82f6] focus:bg-white/10 focus:ring-1 focus:ring-[#3b82f6]/50 focus:outline-none placeholder:text-slate-500"
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                  {errors.email && <p className="mt-2 text-xs text-red-400">{errors.email}</p>}
+                </motion.div>
 
-            <motion.div
-              className="flex items-center pt-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4, delay: 0.6 }}
-            >
-              <label className="flex cursor-pointer items-center gap-2 font-['Inter:Regular',sans-serif] text-sm text-slate-300">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 rounded border-white/20 bg-white/10 text-[#3b82f6] focus:ring-[#3b82f6]/30"
-                />
-                Remember me
-              </label>
-            </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: 0.5 }}
+                >
+                  <label
+                    htmlFor="login-password"
+                    className="mb-2 block font-['Inter:Medium',sans-serif] text-sm font-medium text-slate-200"
+                  >
+                    Password
+                  </label>
+                  <div className="relative group">
+                    <Lock className={`absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 transition-colors duration-300 ${focusedField === "password" ? "text-white" : "text-slate-400"}`} />
+                    <input
+                      id="login-password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      value={password}
+                      onFocus={() => setFocusedField("password")}
+                      onBlur={() => setFocusedField(null)}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (errors.password) setErrors((p) => ({ ...p, password: undefined }));
+                      }}
+                      className="w-full rounded-xl border border-white/10 bg-white/5 py-4 pl-12 pr-12 font-['Inter:Regular',sans-serif] text-white transition-all duration-300 ease-out focus:border-[#3b82f6] focus:bg-white/10 focus:ring-1 focus:ring-[#3b82f6]/50 focus:outline-none placeholder:text-slate-500"
+                      placeholder="Enter your password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="mt-2 text-xs text-red-400">{errors.password}</p>}
+                </motion.div>
 
-            <motion.button
-              type="submit"
-              className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-4 font-['Inter:Bold',sans-serif] text-[16px] font-bold text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] transition-all duration-300 hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] active:scale-[0.98] mt-6"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.65 }}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Sign in
-            </motion.button>
-          </form>
+                <motion.div
+                  className="flex items-center pt-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.4, delay: 0.6 }}
+                >
+                  <label className="flex cursor-pointer items-center gap-2 font-['Inter:Regular',sans-serif] text-sm text-slate-300">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="h-4 w-4 rounded border-white/20 bg-white/10 text-[#3b82f6] focus:ring-[#3b82f6]/30"
+                    />
+                    Remember me
+                  </label>
+                </motion.div>
 
-          <motion.div
-            className="mt-8 flex items-center justify-between"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: 0.7 }}
-          >
-            <div className="h-px flex-1 bg-white/10"></div>
-            <span className="mx-4 font-['Inter:Regular',sans-serif] text-xs text-slate-400 uppercase tracking-widest">
-              Or continue with
-            </span>
-            <div className="h-px flex-1 bg-white/10"></div>
-          </motion.div>
+                <motion.button
+                  type="submit"
+                  className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-4 font-['Inter:Bold',sans-serif] text-[16px] font-bold text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] transition-all duration-300 hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] active:scale-[0.98] mt-6"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.65 }}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Sign in
+                </motion.button>
+              </form>
 
-          <motion.button
-            type="button"
-            className="mt-6 flex w-full items-center justify-center rounded-xl border border-white/10 bg-white/5 py-4 font-['Inter:Medium',sans-serif] text-[15px] font-medium text-white transition-all duration-300 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/20 active:scale-[0.98] cursor-pointer"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.75 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => {
-              window.location.href = `${import.meta.env.VITE_API_BASE_URL}api/Auth/external-login?provider=Google&role=Attendee`;
-            }}
-          >
-            <svg viewBox="0 0 24 24" className="mr-3 h-5 w-5 bg-white rounded-full p-0.5 shadow-sm">
-              <path
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                fill="#4285F4"
-              />
-              <path
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                fill="#34A853"
-              />
-              <path
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                fill="#FBBC05"
-              />
-              <path
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                fill="#EA4335"
-              />
-            </svg>
-            Sign in with Google
-          </motion.button>
+              <motion.div
+                className="mt-8 flex items-center justify-between"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.7 }}
+              >
+                <div className="h-px flex-1 bg-white/10"></div>
+                <span className="mx-4 font-['Inter:Regular',sans-serif] text-xs text-slate-400 uppercase tracking-widest">
+                  Or continue with
+                </span>
+                <div className="h-px flex-1 bg-white/10"></div>
+              </motion.div>
 
-          <motion.p
-            className="mt-8 text-center font-['Inter:Regular',sans-serif] text-[15px] text-slate-400"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: 0.85 }}
-          >
-            Don&apos;t have an account?{" "}
-            <Link
-              to="/register"
-              className="font-['Inter:Medium',sans-serif] font-medium text-white hover:text-[#3b82f6] transition-colors duration-300"
-            >
-              Create one
-            </Link>
-          </motion.p>
+              <motion.button
+                type="button"
+                className="mt-6 flex w-full items-center justify-center rounded-xl border border-white/10 bg-white/5 py-4 font-['Inter:Medium',sans-serif] text-[15px] font-medium text-white transition-all duration-300 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/20 active:scale-[0.98] cursor-pointer"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.75 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  window.location.href = `${import.meta.env.VITE_API_BASE_URL}/api/Auth/external-login?provider=Google`;
+                }}
+              >
+                <svg viewBox="0 0 24 24" className="mr-3 h-5 w-5 bg-white rounded-full p-0.5 shadow-sm">
+                  <path
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    fill="#4285F4"
+                  />
+                  <path
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    fill="#34A853"
+                  />
+                  <path
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                    fill="#FBBC05"
+                  />
+                  <path
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                    fill="#EA4335"
+                  />
+                </svg>
+                Sign in with Google
+              </motion.button>
+
+              <motion.p
+                className="mt-8 text-center font-['Inter:Regular',sans-serif] text-[15px] text-slate-400"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.85 }}
+              >
+                Don&apos;t have an account?{" "}
+                <Link
+                  to="/register"
+                  className="font-['Inter:Medium',sans-serif] font-medium text-white hover:text-[#3b82f6] transition-colors duration-300"
+                >
+                  Create one
+                </Link>
+              </motion.p>
+            </>
+          )}
         </motion.div>
 
         <motion.div

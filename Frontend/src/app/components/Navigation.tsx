@@ -77,10 +77,7 @@ export function Navigation() {
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group outline-none">
-            <ForSaLogo className={`h-8 md:h-9 w-auto transition-all duration-500 ${shouldElevate ? 'brightness-0' : 'brightness-0 invert'}`} />
-            <span className={`text-2xl font-['Inter:Bold',sans-serif] font-bold tracking-tight transition-colors duration-500 ${shouldElevate ? 'text-[#0A1625]' : 'text-white'}`}>
-              ForSa
-            </span>
+            <ForSaLogo className={`h-12 md:h-14 w-auto transition-all duration-500 ${shouldElevate ? 'brightness-0' : 'brightness-0 invert'}`} />
           </Link>
           
           <div className="hidden md:flex items-center gap-8">

@@ -31,6 +31,7 @@ export interface CreateEventDto {
   endDate: string;
   ticketPrice: number;
   totalTickets: number;
+  customLocation?: string;
 }
 
 export interface UpdateEventDto {
@@ -41,6 +42,7 @@ export interface UpdateEventDto {
   endDate: string;
   ticketPrice: number;
   totalTickets: number;
+  customLocation?: string;
 }
 
 export interface BookingRequestDto {
@@ -68,7 +70,7 @@ export const organizerApi = {
     formData.append('organizerId', organizerId.toString());
     formData.append('files', file);
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('forsa_token');
     const response = await fetch(`/api/organizers/events/${eventId}/media`, {
       method: 'POST',
       headers: {

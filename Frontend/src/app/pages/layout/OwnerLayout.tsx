@@ -65,9 +65,10 @@ export default function OwnerLayout() {
         </div>
 
         <div className="h-20 flex items-center justify-between px-6 border-b border-white/10 relative z-10">
-          <div className="flex items-center gap-3">
-            <ForSaLogo className="h-8 brightness-0 invert" />
-            <span className="font-['Inter:Bold',sans-serif] font-bold text-xl tracking-wide text-white">Owner Portal</span>
+          <div className="flex items-center gap-3.5">
+            <ForSaLogo className="h-9 brightness-0 invert" />
+            <div className="h-6 w-[1px] bg-white/20 self-center" />
+            <span className="text-lg font-bold tracking-wide text-white whitespace-nowrap">Owner Portal</span>
           </div>
           <button className="lg:hidden text-slate-400 hover:text-white transition-colors" onClick={() => setSidebarOpen(false)}>
             <X className="w-6 h-6" />

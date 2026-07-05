@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
-import { Search, MapPin, Users, DollarSign, CheckCircle, XCircle, Loader2, Sparkles, AlertCircle, Trash2, List } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Search, MapPin, Users, DollarSign, CheckCircle, XCircle, Loader2, Sparkles, AlertCircle, Trash2, List, Eye, Image as ImageIcon, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { adminApi, PlaceDetailsDTO } from "../../api/adminApi";
+import MapDisplay from "../../components/map/MapDisplay";
 
 type TabView = "pending" | "all";
 
@@ -17,6 +18,32 @@ export default function ManagePlacesPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const [deletingPlace, setDeletingPlace] = useState<PlaceDetailsDTO | null>(null);
+  const [selectedPlaceForDetails, setSelectedPlaceForDetails] = useState<PlaceDetailsDTO | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const placeStatusDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+    setIsStatusDropdownOpen(false);
+  }, [selectedPlaceForDetails]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        placeStatusDropdownRef.current &&
+        !placeStatusDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsStatusDropdownOpen(false);
+      }
+    }
+    if (isStatusDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isStatusDropdownOpen]);
 
   async function fetchPlaces() {
     setLoading(true);
@@ -228,35 +255,52 @@ export default function ManagePlacesPage() {
       </motion.div>
 
       {/* Main Content */}
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-32 bg-white/50 backdrop-blur-xl rounded-[2rem] border border-white shadow-sm">
-          <div className="w-16 h-16 relative flex items-center justify-center">
-            <div className="absolute inset-0 border-4 border-blue-100 rounded-full" />
-            <div className="absolute inset-0 border-4 border-blue-500 rounded-full border-t-transparent animate-spin" />
-          </div>
-          <p className="text-slate-600 font-['Inter:Bold',sans-serif] mt-4 tracking-wide text-sm">FETCHING VENUES</p>
-        </div>
-      ) : filtered.length === 0 ? (
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center py-32 bg-white/60 backdrop-blur-xl rounded-[2rem] border border-white shadow-sm"
-        >
-          <div className="w-24 h-24 bg-gradient-to-br from-slate-50 to-slate-100 rounded-full flex items-center justify-center mb-6 shadow-inner border border-slate-200/50">
-            <MapPin className="w-10 h-10 text-slate-300" />
-          </div>
-          <h3 className="text-slate-900 font-['Inter:Bold',sans-serif] text-[20px] mb-2 tracking-tight">Queue is Empty</h3>
-          <p className="text-slate-500 font-['Inter:Medium',sans-serif] text-[15px] max-w-md text-center">
-            {search 
-              ? "No venues match your search." 
-              : activeTab === "pending" 
-                ? "Awesome! You've reviewed all pending venues. Take a coffee break ☕"
-                : "There are no venues available on the platform yet."}
-          </p>
-        </motion.div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          <AnimatePresence>
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.div 
+            key="loading"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="flex flex-col items-center justify-center py-32 bg-white/50 backdrop-blur-xl rounded-[2rem] border border-white shadow-sm w-full"
+          >
+            <div className="w-16 h-16 relative flex items-center justify-center">
+              <div className="absolute inset-0 border-4 border-blue-100 rounded-full" />
+              <div className="absolute inset-0 border-4 border-blue-500 rounded-full border-t-transparent animate-spin" />
+            </div>
+            <p className="text-slate-600 font-['Inter:Bold',sans-serif] mt-4 tracking-wide text-sm">FETCHING VENUES</p>
+          </motion.div>
+        ) : filtered.length === 0 ? (
+          <motion.div 
+            key={`empty-${activeTab}`}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="flex flex-col items-center justify-center py-32 bg-white/60 backdrop-blur-xl rounded-[2rem] border border-white shadow-sm w-full"
+          >
+            <div className="w-24 h-24 bg-gradient-to-br from-slate-50 to-slate-100 rounded-full flex items-center justify-center mb-6 shadow-inner border border-slate-200/50">
+              <MapPin className="w-10 h-10 text-slate-300" />
+            </div>
+            <h3 className="text-slate-900 font-['Inter:Bold',sans-serif] text-[20px] mb-2 tracking-tight">Queue is Empty</h3>
+            <p className="text-slate-500 font-['Inter:Medium',sans-serif] text-[15px] max-w-md text-center">
+              {search 
+                ? "No venues match your search." 
+                : activeTab === "pending" 
+                  ? "Awesome! You've reviewed all pending venues. Take a coffee break ☕"
+                  : "There are no venues available on the platform yet."}
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div 
+            key={`grid-${activeTab}`}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.25 }}
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 w-full"
+          >
             {filtered.map((place, i) => (
               <motion.div
                 layout
@@ -318,6 +362,13 @@ export default function ManagePlacesPage() {
                   </div>
                 </div>
 
+                <button 
+                  onClick={() => setSelectedPlaceForDetails(place)}
+                  className="w-full flex items-center justify-center gap-2 py-3 mb-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-['Inter:Bold',sans-serif] text-[14px] hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition-all hover:-translate-y-0.5 shadow-sm"
+                >
+                  <Eye className="w-4.5 h-4.5" /> View Details
+                </button>
+
                 {/* Actions depending on Tab & Status */}
                 <div className="grid grid-cols-2 gap-3 mt-auto">
                   {String(place.status).toLowerCase() === "pending" || String(place.status) === "1" ? (
@@ -346,9 +397,9 @@ export default function ManagePlacesPage() {
                 </div>
               </motion.div>
             ))}
-          </AnimatePresence>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Reject Modal */}
       <AnimatePresence>
@@ -358,7 +409,7 @@ export default function ManagePlacesPage() {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/60"
               onClick={() => !submitting && setRejectingPlace(null)}
             />
             <motion.div 
@@ -417,7 +468,7 @@ export default function ManagePlacesPage() {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/60"
               onClick={() => !submitting && setDeletingPlace(null)}
             />
             <motion.div 
@@ -452,6 +503,285 @@ export default function ManagePlacesPage() {
                 >
                   Cancel
                 </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Place Details Modal */}
+      <AnimatePresence>
+        {selectedPlaceForDetails && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="absolute inset-0 bg-slate-900/75"
+              onClick={() => setSelectedPlaceForDetails(null)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 md:p-8 border border-slate-100 flex flex-col gap-6"
+            >
+              {/* Header Info */}
+              <div className="flex justify-between items-start border-b border-slate-100 pb-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                      {selectedPlaceForDetails.facilityName}
+                    </span>
+                    {renderStatusBadge(selectedPlaceForDetails.status)}
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-['Inter:Bold',sans-serif] text-slate-900 leading-tight">
+                    {selectedPlaceForDetails.name}
+                  </h2>
+                </div>
+                <button 
+                  onClick={() => setSelectedPlaceForDetails(null)}
+                  className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 overflow-y-auto pr-1">
+                {/* Left Column: Media & Description */}
+                <div className="space-y-6">
+                  {selectedPlaceForDetails.images && selectedPlaceForDetails.images.length > 0 ? (
+                    <div className="space-y-3">
+                      <div className="relative w-full h-64 rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-50 group/image">
+                        <img 
+                          src={selectedPlaceForDetails.images[activeImageIndex]} 
+                          alt={selectedPlaceForDetails.name} 
+                          className="w-full h-full object-cover transition-all duration-300"
+                        />
+                        {selectedPlaceForDetails.images.length > 1 && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => setActiveImageIndex((prev) => (prev === 0 ? selectedPlaceForDetails.images!.length - 1 : prev - 1))}
+                              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 hover:bg-white text-slate-800 shadow-md hover:scale-105 transition-all z-10"
+                            >
+                              <ChevronLeft className="w-5 h-5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setActiveImageIndex((prev) => (prev === selectedPlaceForDetails.images!.length - 1 ? 0 : prev + 1))}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 hover:bg-white text-slate-800 shadow-md hover:scale-105 transition-all z-10"
+                            >
+                              <ChevronRight className="w-5 h-5" />
+                            </button>
+                            {/* Bullet Indicators */}
+                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/30 px-3 py-1.5 rounded-full backdrop-blur-sm z-10">
+                              {selectedPlaceForDetails.images.map((_, idx) => (
+                                <button
+                                  type="button"
+                                  key={idx}
+                                  onClick={() => setActiveImageIndex(idx)}
+                                  className={`w-1.5 h-1.5 rounded-full transition-all ${idx === activeImageIndex ? 'bg-white w-3' : 'bg-white/50'}`}
+                                />
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      {selectedPlaceForDetails.images.length > 1 && (
+                        <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-thin">
+                          {selectedPlaceForDetails.images.map((imgUrl, idx) => (
+                            <button 
+                              type="button"
+                              key={idx}
+                              onClick={() => setActiveImageIndex(idx)}
+                              className={`w-20 h-14 rounded-lg overflow-hidden border transition-all flex-shrink-0 ${idx === activeImageIndex ? 'border-blue-500 ring-2 ring-blue-500/20 scale-95' : 'border-slate-200 hover:opacity-85'}`}
+                            >
+                              <img src={imgUrl} alt={`Place img ${idx}`} className="w-full h-full object-cover" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="w-full h-64 rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 bg-slate-50">
+                      <ImageIcon className="w-12 h-12 stroke-[1.5] mb-2" />
+                      <span className="text-xs font-semibold">No venue images uploaded</span>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-800 uppercase tracking-wider">About the Venue</h4>
+                    <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-line">
+                      {selectedPlaceForDetails.description}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right Column: Specifications, Price & Map */}
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                    <div>
+                      <p className="text-[10px] font-['Inter:Bold',sans-serif] font-bold text-slate-400 uppercase tracking-wider mb-1">Capacity</p>
+                      <p className="text-xs font-bold text-slate-700">{selectedPlaceForDetails.capacity} people</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-['Inter:Bold',sans-serif] font-bold text-slate-400 uppercase tracking-wider mb-1">Created At</p>
+                      <p className="text-xs font-bold text-slate-700">{new Date(selectedPlaceForDetails.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div className="pt-2 border-t border-slate-200/50">
+                      <p className="text-[10px] font-['Inter:Bold',sans-serif] font-bold text-slate-400 uppercase tracking-wider mb-1">Hourly Price</p>
+                      <p className="text-sm font-bold text-blue-600">{selectedPlaceForDetails.hourlyPrice} EGP / hr</p>
+                    </div>
+                    <div className="pt-2 border-t border-slate-200/50">
+                      <p className="text-[10px] font-['Inter:Bold',sans-serif] font-bold text-slate-400 uppercase tracking-wider mb-1">Daily Price</p>
+                      <p className="text-sm font-bold text-blue-600">{selectedPlaceForDetails.dailyPrice} EGP / day</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-800 uppercase tracking-wider">Location Details</h4>
+                    <MapDisplay 
+                      address={selectedPlaceForDetails.location}
+                      latitude={selectedPlaceForDetails.latitude}
+                      longitude={selectedPlaceForDetails.longitude}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Status Manager Block */}
+              <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 flex-shrink-0">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-['Inter:Bold',sans-serif] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Manage Status</h4>
+                    <p className="text-[11px] font-['Inter:SemiBold',sans-serif] font-semibold text-slate-400">Update venue listing and availability state</p>
+                  </div>
+                </div>
+                
+                <div className="relative" ref={placeStatusDropdownRef}>
+                  {/* Dropdown Trigger Button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                    className="flex items-center justify-between gap-3 px-4 py-2.5 bg-white border border-slate-200 rounded-2xl shadow-sm text-xs font-bold text-slate-700 min-w-[160px] hover:bg-slate-50 hover:border-slate-300 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${
+                        String(selectedPlaceForDetails.status).toLowerCase() === "draft" || String(selectedPlaceForDetails.status) === "0" ? "bg-slate-400" :
+                        String(selectedPlaceForDetails.status).toLowerCase() === "pending" || String(selectedPlaceForDetails.status) === "1" ? "bg-amber-400" :
+                        String(selectedPlaceForDetails.status).toLowerCase() === "approved" || String(selectedPlaceForDetails.status) === "2" ? "bg-emerald-400" :
+                        String(selectedPlaceForDetails.status).toLowerCase() === "rejected" || String(selectedPlaceForDetails.status) === "3" ? "bg-rose-400" :
+                        String(selectedPlaceForDetails.status).toLowerCase() === "available" || String(selectedPlaceForDetails.status) === "4" ? "bg-purple-400" :
+                        String(selectedPlaceForDetails.status).toLowerCase() === "booked" || String(selectedPlaceForDetails.status) === "5" ? "bg-blue-400" :
+                        "bg-slate-500"
+                      }`} />
+                      {
+                        String(selectedPlaceForDetails.status).toLowerCase() === "draft" || String(selectedPlaceForDetails.status) === "0" ? "Draft" :
+                        String(selectedPlaceForDetails.status).toLowerCase() === "pending" || String(selectedPlaceForDetails.status) === "1" ? "Pending" :
+                        String(selectedPlaceForDetails.status).toLowerCase() === "approved" || String(selectedPlaceForDetails.status) === "2" ? "Approved" :
+                        String(selectedPlaceForDetails.status).toLowerCase() === "rejected" || String(selectedPlaceForDetails.status) === "3" ? "Rejected" :
+                        String(selectedPlaceForDetails.status).toLowerCase() === "available" || String(selectedPlaceForDetails.status) === "4" ? "Available" :
+                        String(selectedPlaceForDetails.status).toLowerCase() === "booked" || String(selectedPlaceForDetails.status) === "5" ? "Booked" :
+                        "Pending"
+                      }
+                    </span>
+                    {isStatusDropdownOpen ? (
+                      <ChevronUp className="w-4 h-4 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    )}
+                  </button>
+
+                  {/* Dropdown Options List */}
+                  <AnimatePresence>
+                    {isStatusDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 bottom-full mb-2 sm:bottom-auto sm:top-full sm:mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-xl z-20 py-2 overflow-hidden"
+                      >
+                        {[
+                          { value: 0, label: "Draft", dotColor: "bg-slate-400" },
+                          { value: 1, label: "Pending", dotColor: "bg-amber-400" },
+                          { value: 2, label: "Approved", dotColor: "bg-emerald-400" },
+                          { value: 3, label: "Rejected", dotColor: "bg-rose-400" },
+                          { value: 4, label: "Available", dotColor: "bg-purple-400" },
+                          { value: 5, label: "Booked", dotColor: "bg-blue-400" }
+                        ].map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={async () => {
+                              setIsStatusDropdownOpen(false);
+                              if (opt.value === 3) {
+                                setRejectingPlace(selectedPlaceForDetails);
+                                setSelectedPlaceForDetails(null);
+                                return;
+                              }
+                              try {
+                                await adminApi.updatePlaceStatus(selectedPlaceForDetails.placeId, opt.value);
+                                toast.success("Venue status updated successfully!");
+                                setSelectedPlaceForDetails({
+                                  ...selectedPlaceForDetails,
+                                  status: opt.value.toString()
+                                });
+                                fetchPlaces();
+                              } catch (err: any) {
+                                toast.error(err.message || "Failed to update status");
+                              }
+                            }}
+                            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                          >
+                            <span className={`w-2 h-2 rounded-full ${opt.dotColor}`} />
+                            {opt.label}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* Modal Action Buttons */}
+              <div className="border-t border-slate-100 pt-4 flex justify-end gap-3">
+                {String(selectedPlaceForDetails.status).toLowerCase() === "pending" || String(selectedPlaceForDetails.status) === "1" ? (
+                  <>
+                    <button 
+                      onClick={() => {
+                        setRejectingPlace(selectedPlaceForDetails);
+                        setSelectedPlaceForDetails(null);
+                      }}
+                      className="px-6 py-3 rounded-xl bg-white border-2 border-rose-100 text-rose-600 font-['Inter:Bold',sans-serif] text-sm hover:bg-rose-50 hover:border-rose-200 transition-all shadow-sm"
+                    >
+                      Reject Venue
+                    </button>
+                    <button 
+                      onClick={async () => {
+                        await handleApprove(selectedPlaceForDetails);
+                        setSelectedPlaceForDetails(null);
+                      }}
+                      className="px-6 py-3 rounded-xl bg-emerald-500 text-white font-['Inter:Bold',sans-serif] text-sm hover:bg-emerald-600 shadow-[0_4px_15px_rgba(16,185,129,0.3)] transition-all"
+                    >
+                      Approve & Publish
+                    </button>
+                  </>
+                ) : (
+                  <button 
+                    onClick={() => {
+                      setDeletingPlace(selectedPlaceForDetails);
+                      setSelectedPlaceForDetails(null);
+                    }}
+                    className="px-6 py-3 rounded-xl bg-white border-2 border-red-100 text-red-600 font-['Inter:Bold',sans-serif] text-sm hover:bg-red-50 hover:border-red-200 transition-all shadow-sm"
+                  >
+                    Delete Venue
+                  </button>
+                )}
               </div>
             </motion.div>
           </div>

@@ -83,6 +83,7 @@ namespace Application.Services.OwnerServices
         public async Task<List<PlaceDetailsDto>> GetOwnerPlacesAsync(int ownerId)
         {
             var places = await _placeRepo.GetQueryable()
+                .Include(p => p.PlaceMedias)
                 .Where(p => p.OwnerId == ownerId && !p.IsDeleted)
                 .ToListAsync();
 
@@ -92,6 +93,7 @@ namespace Application.Services.OwnerServices
         public async Task<PlaceDetailsDto?> GetOwnerPlaceByIdAsync(int ownerId, int placeId)
         {
             var place = await _placeRepo.GetQueryable()
+                .Include(p => p.PlaceMedias)
                 .FirstOrDefaultAsync(p => p.Id == placeId && p.OwnerId == ownerId && !p.IsDeleted);
 
             return place == null ? null : _mapper.Map<PlaceDetailsDto>(place);

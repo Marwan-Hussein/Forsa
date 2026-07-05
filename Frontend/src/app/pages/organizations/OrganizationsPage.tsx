@@ -2,77 +2,112 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { useParams } from "react-router";
 import { ArrowLeft, Building2, Users, Calendar, Bell, BellOff } from "lucide-react";
+import { apiGet, apiPost } from "../../api/api";
+import { toast } from "react-toastify";
 
 export default function OrganizationsPage() {
   const { orgId } = useParams<{ orgId: string }>();
-  const [subscribedOrgs, setSubscribedOrgs] = useState<string[]>(["org1", "org2"]);
+  const [organizations, setOrganizations] = useState<any[]>([]);
   const [selectedOrganization, setSelectedOrganization] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  
+
+  // Helper for logo emoji
+  const getOrgLogoEmoji = (name: string): string => {
+    const lowercaseName = name.toLowerCase();
+    if (lowercaseName.includes("iti") || lowercaseName.includes("institute")) return "🎓";
+    if (lowercaseName.includes("alx")) return "💻";
+    if (lowercaseName.includes("riseup")) return "🚀";
+    if (lowercaseName.includes("wuzzuf")) return "💼";
+    if (lowercaseName.includes("techne") || lowercaseName.includes("summit")) return "⚡";
+    return "🏛️";
+  };
+
   useEffect(() => {
-    const fetchOrganization = async () => {
-      if (!orgId) {
-        setLoading(false);
-        return;
-      }
+    const loadData = async () => {
       try {
         setLoading(true);
-        // Assuming we have an apiGet function or using fetch directly
-        const response = await fetch(`/api/organizers/${orgId}/profile`);
-        if (response.ok) {
-          const data = await response.json();
+        if (orgId) {
+          // Fetch single organizer profile
+          const data = await apiGet<any>(`/api/organizers/${orgId}/profile`);
           setSelectedOrganization({
             id: data.id.toString(),
             name: data.organizationName || data.fullName,
-            logo: "🏛️",
-            description: "Event Organizer on ForSa",
-            eventsCount: 0,
+            logo: getOrgLogoEmoji(data.organizationName || data.fullName),
+            description: `Official ForSa Partner. Dedicated to empowering the youth and tech community in Egypt with world-class events, workshops, and career accelerators.`,
+            eventsCount: data.eventsCount || 0,
             followersCount: data.followersCount || 0,
-            categories: ["General"]
+            categories: (data.organizationName?.toLowerCase().includes("iti") || data.organizationName?.toLowerCase().includes("alx")) ? ["Education", "Tech"] : ["Business", "Tech"],
+            isSubscribed: data.isSubscribed
           });
+        } else {
+          // Fetch all organizers
+          const data = await apiGet<any[]>("/api/organizers");
+          const mapped = data.map((item: any) => ({
+            id: item.id.toString(),
+            name: item.organizationName || item.fullName,
+            logo: getOrgLogoEmoji(item.organizationName || item.fullName),
+            description: `Official ForSa Partner. Dedicated to empowering the youth and tech community in Egypt with world-class events, workshops, and career accelerators.`,
+            eventsCount: item.eventsCount || 0,
+            followersCount: item.followersCount || 0,
+            categories: (item.organizationName?.toLowerCase().includes("iti") || item.organizationName?.toLowerCase().includes("alx")) ? ["Education", "Tech"] : ["Business", "Tech"],
+            isSubscribed: item.isSubscribed
+          }));
+          setOrganizations(mapped);
         }
-      } catch (error) {
-        console.error("Error fetching organization:", error);
+      } catch (error: any) {
+        console.error("Error loading organizations:", error);
+        toast.error("Failed to load organizations");
       } finally {
         setLoading(false);
       }
     };
-    fetchOrganization();
+    loadData();
   }, [orgId]);
 
-  // Mock Data for the list when no orgId is present
-  const mockOrganizations = [
-    {
-      id: "org1",
-      name: "Tech Innovators",
-      logo: "🚀",
-      description: "Leading the way in tech events.",
-      eventsCount: 15,
-      followersCount: 12500,
-      categories: ["Technology", "Business"]
-    },
-    {
-      id: "org2",
-      name: "Global Business",
-      logo: "🏛️",
-      description: "Business conferences worldwide.",
-      eventsCount: 8,
-      followersCount: 5400,
-      categories: ["Business"]
+  const toggleSubscription = async (organizationId: string) => {
+    try {
+      const res = await apiPost<any>(`/api/organizers/${organizationId}/subscribe`, {});
+      const { isSubscribed, followersCount } = res;
+
+      if (orgId) {
+        setSelectedOrganization((prev: any) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            isSubscribed,
+            followersCount
+          };
+        });
+      } else {
+        setOrganizations((prev) =>
+          prev.map((org) => {
+            if (org.id === organizationId) {
+              return {
+                ...org,
+                isSubscribed,
+                followersCount
+              };
+            }
+            return org;
+          })
+        );
+      }
+      toast.success(isSubscribed ? "Subscribed successfully!" : "Unsubscribed successfully!");
+    } catch (error: any) {
+      console.error("Error subscribing:", error);
+      toast.error("You must be logged in as an Attendee to subscribe.");
     }
-  ];
-
-  const organizationsToRender = orgId 
-    ? (selectedOrganization ? [selectedOrganization] : []) // If fetching specific org, show only that (or nothing if failed)
-    : mockOrganizations; // If no orgId, show all mocks (or real data if we fetched all)
-
-  const toggleSubscription = (orgId: string) => {
-    setSubscribedOrgs((prev) =>
-      prev.includes(orgId) ? prev.filter((id) => id !== orgId) : [...prev, orgId]
-    );
   };
 
   const isSpecificOrg = !!orgId;
+
+  const organizationsToRender = isSpecificOrg
+    ? (selectedOrganization ? [selectedOrganization] : [])
+    : organizations;
+
+  const subscribedCount = isSpecificOrg 
+    ? (selectedOrganization?.isSubscribed ? 1 : 0) 
+    : organizations.filter(o => o.isSubscribed).length;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -99,7 +134,7 @@ export default function OrganizationsPage() {
               <Building2 className="w-10 h-10 text-blue-300" />
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">
-              {loading && isSpecificOrg ? (
+              {loading ? (
                 <span className="opacity-50">Loading...</span>
               ) : selectedOrganization ? (
                 selectedOrganization.name
@@ -135,107 +170,122 @@ export default function OrganizationsPage() {
                 Why subscribe to organizations?
               </h3>
               <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
-                Get notified when your favorite organizations post new events, updates, or special offers. You're currently subscribed to {subscribedOrgs.length} organization{subscribedOrgs.length !== 1 ? "s" : ""}.
+                Get notified when your favorite organizations post new events, updates, or special offers. You're currently subscribed to {subscribedCount} organization{subscribedCount !== 1 ? "s" : ""}.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Organizations Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {organizationsToRender.map((org) => {
-            const isSubscribed = subscribedOrgs.includes(org.id);
-            return (
-              <div
-                key={org.id}
-                className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-6 hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-3xl flex-shrink-0">
-                    {org.logo}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-1">
-                      {org.name}
-                    </h3>
-                    <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground line-clamp-2">
-                      {org.description}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-[rgba(82,109,130,0.2)]">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-accent" />
-                    <div>
-                      <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground">
-                        {org.eventsCount}
-                      </p>
-                      <p className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
-                        Events
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4" />
+            <p className="text-slate-500 font-medium font-['Inter:Medium',sans-serif]">Loading organizers...</p>
+          </div>
+        ) : organizationsToRender.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm text-center px-4">
+            <Building2 className="w-16 h-16 text-slate-300 mb-4" />
+            <h3 className="text-xl font-bold text-slate-700 mb-1">No Organizations Found</h3>
+            <p className="text-slate-500 max-w-sm">There are no event organizers registered at this moment. Check back later.</p>
+          </div>
+        ) : (
+          /* Organizations Grid */
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {organizationsToRender.map((org) => {
+              const isSubscribed = org.isSubscribed;
+              return (
+                <div
+                  key={org.id}
+                  className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-6 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
+                      {org.logo}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-1 truncate">
+                        {org.name}
+                      </h3>
+                      <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground line-clamp-2">
+                        {org.description}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-accent" />
-                    <div>
-                      <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground">
-                        {org.followersCount.toLocaleString()}
-                      </p>
-                      <p className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
-                        Followers
-                      </p>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-[rgba(82,109,130,0.2)]">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-blue-500" />
+                      <div>
+                        <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground">
+                          {org.eventsCount}
+                        </p>
+                        <p className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
+                          Events
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-emerald-500" />
+                      <div>
+                        <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[16px] text-foreground">
+                          {org.followersCount.toLocaleString()}
+                        </p>
+                        <p className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
+                          Followers
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Categories */}
-                <div className="mb-4">
-                  <div className="flex flex-wrap gap-2">
-                    {org.categories.map((category) => (
-                      <span
-                        key={category}
-                        className="px-2 py-1 bg-background text-foreground rounded-[6px] text-[12px] font-['Inter:Medium',sans-serif] font-medium"
+                  {/* Categories */}
+                  <div className="mb-4">
+                    <div className="flex flex-wrap gap-2">
+                      {org.categories.map((category: string) => (
+                        <span
+                          key={category}
+                          className="px-2.5 py-1 bg-slate-50 text-slate-600 border border-slate-100 rounded-[6px] text-[12px] font-['Inter:Medium',sans-serif] font-medium"
+                        >
+                          {category}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      onClick={() => toggleSubscription(org.id)}
+                      className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                        isSubscribed
+                          ? "bg-[#1E3D61] text-white shadow-md hover:bg-[#1a365d] active:scale-95"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200 active:scale-95"
+                      }`}
+                    >
+                      {isSubscribed ? (
+                        <>
+                          <Bell className="w-4 h-4" />
+                          Subscribed
+                        </>
+                      ) : (
+                        <>
+                          <BellOff className="w-4 h-4" />
+                          Subscribe
+                        </>
+                      )}
+                    </button>
+                    {!isSpecificOrg && (
+                      <Link
+                        to={`/organizations/${org.id}`}
+                        className="flex-1 bg-white border-2 border-slate-100 text-slate-700 py-2.5 rounded-xl font-bold text-sm hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-all text-center flex items-center justify-center active:scale-95"
                       >
-                        {category}
-                      </span>
-                    ))}
+                        View Profile
+                      </Link>
+                    )}
                   </div>
                 </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={() => toggleSubscription(org.id)}
-                    className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-                      isSubscribed
-                        ? "bg-[#1E3D61] text-white shadow-md hover:bg-[#1a365d] active:scale-95"
-                        : "bg-slate-100 text-slate-700 hover:bg-slate-200 active:scale-95"
-                    }`}
-                  >
-                    {isSubscribed ? (
-                      <>
-                        <Bell className="w-4 h-4" />
-                        Subscribed
-                      </>
-                    ) : (
-                      <>
-                        <BellOff className="w-4 h-4" />
-                        Subscribe
-                      </>
-                    )}
-                  </button>
-                  <Link
-                    to={`/organizations/${org.id}`}
-                    className="flex-1 bg-white border-2 border-slate-100 text-slate-700 py-2.5 rounded-xl font-bold text-sm hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-all text-center flex items-center justify-center active:scale-95"
-                  >
-                    View Profile
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

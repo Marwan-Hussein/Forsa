@@ -326,9 +326,16 @@ export default function BookingRequestFormPage() {
                 <span className="leading-relaxed">{place.location}</span>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl mb-8">
-                <span className="font-bold text-slate-700">Price per day</span>
-                <span className="text-lg font-black text-slate-900">{place.dailyPrice} EGP</span>
+              <div className="space-y-3 p-4 bg-slate-50 rounded-2xl mb-8">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-slate-600 text-sm">Price per day</span>
+                  <span className="text-base font-bold text-slate-900">{place.dailyPrice} EGP</span>
+                </div>
+                <div className="h-px bg-slate-200/60" />
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-slate-600 text-sm">Price per hour</span>
+                  <span className="text-base font-bold text-slate-900">{place.hourlyPrice} EGP</span>
+                </div>
               </div>
 
               <div className="space-y-3">

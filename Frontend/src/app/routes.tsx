@@ -22,6 +22,7 @@ import SubmitOrgToOwnerFeedbackPage from "./pages/places/SubmitOrgToOwnerFeedbac
 import ViewFeedbackRatingPage from "./pages/places/ViewFeedbackRatingPage";
 import AboutPage from "./pages/home/AboutPage";
 import ContactUsPage from "./pages/home/ContactUsPage";
+import PaymentResultPage from "./pages/payment/PaymentResultPage";
 
 import AdminLoginPage from "./pages/auth/AdminLoginPage";
 
@@ -121,6 +122,10 @@ export const router = createBrowserRouter([
       {
         path: "contact",
         Component: ContactUsPage,
+      },
+      {
+        path: "payment-result",
+        Component: PaymentResultPage,
       },
     ],
   },

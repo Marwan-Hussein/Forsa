@@ -19,6 +19,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Domain.Entities.PaymentEntities;
+
 namespace Application.Services.OrganizerServices
 {
     public class OrganizerService : IOrganizerService
@@ -31,6 +33,7 @@ namespace Application.Services.OrganizerServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IGoogleCalendarSyncService _calendarSync;
+        private readonly IQueryableRepository<PaymentTransaction> _transactionRepository;
 
         public OrganizerService(
             IOrganizerRepository organizerRepo,
@@ -40,7 +43,8 @@ namespace Application.Services.OrganizerServices
             IGenericRepository<Notification> notificationRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IGoogleCalendarSyncService calendarSync)
+            IGoogleCalendarSyncService calendarSync,
+            IQueryableRepository<PaymentTransaction> transactionRepository)
         {
             _organizerRepo = organizerRepo;
             _eventRepository = eventRepository;
@@ -50,6 +54,7 @@ namespace Application.Services.OrganizerServices
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _calendarSync = calendarSync;
+            _transactionRepository = transactionRepository;
         }
 
         public async Task<List<Organizer>> FilterOrganizers(OrganizerSearchParameters searchParameter)
@@ -112,7 +117,8 @@ namespace Application.Services.OrganizerServices
                 RemainingTickets = dto.TotalTickets,
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
-                Status = EventStatus.Draft,
+                CustomLocation = dto.CustomLocation,
+                Status = string.IsNullOrWhiteSpace(dto.CustomLocation) ? EventStatus.Draft : EventStatus.Pending,
                 IsDeleted = false
             };
 
@@ -153,6 +159,11 @@ namespace Application.Services.OrganizerServices
             ev.Category = dto.Category;
             ev.StartDate = dto.StartDate;
             ev.EndDate = dto.EndDate;
+            ev.CustomLocation = dto.CustomLocation;
+            if (ev.Status == EventStatus.Draft && !string.IsNullOrWhiteSpace(dto.CustomLocation))
+            {
+                ev.Status = EventStatus.Pending;
+            }
 
             _eventRepository.Update(ev);
             await _unitOfWork.SaveChangesAsync();
@@ -358,12 +369,54 @@ namespace Application.Services.OrganizerServices
             var completedEvents = events.Count(e => e.Status == EventStatus.Completed);
             var pendingEvents = events.Count(e => e.Status == EventStatus.Pending || e.Status == EventStatus.Draft);
 
-            var totalTicketsSold = events.Sum(e => e.TotalTickets - e.RemainingTickets);
-            var totalRevenue = events.Sum(e => (decimal)((e.TotalTickets - e.RemainingTickets) * e.TicketPrice));
+            var organizerEventIds = events.Select(e => e.Id).ToList();
 
-            var bookingRequests = await _bookingRequestRepository.GetQueryable()
-                .Where(r => r.OrganizerId == organizerId && r.Status == RequestStatus.Accepted && !r.IsDeleted)
+            var bookings = await _bookingRepository.GetQueryable()
+                .Where(b => organizerEventIds.Contains(b.EventId) && !b.IsDeleted)
                 .ToListAsync();
+
+            var bookingIds = bookings.Select(b => b.Id).ToList();
+
+            // Get paid bookings via completed transactions
+            var paidBookingIds = await _transactionRepository.GetQueryable()
+                .Where(t => t.ItemType == "EventBooking" 
+                            && bookingIds.Contains(t.ReferenceId) 
+                            && t.TransactionStatus == TransactionStatus.Completed)
+                .Select(t => t.ReferenceId)
+                .Distinct()
+                .ToListAsync();
+
+            var validBookings = bookings
+                .Where(b => b.Status == BookingStatus.Confirmed || paidBookingIds.Contains(b.Id))
+                .ToList();
+
+            var totalTicketsSold = validBookings.Sum(b => b.NumberOfTickets);
+
+            // Sum of completed event ticket transactions
+            var totalRevenue = await _transactionRepository.GetQueryable()
+                .Where(t => t.ItemType == "EventBooking" 
+                            && bookingIds.Contains(t.ReferenceId) 
+                            && t.TransactionStatus == TransactionStatus.Completed)
+                .SumAsync(t => t.Amount);
+
+            // Places booked
+            var allBookingRequests = await _bookingRequestRepository.GetQueryable()
+                .Where(r => r.OrganizerId == organizerId && !r.IsDeleted)
+                .ToListAsync();
+            
+            var bookingRequestIds = allBookingRequests.Select(r => r.Id).ToList();
+
+            var paidRequestIds = await _transactionRepository.GetQueryable()
+                .Where(t => t.ItemType == "PlaceBooking" 
+                            && bookingRequestIds.Contains(t.ReferenceId) 
+                            && t.TransactionStatus == TransactionStatus.Completed)
+                .Select(t => t.ReferenceId)
+                .Distinct()
+                .ToListAsync();
+
+            var acceptedOrPaidRequests = allBookingRequests
+                .Where(r => r.Status == RequestStatus.Accepted || paidRequestIds.Contains(r.Id))
+                .ToList();
 
             return new OrganizerDashboardStatsDto
             {
@@ -372,7 +425,7 @@ namespace Application.Services.OrganizerServices
                 PendingEvents = pendingEvents,
                 TotalTicketsSold = totalTicketsSold,
                 TotalRevenue = totalRevenue,
-                TotalPlacesBooked = bookingRequests.Count
+                TotalPlacesBooked = acceptedOrPaidRequests.Count
             };
         }
         public async Task<List<EventAttendeeDto>> GetEventAttendeesAsync(int eventId)

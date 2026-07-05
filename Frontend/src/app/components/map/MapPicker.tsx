@@ -97,6 +97,20 @@ export default function MapPicker({
           }
         }
       });
+
+      // Geocode initial address if coordinates are missing
+      if (!latitude && !longitude && address && geocoderRef.current) {
+        geocoderRef.current.geocode({ address }, (results, statusResult) => {
+          if (statusResult === "OK" && results && results[0] && results[0].geometry && results[0].geometry.location) {
+            const loc = results[0].geometry.location;
+            if (googleMapInstance.current && markerRef.current) {
+              googleMapInstance.current.setCenter(loc);
+              googleMapInstance.current.setZoom(15);
+              markerRef.current.setPosition(loc);
+            }
+          }
+        });
+      }
     } else {
       // If map is already initialized, update positions
       const newPos = { lat: defaultLat, lng: defaultLng };
