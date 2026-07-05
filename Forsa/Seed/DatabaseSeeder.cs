@@ -30,6 +30,8 @@ namespace Forsa.Seed
             // Ensure database is created/migrated
             await context.Database.MigrateAsync();
 
+            await EnsurePlaceColumnsAsync(context);
+
             // 1. Seed Roles
             var roles = new[] { "Admin", "Attendee", "Organizer", "Owner" };
             foreach (var role in roles)
@@ -452,6 +454,19 @@ namespace Forsa.Seed
 
             var errors = string.Join(", ", result.Errors.Select(error => error.Description));
             throw new Exception($"{message}: {errors}");
+        }
+
+        private static async Task EnsurePlaceColumnsAsync(ForsaDbContext context)
+        {
+            var sql = @"
+IF COL_LENGTH(N'Places', N'Latitude') IS NULL
+    ALTER TABLE [Places] ADD [Latitude] decimal(18,15) NULL;
+IF COL_LENGTH(N'Places', N'Longitude') IS NULL
+    ALTER TABLE [Places] ADD [Longitude] decimal(18,15) NULL;
+IF COL_LENGTH(N'Places', N'GooglePlaceId') IS NULL
+    ALTER TABLE [Places] ADD [GooglePlaceId] nvarchar(400) NULL;
+";
+            await context.Database.ExecuteSqlRawAsync(sql);
         }
     }
 }
