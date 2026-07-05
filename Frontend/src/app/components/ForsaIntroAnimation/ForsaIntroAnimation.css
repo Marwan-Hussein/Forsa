@@ -1,0 +1,247 @@
+/* ==========================================================================
+   Forsa Intro Animation — cinematic one-time entrance
+   ========================================================================== */
+
+.forsa-intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    circle at 50% 45%,
+    #f5f9ff 0%,
+    #eaf2ff 45%,
+    #dce8fb 100%
+  );
+  overflow: hidden;
+}
+
+/* ---------- Ticket ---------- */
+.forsa-ticket {
+  position: relative;
+  width: 240px;
+  height: 150px;
+  will-change: transform, opacity;
+}
+
+.forsa-ticket-glow {
+  position: absolute;
+  inset: -30px;
+  border-radius: 32px;
+  background: radial-gradient(
+    circle,
+    rgba(96, 165, 250, 0.5) 0%,
+    rgba(37, 99, 235, 0.2) 50%,
+    rgba(37, 99, 235, 0) 75%
+  );
+  filter: blur(10px);
+  z-index: -1;
+  animation: forsa-glow-pulse 2.4s ease-in-out infinite;
+}
+
+.forsa-ticket-body {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  background: linear-gradient(155deg, #ffffff 0%, #eef4ff 55%, #dbe9ff 100%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 24px 48px rgba(37, 99, 235, 0.28),
+    0 4px 12px rgba(15, 23, 42, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -4px 10px rgba(37, 99, 235, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Ticket-stub notches (the little circular cutouts on either edge) */
+.forsa-ticket-notch {
+  position: absolute;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #eaf2ff;
+  box-shadow: inset 0 2px 4px rgba(37, 99, 235, 0.18);
+  transform: translateY(-50%);
+}
+
+.forsa-ticket-notch-left {
+  left: -11px;
+}
+
+.forsa-ticket-notch-right {
+  right: -11px;
+}
+
+/* Dashed perforation line running through the ticket */
+.forsa-ticket-perforation {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 58px;
+  width: 0;
+  border-left: 2px dashed rgba(37, 99, 235, 0.25);
+}
+
+.forsa-ticket-logo {
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: 0.01em;
+  background: linear-gradient(90deg, #1e40af, #2563eb 45%, #60a5fa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 18px rgba(96, 165, 250, 0.35);
+  margin-right: 58px;
+}
+
+/* Simple smiling mouth that appears during the greeting phase */
+.forsa-ticket-smile {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  width: 26px;
+  height: 12px;
+  transform: translateX(-70%) scale(0.6);
+  border-bottom: 3px solid #2563eb;
+  border-radius: 0 0 16px 16px;
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.forsa-ticket-smile-visible {
+  opacity: 0.75;
+  transform: translateX(-70%) scale(1);
+}
+
+/* ---------- Arms & hands ---------- */
+.forsa-arm {
+  position: absolute;
+  top: 42%;
+  width: 34px;
+  height: 12px;
+  border-radius: 8px;
+  background: linear-gradient(160deg, #ffffff, #cfe1ff);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.22);
+  transform-origin: right center;
+}
+
+.forsa-arm-left {
+  left: -26px;
+  transform: rotate(12deg);
+  transform-origin: right center;
+}
+
+.forsa-arm-right {
+  right: -26px;
+  transform-origin: left center;
+}
+
+.forsa-hand {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #ffffff, #dbe9ff);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+  transform: translateY(-50%);
+}
+
+.forsa-arm-left .forsa-hand {
+  left: -6px;
+}
+
+.forsa-arm-right .forsa-hand {
+  right: -6px;
+}
+
+.forsa-hand-point {
+  background: linear-gradient(160deg, #ffffff, #bfdcff);
+  box-shadow:
+    0 0 10px 2px rgba(59, 130, 246, 0.55),
+    0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+/* ---------- Particles ---------- */
+.forsa-intro-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.forsa-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #93c5fd, #2563eb);
+  box-shadow: 0 0 8px 2px rgba(59, 130, 246, 0.7);
+  opacity: 0;
+  animation: forsa-particle-float 1.6s ease-out forwards;
+}
+
+.forsa-particle-0 { transform: translate(-90px, -20px); animation-delay: 0s; }
+.forsa-particle-1 { transform: translate(80px, -40px); animation-delay: 0.08s; }
+.forsa-particle-2 { transform: translate(-60px, 40px); animation-delay: 0.16s; }
+.forsa-particle-3 { transform: translate(100px, 30px); animation-delay: 0.24s; }
+.forsa-particle-4 { transform: translate(-110px, 10px); animation-delay: 0.32s; }
+.forsa-particle-5 { transform: translate(50px, -70px); animation-delay: 0.4s; }
+.forsa-particle-6 { transform: translate(-40px, -70px); animation-delay: 0.48s; }
+.forsa-particle-7 { transform: translate(110px, -10px); animation-delay: 0.56s; }
+.forsa-particle-8 { transform: translate(-80px, 70px); animation-delay: 0.64s; }
+.forsa-particle-9 { transform: translate(70px, 70px); animation-delay: 0.72s; }
+
+/* ---------- Keyframes ---------- */
+@keyframes forsa-glow-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.06); }
+}
+
+@keyframes forsa-particle-float {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx, 0), calc(var(--ty, 0) - 40px)) scale(1);
+  }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 480px) {
+  .forsa-ticket {
+    width: 190px;
+    height: 120px;
+  }
+  .forsa-ticket-logo {
+    font-size: 22px;
+    margin-right: 46px;
+  }
+  .forsa-ticket-perforation {
+    right: 46px;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .forsa-ticket-glow,
+  .forsa-particle {
+    animation: none !important;
+  }
+}
