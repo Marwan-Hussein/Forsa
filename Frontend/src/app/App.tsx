@@ -2,13 +2,13 @@ import { RouterProvider } from "react-router";
 import { router } from "./routes";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { ForsaIntroAnimation } from "./components/ForsaIntroAnimation/ForsaIntroAnimation";
+//import { ForsaIntroAnimation } from "./components/ForsaIntroAnimation/ForsaIntroAnimation";
 
 export default function App() {
   return (
     <>
       {/* Plays once per real page load/refresh; never replays on SPA navigation. */}
-      <ForsaIntroAnimation />
+      {/*<ForsaIntroAnimation />*/}
 
       <RouterProvider router={router} />
       <ToastContainer
