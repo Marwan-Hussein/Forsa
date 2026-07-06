@@ -174,10 +174,14 @@ export default function AdminDashboard() {
               <TrendingUp className="w-3.5 h-3.5" /> Live
             </div>
           </div>
-          <p className="text-slate-400 font-['Inter:SemiBold',sans-serif] text-sm">Total Earnings</p>
+          <p className="text-slate-400 font-['Inter:SemiBold',sans-serif] text-sm">Total Revenue</p>
           <p className="text-3xl font-['Inter:Black',sans-serif] text-slate-900 mt-1">
             <AnimatedNumber value={Number(stats.totalEarnings)} prefix="EGP " decimals={0} />
           </p>
+          <div className="mt-2 flex items-center gap-1.5 text-emerald-700 font-['Inter:SemiBold',sans-serif] text-xs bg-emerald-100/50 px-2.5 py-1.5 rounded-lg border border-emerald-200">
+            <span>Platform Profit:</span>
+            <AnimatedNumber value={Number(stats.totalEarnings) * 0.10} prefix="EGP " decimals={0} />
+          </div>
           <div className="mt-3 flex items-center gap-1.5 text-slate-400 text-xs font-['Inter:Medium',sans-serif]">
             <Ticket className="w-3.5 h-3.5" />
             <span><AnimatedNumber value={stats.totalBookings} /> confirmed bookings</span>

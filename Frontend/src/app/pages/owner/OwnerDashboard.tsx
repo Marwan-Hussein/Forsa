@@ -120,7 +120,7 @@ export default function OwnerDashboard() {
     },
     {
       title: "Total Revenue",
-      value: stats.totalEarnings,
+      value: stats.totalEarnings * 0.9,
       sub: "from confirmed bookings",
       prefix: "EGP ",
       icon: DollarSign,
@@ -128,6 +128,18 @@ export default function OwnerDashboard() {
       bgClass: "bg-emerald-50",
       textClass: "text-emerald-600",
       trend: "+8%",
+      trendUp: true,
+    },
+    {
+      title: "Available Balance",
+      value: stats.availableBalance || 0,
+      sub: "ready to withdraw",
+      prefix: "EGP ",
+      icon: DollarSign,
+      gradient: "from-cyan-500 to-blue-500",
+      bgClass: "bg-cyan-50",
+      textClass: "text-cyan-600",
+      trend: "Now",
       trendUp: true,
     },
     {
@@ -182,7 +194,7 @@ export default function OwnerDashboard() {
       </motion.div>
 
       {/* ── STAT CARDS ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
         {statCards.map((card, i) => (
           <motion.div
             key={card.title}

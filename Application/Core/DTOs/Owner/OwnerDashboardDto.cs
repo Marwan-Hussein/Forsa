@@ -11,6 +11,7 @@ namespace Application.Core.DTOs.Owner
         public int ConfirmedRequests { get; set; }
         
         public decimal TotalEarnings { get; set; }
+        public decimal AvailableBalance { get; set; }
         public double AverageRating { get; set; }
     }
 }

@@ -34,6 +34,7 @@ namespace Application.Services.OrganizerServices
         private readonly IMapper _mapper;
         private readonly IGoogleCalendarSyncService _calendarSync;
         private readonly IQueryableRepository<PaymentTransaction> _transactionRepository;
+        private readonly IQueryableRepository<WalletBalance> _walletRepo;
 
         public OrganizerService(
             IOrganizerRepository organizerRepo,
@@ -44,7 +45,8 @@ namespace Application.Services.OrganizerServices
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IGoogleCalendarSyncService calendarSync,
-            IQueryableRepository<PaymentTransaction> transactionRepository)
+            IQueryableRepository<PaymentTransaction> transactionRepository,
+            IQueryableRepository<WalletBalance> walletRepo)
         {
             _organizerRepo = organizerRepo;
             _eventRepository = eventRepository;
@@ -55,6 +57,7 @@ namespace Application.Services.OrganizerServices
             _mapper = mapper;
             _calendarSync = calendarSync;
             _transactionRepository = transactionRepository;
+            _walletRepo = walletRepo;
         }
 
         public async Task<List<Organizer>> FilterOrganizers(OrganizerSearchParameters searchParameter)
@@ -418,6 +421,9 @@ namespace Application.Services.OrganizerServices
                 .Where(r => r.Status == RequestStatus.Accepted || paidRequestIds.Contains(r.Id))
                 .ToList();
 
+            var wallet = await _walletRepo.GetQueryable().FirstOrDefaultAsync(w => w.UserId == organizerId);
+            var availableBalance = wallet?.AvailableBalance ?? 0m;
+
             return new OrganizerDashboardStatsDto
             {
                 TotalEvents = totalEvents,
@@ -425,6 +431,7 @@ namespace Application.Services.OrganizerServices
                 PendingEvents = pendingEvents,
                 TotalTicketsSold = totalTicketsSold,
                 TotalRevenue = totalRevenue,
+                AvailableBalance = availableBalance,
                 TotalPlacesBooked = acceptedOrPaidRequests.Count
             };
         }

@@ -57,6 +57,21 @@ namespace Application.Services
                 transaction.PaymobIntentionId = mockIntentionId;
                 transactionRepo.Update(transaction);
                 await unitOfWork.SaveChangesAsync();
+                // Simulate Paymob webhook in mock mode so database updates immediately
+                var mockPayload = new PaymobWebhookDto
+                {
+                    Type = "TRANSACTION",
+                    Obj = new PaymobWebhookObjDto
+                    {
+                        Id = DateTime.UtcNow.Ticks,
+                        Success = true,
+                        IntentionId = mockIntentionId,
+                        AmountCents = transaction.Amount * 100,
+                        Currency = "EGP"
+                    }
+                };
+                
+                await ProcessPaymentCallbackAsync(mockPayload);
 
                 return new PaymentResponseDto
                 {
@@ -713,7 +728,9 @@ namespace Application.Services
 
                     if (wallet != null)
                     {
-                        wallet.AvailableBalance -= transaction.Amount;
+                        var platformFee = transaction.Amount * 0.10m;
+                        var organizerShare = transaction.Amount - platformFee;
+                        wallet.AvailableBalance -= organizerShare;
                         wallet.LastModifiedAt = DateTime.UtcNow;
                         walletRepo.Update(wallet);
                     }

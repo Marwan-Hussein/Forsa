@@ -85,12 +85,21 @@ export default function OrganizerDashboard() {
     },
     { 
       title: "Total Revenue", 
-      value: stats.totalRevenue, 
+      value: stats.totalRevenue * 0.9, 
       trend: "Ticket Sales", 
       prefix: "EGP ",
       icon: DollarSign, 
       lightColor: "bg-emerald-100 text-emerald-600 border-emerald-200",
       glow: "bg-emerald-400/15 group-hover:bg-emerald-400/30"
+    },
+    { 
+      title: "Available Balance", 
+      value: stats.availableBalance || 0, 
+      trend: "Ready to withdraw", 
+      prefix: "EGP ",
+      icon: DollarSign, 
+      lightColor: "bg-teal-100 text-teal-600 border-teal-200",
+      glow: "bg-teal-400/15 group-hover:bg-teal-400/30"
     },
     { 
       title: "Places Booked", 
@@ -136,7 +145,7 @@ export default function OrganizerDashboard() {
       </motion.div>
       
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {statCards.map((stat, index) => (
           <motion.div 
             key={stat.title} 
