@@ -1,22 +1,111 @@
-import { useState } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import { motion } from "motion/react";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
 import { toast } from "sonner";
 
+const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || "";
+const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "";
+const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "";
+const CONTACT_EMAIL = "forsa.system@gmail.com";
+const EMAILJS_ENDPOINT = "https://api.emailjs.com/api/v1.0/email/send";
+
+type ContactFormValues = {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+};
+
+const initialFormValues: ContactFormValues = {
+  name: "",
+  email: "",
+  subject: "",
+  message: "",
+};
+
 export default function ContactUsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formValues, setFormValues] = useState<ContactFormValues>(initialFormValues);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormValues((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Mock successful submission
-    setTimeout(() => {
+
+    if (!SERVICE_ID || !TEMPLATE_ID || !PUBLIC_KEY) {
+      toast.error("Contact form is not configured", {
+        description: `Please email ${CONTACT_EMAIL} directly.`,
+      });
       setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(EMAILJS_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          service_id: SERVICE_ID,
+          template_id: TEMPLATE_ID,
+          user_id: PUBLIC_KEY,
+          template_params: {
+            from_name: formValues.name,
+            from_email: formValues.email,
+            reply_to: formValues.email,
+            subject: formValues.subject,
+            message: `
+              <b>Full Name:</b> ${formValues.name}<br/>
+              <b>Email Address:</b> ${formValues.email}<br/>
+              <b>Subject:</b> ${formValues.subject}<br/><br/>
+              <b>Message:</b><br/>
+              ${formValues.message}
+            `,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let detail = "Please try emailing directly at " + CONTACT_EMAIL + ".";
+
+        try {
+          const parsed = JSON.parse(errorText);
+          if (parsed?.message) {
+            detail = parsed.message;
+          }
+        } catch {
+          if (errorText) {
+            detail = errorText;
+          }
+        }
+
+        throw new Error(detail);
+      }
+
       toast.success("Message sent successfully!", {
         description: "Our team will get back to you shortly.",
       });
-      (e.target as HTMLFormElement).reset();
-    }, 1500);
+      setFormValues(initialFormValues);
+      (e.currentTarget as HTMLFormElement).reset();
+    } catch (error) {
+      console.error("Contact form submission failed", error);
+      toast.error("Failed to send message", {
+        description:
+          error instanceof Error && error.message
+            ? error.message
+            : `Please try emailing directly at ${CONTACT_EMAIL}.`,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -52,8 +141,12 @@ export default function ContactUsPage() {
               </div>
               <div>
                 <h4 className="font-bold text-[var(--brand-navy)]">Email Us</h4>
-                <p className="text-slate-500 text-sm mt-1">support@forsa.com</p>
-                <p className="text-slate-500 text-sm">partnerships@forsa.com</p>
+                <a
+                  href={`mailto:${CONTACT_EMAIL}`}
+                  className="text-slate-500 text-sm mt-1 hover:text-[var(--brand-navy)] transition-colors underline-offset-2 hover:underline"
+                >
+                  {CONTACT_EMAIL}
+                </a>
               </div>
             </div>
 
@@ -63,7 +156,7 @@ export default function ContactUsPage() {
               </div>
               <div>
                 <h4 className="font-bold text-[var(--brand-navy)]">Call Us</h4>
-                <p className="text-slate-500 text-sm mt-1">+1 (555) 123-4567</p>
+                <p className="text-slate-500 text-sm mt-1">+201143777598</p>
                 <p className="text-slate-400 text-xs mt-1">Mon-Fri, 9am-6pm EST</p>
               </div>
             </div>
@@ -93,20 +186,52 @@ export default function ContactUsPage() {
               <div className="grid md:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
                   <label className="text-sm font-bold text-slate-700">Full Name</label>
-                  <input required type="text" placeholder="John Doe" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[var(--brand-navy)] focus:ring-1 focus:ring-[var(--brand-navy)] bg-slate-50 focus:bg-white transition-colors" />
+                  <input
+                    required
+                    type="text"
+                    name="name"
+                    value={formValues.name}
+                    onChange={handleChange}
+                    placeholder="John Doe"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[var(--brand-navy)] focus:ring-1 focus:ring-[var(--brand-navy)] bg-slate-50 focus:bg-white transition-colors"
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-sm font-bold text-slate-700">Email Address</label>
-                  <input required type="email" placeholder="john@example.com" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[var(--brand-navy)] focus:ring-1 focus:ring-[var(--brand-navy)] bg-slate-50 focus:bg-white transition-colors" />
+                  <input
+                    required
+                    type="email"
+                    name="email"
+                    value={formValues.email}
+                    onChange={handleChange}
+                    placeholder="john@example.com"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[var(--brand-navy)] focus:ring-1 focus:ring-[var(--brand-navy)] bg-slate-50 focus:bg-white transition-colors"
+                  />
                 </div>
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-bold text-slate-700">Subject</label>
-                <input required type="text" placeholder="How can we help?" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[var(--brand-navy)] focus:ring-1 focus:ring-[var(--brand-navy)] bg-slate-50 focus:bg-white transition-colors" />
+                <input
+                  required
+                  type="text"
+                  name="subject"
+                  value={formValues.subject}
+                  onChange={handleChange}
+                  placeholder="How can we help?"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[var(--brand-navy)] focus:ring-1 focus:ring-[var(--brand-navy)] bg-slate-50 focus:bg-white transition-colors"
+                />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-bold text-slate-700">Message</label>
-                <textarea required rows={4} placeholder="Type your message here..." className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[var(--brand-navy)] focus:ring-1 focus:ring-[var(--brand-navy)] bg-slate-50 focus:bg-white transition-colors resize-none"></textarea>
+                <textarea
+                  required
+                  rows={4}
+                  name="message"
+                  value={formValues.message}
+                  onChange={handleChange}
+                  placeholder="Type your message here..."
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[var(--brand-navy)] focus:ring-1 focus:ring-[var(--brand-navy)] bg-slate-50 focus:bg-white transition-colors resize-none"
+                ></textarea>
               </div>
               <button 
                 type="submit" 
