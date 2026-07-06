@@ -6,6 +6,7 @@ export interface OrganizerDashboardStats {
   pendingEvents: number;
   totalTicketsSold: number;
   totalRevenue: number;
+  availableBalance: number;
   totalPlacesBooked: number;
 }
 

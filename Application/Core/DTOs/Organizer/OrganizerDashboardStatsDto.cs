@@ -7,6 +7,7 @@ namespace Application.Core.DTOs.Organizer
         public int PendingEvents { get; set; }
         public int TotalTicketsSold { get; set; }
         public decimal TotalRevenue { get; set; }
+        public decimal AvailableBalance { get; set; }
         public int TotalPlacesBooked { get; set; }
     }
 }

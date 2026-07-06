@@ -8,6 +8,7 @@ export interface OwnerDashboardStats {
   pendingRequests: number;
   confirmedRequests: number;
   totalEarnings: number;
+  availableBalance: number;
   averageRating: number;
 }
 

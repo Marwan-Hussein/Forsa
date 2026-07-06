@@ -17,17 +17,20 @@ namespace Application.Services.OwnerServices
         private readonly IQueryableRepository<BookingRequest> _bookingRequestRepo;
         private readonly IFeedbackRepository _feedbackRepo;
         private readonly IQueryableRepository<PaymentTransaction> _transactionRepo;
+        private readonly IQueryableRepository<WalletBalance> _walletRepo;
 
         public OwnerDashboardService(
             IPlaceRepository placeRepo,
             IQueryableRepository<BookingRequest> bookingRequestRepo,
             IFeedbackRepository feedbackRepo,
-            IQueryableRepository<PaymentTransaction> transactionRepo)
+            IQueryableRepository<PaymentTransaction> transactionRepo,
+            IQueryableRepository<WalletBalance> walletRepo)
         {
             _placeRepo = placeRepo;
             _bookingRequestRepo = bookingRequestRepo;
             _feedbackRepo = feedbackRepo;
             _transactionRepo = transactionRepo;
+            _walletRepo = walletRepo;
         }
 
         public async Task<OwnerDashboardDto> GetOwnerDashboardStatsAsync(int ownerId)
@@ -64,6 +67,10 @@ namespace Application.Services.OwnerServices
                 ? ownerFeedbacks.Average(f => (double)f.Rating) 
                 : 0.0;
 
+            // 5. Available Balance
+            var wallet = await _walletRepo.GetQueryable().FirstOrDefaultAsync(w => w.UserId == ownerId);
+            var availableBalance = wallet?.AvailableBalance ?? 0m;
+
             return new OwnerDashboardDto
             {
                 TotalPlaces = totalPlaces,
@@ -73,6 +80,7 @@ namespace Application.Services.OwnerServices
                 PendingRequests = pendingRequests,
                 ConfirmedRequests = confirmedRequests,
                 TotalEarnings = totalEarnings,
+                AvailableBalance = availableBalance,
                 AverageRating = Math.Round(averageRating, 1)
             };
         }
