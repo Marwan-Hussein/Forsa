@@ -13,7 +13,7 @@ namespace Infrastructure.Data.Configurations
             builder.HasKey(b => b.Id);
 
             builder.HasOne(b => b.Organizer)
-                   .WithMany()
+                   .WithMany(o => o.BookingRequests)
                    .HasForeignKey(b => b.OrganizerId)
                    .OnDelete(DeleteBehavior.NoAction);
 
