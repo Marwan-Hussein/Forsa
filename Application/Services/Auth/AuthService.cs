@@ -85,7 +85,7 @@ namespace Application.Services.Auth
             else
                 user = mapper.Map<Domain.Entities.AttendeeEntities.Attendee>(registerDto);
 
-
+            user.UserName = registerDto.Email;
             user.EmailConfirmed = false; // Need to verify OTP
             user.CreatedAt = DateTime.UtcNow;
             user.IsBlocked = false;
