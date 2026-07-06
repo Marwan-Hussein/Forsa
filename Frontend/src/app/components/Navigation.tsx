@@ -94,7 +94,9 @@ export function Navigation() {
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group outline-none">
-            <ForSaLogo className={`h-12 md:h-14 w-auto transition-all duration-500 ${shouldElevate ? 'brightness-0' : 'brightness-0 invert'}`} />
+            {/* <ForSaLogo className={`h-12 md:h-14 w-auto transition-all duration-500 ${shouldElevate ? 'brightness-50' : 'brightness-50 invert'}`} /> */}
+            {/* <ForSaLogo className={`h-12 md:h-14 w-auto transition-all duration-500 brightness-50`} /> */}
+            <ForSaLogo className={`h-14 md:h-15 w-auto transition-all duration-500 ${shouldElevate ? 'brightness-50' : 'brightness-150'}`} />
           </Link>
           
           <div className="hidden md:flex items-center gap-8">
