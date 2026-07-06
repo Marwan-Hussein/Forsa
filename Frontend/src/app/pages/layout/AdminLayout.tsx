@@ -37,7 +37,7 @@ export default function AdminLayout() {
   useEffect(() => {
     const token = localStorage.getItem("forsa_token");
     if (!token) {
-      navigate("/admin/login", { replace: true });
+      navigate("/login", { replace: true });
       return;
     }
 
@@ -45,7 +45,7 @@ export default function AdminLayout() {
     const roleClaim = decoded?.role || decoded?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
     
     if (roleClaim !== "Admin") {
-      navigate("/admin/login", { replace: true });
+      navigate("/login", { replace: true });
     }
   }, [navigate]);
 
@@ -55,7 +55,7 @@ export default function AdminLayout() {
     localStorage.removeItem("forsa_user_name");
     localStorage.removeItem("forsa_user_email");
     localStorage.removeItem("role");
-    navigate("/admin/login");
+    navigate("/login");
   };
 
   const navItems = [

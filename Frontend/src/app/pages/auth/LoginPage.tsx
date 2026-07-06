@@ -108,6 +108,7 @@ export default function LoginPage() {
   };
 
   const routeByRole = (role: string) => {
+    if (role === "Admin") return "/admin";
     if (role === "Owner" || role === "PlaceOwner") return "/owner";
     if (role === "Organizer") return "/organizer";
     return "/dashboard";
@@ -124,15 +125,10 @@ export default function LoginPage() {
       });
 
       const role = getRoleFromToken(result.token);
-      
-      // Prevent Admin from logging in from the normal login page (Security: Do not expose admin existence)
-      if (role === "Admin") {
-        toast.error("Invalid email or password.");
-        return; // Do not save token or redirect
-      }
 
       localStorage.setItem("forsa_token", result.token);
       localStorage.setItem("forsa_refresh_token", result.refreshToken);
+      localStorage.setItem("role", role);
       if (result.fullName) localStorage.setItem("forsa_user_name", result.fullName);
       if (result.email) localStorage.setItem("forsa_user_email", result.email);
 
