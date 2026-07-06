@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { Calendar, Clock, MapPin, Users, Heart } from "lucide-react";
 import { Event } from "../types";

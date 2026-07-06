@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
-import { Link } from "react-router";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ArrowLeft, Calendar, Tag, FileText, Ticket, DollarSign, LayoutList, Image as ImageIcon, MapPin } from "lucide-react";
 import { motion } from "motion/react";
 import { organizerApi } from "../../api/organizerApi";

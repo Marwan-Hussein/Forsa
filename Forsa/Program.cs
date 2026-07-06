@@ -143,7 +143,7 @@ namespace Forsa
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                await DatabaseSeeder.SeedAsync(app.Services);
+                //await DatabaseSeeder.SeedAsync(app.Services);
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }

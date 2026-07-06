@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Sparkles, Check, Flame } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "../../api/api";

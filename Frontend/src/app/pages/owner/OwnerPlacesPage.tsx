@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import {
   Plus, MapPin, Search, Edit2, Image as ImageIcon, Trash2,
   ShieldAlert, CheckCircle, Building2, TrendingUp, CalendarCheck,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation, useParams } from "react-router";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { ArrowLeft, Building2, Users, Calendar, Bell, BellOff } from "lucide-react";
 import { apiGet, apiPost } from "../../api/api";
 import { toast } from "react-toastify";

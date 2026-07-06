@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { Outlet, useLocation } from "react-router";
+import { Outlet, useLocation } from "react-router-dom";
 import { pageTransition, pageVariants } from "../lib/motion";
 
 export function AnimatedOutlet() {

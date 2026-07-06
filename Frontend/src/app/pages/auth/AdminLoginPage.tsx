@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { Shield, Lock, Mail, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
 import { toast, Toaster } from "sonner";

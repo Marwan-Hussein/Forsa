@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useParams, useNavigate } from "react-router";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Calendar, Clock, Plus, Trash2, CheckCircle, Ban, CalendarCheck, Loader2 } from "lucide-react";
 import { ownerApi } from "../../api/ownerApi";
 import { toast } from "sonner";

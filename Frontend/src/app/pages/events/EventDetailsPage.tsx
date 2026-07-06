@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router";
+import { useParams, Link } from "react-router-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { apiPost, apiGet, getUserIdFromToken } from "../../api/api";

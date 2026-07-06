@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Mail, Lock, Sparkles, GraduationCap, Eye, EyeOff, User, Building2, Home, ArrowLeft } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";

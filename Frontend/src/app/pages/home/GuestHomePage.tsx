@@ -1,6 +1,6 @@
 import type { MouseEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, useScroll, useTransform, AnimatePresence } from "motion/react";
 import { ForSaLogo } from "../../components/ForSaLogo";
 import { ScrollReveal } from "../../components/ScrollReveal";

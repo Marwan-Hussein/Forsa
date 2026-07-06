@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from "react";
-import { Link, useNavigate, useLocation } from "react-router";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ShieldCheck, Mail, ArrowLeft, RefreshCw, Loader2, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { apiPost, ApiError } from "../../api/api";

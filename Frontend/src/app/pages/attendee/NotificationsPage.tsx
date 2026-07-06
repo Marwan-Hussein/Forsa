@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { ArrowLeft, Bell, Check, Trash2, Settings, BellOff, Calendar, Sparkles, Building2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { EASE_IN_OUT } from "../../lib/motion";

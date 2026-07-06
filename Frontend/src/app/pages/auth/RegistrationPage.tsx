@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Phone, MapPin, Calendar, Building2, Home, CheckCircle, Shield, Sparkles, Loader2, ArrowRight, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { apiPost, ApiError } from "../../api/api";

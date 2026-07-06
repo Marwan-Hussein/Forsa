@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ImageWithFallback } from "../../components/ImageWithFallback";
 import MapDisplay from "../../components/map/MapDisplay";

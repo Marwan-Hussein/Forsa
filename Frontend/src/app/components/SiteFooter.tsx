@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { ForSaLogo } from "./ForSaLogo";
 
 export function SiteFooter() {

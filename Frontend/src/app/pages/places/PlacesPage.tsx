@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { ImageWithFallback } from "../../components/ImageWithFallback";
 import { placeApi, PlaceSummary } from "../../api/placeApi";
 import {

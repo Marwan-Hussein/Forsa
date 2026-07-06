@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ArrowRight, Bell, User, Heart, Calendar, LogOut, LayoutDashboard } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState, useRef } from "react";
@@ -96,7 +96,7 @@ export function Navigation() {
           <Link to="/" className="flex items-center gap-3 group outline-none">
             {/* <ForSaLogo className={`h-12 md:h-14 w-auto transition-all duration-500 ${shouldElevate ? 'brightness-50' : 'brightness-50 invert'}`} /> */}
             {/* <ForSaLogo className={`h-12 md:h-14 w-auto transition-all duration-500 brightness-50`} /> */}
-            <ForSaLogo className={`h-14 md:h-15 w-auto transition-all duration-500 ${shouldElevate ? 'brightness-50' : 'brightness-150'}`} />
+            <ForSaLogo className={`h-14 md:h-15 w-auto transition-all duration-500 ${shouldElevate ? 'brightness-70' : 'brightness-150'}`} />
           </Link>
           
           <div className="hidden md:flex items-center gap-8">

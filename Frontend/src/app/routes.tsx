@@ -1,4 +1,4 @@
-import { createBrowserRouter, Outlet } from "react-router";
+import { createBrowserRouter, Outlet } from "react-router-dom";
 import Layout from "./pages/layout/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import GuestHomePage from "./pages/home/GuestHomePage";
@@ -56,6 +56,7 @@ import BookingRequestsPage from "./pages/organizations/BookingRequestsPage";
 import ManageAttendeesPage from "./pages/organizations/ManageAttendeesPage";
 import QRCodeScannerPage from "./pages/organizations/QRCodeScannerPage";
 import OrganizerProfilePage from "./pages/organizations/OrganizerProfilePage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 export const router = createBrowserRouter([
   {
@@ -136,6 +137,10 @@ export const router = createBrowserRouter([
         Component: PaymentResultPage,
       },
     ],
+  },
+  {
+    path: "*",
+    Component: NotFoundPage,
   },
   {
     path: "/admin",

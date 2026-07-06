@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Upload, Trash2, Image as ImageIcon, Info, Loader2, Edit2, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ownerApi, PlaceMediaDto } from "../../api/ownerApi";

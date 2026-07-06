@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   Ticket, CalendarCheck, DollarSign, MapPin, 
   Sparkles, Plus, ArrowRight, TrendingUp,

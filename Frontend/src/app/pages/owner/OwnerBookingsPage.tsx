@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { Search, Calendar, MapPin, CheckCircle, XCircle, Clock, Check, X, CalendarCheck, Loader2, ClipboardList, Star, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ownerApi, BookingRequest } from "../../api/ownerApi";

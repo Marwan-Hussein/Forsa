@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { Plus, Users, Search, Trash2, Edit2, Activity, Tag, CalendarCheck, Sparkles, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
