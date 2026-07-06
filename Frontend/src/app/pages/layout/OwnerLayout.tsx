@@ -56,7 +56,6 @@ export default function OwnerLayout() {
     <div className="min-h-screen bg-slate-50 flex font-sans">
       <Toaster 
         position="bottom-right" 
-        richColors
         toastOptions={{
           style: {
             fontFamily: "Inter, sans-serif",
@@ -155,10 +154,6 @@ export default function OwnerLayout() {
           </div>
           
           <div className="flex items-center gap-3 sm:gap-5">
-            <Link to="/notifications" className="relative p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white"></span>
-            </Link>
             <Link to="/owner/profile" className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold border-2 border-white shadow-md ml-2 cursor-pointer hover:scale-105 transition-transform overflow-hidden">
               {profilePictureUrl ? (
                 <img src={`${import.meta.env.VITE_API_BASE_URL || ""}${profilePictureUrl}`} alt="Profile" className="w-full h-full object-cover" />

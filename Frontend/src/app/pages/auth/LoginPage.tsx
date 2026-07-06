@@ -437,7 +437,7 @@ export default function LoginPage() {
                 </motion.div>
 
                 <motion.div
-                  className="flex items-center pt-2"
+                  className="flex items-center justify-between pt-2"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.4, delay: 0.6 }}
@@ -451,6 +451,12 @@ export default function LoginPage() {
                     />
                     Remember me
                   </label>
+                  <Link
+                    to="/forgot-password"
+                    className="font-['Inter:Medium',sans-serif] text-sm font-medium text-[var(--brand-blue-accent)] hover:text-blue-400 transition-colors cursor-pointer"
+                  >
+                    Forgot password?
+                  </Link>
                 </motion.div>
 
                 <motion.button

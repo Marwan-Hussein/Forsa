@@ -242,3 +242,9 @@
 [data-sonner-toast] [data-title] {
   color: var(--popover-foreground) !important;
 }
+
+/* Hide native browser password reveal eye icons */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
+}

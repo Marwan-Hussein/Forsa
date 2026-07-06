@@ -6,6 +6,8 @@ import AttendeeDashboard from "./pages/attendee/AttendeeDashboard";
 import LoginPage from "./pages/auth/LoginPage";
 import RegistrationPage from "./pages/auth/RegistrationPage";
 import OTPPage from "./pages/auth/OTPPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import ProfilePage from "./pages/attendee/ProfilePage";
 import InterestsPage from "./pages/attendee/InterestsPage";
 import EventsPage from "./pages/events/EventsPage";
@@ -86,6 +88,14 @@ export const router = createBrowserRouter([
       {
         path: "verify-otp",
         Component: OTPPage,
+      },
+      {
+        path: "forgot-password",
+        Component: ForgotPasswordPage,
+      },
+      {
+        path: "reset-password",
+        Component: ResetPasswordPage,
       },
       {
         path: "profile",

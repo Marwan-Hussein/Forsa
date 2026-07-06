@@ -159,7 +159,6 @@ export default function EventsPage() {
         
         <div className="relative max-w-7xl mx-auto text-center">
           <span className="inline-block py-1 px-3 rounded-full bg-white/10 text-white/90 text-xs font-bold tracking-widest uppercase mb-6 backdrop-blur-md border border-white/20">
-            The Premier Event Platform in 2026
           </span>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tight">
             Discover & Book <br />
