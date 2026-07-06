@@ -454,8 +454,10 @@ namespace Application.Services.OrganizerServices
                 BookingDate = b.BookingDate,
                 CheckInStatus = b.Status.ToString(), 
                 CheckInTime = b.CheckedInAt?.ToString("yyyy-MM-dd HH:mm"),
-                PaymentStatus = "paid" // Adjust based on logic
-            }).ToList();
+                PaymentStatus = (b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Attended) ? "paid" :
+                                b.Status == BookingStatus.Rejected ? "rejected" :
+                                b.Status == BookingStatus.Cancelled ? "cancelled" : "pending"
+             }).ToList();
         }
 
         public async Task ManualCheckInAsync(int bookingId)

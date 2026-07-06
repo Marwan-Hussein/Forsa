@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router";
+import { useParams, Link, useNavigate } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { apiPost, apiGet, getUserIdFromToken } from "../../api/api";
@@ -16,6 +16,9 @@ import {
   Building2,
 } from "lucide-react";
 import { ImageWithFallback } from "../../components/ImageWithFallback";
+import { useWishlist } from "../../hooks/useWishlist";
+import { attendeeApi } from "../../api/attendeeApi";
+import { AttendeeBookingDto } from "../../types";
 import {
   DURATION_FAST,
   EASE_IN_OUT,
@@ -28,14 +31,64 @@ import { mapEventDetailsDtoToEvent } from "../../utils/mappers";
 
 export default function EventDetailsPage() {
   const { eventId } = useParams<{ eventId: string }>();
+  const navigate = useNavigate();
   const [event, setEvent] = useState<any>(null);
   const [organization, setOrganization] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const [ticketCount, setTicketCount] = useState(1);
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const [isInWishlist, setIsInWishlist] = useState(false);
+  const { toggle: toggleWishlist, has: isInWishlist } = useWishlist();
   const [showShareModal, setShowShareModal] = useState(false);
+  const [userBooking, setUserBooking] = useState<AttendeeBookingDto | null>(null);
+  const [paying, setPaying] = useState(false);
+
+  const token = localStorage.getItem("forsa_token");
+  const userId = token ? getUserIdFromToken() : null;
+
+  useEffect(() => {
+    const fetchUserBooking = async () => {
+      if (!userId || !eventId) return;
+      try {
+        const bookings = await attendeeApi.getBookings(userId);
+        const booking = bookings.find(b => 
+          b.eventId === Number(eventId) && 
+          String(b.status).toLowerCase() !== "cancelled" && 
+          String(b.status).toLowerCase() !== "rejected"
+        );
+        setUserBooking(booking || null);
+      } catch (err) {
+        console.error("Failed to fetch user bookings", err);
+      }
+    };
+    fetchUserBooking();
+  }, [eventId, userId]);
+
+  const handlePayPendingBooking = async () => {
+    if (!userBooking) return;
+    try {
+      setPaying(true);
+      const paymentResult = await apiPost(`/api/bookings/${userBooking.bookingId}/checkout`, {}) as any;
+      if (paymentResult && paymentResult.clientSecret) {
+        if (paymentResult.clientSecret.startsWith("mock_")) {
+          toast.success("Mock Payment Success", { description: "Simulated payment for testing." });
+          setTimeout(() => navigate("/dashboard"), 1500);
+        } else if (paymentResult.clientSecret.startsWith("http")) {
+          window.location.href = paymentResult.clientSecret;
+          return;
+        } else {
+          const pubKey = paymentResult.publicKey || "pk_test_placeholder";
+          window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${pubKey}&clientSecret=${paymentResult.clientSecret}`;
+          return;
+        }
+      }
+    } catch (err: any) {
+      console.error("Payment initiation failed", err);
+      toast.error(err.message || "Failed to initiate payment.");
+    } finally {
+      setPaying(false);
+    }
+  };
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -119,35 +172,19 @@ export default function EventDetailsPage() {
         specialRequests: ""
       }) as any;
 
+      setShowBookingModal(false);
+
       if (totalPrice > 0) {
-        // Not free, proceed to checkout
-        try {
-          const paymentResult = await apiPost(`/api/bookings/${bookingResult.bookingId}/checkout`, {}) as any;
-          if (paymentResult.clientSecret) {
-            if (paymentResult.clientSecret.startsWith("mock_")) {
-              toast.success("Mock Payment Success", { description: "Simulated payment for testing." });
-            } else if (paymentResult.clientSecret.startsWith("http")) {
-              window.location.href = paymentResult.clientSecret;
-              return;
-            } else {
-              const pubKey = paymentResult.publicKey || "pk_test_placeholder";
-              window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${pubKey}&clientSecret=${paymentResult.clientSecret}`;
-              return;
-            }
-          }
-        } catch (paymentError) {
-          toast.error("Booking created but failed to initiate payment.", {
-            description: "You may need to try paying from your dashboard.",
-          });
-          setShowBookingModal(false);
-          return;
-        }
+        toast.success("Booking created successfully!", {
+          description: "Please complete your payment on the dashboard.",
+        });
+      } else {
+        toast.success("Booking confirmed", {
+          description: `${ticketCount} ticket(s) for ${event.title}.`,
+        });
       }
 
-      setShowBookingModal(false);
-      toast.success("Booking confirmed", {
-        description: `${ticketCount} ticket(s) for ${event.title}.`,
-      });
+      setTimeout(() => navigate("/dashboard"), 1500);
     } catch (error) {
       toast.error("Booking failed", {
         description: "Not enough tickets available or event not found.",
@@ -244,11 +281,11 @@ export default function EventDetailsPage() {
                     type="button"
                     whileTap={{ scale: 0.92 }}
                     transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
-                    onClick={() => setIsInWishlist(!isInWishlist)}
+                    onClick={() => eventId && toggleWishlist(eventId)}
                     className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-white text-muted-foreground shadow-md transition-colors duration-300 ease-in-out hover:bg-muted"
                   >
                     <Heart
-                      className={`h-5 w-5 ${isInWishlist ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
+                      className={`h-5 w-5 ${eventId && isInWishlist(eventId) ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
                     />
                   </motion.button>
                   <motion.button
@@ -428,17 +465,43 @@ export default function EventDetailsPage() {
                 </p>
               </div>
 
-              <motion.button
-                type="button"
-                onClick={() => setShowBookingModal(true)}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[var(--brand-slate-contrast)] to-[#1e2936] py-3 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-[#dde6ed] shadow-lg ring-1 ring-white/10 transition-shadow duration-300 ease-in-out hover:shadow-xl"
-              >
-                <Ticket className="h-5 w-5" />
-                Book Tickets
-              </motion.button>
+              {userBooking ? (
+                userBooking.status.toLowerCase() === "pending" ? (
+                  <motion.button
+                    type="button"
+                    onClick={handlePayPendingBooking}
+                    disabled={paying}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
+                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 py-3 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-white shadow-lg ring-1 ring-white/10 transition-all hover:shadow-xl hover:brightness-105"
+                  >
+                    <Ticket className="h-5 w-5" />
+                    {paying ? "Processing..." : "Complete Payment"}
+                  </motion.button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-100 py-3 font-['Inter:Medium',sans-serif] text-[16px] font-semibold text-emerald-800 border border-emerald-200"
+                  >
+                    <Ticket className="h-5 w-5 text-emerald-700" />
+                    Ticket Confirmed
+                  </button>
+                )
+              ) : (
+                <motion.button
+                  type="button"
+                  onClick={() => setShowBookingModal(true)}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
+                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[var(--brand-slate-contrast)] to-[#1e2936] py-3 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-[#dde6ed] shadow-lg ring-1 ring-white/10 transition-shadow duration-300 ease-in-out hover:shadow-xl"
+                >
+                  <Ticket className="h-5 w-5" />
+                  Book Tickets
+                </motion.button>
+              )}
 
               <div className="mt-4 pt-4 border-t border-[rgba(82,109,130,0.2)]">
                 <p className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground text-center">

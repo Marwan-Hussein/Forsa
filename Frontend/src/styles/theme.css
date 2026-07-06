@@ -235,3 +235,10 @@
     line-height: 1.5;
   }
 }
+
+[data-sonner-toast] [data-description] {
+  color: var(--muted-foreground) !important;
+}
+[data-sonner-toast] [data-title] {
+  color: var(--popover-foreground) !important;
+}

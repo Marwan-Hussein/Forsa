@@ -307,7 +307,10 @@ export default function ManageAttendeesPage() {
                           {attendee.numberOfTickets} Ticket{attendee.numberOfTickets > 1 ? 's' : ''}
                         </div>
                         <span className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm ${
-                          attendee.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                          attendee.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600' :
+                          attendee.paymentStatus === 'pending' ? 'bg-amber-50 text-amber-600' :
+                          attendee.paymentStatus === 'cancelled' ? 'bg-slate-100 text-slate-600' :
+                          'bg-rose-50 text-rose-600'
                         }`}>
                           {attendee.paymentStatus}
                         </span>
@@ -331,6 +334,7 @@ export default function ManageAttendeesPage() {
                           attendee.checkInStatus === 'Confirmed' ? 'bg-blue-50 border-blue-200 text-blue-600' :
                           attendee.checkInStatus === 'Cancelled' ? 'bg-slate-50 border-slate-200 text-slate-500' :
                           attendee.checkInStatus === 'Rejected' ? 'bg-rose-50 border-rose-200 text-rose-600' :
+                          attendee.checkInStatus === 'Pending' ? 'bg-amber-50 border-amber-200 text-amber-600' :
                           'bg-slate-100 border-slate-200 text-slate-600'
                         }`}>
                           {attendee.checkInStatus === 'Confirmed' ? <CheckCircle className="w-3.5 h-3.5 text-blue-400" /> : <XCircle className="w-3.5 h-3.5 opacity-50" />}

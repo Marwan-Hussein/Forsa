@@ -288,7 +288,7 @@ export default function ManagePlacesPage() {
               {search 
                 ? "No venues match your search." 
                 : activeTab === "pending" 
-                  ? "Awesome! You've reviewed all pending venues. Take a coffee break ☕"
+                  ? "Awesome! You've reviewed all pending venues."
                   : "There are no venues available on the platform yet."}
             </p>
           </motion.div>

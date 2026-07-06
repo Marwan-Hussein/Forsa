@@ -92,10 +92,10 @@ namespace Application.Services
             var existingBooking = await _bookingRepository.GetQueryable()
                 .AnyAsync(b => b.AttendeeId == dto.AttendeeId 
                           && b.EventId == dto.EventId 
-                          && b.Status == BookingStatus.Confirmed);
+                          && (b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Pending));
 
             if (existingBooking)
-                throw new InvalidOperationException("You have already booked this event");
+                throw new InvalidOperationException("You have already booked this event or have a pending payment.");
 
             // Create booking
             var booking = new Booking
@@ -104,7 +104,7 @@ namespace Application.Services
                 EventId = dto.EventId,
                 NumberOfTickets = dto.NumberOfTickets,
                 QRCode = Guid.NewGuid().ToString("N"),
-                Status = BookingStatus.Pending,
+                Status = eventEntity.TicketPrice <= 0 ? BookingStatus.Confirmed : BookingStatus.Pending,
                 BookingDate = DateTime.UtcNow,
                 IsDeleted = false,
                 SpecialRequests = dto.SpecialRequests,
@@ -120,12 +120,16 @@ namespace Application.Services
             _eventRepository.Update(eventEntity);
 
             // Create notification
+            var message = eventEntity.TicketPrice <= 0 
+                ? $"Your ticket request for '{eventEntity.Title}' has been confirmed! Booking ID: {booking.Id}"
+                : $"Your ticket request for '{eventEntity.Title}' has been received and is pending approval. Booking ID: {booking.Id}";
+
             var notification = new Notification
             {
                 Type = NotificationType.BookingConfirmation,
                 SentVia = DeliveryMethod.Email,
                 UserId = dto.AttendeeId,
-                Message = $"Your ticket request for '{eventEntity.Title}' has been received and is pending approval. Booking ID: {booking.Id}",
+                Message = message,
                 Status = NotificationStatus.Pending,
                 IsDeleted = false
             };
