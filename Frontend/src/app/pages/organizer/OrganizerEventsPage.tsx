@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router";
-import { Plus, Users, Search, Trash2, Edit2, Activity, Tag, CalendarCheck, Sparkles, TrendingUp } from "lucide-react";
+import { Plus, Users, Search, Trash2, Edit2, Activity, Tag, CalendarCheck, Sparkles, ScanLine} from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
 import { organizerApi } from "../../api/organizerApi";
@@ -167,6 +167,22 @@ export default function OrganizerEventsPage() {
                     >
                       <Users className="w-4 h-4" />
                       Attendees
+                    </Link>
+                    <Link
+                        to={`/organizer/events/${event.eventId}/scan`}
+                        className="flex items-center justify-center w-12 h-12
+                                  bg-violet-50
+                                  border border-violet-100
+                                  text-violet-600
+                                  rounded-2xl
+                                  hover:bg-violet-600
+                                  hover:text-white
+                                  hover:scale-105
+                                  transition-all
+                                  shadow-sm"
+                        title="Scan QR Tickets"
+                    >
+                        <ScanLine className="w-5 h-5" />
                     </Link>
                     <Link
                       to={`/organizer/events/${event.eventId}/edit`}
