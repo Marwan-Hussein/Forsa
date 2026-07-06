@@ -27,6 +27,10 @@ export function getUserRole(): string | null {
 export function getDashboardPath(role?: string | null): string {
   const normalizedRole = role || getUserRole();
 
+  if (normalizedRole === "Admin") {
+    return "/admin";
+  }
+
   if (normalizedRole === "Owner" || normalizedRole === "PlaceOwner") {
     return "/owner";
   }
