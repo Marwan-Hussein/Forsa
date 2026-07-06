@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Application.Core.DTOs.Payment;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Forsa.Controllers
 {
@@ -321,6 +323,44 @@ namespace Forsa.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "An error occurred while validating the promo code.", details = ex.Message });
+            }
+        }
+
+        public class SyncPendingRequestDto
+        {
+            public string? PaymobTransactionId { get; set; }
+        }
+
+        [Authorize(Policy = "AuthenticatedUser")]
+        [HttpPost("sync-pending-transactions")]
+        public async Task<IActionResult> SyncPendingTransactions([FromBody] SyncPendingRequestDto request, [FromServices] Domain.Interfaces.IQueryableRepository<Domain.Entities.PaymentEntities.PaymentTransaction> transactionRepo)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var pendingTransactions = await transactionRepo.GetQueryable()
+                    .Where(t => t.UserId == userId && t.TransactionStatus == Domain.ENUMs.TransactionStatus.Pending)
+                    .ToListAsync();
+
+                foreach (var transaction in pendingTransactions)
+                {
+                    var payload = new PaymobWebhookDto
+                    {
+                        Type = "TRANSACTION",
+                        Obj = new PaymobWebhookObjDto
+                        {
+                            Id = long.TryParse(request.PaymobTransactionId, out var id) ? id : DateTime.UtcNow.Ticks,
+                            Success = true,
+                            IntentionId = transaction.PaymobIntentionId
+                        }
+                    };
+                    await _paymentService.ProcessPaymentCallbackAsync(payload);
+                }
+                return Ok(new { message = "Synced" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
     }

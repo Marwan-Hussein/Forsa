@@ -50,6 +50,12 @@ export default function PaymentResultPage() {
 
   useEffect(() => {
     if (success && !pending) {
+      // Local testing fallback: Paymob webhooks cannot reach localhost.
+      // So we manually sync any pending transactions for the user when they return successfully.
+      import("../../api/api").then(({ apiPost }) => {
+        apiPost("/api/bookings/sync-pending-transactions", { paymobTransactionId: transactionId }).catch(console.error);
+      });
+
       const pendingId = localStorage.getItem("pending_payment_request_id");
       if (pendingId) {
         const paidList = JSON.parse(localStorage.getItem("paid_booking_requests") || "[]");

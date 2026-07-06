@@ -6,6 +6,7 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.BookingEntities;
 using Domain.Entities.EventEntities;
+using Domain.Entities.PaymentEntities;
 using Domain.ENUMs;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,8 @@ namespace Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IQrService _qrService;
         private readonly IGoogleCalendarSyncService _calendarSync;
+        private readonly IPaymentService _paymentService;
+        private readonly IQueryableRepository<PaymentTransaction> _transactionRepository;
 
         public BookingService(
             IQueryableRepository<Event> eventRepository,
@@ -29,7 +32,9 @@ namespace Application.Services
             IMapper mapper,
             IUnitOfWork unitOfWork,
             IQrService qrService,
-            IGoogleCalendarSyncService calendarSync)
+            IGoogleCalendarSyncService calendarSync,
+            IPaymentService paymentService,
+            IQueryableRepository<PaymentTransaction> transactionRepository)
         {
             _eventRepository = eventRepository;
             _bookingRepository = bookingRepository;
@@ -38,6 +43,8 @@ namespace Application.Services
             _unitOfWork = unitOfWork;
             _qrService = qrService;
             _calendarSync = calendarSync;
+            _paymentService = paymentService;
+            _transactionRepository = transactionRepository;
         }
 
         public async Task<EventDetailsDto> GetEventDetailsAsync(int eventId)
@@ -226,14 +233,37 @@ namespace Application.Services
             if (DateTime.UtcNow > cancellationDeadline)
                 throw new InvalidOperationException("Cannot cancel booking within 24 hours of event start");
 
-            // Update booking status
-            booking.Status = BookingStatus.Cancelled;
-            booking.IsDeleted = true;
-            _bookingRepository.Update(booking);
+            // Check for completed transaction
+            var transaction = await _transactionRepository.GetQueryable()
+                .FirstOrDefaultAsync(t => t.ReferenceId == bookingId && t.ItemType == "EventBooking" && t.TransactionStatus == TransactionStatus.Completed);
 
-            // Restore tickets to event
-            booking.Event.RemainingTickets += booking.NumberOfTickets;
-            _eventRepository.Update(booking.Event);
+            if (transaction != null)
+            {
+                // Has paid transaction -> Refund it (ProcessRefundAsync handles booking status and tickets update)
+                var refundResult = await _paymentService.ProcessRefundAsync(transaction.PaymentId);
+                if (!refundResult.IsSuccess)
+                {
+                    throw new InvalidOperationException($"Refund failed: {refundResult.Message}");
+                }
+            }
+            else
+            {
+                // Unpaid/Pending transaction -> just cancel booking
+                booking.Status = BookingStatus.Cancelled;
+                booking.IsDeleted = true;
+                _bookingRepository.Update(booking);
+
+                booking.Event.RemainingTickets += booking.NumberOfTickets;
+                _eventRepository.Update(booking.Event);
+                
+                var pendingTransaction = await _transactionRepository.GetQueryable()
+                    .FirstOrDefaultAsync(t => t.ReferenceId == bookingId && t.ItemType == "EventBooking" && t.TransactionStatus == TransactionStatus.Pending);
+                if (pendingTransaction != null)
+                {
+                    pendingTransaction.TransactionStatus = TransactionStatus.Failed;
+                    _transactionRepository.Update(pendingTransaction);
+                }
+            }
 
             // Create cancellation notification
             var notification = new Notification
