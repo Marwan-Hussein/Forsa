@@ -9,7 +9,7 @@ interface RobotLauncherProps {
   onOpen: () => void;
 }
 
-const GREETING_TEXT = "Use Forsa AI Assistant For Any Queries";
+const GREETING_TEXT = "Ask Forsa Chatbot";
 
 /**
  * A cute, premium, animated robot that acts as the launcher for the

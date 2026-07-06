@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router";
-import { Plus, Users, Search, Trash2, Edit2, Activity, Tag, CalendarCheck, Sparkles, ScanLine} from "lucide-react";
+import { Plus, Users, Search, Trash2, Edit2, Activity, Tag, CalendarCheck, Sparkles, ScanLine, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
 import { organizerApi } from "../../api/organizerApi";

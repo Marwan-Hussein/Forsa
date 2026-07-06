@@ -56,6 +56,7 @@ import BookingRequestsPage from "./pages/organizations/BookingRequestsPage";
 import ManageAttendeesPage from "./pages/organizations/ManageAttendeesPage";
 import QRCodeScannerPage from "./pages/organizations/QRCodeScannerPage";
 import OrganizerProfilePage from "./pages/organizations/OrganizerProfilePage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 export const router = createBrowserRouter([
   {
@@ -136,6 +137,10 @@ export const router = createBrowserRouter([
         Component: PaymentResultPage,
       },
     ],
+  },
+  {
+    path: "*",
+    Component: NotFoundPage,
   },
   {
     path: "/admin",

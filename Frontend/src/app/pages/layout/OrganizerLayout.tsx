@@ -1,10 +1,10 @@
 import { NavLink, Outlet, useNavigate, Link } from "react-router";
-import {
-  LayoutDashboard,
-  CalendarDays,
-  MapPin,
-  LogOut,
-  Bell,
+import { 
+  LayoutDashboard, 
+  CalendarDays, 
+  MapPin, 
+  LogOut, 
+  Bell, 
   Settings,
   Menu,
   X,
@@ -30,7 +30,7 @@ export default function OrganizerLayout() {
         if (profile.profilePicture) {
           setProfilePictureUrl(profile.profilePicture);
         }
-      } catch (err) { }
+      } catch (err) {}
     };
     fetchProfile();
   }, []);
@@ -50,7 +50,7 @@ export default function OrganizerLayout() {
     { name: "Browse Venues", path: "/organizer/places", icon: MapPin },
     { name: "Venue Requests", path: "/organizer/venue-requests", icon: MapPin },
     { name: "Ticket Requests", path: "/organizer/ticket-requests", icon: Bell },
-    
+    { name: "Scan QR Tickets", path: "/organizer/events/1/scan", icon: ScanLine },
     { name: "Profile", path: "/organizer/profile", icon: Settings },
   ];
 
@@ -58,7 +58,7 @@ export default function OrganizerLayout() {
     <div className="min-h-screen bg-slate-50 flex font-sans">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div
+        <div 
           className="fixed inset-0 bg-slate-900/75 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
@@ -91,18 +91,19 @@ export default function OrganizerLayout() {
               to={item.path}
               end={item.exact}
               className={({ isActive }) =>
-                `flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 relative group overflow-hidden ${isActive
-                  ? "text-white bg-white/10 border border-white/10 shadow-lg"
-                  : "text-slate-400 hover:bg-white/5 hover:text-white"
+                `flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 relative group overflow-hidden ${
+                  isActive 
+                    ? "text-white bg-white/10 border border-white/10 shadow-lg" 
+                    : "text-slate-400 hover:bg-white/5 hover:text-white"
                 }`
               }
             >
               {({ isActive }) => (
                 <>
                   {isActive && (
-                    <motion.div
+                    <motion.div 
                       layoutId="organizerActiveNavBackground"
-                      className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-50"
+                      className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-50" 
                       initial={false}
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
@@ -119,7 +120,7 @@ export default function OrganizerLayout() {
         </nav>
 
         <div className="p-4 border-t border-white/10 relative z-10 bg-[var(--brand-deep-navy)]/50 backdrop-blur-md">
-          <button
+          <button 
             onClick={handleLogout}
             className="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-300 font-['Inter:Medium',sans-serif]"
           >
@@ -142,7 +143,7 @@ export default function OrganizerLayout() {
               <p className="text-sm font-['Inter:Regular',sans-serif] text-slate-500 hidden sm:block">Manage your events and attendees.</p>
             </div>
           </div>
-
+          
           <div className="flex items-center gap-3 sm:gap-5">
             <Link to="/notifications" className="relative p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
               <Bell className="w-5 h-5" />
