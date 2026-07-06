@@ -3,7 +3,6 @@ name: Deploy to MonsterASP
 on:
   push:
     branches:
-      - githubdeployment
       - main
 
 jobs:
