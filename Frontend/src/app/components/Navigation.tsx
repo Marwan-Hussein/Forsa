@@ -74,6 +74,7 @@ export function Navigation() {
   }, [location.pathname]);
 
   const links = [
+    { path: "/", label: "Home" },
     { path: "/events", label: "Events" },
     { path: "/organizations", label: "Organizations" },
     { path: "/about", label: "About" },

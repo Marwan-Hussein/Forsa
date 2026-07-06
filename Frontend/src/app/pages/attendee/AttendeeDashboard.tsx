@@ -192,7 +192,7 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
             </div>
             
             <Link to={`/events/${booking.eventId}`}>
-              <h3 className="text-xl font-extrabold text-slate-900 mb-2.5 group-hover:text-[var(--brand-navy)] transition-colors leading-snug">
+              <h3 className="text-xl font-bold text-slate-800 mb-2.5 group-hover:text-[var(--brand-navy)] transition-colors leading-snug">
                 {booking.eventTitle}
               </h3>
             </Link>
@@ -204,7 +204,7 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
                 </div>
                 <div>
                   <p className="text-[11px] uppercase font-bold text-slate-500">Date</p>
-                  <p className="text-sm font-extrabold text-slate-800">{month} {day}, {year}</p>
+                  <p className="text-sm font-semibold text-slate-800">{month} {day}, {year}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2.5">
@@ -213,7 +213,7 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
                 </div>
                 <div>
                   <p className="text-[11px] uppercase font-bold text-slate-500">Time</p>
-                  <p className="text-sm font-extrabold text-slate-800">{time}</p>
+                  <p className="text-sm font-semibold text-slate-800">{time}</p>
                 </div>
               </div>
             </div>
@@ -238,7 +238,7 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
         {isPending ? (
           <div className="w-full md:w-56 bg-slate-50 p-6 flex flex-col justify-between items-center text-slate-700 shrink-0">
             <div className="text-center w-full my-auto">
-              <p className="text-xs uppercase font-extrabold text-amber-600 tracking-wider mb-2">Awaiting Payment</p>
+              <p className="text-xs uppercase font-bold text-amber-600 tracking-wider mb-2">Awaiting Payment</p>
               <p className="text-xs text-slate-700 font-medium mb-4 leading-relaxed">
                 Your spot is reserved. Complete payment to secure your Gate Pass.
               </p>
@@ -755,10 +755,10 @@ export default function AttendeeDashboard() {
               <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-hover)] text-white flex items-center justify-center font-bold text-xl shadow-md shadow-[var(--brand-navy)]/15 mb-3">
                 {userName.charAt(0)}
               </div>
-              <h3 className="font-extrabold text-slate-900 text-base leading-snug truncate max-w-full">{userName}</h3>
+              <h3 className="font-semibold text-slate-800 text-base leading-snug truncate max-w-full">{userName}</h3>
               <p className="text-xs text-slate-500 font-semibold truncate max-w-full mt-1.5">{userEmail}</p>
               
-              <div className="mt-4 bg-amber-50 text-amber-800 text-xs font-extrabold px-3.5 py-1.5 rounded-full flex items-center gap-1">
+              <div className="mt-4 bg-amber-50 text-amber-800 text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1">
                 <Star className="w-4 h-4 fill-current text-amber-500" /> {stats.points.toLocaleString()} Points
               </div>
             </div>
@@ -810,7 +810,7 @@ export default function AttendeeDashboard() {
               <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <p className="text-white/90 text-xs font-bold tracking-wider uppercase mb-0.5">{greeting}</p>
-                  <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
                     Welcome back, {userName.split(" ")[0]}!
                   </h1>
                   <p className="text-white/80 text-sm mt-1 max-w-md font-medium leading-relaxed">
