@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { ForSaLogo } from "../../components/ForSaLogo";
 import { motion } from "motion/react";
 import { Toaster } from "sonner";
+import { NotificationBell } from "../../components/NotificationBell";
 
 function parseJwt(token: string) {
   try {
@@ -169,6 +170,7 @@ export default function AdminLayout() {
           </div>
           
           <div className="flex items-center gap-3 sm:gap-5">
+            <NotificationBell />
             <button className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all hidden sm:block">
               <Settings className="w-5 h-5" />
             </button>

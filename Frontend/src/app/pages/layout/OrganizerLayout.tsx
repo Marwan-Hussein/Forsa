@@ -16,6 +16,7 @@ import { motion } from "motion/react";
 import { getUserIdFromToken } from "../../api/api";
 import { organizerApi } from "../../api/organizerApi";
 import { Toaster } from "sonner";
+import { NotificationBell } from "../../components/NotificationBell";
 
 export default function OrganizerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -157,6 +158,7 @@ export default function OrganizerLayout() {
           </div>
           
           <div className="flex items-center gap-3 sm:gap-5">
+            <NotificationBell />
             <Link to="/organizer/profile" className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center text-white font-bold border-2 border-white shadow-md ml-2 cursor-pointer hover:scale-105 transition-transform overflow-hidden">
               {profilePictureUrl ? (
                 <img src={`${import.meta.env.VITE_API_BASE_URL || ""}${profilePictureUrl}`} alt="Profile" className="w-full h-full object-cover" />
