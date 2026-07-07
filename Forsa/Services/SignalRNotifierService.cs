@@ -3,7 +3,7 @@ using Application.Core.Interfaces;
 using Forsa.Hubs;
 using Microsoft.AspNetCore.SignalR;
 
-namespace Application.Services;
+namespace Forsa.Services;
 
 public sealed class SignalRNotifierService : INotifierService
 {
