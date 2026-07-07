@@ -8,7 +8,7 @@ import { AiChatbot } from "../../components/AiChatbot";
 
 export default function Layout() {
   const { pathname } = useLocation();
-  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/verify-otp";
+  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/verify-otp" || pathname === "/forgot-password" || pathname === "/verify-account";
   const showAppChrome = !isAuthPage && pathname !== "/";
   const showNavigation = !isAuthPage;
 

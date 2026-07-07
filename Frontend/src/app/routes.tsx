@@ -59,12 +59,13 @@ import ManageAttendeesPage from "./pages/organizations/ManageAttendeesPage";
 import QRCodeScannerPage from "./pages/organizations/QRCodeScannerPage";
 import OrganizerProfilePage from "./pages/organizations/OrganizerProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
-
+import VerifyAccountPage from "./pages/auth/VerifyAccountPage";
 export const router = createBrowserRouter([
   {
     path: "/admin/login",
     Component: AdminLoginPage,
   },
+  
   {
     path: "/",
     Component: Layout,
@@ -92,6 +93,10 @@ export const router = createBrowserRouter([
       {
         path: "forgot-password",
         Component: ForgotPasswordPage,
+      },
+      {
+        path: "verify-account",
+        Component: VerifyAccountPage,
       },
       {
         path: "reset-password",

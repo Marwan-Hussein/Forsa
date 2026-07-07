@@ -101,6 +101,14 @@ namespace Forsa.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+            catch (Exception ex) when (ex.Message.Contains("verified"))
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex) when (ex.Message.Contains("User not found."))
+            {
+                return BadRequest(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "An error occurred while resending OTP.", detail = ex.Message });

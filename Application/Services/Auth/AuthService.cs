@@ -158,6 +158,10 @@ namespace Application.Services.Auth
             {
                 throw new Exception("User not found.");
             }
+            if(user.EmailConfirmed)
+            {
+                throw new Exception("Email is already verified.");
+            }
 
             // Generate and send a new OTP
             await otpService.GenerateAndSendOTPAsync(resendOtpDto.Email);
@@ -167,10 +171,6 @@ namespace Application.Services.Auth
                 Email = resendOtpDto.Email,
                 Message = "A new verification code has been sent to your email address."
             };
-             
-
-            
-            
         }
 
         public async Task<UserDto> LoginAsync(LoginDto loginDto)

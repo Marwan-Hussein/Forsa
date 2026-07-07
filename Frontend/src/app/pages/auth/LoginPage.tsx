@@ -457,6 +457,12 @@ export default function LoginPage() {
                   >
                     Forgot password?
                   </Link>
+                  <Link
+                    to="/verify-account"
+                    className="font-['Inter:Medium',sans-serif] text-sm font-medium text-[var(--brand-blue-accent)] hover:text-blue-400 transition-colors cursor-pointer"
+                  >
+                    Verify Account
+                  </Link>
                 </motion.div>
 
                 <motion.button
