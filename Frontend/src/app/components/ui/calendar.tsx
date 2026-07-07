@@ -6,7 +6,6 @@ import { DayPicker } from "react-day-picker";
 
 import { cn } from "./utils";
 import { buttonVariants } from "./button";
-import GoogleCalendarConnect from "../GoogleCalendarConnect";
 
 function Calendar({
   className,
@@ -73,7 +72,6 @@ function Calendar({
       }}
       {...props}
       />
-      <GoogleCalendarConnect />
     </>
   );
 }
