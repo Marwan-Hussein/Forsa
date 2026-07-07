@@ -3,60 +3,18 @@ import { Link } from "react-router";
 import { ArrowLeft, Bell, Check, Trash2, Settings, BellOff, Calendar, Sparkles, Building2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { EASE_IN_OUT } from "../../lib/motion";
-
-interface Notification {
-  id: string;
-  type: "event" | "recommendation" | "organization" | "reminder";
-  title: string;
-  message: string;
-  timestamp: string;
-  read: boolean;
-  link?: string;
-}
+import { NotificationItem, useNotificationContext } from "../../contexts/NotificationContext";
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: "1",
-      type: "event",
-      title: "Tech Innovators Summit is tomorrow!",
-      message: "Your gate ticket is ready. The event starts at 9:00 AM at Tech Park, Cairo.",
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-      read: false,
-      link: "/dashboard?tab=tickets"
-    },
-    {
-      id: "2",
-      type: "recommendation",
-      title: "New Event Recommendation",
-      message: "Based on your interest in Business, we recommend the Global Business Conference.",
-      timestamp: new Date(Date.now() - 86400000).toISOString(),
-      read: false,
-      link: "/dashboard?tab=recommendations"
-    },
-    {
-      id: "3",
-      type: "reminder",
-      title: "Complete your profile interests",
-      message: "Select your interests to help us personalize your event recommendations.",
-      timestamp: new Date(Date.now() - 172800000).toISOString(),
-      read: true,
-      link: "/interests"
-    }
-  ]);
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    removeNotification,
+  } = useNotificationContext();
 
   const [filter, setFilter] = useState<"all" | "unread">("all");
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
-  const markAsRead = (id: string) =>
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-
-  const markAllAsRead = () =>
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-
-  const deleteNotification = (id: string) =>
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-
   const filtered = filter === "unread" ? notifications.filter((n) => !n.read) : notifications;
 
   const formatTs = (ts: string) => {
@@ -73,7 +31,7 @@ export default function NotificationsPage() {
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
-  const typeConfig: Record<Notification["type"], { bg: string; icon: React.ReactNode }> = {
+  const typeConfig: Record<NotificationItem["type"], { bg: string; icon: React.ReactNode }> = {
     event: { bg: "bg-blue-600", icon: <Calendar className="w-5 h-5" /> },
     recommendation: { bg: "bg-amber-500", icon: <Sparkles className="w-5 h-5" /> },
     organization: { bg: "bg-violet-600", icon: <Building2 className="w-5 h-5" /> },
@@ -165,13 +123,13 @@ export default function NotificationsPage() {
                           {n.title}
                         </h3>
                         <span className="text-xs text-slate-400 whitespace-nowrap bg-slate-50 px-2 py-0.5 rounded-md shrink-0">
-                          {formatTs(n.timestamp)}
+                          {formatTs(n.sentAt)}
                         </span>
                       </div>
-                      <p className="text-slate-500 text-sm mb-3 line-clamp-2">{n.message}</p>
+                      <p className="text-slate-500 text-sm mb-3 line-clamp-2">{n.body}</p>
                       <div className="flex items-center gap-3">
-                        {n.link && (
-                          <Link to={n.link} className="text-[var(--brand-navy)] font-semibold text-xs hover:underline">
+                        {n.url && (
+                          <Link to={n.url} className="text-[var(--brand-navy)] font-semibold text-xs hover:underline">
                             View {"->"}
                           </Link>
                         )}
@@ -181,7 +139,7 @@ export default function NotificationsPage() {
                               <Check className="w-3.5 h-3.5" />
                             </button>
                           )}
-                          <button onClick={() => deleteNotification(n.id)} className="w-7 h-7 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100 flex items-center justify-center transition-colors" title="Delete">
+                          <button onClick={() => removeNotification(n.id)} className="w-7 h-7 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100 flex items-center justify-center transition-colors" title="Delete">
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
