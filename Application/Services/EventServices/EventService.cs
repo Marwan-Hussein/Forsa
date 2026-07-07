@@ -1,6 +1,9 @@
 using Application.Core.DTOs.Event;
 using Application.Core.Interfaces.EventInterfaces;
+using Application.Core.Interfaces;
+using Application.Core.DTOs.CommonDTOs;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Entities.EventEntities;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -15,12 +18,21 @@ namespace Application.Services.EventServices
         private readonly IEventRepository _repo;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IGenericRepository<Notification> _notificationRepository;
+        private readonly INotifierService _notifierService;
 
-        public EventService(IEventRepository repo, IMapper mapper, IUnitOfWork unitOfWork)
+        public EventService(
+            IEventRepository repo,
+            IMapper mapper,
+            IUnitOfWork unitOfWork,
+            IGenericRepository<Notification> notificationRepository,
+            INotifierService notifierService)
         {
             _repo = repo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _notificationRepository = notificationRepository;
+            _notifierService = notifierService;
         }
 
         public async Task<List<EventDetailsDto>> GetAllEvents()
@@ -94,7 +106,22 @@ namespace Application.Services.EventServices
                 .Where(b => 
                     b.Status == BookingStatus.Confirmed && 
                     b.Attendee != null))
+            {
                 booking.Attendee.LoyaltyPoint += points; // final calculation of attendee ratings
+
+                #region notification
+                var notification = new Notification
+                {
+                    Message = $"Your loyalty points have been increased by {points} points for attending the event '{eventEntity.Title}'!",
+                    Type = NotificationType.GeneralAlert,
+                    SentVia = DeliveryMethod.Email,
+                    Status = NotificationStatus.Pending,
+                    UserId = booking.AttendeeId,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _notificationRepository.AddAsync(notification);
+                #endregion
+            }
         }
         public async Task EvaluateEventStatusAsync(int eventId)
         {
@@ -113,9 +140,32 @@ namespace Application.Services.EventServices
                 eventEntity.RemainingTickets = 0; // Locks further bookings
                 await CalculateAttendeeRatings(eventEntity); // Update attendee ratings based on bookings
 
-
                 _repo.Update(eventEntity);
                 await _unitOfWork.SaveChangesAsync();
+
+                if (eventEntity.Bookings != null)
+                {
+                    int points = (int)(10 + eventEntity.TicketPrice / 10);
+                    foreach (var booking in eventEntity.Bookings
+                        .Where(b => 
+                            b.Status == BookingStatus.Confirmed && 
+                            b.Attendee != null))
+                    {
+                        try
+                        {
+                            await _notifierService.SendAsync(booking.AttendeeId, new NotificationMessageDto
+                            {
+                                Title = "Loyalty Points Increased",
+                                Body = $"Your loyalty points have been increased by {points} points for attending the event '{eventEntity.Title}'!",
+                                Type = NotificationType.GeneralAlert.ToString()
+                            });
+                        }
+                        catch
+                        {
+                            // Silence real-time notification failures to prevent blocking execution
+                        }
+                    }
+                }
             }
         }
 
