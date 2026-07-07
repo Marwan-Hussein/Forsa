@@ -27,7 +27,7 @@ import {
   pageTransition,
   pageVariants,
 } from "../../lib/motion";
-import { mapEventDetailsDtoToEvent } from "../../utils/mappers";
+import { mapEventDetailsDtoToEvent, parseBackendDate } from "../../utils/mappers";
 
 export default function EventDetailsPage() {
   const { eventId } = useParams<{ eventId: string }>();
@@ -225,6 +225,14 @@ export default function EventDetailsPage() {
     toast.success("Link copied", { description: "Paste it anywhere to share this event." });
     setShowShareModal(false);
   };
+  const now = new Date();
+  const startDate = event?.startDate ? parseBackendDate(event.startDate) : null;
+  const endDate = event?.endDate ? parseBackendDate(event.endDate) : null;
+  const statusStr = (event?.status || "").toLowerCase();
+  
+  const isApprovedOrActive = statusStr === "approved" || statusStr === "published" || statusStr === "soldout" || statusStr === "2" || statusStr === "4" || statusStr === "5";
+  const isLive = isApprovedOrActive && startDate && endDate && startDate < now && now < endDate;
+  const isCompleted = statusStr === "completed" || statusStr === "7" || (isApprovedOrActive && endDate && endDate < now);
 
   return (
     <motion.div
@@ -308,17 +316,55 @@ export default function EventDetailsPage() {
                   {event.title}
                 </h1>
                 <div className="flex gap-2 items-center">
-                  {event.status && (
-                    <span className={`px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider ${
-                      event.status === 'Approved' ? 'bg-green-100 text-green-700' :
-                      event.status === 'Pending' ? 'bg-orange-100 text-orange-700' :
-                      event.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
-                      event.status === 'Completed' ? 'bg-gray-100 text-gray-700' :
-                      'bg-blue-100 text-blue-700'
-                    }`}>
-                      {event.status}
-                    </span>
-                  )}
+                  {event.status && (() => {
+                    if (isLive) {
+                      return (
+                        <span className="px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider bg-red-100 text-red-700 border border-red-200 animate-pulse flex items-center gap-1">
+                          <span className="w-1 h-1 rounded-full bg-red-500 animate-ping" /> Live Now
+                        </span>
+                      );
+                    }
+                    if (isCompleted) {
+                      return (
+                        <span className="px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider bg-gray-100 text-gray-700">
+                          Completed
+                        </span>
+                      );
+                    }
+                    if (statusStr === "approved" || statusStr === "2") {
+                      return (
+                        <span className="px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider bg-green-100 text-green-700">
+                          Approved
+                        </span>
+                      );
+                    }
+                    if (statusStr === "published" || statusStr === "4") {
+                      return (
+                        <span className="px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider bg-blue-100 text-blue-700">
+                          Published
+                        </span>
+                      );
+                    }
+                    if (statusStr === "pending" || statusStr === "1") {
+                      return (
+                        <span className="px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider bg-orange-100 text-orange-700">
+                          Pending
+                        </span>
+                      );
+                    }
+                    if (statusStr === "cancelled" || statusStr === "6") {
+                      return (
+                        <span className="px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider bg-red-100 text-red-700">
+                          Cancelled
+                        </span>
+                      );
+                    }
+                    return (
+                      <span className="px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider bg-blue-100 text-blue-700">
+                        {event.status}
+                      </span>
+                    );
+                  })()}
                   <span className="px-3 py-1 bg-[var(--brand-blue-strong)] text-white rounded-[8px] text-[12px] font-['Inter:Medium',sans-serif] font-medium">
                     {event.category}
                   </span>
@@ -465,7 +511,16 @@ export default function EventDetailsPage() {
                 </p>
               </div>
 
-              {userBooking ? (
+              {isCompleted ? (
+                <button
+                  type="button"
+                  disabled
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 py-3 font-['Inter:Medium',sans-serif] text-[16px] font-semibold text-slate-400 border border-slate-200 cursor-not-allowed select-none"
+                >
+                  <Ticket className="h-5 w-5 text-slate-300" />
+                  Event Completed
+                </button>
+              ) : userBooking ? (
                 userBooking.status.toLowerCase() === "pending" ? (
                   <motion.button
                     type="button"

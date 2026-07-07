@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Calendar, Clock, MapPin, Users, Heart } from "lucide-react";
 import { Event } from "../types";
 import { ImageWithFallback } from "@/app/components/ImageWithFallback";
+import { parseBackendDate } from "../utils/mappers";
 import {
   EASE_IN_OUT,
   EASE_SCROLL,
@@ -29,6 +30,15 @@ export function EventCard({
   reveal = "mount",
 }: EventCardProps) {
   const navigate = useNavigate();
+  const now = new Date();
+  const startDate = event.startDate ? parseBackendDate(event.startDate) : null;
+  const endDate = event.endDate ? parseBackendDate(event.endDate) : null;
+  const statusStr = (event.status || "").toLowerCase();
+  
+  const isApprovedOrActive = statusStr === "approved" || statusStr === "published" || statusStr === "soldout" || statusStr === "2" || statusStr === "4" || statusStr === "5";
+  const isLive = isApprovedOrActive && startDate && endDate && startDate < now && now < endDate;
+  const isCompleted = statusStr === "completed" || statusStr === "7" || (isApprovedOrActive && endDate && endDate < now);
+
   const categoryColors: Record<string, string> = {
     Business: "var(--Business)",
     Music: "var(--Music)",
@@ -143,17 +153,55 @@ export function EventCard({
           <h3 className="line-clamp-2 font-['Inter:Semi_Bold',sans-serif] text-[18px] font-semibold text-primary pr-2">
             {event.title}
           </h3>
-          {event.status && (
-            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-              event.status === 'Approved' ? 'bg-green-100 text-green-700' :
-              event.status === 'Pending' ? 'bg-orange-100 text-orange-700' :
-              event.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
-              event.status === 'Completed' ? 'bg-gray-100 text-gray-700' :
-              'bg-blue-100 text-blue-700'
-            }`}>
-              {event.status}
-            </span>
-          )}
+          {event.status && (() => {
+            if (isLive) {
+              return (
+                <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700 border border-red-200 animate-pulse flex items-center gap-1">
+                  <span className="w-1 h-1 rounded-full bg-red-500 animate-ping" /> Live Now
+                </span>
+              );
+            }
+            if (isCompleted) {
+              return (
+                <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-700">
+                  Completed
+                </span>
+              );
+            }
+            if (statusStr === "approved" || statusStr === "2") {
+              return (
+                <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-700">
+                  Approved
+                </span>
+              );
+            }
+            if (statusStr === "published" || statusStr === "4") {
+              return (
+                <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700">
+                  Published
+                </span>
+              );
+            }
+            if (statusStr === "pending" || statusStr === "1") {
+              return (
+                <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-orange-100 text-orange-700">
+                  Pending
+                </span>
+              );
+            }
+            if (statusStr === "cancelled" || statusStr === "6") {
+              return (
+                <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">
+                  Cancelled
+                </span>
+              );
+            }
+            return (
+              <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700">
+                {event.status}
+              </span>
+            );
+          })()}
         </div>
 
         <div className="mb-4 space-y-2">

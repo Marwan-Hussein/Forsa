@@ -71,3 +71,15 @@ export function mapWishlistEventDtoToEvent(dto: WishlistEventDto): Event {
     tags: []
   };
 }
+
+export function parseBackendDate(dateStr: string | null | undefined): Date {
+  if (!dateStr) return new Date();
+  
+  // If the date string has no timezone suffix or offset, treat it as UTC by appending 'Z'
+  if (!dateStr.endsWith("Z") && !/[+-]\d{2}:\d{2}$/.test(dateStr)) {
+    return new Date(dateStr + "Z");
+  }
+  
+  const parsed = new Date(dateStr);
+  return isNaN(parsed.getTime()) ? new Date() : parsed;
+}

@@ -151,7 +151,6 @@ export default function GuestHomePage() {
 
   const eventTabs: { id: typeof eventFilter; label: string }[] = [
     { id: "featured", label: "✨ Featured" },
-    { id: "all", label: "All Events" },
     { id: "week", label: "This Week" },
     { id: "month", label: "This Month" },
   ];

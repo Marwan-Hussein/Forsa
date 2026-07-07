@@ -15,6 +15,8 @@ import {
   SelectValue,
 } from "../../components/ui/select";
 import MapPicker from "../../components/map/MapPicker";
+import { cn } from "../../components/ui/utils";
+import { parseBackendDate } from "../../utils/mappers";
 
 export default function EditEventPage() {
   const navigate = useNavigate();
@@ -40,6 +42,7 @@ export default function EditEventPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [eventStatus, setEventStatus] = useState("");
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -53,8 +56,9 @@ export default function EditEventPage() {
           totalTickets: data.totalTickets?.toString() || "",
           customLocation: data.customLocation || ""
         });
-        if (data.startDate) setStartDate(new Date(data.startDate));
-        if (data.endDate) setEndDate(new Date(data.endDate));
+        setEventStatus(data.status || "");
+        if (data.startDate) setStartDate(parseBackendDate(data.startDate));
+        if (data.endDate) setEndDate(parseBackendDate(data.endDate));
         if (data.imageUrl) setExistingImageUrl(data.imageUrl);
         if (data.placeId) {
           setHasPlaceId(true);
@@ -99,6 +103,8 @@ export default function EditEventPage() {
       setImagePreviewUrl(URL.createObjectURL(file));
     }
   };
+
+  const isStartedOrCompleted = eventStatus.toLowerCase() === "completed" || (startDate && startDate < new Date());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -282,14 +288,14 @@ export default function EditEventPage() {
                 <Calendar className="w-4 h-4 text-indigo-500" />
                 Start Date & Time
               </label>
-              <DateTimePicker date={startDate} setDate={setStartDate} />
+              <DateTimePicker date={startDate} setDate={setStartDate} disabled={isStartedOrCompleted} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-indigo-500" />
                 End Date & Time
               </label>
-              <DateTimePicker date={endDate} setDate={setEndDate} />
+              <DateTimePicker date={endDate} setDate={setEndDate} disabled={isStartedOrCompleted} />
             </div>
           </div>
 
@@ -312,16 +318,18 @@ export default function EditEventPage() {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button
                     type="button"
+                    disabled={isStartedOrCompleted}
                     onClick={() => setHasOwnPlace(false)}
-                    className={`flex-1 p-5 rounded-2xl border-2 text-left flex flex-col gap-2 transition-all ${!hasOwnPlace ? 'border-indigo-500 bg-indigo-50/10' : 'border-slate-200 hover:border-slate-300'}`}
+                    className={`flex-1 p-5 rounded-2xl border-2 text-left flex flex-col gap-2 transition-all ${!hasOwnPlace ? 'border-indigo-500 bg-indigo-50/10' : 'border-slate-200 hover:border-slate-300'} ${isStartedOrCompleted ? 'opacity-60 cursor-not-allowed' : ''}`}
                   >
                     <span className="font-bold text-slate-800 text-sm font-['Inter:Bold',sans-serif]">Book a Registered ForSa Venue</span>
                     <span className="text-xs text-slate-500 leading-relaxed font-['Inter:Regular',sans-serif]">Submit a booking request to one of our premium venue owners. The event will remain a draft until booking is paid.</span>
                   </button>
                   <button
                     type="button"
+                    disabled={isStartedOrCompleted}
                     onClick={() => setHasOwnPlace(true)}
-                    className={`flex-1 p-5 rounded-2xl border-2 text-left flex flex-col gap-2 transition-all ${hasOwnPlace ? 'border-indigo-500 bg-indigo-50/10' : 'border-slate-200 hover:border-slate-300'}`}
+                    className={`flex-1 p-5 rounded-2xl border-2 text-left flex flex-col gap-2 transition-all ${hasOwnPlace ? 'border-indigo-500 bg-indigo-50/10' : 'border-slate-200 hover:border-slate-300'} ${isStartedOrCompleted ? 'opacity-60 cursor-not-allowed' : ''}`}
                   >
                     <span className="font-bold text-slate-800 text-sm font-['Inter:Bold',sans-serif]">Use My Own Venue / Location</span>
                     <span className="text-xs text-slate-500 leading-relaxed font-['Inter:Regular',sans-serif]">Specify your own address directly. The event will be published immediately on creation.</span>
@@ -344,13 +352,17 @@ export default function EditEventPage() {
                         required
                         value={formData.customLocation}
                         onChange={handleChange}
+                        disabled={isStartedOrCompleted}
                         placeholder="e.g. 28 Falaki St, Bab Al Louq, Cairo" 
-                        className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 shadow-sm rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all"
+                        className={cn(
+                          "w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 shadow-sm rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all",
+                          isStartedOrCompleted && "opacity-60 cursor-not-allowed bg-slate-100"
+                        )}
                       />
                     </div>
                   </div>
 
-                  <div>
+                  <div className={isStartedOrCompleted ? "pointer-events-none opacity-60" : ""}>
                     <p className="text-xs text-slate-500 mb-2 font-['Inter:Medium',sans-serif]">Pinpoint exact location on map</p>
                     <MapPicker
                       address={formData.customLocation}
@@ -385,8 +397,12 @@ export default function EditEventPage() {
                 min="1"
                 value={formData.totalTickets}
                 onChange={handleChange}
+                disabled={isStartedOrCompleted}
                 placeholder="e.g. 500" 
-                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all"
+                className={cn(
+                  "w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all",
+                  isStartedOrCompleted && "opacity-60 cursor-not-allowed bg-slate-100"
+                )}
               />
             </div>
             <div className="space-y-2">
@@ -402,8 +418,12 @@ export default function EditEventPage() {
                 step="0.01"
                 value={formData.ticketPrice}
                 onChange={handleChange}
+                disabled={isStartedOrCompleted}
                 placeholder="e.g. 250" 
-                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all"
+                className={cn(
+                  "w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all",
+                  isStartedOrCompleted && "opacity-60 cursor-not-allowed bg-slate-100"
+                )}
               />
             </div>
           </div>

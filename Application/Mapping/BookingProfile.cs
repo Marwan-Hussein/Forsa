@@ -32,7 +32,8 @@ namespace Application.Mapping
                 .ForMember(d => d.EventStartDate, o => o.MapFrom(s => s.Event.StartDate))
                 .ForMember(d => d.EventEndDate, o => o.MapFrom(s => s.Event.EndDate))
                 .ForMember(d => d.EventPlace, o => o.MapFrom(s => s.Event.Place != null ? s.Event.Place.Name : null))
-                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()));
+                .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()))
+                .ForMember(d => d.EventStatus, o => o.MapFrom(s => s.Event.Status.ToString()));
         }
     }
 }

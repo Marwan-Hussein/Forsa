@@ -1,15 +1,19 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router";
-import { ArrowLeft, Star, Send } from "lucide-react";
+import { ArrowLeft, Star, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { FloatingLabelTextarea } from "../../components/ui/floating-label-field";
+import { eventsApi } from "../../api/eventsApi";
+import { attendeeApi } from "../../api/attendeeApi";
+import { EventDetailsDto } from "../../types";
+import { getUserIdFromToken } from "../../api/api";
 
 export default function FeedbackPage() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   
-  // TODO: Fetch event details from API
-  const event: any = { id: eventId, title: "Event Title" };
+  const [event, setEvent] = useState<EventDetailsDto | null>(null);
+  const [loadingEvent, setLoadingEvent] = useState(true);
   
   // Check if user already reviewed this event
   const existingReview = null;
@@ -20,31 +24,70 @@ export default function FeedbackPage() {
   const [attendanceConfirmed, setAttendanceConfirmed] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!eventId) return;
+    eventsApi.getEventDetails(Number(eventId))
+      .then((data) => {
+        setEvent(data);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch event details", err);
+        toast.error("Failed to load event details");
+      })
+      .finally(() => {
+        setLoadingEvent(false);
+      });
+  }, [eventId]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (attendanceConfirmed && rating === 0) {
       toast.error("Please select a rating");
       return;
     }
     
+    const userId = getUserIdFromToken();
+    if (!userId) {
+      toast.error("User session expired. Please login again.");
+      navigate("/login");
+      return;
+    }
+
     setIsSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
       if (attendanceConfirmed && eventId) {
-        // TODO: Save the review using API post
-        console.log("Saving review for", eventId, rating, comment);
+        await attendeeApi.submitFeedback(userId, Number(eventId), {
+          rating,
+          comment
+        });
+        toast.success("Thank you for your feedback!", {
+          description: `Your ${rating}-star review has been submitted.`
+        });
+      } else {
+        toast.info("Thank you for letting us know you couldn't attend.");
       }
-      
+      navigate("/dashboard?tab=tickets");
+    } catch (err: any) {
+      console.error("Failed to submit feedback", err);
+      toast.error(err.message || "Failed to submit feedback. Please try again.");
+    } finally {
       setIsSubmitting(false);
-      toast.success("Thank you for your feedback!", {
-        description: attendanceConfirmed 
-          ? `Your ${rating}-star review has been submitted.`
-          : "We appreciate you letting us know.",
-      });
-      navigate("/my-events");
-    }, 800);
+    }
   };
+
+  if (loadingEvent) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="flex flex-col items-center">
+          <Loader2 className="w-8 h-8 text-[var(--brand-navy)] animate-spin mb-3" />
+          <p className="text-sm text-slate-500 font-medium font-['Inter:Medium',sans-serif]">
+            Loading event details...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (!event) {
     return (
@@ -57,7 +100,7 @@ export default function FeedbackPage() {
             The event you're looking for doesn't exist.
           </p>
           <Link
-            to="/my-events"
+            to="/dashboard?tab=tickets"
             className="inline-block bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936]"
           >
             My Events
@@ -82,7 +125,7 @@ export default function FeedbackPage() {
             You've already submitted a review for this event. You can view your review from the My Events page.
           </p>
           <Link
-            to="/my-events"
+            to="/dashboard?tab=tickets"
             className="inline-block bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936]"
           >
             Go to My Events
@@ -98,7 +141,7 @@ export default function FeedbackPage() {
         {/* Header */}
         <div className="mb-8">
           <Link
-            to="/my-events"
+            to="/dashboard?tab=tickets"
             className="inline-flex items-center gap-2 mb-4 text-muted-foreground hover:text-foreground transition-colors font-['Inter:Regular',sans-serif] text-[14px]"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -118,14 +161,14 @@ export default function FeedbackPage() {
             {event.title}
           </h2>
           <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
-            {new Date(event.date).toLocaleDateString("en-US", {
+            {event.startDate && new Date(event.startDate).toLocaleDateString("en-US", {
               weekday: "long",
               year: "numeric",
               month: "long",
               day: "numeric",
             })}
             {" • "}
-            {event.location}
+            {event.placeLocation || event.place || "Location TBD"}
           </p>
         </div>
 
@@ -183,7 +226,7 @@ export default function FeedbackPage() {
                         <Star
                           className={`w-12 h-12 ${
                             star <= (hoveredRating || rating)
-                              ? "fill-accent text-accent"
+                              ? "fill-amber-400 text-amber-400"
                               : "text-muted-foreground"
                           }`}
                         />

@@ -21,6 +21,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { organizerApi } from "../../api/organizerApi";
 import { toast } from "react-toastify";
+import { parseBackendDate } from "../../utils/mappers";
 
 type CheckInFilter = "all" | "checked-in" | "not-checked-in";
 
@@ -325,7 +326,7 @@ export default function ManageAttendeesPage() {
                           </div>
                           {attendee.checkInTime && (
                             <p className="text-[11px] text-slate-400 mt-2 font-['Inter:Medium',sans-serif]">
-                              {attendee.checkInTime}
+                              {parseBackendDate(attendee.checkInTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                             </p>
                           )}
                         </div>

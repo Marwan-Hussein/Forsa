@@ -5,7 +5,7 @@ import { EventCard } from "../../components/EventCard";
 import { PageHeader } from "../../components/PageHeader";
 import { useWishlist } from "../../hooks/useWishlist";
 import { apiGet } from "../../api/api";
-import { mapEventDetailsDtoToEvent } from "../../utils/mappers";
+import { mapEventDetailsDtoToEvent, parseBackendDate } from "../../utils/mappers";
 import type { Event as EventType } from "../../types/index";
 
 export default function EventsPage() {
@@ -17,6 +17,7 @@ export default function EventsPage() {
   const [selectedDate, setSelectedDate] = useState("All");
   const [priceRange, setPriceRange] = useState("All");
   const [locationFilter, setLocationFilter] = useState(searchParams.get("location") || "");
+  const [selectedStatus, setSelectedStatus] = useState("All");
   const [showFilters, setShowFilters] = useState(false);
   const { toggle: toggleWishlist, has: isInWishlist } = useWishlist();
 
@@ -29,7 +30,7 @@ export default function EventsPage() {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedCategory, selectedDate, priceRange, locationFilter, selectedDiscovery]);
+  }, [searchQuery, selectedCategory, selectedDate, priceRange, locationFilter, selectedDiscovery, selectedStatus]);
 
   useEffect(() => {
     setSearchQuery(searchParams.get("search") || "");
@@ -53,6 +54,7 @@ export default function EventsPage() {
   }, []);
 
   const discoveryFilters = ["All", "Recommended", "Near Me"];
+  const statusFilters = ["All", "Published", "Live now", "Completed"];
   const categories = ["All", "Business", "Music", "Art", "Sports", "Food", "Education"];
   const dateFilters = ["All", "This Week", "This Month", "Next Month"];
   const priceFilters = ["All", "Free", "Under $50", "$50-$150", "Over $150"];
@@ -60,9 +62,29 @@ export default function EventsPage() {
   const nearbyLocationKeywords = ["san francisco", "oakland", "san jose", "bay area"];
 
   const filteredEvents = events.filter((event) => {
-    // Status filter - only show Approved or Published events
-    if (event.status !== "Approved" && event.status !== "Published") {
+    const now = new Date();
+    const startDate = event.startDate ? parseBackendDate(event.startDate) : null;
+    const endDate = event.endDate ? parseBackendDate(event.endDate) : null;
+    const statusStr = (event.status || "").toLowerCase();
+
+    const isApprovedOrActive = statusStr === "approved" || statusStr === "published" || statusStr === "soldout" || statusStr === "completed" || statusStr === "2" || statusStr === "4" || statusStr === "5" || statusStr === "7";
+    const isLive = isApprovedOrActive && startDate && endDate && startDate < now && now < endDate;
+    const isCompleted = statusStr === "completed" || statusStr === "7" || (isApprovedOrActive && endDate && endDate < now);
+
+    // Only show active/visible events to attendees
+    if (!isApprovedOrActive) {
       return false;
+    }
+
+    // Status filter
+    let matchesStatus = true;
+    if (selectedStatus === "Live now") {
+      matchesStatus = isLive;
+    } else if (selectedStatus === "Completed") {
+      matchesStatus = isCompleted;
+    } else if (selectedStatus === "Published") {
+      // Upcoming events (approved/published but not started/ended)
+      matchesStatus = (statusStr === "approved" || statusStr === "published" || statusStr === "soldout" || statusStr === "2" || statusStr === "4" || statusStr === "5") && !isLive && !isCompleted;
     }
 
     // Search filter
@@ -95,7 +117,7 @@ export default function EventsPage() {
     // Date filter (simplified)
     let matchesDate = true;
     if (selectedDate !== "All") {
-      const eventDate = new Date(event.date);
+      const eventDate = startDate || new Date(event.date);
       const today = new Date();
       const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
       const monthFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -119,6 +141,7 @@ export default function EventsPage() {
     }
 
     return (
+      matchesStatus &&
       matchesSearch &&
       matchesCategory &&
       matchesLocation &&
@@ -196,7 +219,8 @@ export default function EventsPage() {
                 selectedCategory !== "All" ||
                 selectedDate !== "All" ||
                 priceRange !== "All" ||
-                locationFilter) && (
+                locationFilter ||
+                selectedStatus !== "All") && (
                 <span className="ml-2 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
               )}
             </button>
@@ -230,25 +254,25 @@ export default function EventsPage() {
                 </div>
               </div>
 
-              {/* Category Filter */}
-              <div className="space-y-3 lg:col-span-2">
+              {/* Status Filter */}
+              <div className="space-y-3">
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">
-                  Category
+                  Status
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {categories.map((category) => {
-                    const isActive = selectedCategory === category;
+                  {statusFilters.map((status) => {
+                    const isActive = selectedStatus === status;
                     return (
                       <button
-                        key={category}
-                        onClick={() => setSelectedCategory(category)}
+                        key={status}
+                        onClick={() => setSelectedStatus(status)}
                         className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
                           isActive
-                            ? "bg-blue-600 text-white shadow-md shadow-blue-600/20 scale-105"
+                            ? "bg-purple-600 text-white shadow-md shadow-purple-600/20 scale-105"
                             : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800"
                         }`}
                       >
-                        {category}
+                        {status}
                       </button>
                     );
                   })}
@@ -305,6 +329,31 @@ export default function EventsPage() {
                 </div>
               </div>
 
+              {/* Category Filter */}
+              <div className="space-y-3 lg:col-span-2">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">
+                  Category
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((category) => {
+                    const isActive = selectedCategory === category;
+                    return (
+                      <button
+                        key={category}
+                        onClick={() => setSelectedCategory(category)}
+                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                          isActive
+                            ? "bg-blue-600 text-white shadow-md shadow-blue-600/20 scale-105"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800"
+                        }`}
+                      >
+                        {category}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Location Filter */}
               <div className="space-y-3 lg:col-span-2">
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">
@@ -320,12 +369,13 @@ export default function EventsPage() {
               </div>
 
               {/* Clear Filters */}
-              <div className="flex items-end lg:col-span-1 pb-1">
+              <div className="flex items-end lg:col-span-4 justify-end pb-1">
                 {(selectedDiscovery !== "All" ||
                   selectedCategory !== "All" ||
                   selectedDate !== "All" ||
                   priceRange !== "All" ||
-                  locationFilter) && (
+                  locationFilter ||
+                  selectedStatus !== "All") && (
                   <button
                     onClick={() => {
                       setSelectedDiscovery("All");
@@ -333,8 +383,9 @@ export default function EventsPage() {
                       setSelectedDate("All");
                       setPriceRange("All");
                       setLocationFilter("");
+                      setSelectedStatus("All");
                     }}
-                    className="flex items-center justify-center gap-2 w-full py-3 text-red-500 hover:bg-red-50 rounded-xl font-bold text-sm transition-colors border border-transparent hover:border-red-100 active:scale-95"
+                    className="flex items-center justify-center gap-2 px-6 py-3 text-red-500 hover:bg-red-50 rounded-xl font-bold text-sm transition-colors border border-transparent hover:border-red-100 active:scale-95 bg-slate-50"
                   >
                     <X className="w-4 h-4" />
                     Clear All Filters

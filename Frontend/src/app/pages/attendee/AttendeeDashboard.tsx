@@ -26,6 +26,7 @@ import { eventsApi } from "../../api/eventsApi";
 import { attendeeApi } from "../../api/attendeeApi";
 import { EventDetailsDto, AttendeeBookingDto } from "../../types";
 import { getUserIdFromToken, apiPost } from "../../api/api";
+import { parseBackendDate } from "../../utils/mappers";
 
 // --- Framer Motion Configurations ---
 const containerVariants = {
@@ -58,7 +59,7 @@ function Barcode() {
 }
 
 function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
-  const date = new Date(booking.eventStartDate);
+  const date = parseBackendDate(booking.eventStartDate);
   const month = date.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
   const day = date.getDate();
   const year = date.getFullYear();
@@ -71,10 +72,22 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
   const [paying, setPaying] = useState(false);
   
   const now = new Date();
+  const eventStartDate = parseBackendDate(booking.eventStartDate);
+  const eventEndDate = parseBackendDate(booking.eventEndDate);
+  const isEventStarted = eventStartDate < now;
+  const isEventEnded = eventEndDate < now;
+  const eventStatusStr = (booking.eventStatus || "").toLowerCase();
+  
+  const isEventCompleted = eventStatusStr === "completed";
+  const isApproved = eventStatusStr === "approved" || eventStatusStr === "published" || eventStatusStr === "completed";
+  
+  const isLive = isApproved && isEventStarted && !isEventEnded && !isEventCompleted;
+  const isCompletedEvent = (isEventCompleted || (isApproved && isEventEnded)) && !isLive;
+  
   const timeDiff = date.getTime() - now.getTime();
   const hoursDiff = timeDiff / (1000 * 3600);
   const isCancelled = String(booking.status).toLowerCase() === "cancelled";
-  const canCancel = hoursDiff > 24 && !isCancelled;
+  const canCancel = !isCancelled && !isCompletedEvent && (hoursDiff > 24 || isLive);
 
   const handleCancel = async () => {
     setShowCancelModal(false);
@@ -128,6 +141,38 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
 
   const renderStatusBadge = () => {
     const status = (booking.status || "").toLowerCase();
+    
+    if (isLive && (status === "confirmed" || status === "attended")) {
+      return (
+        <span className="bg-red-50 text-red-700 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 border border-red-200 animate-pulse">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" /> Live Now
+        </span>
+      );
+    }
+    
+    if (isCompletedEvent) {
+      if (status === "attended") {
+        return (
+          <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 border border-emerald-200">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" /> Completed Event
+          </span>
+        );
+      }
+      if (status === "confirmed") {
+        return (
+          <span className="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 border border-slate-200">
+            <TicketX className="w-3.5 h-3.5 text-slate-500" /> Did Not Attend
+          </span>
+        );
+      }
+      if (status === "pending") {
+        return (
+          <span className="bg-slate-150 text-slate-600 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 border border-slate-200">
+            <Clock className="w-3.5 h-3.5 text-slate-500 animate-pulse" /> Expired (Unpaid)
+          </span>
+        );
+      }
+    }
     switch (status) {
       case "confirmed":
         return (
@@ -235,7 +280,58 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
         </div>
 
         {/* Stub Area */}
-        {isPending ? (
+        {/* Stub Area */}
+        {isCompletedEvent ? (
+          (booking.status || "").toLowerCase() === "attended" ? (
+            <div className="w-full md:w-56 bg-slate-50 p-6 flex flex-col justify-between items-center text-slate-700 shrink-0">
+              <div className="text-center w-full my-auto">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                <p className="text-xs uppercase font-bold text-slate-500 tracking-wider mb-2">Event Completed</p>
+                <p className="text-xs text-slate-650 font-medium mb-4 leading-relaxed">
+                  We hope you enjoyed the event! Share your feedback with us.
+                </p>
+              </div>
+              <div className="w-full space-y-2">
+                {booking.hasSubmittedFeedback ? (
+                  <div className="w-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-xs py-2.5 px-3 rounded-lg text-center flex items-center justify-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-700" /> Feedback Submitted
+                  </div>
+                ) : (
+                  <Link 
+                    to={`/events/${booking.eventId}/feedback`}
+                    className="w-full block bg-[#1E3D61] hover:bg-[#152D4A] text-white border border-transparent font-bold text-xs py-2.5 px-3 rounded-lg shadow-sm hover:shadow-md transition-all text-center cursor-pointer"
+                  >
+                    Rate & Feedback
+                  </Link>
+                )}
+              </div>
+            </div>
+          ) : (booking.status || "").toLowerCase() === "confirmed" ? (
+            <div className="w-full md:w-56 bg-slate-50 p-6 flex flex-col justify-center items-center text-slate-700 shrink-0 text-center">
+              <TicketX className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Event Completed</p>
+              <p className="text-xs text-slate-500 font-medium">
+                You did not attend this event.
+              </p>
+            </div>
+          ) : (booking.status || "").toLowerCase() === "pending" ? (
+            <div className="w-full md:w-56 bg-slate-50 p-6 flex flex-col justify-center items-center text-slate-700 shrink-0 text-center">
+              <TicketX className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Expired</p>
+              <p className="text-xs text-slate-500 font-medium">
+                This booking expired because the event ended and payment was not completed.
+              </p>
+            </div>
+          ) : (
+            <div className="w-full md:w-56 bg-slate-50 p-6 flex flex-col justify-center items-center text-slate-700 shrink-0 text-center">
+              <TicketX className="w-8 h-8 text-rose-500 mx-auto mb-2" />
+              <p className="text-xs font-bold text-rose-600 uppercase tracking-wider mb-1">Not Active</p>
+              <p className="text-xs text-slate-500 font-medium">
+                This booking was {(booking.status || "").toLowerCase()} and cannot be used.
+              </p>
+            </div>
+          )
+        ) : isPending ? (
           <div className="w-full md:w-56 bg-slate-50 p-6 flex flex-col justify-between items-center text-slate-700 shrink-0">
             <div className="text-center w-full my-auto">
               <p className="text-xs uppercase font-bold text-amber-600 tracking-wider mb-2">Awaiting Payment</p>

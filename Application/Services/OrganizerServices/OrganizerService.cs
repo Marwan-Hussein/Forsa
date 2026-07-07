@@ -35,7 +35,8 @@ namespace Application.Services.OrganizerServices
         private readonly IGoogleCalendarSyncService _calendarSync;
         private readonly IQueryableRepository<PaymentTransaction> _transactionRepository;
         private readonly IQueryableRepository<WalletBalance> _walletRepo;
-
+        private readonly IFeedbackRepository _feedbackRepo;
+ 
         public OrganizerService(
             IOrganizerRepository organizerRepo,
             IQueryableRepository<Event> eventRepository,
@@ -46,7 +47,8 @@ namespace Application.Services.OrganizerServices
             IMapper mapper,
             IGoogleCalendarSyncService calendarSync,
             IQueryableRepository<PaymentTransaction> transactionRepository,
-            IQueryableRepository<WalletBalance> walletRepo)
+            IQueryableRepository<WalletBalance> walletRepo,
+            IFeedbackRepository feedbackRepo)
         {
             _organizerRepo = organizerRepo;
             _eventRepository = eventRepository;
@@ -58,6 +60,7 @@ namespace Application.Services.OrganizerServices
             _calendarSync = calendarSync;
             _transactionRepository = transactionRepository;
             _walletRepo = walletRepo;
+            _feedbackRepo = feedbackRepo;
         }
 
         public async Task<List<Organizer>> FilterOrganizers(OrganizerSearchParameters searchParameter)
@@ -154,8 +157,17 @@ namespace Application.Services.OrganizerServices
             if (ev == null)
                 throw new KeyNotFoundException("Event not found");
 
-            if (ev.StartDate <= DateTime.UtcNow || ev.Status == EventStatus.Completed)
-                throw new InvalidOperationException("Cannot modify an event that has already started or concluded.");
+            bool isConcludedOrStarted = ev.StartDate <= DateTime.UtcNow || ev.Status == EventStatus.Completed;
+
+            if (isConcludedOrStarted)
+            {
+                if (ev.StartDate != dto.StartDate || 
+                    ev.EndDate != dto.EndDate || 
+                    ev.CustomLocation != dto.CustomLocation)
+                {
+                    throw new InvalidOperationException("Cannot adjust dates or location once the event has started or completed.");
+                }
+            }
 
             ev.Title = dto.Title;
             ev.Description = dto.Description;
@@ -349,8 +361,15 @@ namespace Application.Services.OrganizerServices
         public async Task<List<OrganizerEventDashboardDto>> GetOrganizerEventsDashboardAsync(int organizerId)
         {
             var events = await _eventRepository.GetQueryable()
+                .Include(e => e.Place)
                 .Where(e => e.OrganizerId == organizerId && !e.IsDeleted)
                 .OrderByDescending(e => e.StartDate)
+                .ToListAsync();
+
+            var eventIds = events.Select(e => e.Id).ToList();
+            var reviewedEventIds = await _feedbackRepo.GetQueryable()
+                .Where(f => f.OrganizerId == organizerId && f.EventId != null && eventIds.Contains(f.EventId.Value))
+                .Select(f => f.EventId.Value)
                 .ToListAsync();
 
             return events.Select(e => new OrganizerEventDashboardDto
@@ -359,7 +378,12 @@ namespace Application.Services.OrganizerServices
                 Title = e.Title,
                 Status = e.Status.ToString(),
                 TotalTickets = e.TotalTickets,
-                RemainingTickets = e.RemainingTickets
+                RemainingTickets = e.RemainingTickets,
+                StartDate = e.StartDate,
+                EndDate = e.EndDate,
+                PlaceId = e.PlaceId,
+                PlaceName = e.Place?.Name,
+                HasReviewedPlace = reviewedEventIds.Contains(e.Id)
             }).ToList();
         }
         public async Task<OrganizerDashboardStatsDto> GetOrganizerDashboardStatsAsync(int organizerId)
@@ -528,6 +552,49 @@ namespace Application.Services.OrganizerServices
                 ReviewsCount = organizer.ReviewsCount
                 // You can add more fields if needed
             };
+        }
+
+        public async Task SubmitPlaceFeedbackAsync(int organizerId, int placeId, int eventId, OrganizerPlaceFeedbackDto dto)
+        {
+            var ev = await _eventRepository.GetQueryable()
+                .Include(e => e.Place)
+                .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
+
+            if (ev == null)
+                throw new KeyNotFoundException("Event not found");
+
+            if (ev.OrganizerId != organizerId)
+                throw new UnauthorizedAccessException("You do not own this event.");
+
+            if (ev.PlaceId != placeId)
+                throw new InvalidOperationException("This event was not hosted at the specified place.");
+
+            var now = DateTime.UtcNow;
+            if (ev.Status != EventStatus.Completed && ev.EndDate >= now)
+                throw new InvalidOperationException("You can only review the venue after the event has completed or ended.");
+
+            var existingFeedback = await _feedbackRepo.GetQueryable()
+                .FirstOrDefaultAsync(f => f.OrganizerId == organizerId && f.EventId == eventId && !f.IsDeleted);
+
+            if (existingFeedback != null)
+                throw new InvalidOperationException("You have already submitted feedback for this event venue.");
+
+            var bookingRequest = await _bookingRequestRepository.GetQueryable()
+                .FirstOrDefaultAsync(br => br.EventId == eventId && br.PlaceId == placeId && br.OrganizerId == organizerId && !br.IsDeleted);
+
+            var feedback = new Feedback
+            {
+                Rating = dto.Rating,
+                Comment = dto.Comment,
+                OrganizerId = organizerId,
+                PlaceId = placeId,
+                EventId = eventId,
+                BookingRequestId = bookingRequest?.Id,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _feedbackRepo.AddAsync(feedback);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

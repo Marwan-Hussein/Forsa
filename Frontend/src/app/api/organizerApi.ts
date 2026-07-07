@@ -167,5 +167,9 @@ export const organizerApi = {
 
   processPlaceCheckout: async (requestId: number): Promise<any> => {
     return await apiPost(`/api/organizers/booking-requests/${requestId}/checkout`, {});
+  },
+
+  submitPlaceFeedback: async (organizerId: number, placeId: number, eventId: number, rating: number, comment: string): Promise<any> => {
+    return await apiPost(`/api/organizers/${organizerId}/places/${placeId}/events/${eventId}/feedback`, { rating, comment });
   }
 };

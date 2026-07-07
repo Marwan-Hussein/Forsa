@@ -7,7 +7,8 @@ import {
 } from "lucide-react";
 import { motion, useSpring, useTransform } from "motion/react";
 import { organizerApi, OrganizerDashboardStats } from "../../api/organizerApi";
-import { getUserIdFromToken } from "../../api/api";
+import { getUserIdFromToken, apiPost } from "../../api/api";
+import { parseBackendDate } from "../../utils/mappers";
 
 function AnimatedNumber({ value, prefix = "" }: { value: number; prefix?: string }) {
   const spring = useSpring(0, { bounce: 0, duration: 2000 });
@@ -20,6 +21,99 @@ function AnimatedNumber({ value, prefix = "" }: { value: number; prefix?: string
   }, [spring, value]);
 
   return <motion.span>{display}</motion.span>;
+}
+
+function renderEventStatusBadge(event: any) {
+  const now = new Date();
+  const startDate = parseBackendDate(event.startDate);
+  const endDate = parseBackendDate(event.endDate);
+  const statusStr = (event.status || "").toLowerCase();
+
+  // Cancelled (6)
+  if (statusStr === "cancelled" || statusStr === "6") {
+    return (
+      <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-rose-100 text-rose-700 border border-rose-200">
+        Cancelled
+      </span>
+    );
+  }
+  // Rejected (3)
+  if (statusStr === "rejected" || statusStr === "3") {
+    return (
+      <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-rose-100 text-rose-700 border border-rose-200">
+        Rejected
+      </span>
+    );
+  }
+  // Draft (0)
+  if (statusStr === "draft" || statusStr === "0") {
+    return (
+      <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
+        Draft
+      </span>
+    );
+  }
+  // Pending (1)
+  if (statusStr === "pending" || statusStr === "1") {
+    return (
+      <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 border border-amber-200 animate-pulse">
+        Pending Approval
+      </span>
+    );
+  }
+
+  const isApprovedOrActive = statusStr === "approved" || statusStr === "published" || statusStr === "soldout" || statusStr === "2" || statusStr === "4" || statusStr === "5";
+
+  // Completed (7)
+  if (statusStr === "completed" || statusStr === "7" || (isApprovedOrActive && event.endDate && endDate < now)) {
+    return (
+      <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 border border-emerald-200">
+        Completed
+      </span>
+    );
+  }
+
+  // Live Now (only if event is approved/published/soldout AND time is between start and end)
+  if (isApprovedOrActive && event.startDate && event.endDate && startDate < now && now < endDate) {
+    return (
+      <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700 border border-red-200 animate-pulse flex items-center gap-1">
+        <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" /> Live Now
+      </span>
+    );
+  }
+
+  // Sold Out (5)
+  if (event.remainingTickets === 0 || statusStr === "soldout" || statusStr === "5") {
+    return (
+      <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 border border-amber-200">
+        Sold Out
+      </span>
+    );
+  }
+
+  // Approved (2)
+  if (statusStr === "approved" || statusStr === "2") {
+    return (
+      <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 border border-emerald-200">
+        Approved
+      </span>
+    );
+  }
+
+  // Published (4)
+  if (statusStr === "published" || statusStr === "4") {
+    return (
+      <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 border border-indigo-200">
+        Published
+      </span>
+    );
+  }
+
+  return (
+    <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 border border-indigo-200">
+      {event.status || "Active"}
+    </span>
+  );
 }
 
 export default function OrganizerDashboard() {
@@ -220,9 +314,7 @@ export default function OrganizerDashboard() {
                       <div className="flex-1">
                         <div className="font-['Inter:Bold',sans-serif] text-slate-800 text-lg mb-1">{ev.title}</div>
                         <div className="flex items-center gap-2">
-                          <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${ev.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'}`}>
-                            {ev.status || 'Active'}
-                          </span>
+                          {renderEventStatusBadge(ev)}
                           <span className="text-sm font-['Inter:Medium',sans-serif] text-slate-500">
                             {booked} / {ev.totalTickets} tickets sold
                           </span>

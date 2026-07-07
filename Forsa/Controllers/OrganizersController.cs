@@ -384,5 +384,35 @@ namespace Forsa.Controllers
                 return StatusCode(500, new { message = $"An error occurred while fetching organizer profile: {ex.Message}" });
             }
         }
+
+        // POST: api/organizers/{organizerId}/places/{placeId}/events/{eventId}/feedback
+        [HttpPost("{organizerId:int}/places/{placeId:int}/events/{eventId:int}/feedback")]
+        public async Task<IActionResult> SubmitPlaceFeedback(int organizerId, int placeId, int eventId, [FromBody] OrganizerPlaceFeedbackDto dto)
+        {
+            try
+            {
+                if (dto == null)
+                    return BadRequest("Feedback details cannot be null.");
+
+                await _organizerService.SubmitPlaceFeedbackAsync(organizerId, placeId, eventId, dto);
+                return Ok(new { message = "Feedback submitted successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred while submitting feedback: {ex.Message}" });
+            }
+        }
     }
 }
