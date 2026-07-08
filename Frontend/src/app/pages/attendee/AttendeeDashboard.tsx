@@ -87,7 +87,8 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
   const timeDiff = date.getTime() - now.getTime();
   const hoursDiff = timeDiff / (1000 * 3600);
   const isCancelled = String(booking.status).toLowerCase() === "cancelled";
-  const canCancel = !isCancelled && !isCompletedEvent && (hoursDiff > 24 || isLive);
+  const isAttended = String(booking.status).toLowerCase() === "attended";
+  const canCancel = !isCancelled && !isAttended && !isCompletedEvent;
 
   // New: Feedback conditions
   const canSubmitFeedback = 
@@ -307,7 +308,7 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
                   <>
                     <Link 
                       to={`/events/${booking.eventId}/feedback`}
-                      className="w-full block bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all text-center"
+                      className="w-full block bg-gradient-to-r from-[var(--brand-navy)] to-indigo-700 hover:from-indigo-700 hover:to-[var(--brand-navy)] text-white font-semibold text-sm py-3 px-4 rounded-xl shadow-md shadow-indigo-500/20 hover:shadow-lg transition-all text-center"
                     >
                       Submit Feedback
                     </Link>

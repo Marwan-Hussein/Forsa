@@ -80,9 +80,9 @@ namespace Application.Services
             if (eventEntity.Status != EventStatus.Published)
                 throw new InvalidOperationException("Event is not available for booking");
 
-            // Check if event has already started
-            if (eventEntity.StartDate <= DateTime.UtcNow)
-                throw new InvalidOperationException("Event has already started or passed");
+            // Check if event has already ended
+            if (eventEntity.EndDate <= DateTime.UtcNow)
+                throw new InvalidOperationException("Event has already ended");
 
             // Check if enough tickets are available
             if (eventEntity.RemainingTickets < dto.NumberOfTickets)
@@ -232,10 +232,13 @@ namespace Application.Services
             if (booking == null)
                 throw new KeyNotFoundException("Booking not found");
 
-            // Check if cancellation is allowed (24 hours before event)
-            var cancellationDeadline = booking.Event.StartDate.AddHours(-24);
-            if (DateTime.UtcNow > cancellationDeadline)
-                throw new InvalidOperationException("Cannot cancel booking within 24 hours of event start");
+            // Check if cancellation is allowed (event has not ended yet)
+            if (DateTime.UtcNow > booking.Event.EndDate)
+                throw new InvalidOperationException("Cannot cancel booking after the event has ended");
+
+            // Cannot cancel if already checked-in/attended
+            if (booking.Status == BookingStatus.Attended)
+                throw new InvalidOperationException("Cannot cancel booking after attending the event");
 
             // Check for completed transaction
             var transaction = await _transactionRepository.GetQueryable()

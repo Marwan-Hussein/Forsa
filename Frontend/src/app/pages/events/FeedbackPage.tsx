@@ -85,39 +85,39 @@ export default function FeedbackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-10 px-4">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 pt-24 pb-12 px-4">
+      <div className="max-w-xl mx-auto">
         {/* Back Button */}
         <Link
           to="/dashboard?tab=tickets"
-          className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700 mb-8 transition-colors"
+          className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700 mb-4 transition-colors text-sm"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4" />
           Back to My Events
         </Link>
 
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
         >
           {/* Header */}
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-2xl mb-6">
-              <Star className="w-9 h-9 text-amber-500" />
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 rounded-2xl mb-3">
+              <Star className="w-6 h-6 text-amber-500" />
             </div>
-            <h1 className="text-4xl font-bold text-slate-900 mb-3 tracking-tight">
+            <h1 className="text-2xl font-bold text-slate-900 mb-1 tracking-tight">
               Share Your Experience
             </h1>
-            <p className="text-lg text-slate-600 max-w-md mx-auto">
+            <p className="text-sm text-slate-600 max-w-sm mx-auto">
               Your feedback helps us improve and helps other attendees make better choices
             </p>
           </div>
 
           {/* Event Card */}
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 mb-8">
-            <h2 className="font-bold text-2xl text-slate-900 mb-3">{event.title}</h2>
-            <p className="text-slate-600">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 mb-5">
+            <h2 className="font-bold text-lg text-slate-900 mb-1">{event.title}</h2>
+            <p className="text-sm text-slate-600">
               {event.startDate && new Date(event.startDate).toLocaleDateString("en-US", {
                 weekday: "long", year: "numeric", month: "long", day: "numeric"
               })}
@@ -126,21 +126,21 @@ export default function FeedbackPage() {
             </p>
           </div>
 
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-10">
-            <form onSubmit={handleSubmit} className="space-y-10">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {/* Attendance Toggle */}
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-4">
+                <label className="block text-sm font-semibold text-slate-700 mb-2.5">
                   Did you attend this event?
                 </label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setAttendanceConfirmed(true)}
-                    className={`py-4 rounded-2xl font-medium transition-all duration-300 border ${
+                    className={`py-2.5 rounded-xl font-medium text-sm transition-all duration-300 border cursor-pointer ${
                       attendanceConfirmed 
                         ? "bg-emerald-600 text-white border-emerald-600 shadow-md" 
-                        : "border-slate-200 hover:border-slate-300"
+                        : "border-slate-200 hover:border-slate-300 text-slate-650"
                     }`}
                   >
                     Yes, I Attended
@@ -148,10 +148,10 @@ export default function FeedbackPage() {
                   <button
                     type="button"
                     onClick={() => setAttendanceConfirmed(false)}
-                    className={`py-4 rounded-2xl font-medium transition-all duration-300 border ${
+                    className={`py-2.5 rounded-xl font-medium text-sm transition-all duration-300 border cursor-pointer ${
                       !attendanceConfirmed 
                         ? "bg-rose-600 text-white border-rose-600 shadow-md" 
-                        : "border-slate-200 hover:border-slate-300"
+                        : "border-slate-200 hover:border-slate-300 text-slate-650"
                     }`}
                   >
                     No, I Couldn't
@@ -164,10 +164,10 @@ export default function FeedbackPage() {
                   <>
                     {/* Rating */}
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-4">
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">
                         How would you rate this event?
                       </label>
-                      <div className="flex justify-center gap-3 py-6">
+                      <div className="flex justify-center gap-2 py-3">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <motion.button
                             key={star}
@@ -177,10 +177,10 @@ export default function FeedbackPage() {
                             onClick={() => setRating(star)}
                             onMouseEnter={() => setHoveredRating(star)}
                             onMouseLeave={() => setHoveredRating(0)}
-                            className="transition-all"
+                            className="transition-all cursor-pointer"
                           >
                             <Star
-                              className={`w-14 h-14 transition-colors duration-200 ${
+                              className={`w-9 h-9 transition-colors duration-200 ${
                                 star <= (hoveredRating || rating)
                                   ? "fill-amber-400 text-amber-400 drop-shadow-sm"
                                   : "text-slate-200"
@@ -190,7 +190,7 @@ export default function FeedbackPage() {
                         ))}
                       </div>
                       {rating > 0 && (
-                        <p className="text-center text-lg font-medium text-amber-600">
+                        <p className="text-center text-sm font-medium text-amber-600">
                           {rating === 5 && "Outstanding!"}
                           {rating === 4 && "Very Good"}
                           {rating === 3 && "Good"}
@@ -208,23 +208,24 @@ export default function FeedbackPage() {
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
                         maxLength={600}
-                        rows={5}
-                        className="text-base resize-y min-h-[140px]"
+                        rows={4}
+                        className="text-sm resize-y min-h-[100px]"
                       />
-                      <p className="text-right text-xs text-slate-400 mt-1.5">
+                      <p className="text-right text-xs text-slate-400 mt-1">
                         {comment.length} / 600
                       </p>
                     </div>
                   </>
                 ) : (
-                  <div className="py-6">
+                  <div className="py-2">
                     <FloatingLabelTextarea
                       id="comment-absent"
                       label="What prevented you from attending? (optional)"
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       maxLength={500}
-                      rows={5}
+                      rows={4}
+                      className="text-sm resize-y min-h-[100px]"
                     />
                   </div>
                 )}
@@ -234,18 +235,18 @@ export default function FeedbackPage() {
               <motion.button
                 type="submit"
                 disabled={isSubmitting}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full bg-gradient-to-r from-[var(--brand-navy)] to-indigo-700 hover:from-indigo-700 hover:to-[var(--brand-navy)] text-white py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-3 shadow-lg shadow-indigo-500/30 transition-all disabled:opacity-70"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                className="w-full bg-gradient-to-r from-[var(--brand-navy)] to-indigo-700 hover:from-indigo-700 hover:to-[var(--brand-navy)] text-white py-3 rounded-xl font-semibold text-base flex items-center justify-center gap-2 shadow-md shadow-indigo-500/20 transition-all disabled:opacity-70 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin" />
                     Submitting...
                   </>
                 ) : (
                   <>
-                    <Send className="w-6 h-6" />
+                    <Send className="w-4 h-4" />
                     Submit Feedback
                   </>
                 )}

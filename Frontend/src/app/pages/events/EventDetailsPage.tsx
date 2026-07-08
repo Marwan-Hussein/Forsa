@@ -179,15 +179,14 @@ export default function EventDetailsPage() {
           description: "Please complete your payment on the dashboard.",
         });
       } else {
-        toast.success("Booking confirmed", {
-          description: `${ticketCount} ticket(s) for ${event.title}.`,
-        });
+        const ticketWord = ticketCount === 1 ? "ticket" : "tickets";
+        toast.success(`Booking confirmed: ${ticketCount} ${ticketWord} for ${event.title}`);
       }
 
       setTimeout(() => navigate("/dashboard"), 1500);
-    } catch (error) {
+    } catch (error: any) {
       toast.error("Booking failed", {
-        description: "Not enough tickets available or event not found.",
+        description: error.message || "Not enough tickets available or event not found.",
       });
     }
   };

@@ -187,13 +187,13 @@ export default function OrganizerEventsPage() {
     fetchEvents();
   }, [navigate]);
 
-  const handleDelete = async (eventId: number) => {
+  const handleDelete = async (eventId: number, isCompleted: boolean) => {
     try {
       await organizerApi.cancelEvent(eventId);
-      toast.success("Event cancelled successfully!");
+      toast.success(isCompleted ? "Event removed successfully!" : "Event cancelled successfully!");
       setEvents(events.filter(e => e.eventId !== eventId));
     } catch (err: any) {
-      toast.error("Failed to cancel event: " + err.message);
+      toast.error((isCompleted ? "Failed to remove event: " : "Failed to cancel event: ") + err.message);
     }
   };
 
@@ -360,7 +360,7 @@ export default function OrganizerEventsPage() {
                         <AlertDialogTrigger asChild>
                           <button 
                             className="flex items-center justify-center w-12 h-12 bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"
-                            title="Cancel Event"
+                            title={isCompleted ? "Remove Event" : "Cancel Event"}
                           >
                             <Trash2 className="w-5 h-5" />
                           </button>
@@ -371,18 +371,24 @@ export default function OrganizerEventsPage() {
                             <Trash2 className="w-10 h-10 text-rose-500" />
                           </div>
                           <AlertDialogHeader>
-                            <AlertDialogTitle className="text-center text-3xl font-['Outfit:Bold',sans-serif] text-slate-800 tracking-tight">Cancel Event?</AlertDialogTitle>
+                            <AlertDialogTitle className="text-center text-3xl font-['Outfit:Bold',sans-serif] text-slate-800 tracking-tight">
+                              {isCompleted ? "Remove Event?" : "Cancel Event?"}
+                            </AlertDialogTitle>
                             <AlertDialogDescription className="text-center font-['Inter:Medium',sans-serif] text-slate-500 text-base mt-2">
-                              Are you sure you want to cancel <span className="font-bold text-slate-700">"{event.title}"</span>? This action cannot be undone.
+                              {isCompleted ? (
+                                <>Are you sure you want to remove <span className="font-bold text-slate-700">"{event.title}"</span>? This action cannot be undone.</>
+                              ) : (
+                                <>Are you sure you want to cancel <span className="font-bold text-slate-700">"{event.title}"</span>? This action cannot be undone.</>
+                              )}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter className="mt-8 flex flex-col sm:flex-row gap-3 sm:space-x-0">
                             <AlertDialogCancel className="flex-1 rounded-2xl font-['Inter:Bold',sans-serif] py-6 bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700 hover:text-slate-900 mt-0">No, keep it</AlertDialogCancel>
                             <AlertDialogAction 
-                              onClick={() => handleDelete(event.eventId)} 
+                              onClick={() => handleDelete(event.eventId, isCompleted)} 
                               className="flex-1 rounded-2xl font-['Inter:Bold',sans-serif] py-6 bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30 text-white"
                             >
-                              Yes, cancel it
+                              {isCompleted ? "Yes, remove it" : "Yes, cancel it"}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
