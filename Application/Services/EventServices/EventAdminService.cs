@@ -3,6 +3,7 @@ using Application.Core.Interfaces.EventInterfaces;
 using Application.Core.Interfaces;
 using Application.Core.DTOs.CommonDTOs;
 using Domain.Entities;
+using Domain.Entities.AttendeeEntities;
 using Domain.ENUMs;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -16,19 +17,22 @@ namespace Application.Services.EventServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGenericRepository<Notification> _notificationRepository;
         private readonly INotifierService _notifierService;
+        private readonly IQueryableRepository<AttendeeSubsOrganizer> _subRepository;
 
         public EventAdminService(
             IEventService eventService,
             IEventRepository repo,
             IUnitOfWork unitOfWork,
             IGenericRepository<Notification> notificationRepository,
-            INotifierService notifierService)
+            INotifierService notifierService,
+            IQueryableRepository<AttendeeSubsOrganizer> subRepository)
         {
             _eventService = eventService;
             _repo = repo;
             _unitOfWork = unitOfWork;
             _notificationRepository = notificationRepository;
             _notifierService = notifierService;
+            _subRepository = subRepository;
         }
 
         public Task<List<EventDetailsDto>> GetAllAsync(EventSearchParameterDto parameters)
@@ -39,6 +43,7 @@ namespace Application.Services.EventServices
         public async Task<bool> UpdateStatusAsync(int eventId, EventStatus status)
         {
             var ev = await _repo.GetQueryable()
+                                .Include(e => e.Organizer)
                                 .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
             if (ev == null)
                 return false;
@@ -59,6 +64,29 @@ namespace Application.Services.EventServices
             };
             await _notificationRepository.AddAsync(notification);
 
+            // Notify subscribers if published
+            if (status == EventStatus.Published)
+            {
+                var organizerName = ev.Organizer?.FullName ?? "An organizer you follow";
+                var subscribers = await _subRepository.GetQueryable()
+                    .Where(s => s.OrganizerId == ev.OrganizerId)
+                    .ToListAsync();
+
+                foreach (var sub in subscribers)
+                {
+                    var subNotification = new Notification
+                    {
+                        Message = $"Organizer '{organizerName}' has published a new event: '{ev.Title}'!",
+                        Type = NotificationType.EventUpdate,
+                        SentVia = DeliveryMethod.Email,
+                        Status = NotificationStatus.Pending,
+                        UserId = sub.AttendeeId,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await _notificationRepository.AddAsync(subNotification);
+                }
+            }
+
             await _unitOfWork.SaveChangesAsync();
 
             try
@@ -73,6 +101,31 @@ namespace Application.Services.EventServices
             catch
             {
                 // Silence real-time notification failures to prevent blocking execution
+            }
+
+            if (status == EventStatus.Published)
+            {
+                var organizerName = ev.Organizer?.FullName ?? "An organizer you follow";
+                var subscribers = await _subRepository.GetQueryable()
+                    .Where(s => s.OrganizerId == ev.OrganizerId)
+                    .ToListAsync();
+
+                foreach (var sub in subscribers)
+                {
+                    try
+                    {
+                        await _notifierService.SendAsync(sub.AttendeeId, new NotificationMessageDto
+                        {
+                            Title = "New Event Published",
+                            Body = $"Organizer '{organizerName}' has published a new event: '{ev.Title}'!",
+                            Type = NotificationType.EventUpdate.ToString()
+                        });
+                    }
+                    catch
+                    {
+                        // Silence real-time notification failures to prevent blocking execution
+                    }
+                }
             }
             #endregion
             return true;
