@@ -32,6 +32,16 @@ namespace Application.Core.DTOs.Auth
         public string Location { get; set; }
 
         public string? Role { get; set; }
+        //[Required(ErrorMessage = "Username is required.")]
+        [StringLength(30, MinimumLength = 3,
+        ErrorMessage = "Username must be between 3 and 30 characters.")]
+        [RegularExpression(@"^[a-zA-Z0-9_]+$",
+        ErrorMessage = "Username can only contain letters, numbers, and underscores.")]
+        public string UserName { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Birthdate is required.")]
+        [DataType(DataType.Date)]
+        [MinimumAgeAttribute(16)]
+        public DateTime birthdate { get; set; }
 
         //public string? OrganizationName { get; set; }
     }

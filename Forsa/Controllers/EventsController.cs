@@ -1,4 +1,5 @@
 using Application.Core.DTOs.Event;
+using Application.Core.DTOs.Feedbacks;
 using Application.Core.Interfaces;
 using Application.Core.Interfaces.EventInterfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +28,7 @@ namespace Forsa.Controllers
         [HttpGet("search")]
         public async Task<ActionResult<EventDetailsDto>> SearchEvents([FromQuery] EventSearchParameterDto parameters)
         {
-          
+
             return Ok(await _eventService.FilterEventsByParameters(parameters));
         }
 
@@ -72,7 +73,7 @@ namespace Forsa.Controllers
             try
             {
                 if (quantity <= 0) return BadRequest("Quantity must be greater than 0");
-                
+
                 var success = await _eventService.DeductTicketInventoryAsync(id, quantity);
                 if (!success)
                     return BadRequest("Not enough tickets available or event not found.");
@@ -91,7 +92,7 @@ namespace Forsa.Controllers
             try
             {
                 if (quantity <= 0) return BadRequest("Quantity must be greater than 0");
-                
+
                 await _eventService.ReleaseTicketInventoryAsync(id, quantity);
                 return Ok(new { Message = "Tickets released successfully." });
             }
@@ -122,6 +123,23 @@ namespace Forsa.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"An error occurred while generating shareable link: {ex.Message}");
+            }
+        }
+        [HttpGet("{eventId}/feedbacks")]
+        public async Task<ActionResult<List<FeedbackDTO>>> GetEventFeedbacks(int eventId)
+        {
+            try
+            {
+                var feedbacks = await _eventService.GetEventFeedbacks(eventId);
+                return Ok(feedbacks);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while retrieving event feedbacks: {ex.ToString()}\n{ex.Message}");
             }
         }
     }

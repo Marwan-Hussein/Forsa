@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router";
-import { ArrowLeft, Star, Send, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { ArrowLeft, Star, Send, Loader2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { FloatingLabelTextarea } from "../../components/ui/floating-label-field";
 import { eventsApi } from "../../api/eventsApi";
@@ -14,29 +15,23 @@ export default function FeedbackPage() {
   
   const [event, setEvent] = useState<EventDetailsDto | null>(null);
   const [loadingEvent, setLoadingEvent] = useState(true);
-  
-  // Check if user already reviewed this event
-  const existingReview = null;
 
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState("");
   const [attendanceConfirmed, setAttendanceConfirmed] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     if (!eventId) return;
     eventsApi.getEventDetails(Number(eventId))
-      .then((data) => {
-        setEvent(data);
-      })
+      .then((data) => setEvent(data))
       .catch((err) => {
-        console.error("Failed to fetch event details", err);
+        console.error(err);
         toast.error("Failed to load event details");
       })
-      .finally(() => {
-        setLoadingEvent(false);
-      });
+      .finally(() => setLoadingEvent(false));
   }, [eventId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,10 +40,10 @@ export default function FeedbackPage() {
       toast.error("Please select a rating");
       return;
     }
-    
+
     const userId = getUserIdFromToken();
     if (!userId) {
-      toast.error("User session expired. Please login again.");
+      toast.error("Please login again");
       navigate("/login");
       return;
     }
@@ -57,20 +52,18 @@ export default function FeedbackPage() {
     
     try {
       if (attendanceConfirmed && eventId) {
-        await attendeeApi.submitFeedback(userId, Number(eventId), {
-          rating,
-          comment
-        });
+        await attendeeApi.submitFeedback(userId, Number(eventId), { rating, comment });
         toast.success("Thank you for your feedback!", {
           description: `Your ${rating}-star review has been submitted.`
         });
       } else {
-        toast.info("Thank you for letting us know you couldn't attend.");
+        toast.info("Thank you for your response.");
       }
-      navigate("/dashboard?tab=tickets");
+      
+      setSubmitted(true);
+      setTimeout(() => navigate("/dashboard?tab=tickets"), 1800);
     } catch (err: any) {
-      console.error("Failed to submit feedback", err);
-      toast.error(err.message || "Failed to submit feedback. Please try again.");
+      toast.error(err.message || "Failed to submit feedback");
     } finally {
       setIsSubmitting(false);
     }
@@ -78,230 +71,188 @@ export default function FeedbackPage() {
 
   if (loadingEvent) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <Loader2 className="w-8 h-8 text-[var(--brand-navy)] animate-spin mb-3" />
-          <p className="text-sm text-slate-500 font-medium font-['Inter:Medium',sans-serif]">
-            Loading event details...
-          </p>
+          <Loader2 className="w-10 h-10 text-[var(--brand-navy)] animate-spin mb-4" />
+          <p className="text-slate-500 font-medium">Loading event...</p>
         </div>
       </div>
     );
   }
 
   if (!event) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8 text-center">
-          <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-2">
-            Event Not Found
-          </h2>
-          <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-4">
-            The event you're looking for doesn't exist.
-          </p>
-          <Link
-            to="/dashboard?tab=tickets"
-            className="inline-block bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936]"
-          >
-            My Events
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  // If user already reviewed, show message
-  if (existingReview) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8 text-center max-w-md">
-          <div className="w-16 h-16 bg-background rounded-full flex items-center justify-center mx-auto mb-4">
-            <Star className="w-8 h-8 text-accent fill-accent" />
-          </div>
-          <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-2">
-            Already Reviewed
-          </h2>
-          <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-6">
-            You've already submitted a review for this event. You can view your review from the My Events page.
-          </p>
-          <Link
-            to="/dashboard?tab=tickets"
-            className="inline-block bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936]"
-          >
-            Go to My Events
-          </Link>
-        </div>
-      </div>
-    );
+    return <div className="text-center py-20">Event not found</div>;
   }
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-10 px-4">
       <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <Link
-            to="/dashboard?tab=tickets"
-            className="inline-flex items-center gap-2 mb-4 text-muted-foreground hover:text-foreground transition-colors font-['Inter:Regular',sans-serif] text-[14px]"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to My Events
-          </Link>
-          <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-foreground mb-2">
-            Share Your Feedback
-          </h1>
-          <p className="font-['Inter:Regular',sans-serif] text-[16px] text-muted-foreground">
-            Help others by sharing your experience
-          </p>
-        </div>
+        {/* Back Button */}
+        <Link
+          to="/dashboard?tab=tickets"
+          className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700 mb-8 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          Back to My Events
+        </Link>
 
-        {/* Event Info Card */}
-        <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-6 mb-6">
-          <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[20px] text-foreground mb-2">
-            {event.title}
-          </h2>
-          <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
-            {event.startDate && new Date(event.startDate).toLocaleDateString("en-US", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-            {" • "}
-            {event.placeLocation || event.place || "Location TBD"}
-          </p>
-        </div>
-
-        {/* Feedback Form */}
-        <div className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-8">
-          <form onSubmit={handleSubmit}>
-            {/* Attendance Confirmation */}
-            <div className="mb-8">
-              <label className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-3">
-                Did you attend this event?
-              </label>
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setAttendanceConfirmed(true)}
-                  className={`flex-1 py-3 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-colors ${
-                    attendanceConfirmed
-                      ? "bg-primary text-[#dde6ed] hover:bg-[#1e2936]"
-                      : "bg-background text-foreground hover:bg-[#dde6ed]"
-                  }`}
-                >
-                  Yes, I attended
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAttendanceConfirmed(false)}
-                  className={`flex-1 py-3 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-colors ${
-                    !attendanceConfirmed
-                      ? "bg-primary text-[#dde6ed] hover:bg-[#1e2936]"
-                      : "bg-background text-foreground hover:bg-[#dde6ed]"
-                  }`}
-                >
-                  No, I couldn't make it
-                </button>
-              </div>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          {/* Header */}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-2xl mb-6">
+              <Star className="w-9 h-9 text-amber-500" />
             </div>
+            <h1 className="text-4xl font-bold text-slate-900 mb-3 tracking-tight">
+              Share Your Experience
+            </h1>
+            <p className="text-lg text-slate-600 max-w-md mx-auto">
+              Your feedback helps us improve and helps other attendees make better choices
+            </p>
+          </div>
 
-            {attendanceConfirmed ? (
-              <>
-                {/* Rating */}
-                <div className="mb-8">
-                  <label className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground mb-3">
-                    How would you rate this event? *
-                  </label>
-                  <div className="flex gap-2 justify-center py-4">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() => setRating(star)}
-                        onMouseEnter={() => setHoveredRating(star)}
-                        onMouseLeave={() => setHoveredRating(0)}
-                        className="transition-transform hover:scale-110"
-                      >
-                        <Star
-                          className={`w-12 h-12 ${
-                            star <= (hoveredRating || rating)
-                              ? "fill-amber-400 text-amber-400"
-                              : "text-muted-foreground"
-                          }`}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                  {rating > 0 && (
-                    <p className="text-center font-['Inter:Medium',sans-serif] font-medium text-[14px] text-foreground">
-                      {rating === 5 && "Excellent!"}
-                      {rating === 4 && "Very Good"}
-                      {rating === 3 && "Good"}
-                      {rating === 2 && "Fair"}
-                      {rating === 1 && "Poor"}
-                    </p>
-                  )}
-                </div>
+          {/* Event Card */}
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 mb-8">
+            <h2 className="font-bold text-2xl text-slate-900 mb-3">{event.title}</h2>
+            <p className="text-slate-600">
+              {event.startDate && new Date(event.startDate).toLocaleDateString("en-US", {
+                weekday: "long", year: "numeric", month: "long", day: "numeric"
+              })}
+              {" • "}
+              {event.placeLocation || event.place || "Location TBD"}
+            </p>
+          </div>
 
-                {/* Comment */}
-                <div className="mb-8">
-                  <FloatingLabelTextarea
-                    id="comment"
-                    label="Share your experience (optional)"
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    maxLength={500}
-                    rows={6}
-                  />
-                  <p className="mt-2 font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground">
-                    {comment.length} / 500 characters
-                  </p>
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-10">
+            <form onSubmit={handleSubmit} className="space-y-10">
+              {/* Attendance Toggle */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-4">
+                  Did you attend this event?
+                </label>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setAttendanceConfirmed(true)}
+                    className={`py-4 rounded-2xl font-medium transition-all duration-300 border ${
+                      attendanceConfirmed 
+                        ? "bg-emerald-600 text-white border-emerald-600 shadow-md" 
+                        : "border-slate-200 hover:border-slate-300"
+                    }`}
+                  >
+                    Yes, I Attended
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAttendanceConfirmed(false)}
+                    className={`py-4 rounded-2xl font-medium transition-all duration-300 border ${
+                      !attendanceConfirmed 
+                        ? "bg-rose-600 text-white border-rose-600 shadow-md" 
+                        : "border-slate-200 hover:border-slate-300"
+                    }`}
+                  >
+                    No, I Couldn't
+                  </button>
                 </div>
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-primary text-[#dde6ed] py-3 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[16px] hover:bg-[#1e2936] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Send className="w-5 h-5" />
-                  {isSubmitting ? "Submitting..." : "Submit Feedback"}
-                </button>
-              </>
-            ) : (
-              <div className="text-center py-8">
-                <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-6">
-                  We're sorry you couldn't attend. Would you like to tell us why?
-                </p>
-                <div className="mb-4">
-                  <FloatingLabelTextarea
-                    id="comment-absent"
-                    label="What prevented you from attending?"
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    maxLength={500}
-                    rows={4}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-primary text-[#dde6ed] py-3 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[16px] hover:bg-[#1e2936] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? "Submitting..." : "Submit Feedback"}
-                </button>
               </div>
-            )}
-          </form>
-        </div>
 
-        {/* Privacy Notice */}
-        <div className="mt-6 bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-4">
-          <p className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground text-center">
-            Your feedback will be shared with the event organizer and may be displayed publicly to help other attendees make informed decisions.
-          </p>
-        </div>
+              <AnimatePresence mode="wait">
+                {attendanceConfirmed ? (
+                  <>
+                    {/* Rating */}
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-4">
+                        How would you rate this event?
+                      </label>
+                      <div className="flex justify-center gap-3 py-6">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <motion.button
+                            key={star}
+                            type="button"
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => setRating(star)}
+                            onMouseEnter={() => setHoveredRating(star)}
+                            onMouseLeave={() => setHoveredRating(0)}
+                            className="transition-all"
+                          >
+                            <Star
+                              className={`w-14 h-14 transition-colors duration-200 ${
+                                star <= (hoveredRating || rating)
+                                  ? "fill-amber-400 text-amber-400 drop-shadow-sm"
+                                  : "text-slate-200"
+                              }`}
+                            />
+                          </motion.button>
+                        ))}
+                      </div>
+                      {rating > 0 && (
+                        <p className="text-center text-lg font-medium text-amber-600">
+                          {rating === 5 && "Outstanding!"}
+                          {rating === 4 && "Very Good"}
+                          {rating === 3 && "Good"}
+                          {rating === 2 && "Average"}
+                          {rating === 1 && "Needs Improvement"}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Comment */}
+                    <div>
+                      <FloatingLabelTextarea
+                        id="comment"
+                        label="Tell us more about your experience (optional)"
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        maxLength={600}
+                        rows={5}
+                        className="text-base resize-y min-h-[140px]"
+                      />
+                      <p className="text-right text-xs text-slate-400 mt-1.5">
+                        {comment.length} / 600
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="py-6">
+                    <FloatingLabelTextarea
+                      id="comment-absent"
+                      label="What prevented you from attending? (optional)"
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      maxLength={500}
+                      rows={5}
+                    />
+                  </div>
+                )}
+              </AnimatePresence>
+
+              {/* Submit Button */}
+              <motion.button
+                type="submit"
+                disabled={isSubmitting}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full bg-gradient-to-r from-[var(--brand-navy)] to-indigo-700 hover:from-indigo-700 hover:to-[var(--brand-navy)] text-white py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-3 shadow-lg shadow-indigo-500/30 transition-all disabled:opacity-70"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-6 h-6" />
+                    Submit Feedback
+                  </>
+                )}
+              </motion.button>
+            </form>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

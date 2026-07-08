@@ -1,4 +1,5 @@
 using Application.Core.DTOs.Auth;
+using Application.Core.Interfaces;
 using Application.Core.Interfaces.Auth;
 using Application.Core.Interfaces.Auth.OTP;
 using Application.Core.Settings;
@@ -16,7 +17,7 @@ namespace Application.Services.Auth
         IJwtService jwtService,
         IRefreshTokenService refreshTokenService,
         RoleManager<IdentityRole<int>> roleManager,
-        IOptions<JwtSettings> jwtSettings,IOTPService otpService) : IAuthService
+        IOptions<JwtSettings> jwtSettings,IOTPService otpService, IUserProfileService userProfileService) : IAuthService
     {
         private readonly JwtSettings jwtSettings = jwtSettings.Value;
 
@@ -85,11 +86,13 @@ namespace Application.Services.Auth
             else
                 user = mapper.Map<Domain.Entities.AttendeeEntities.Attendee>(registerDto);
 
-            user.UserName = registerDto.Email;
+            user.UserName = registerDto.UserName is null ? registerDto.Email : registerDto.UserName;
             user.EmailConfirmed = false; // Need to verify OTP
             user.CreatedAt = DateTime.UtcNow;
             user.IsBlocked = false;
             user.IsDeleted = false;
+            user.ProfilePicture = "/defaultProfilePicture.png";
+            user.BirthDate = registerDto.birthdate;
 
             var refreshToken = refreshTokenService.GenerateToken();
             user.RefreshTokens.Add(refreshTokenService.CreateRefreshToken(refreshToken));

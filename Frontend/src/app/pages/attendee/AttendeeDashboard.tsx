@@ -89,6 +89,12 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
   const isCancelled = String(booking.status).toLowerCase() === "cancelled";
   const canCancel = !isCancelled && !isCompletedEvent && (hoursDiff > 24 || isLive);
 
+  // New: Feedback conditions
+  const canSubmitFeedback = 
+    isCompletedEvent && 
+    (booking.status || "").toLowerCase() === "attended" && 
+    !booking.hasSubmittedFeedback;
+
   const handleCancel = async () => {
     setShowCancelModal(false);
     try {
@@ -216,6 +222,7 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
   const isPending = (booking.status || "").toLowerCase() === "pending";
   const isInactive = (booking.status || "").toLowerCase() === "rejected" || (booking.status || "").toLowerCase() === "cancelled";
 
+
   return (
     <>
       <motion.div 
@@ -279,8 +286,7 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
           <div className="w-2 h-2 rounded-full bg-slate-200 hidden md:block" />
         </div>
 
-        {/* Stub Area */}
-        {/* Stub Area */}
+        {/* Stub Area - Updated with Feedback Button */}
         {isCompletedEvent ? (
           (booking.status || "").toLowerCase() === "attended" ? (
             <div className="w-full md:w-56 bg-slate-50 p-6 flex flex-col justify-between items-center text-slate-700 shrink-0">
@@ -288,21 +294,25 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
                 <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
                 <p className="text-xs uppercase font-bold text-slate-500 tracking-wider mb-2">Event Completed</p>
                 <p className="text-xs text-slate-650 font-medium mb-4 leading-relaxed">
-                  We hope you enjoyed the event! Share your feedback with us.
+                  We hope you enjoyed the event!
                 </p>
               </div>
-              <div className="w-full space-y-2">
+
+              <div className="w-full space-y-3">
                 {booking.hasSubmittedFeedback ? (
                   <div className="w-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-xs py-2.5 px-3 rounded-lg text-center flex items-center justify-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-700" /> Feedback Submitted
                   </div>
                 ) : (
-                  <Link 
-                    to={`/events/${booking.eventId}/feedback`}
-                    className="w-full block bg-[#1E3D61] hover:bg-[#152D4A] text-white border border-transparent font-bold text-xs py-2.5 px-3 rounded-lg shadow-sm hover:shadow-md transition-all text-center cursor-pointer"
-                  >
-                    Rate & Feedback
-                  </Link>
+                  <>
+                    <Link 
+                      to={`/events/${booking.eventId}/feedback`}
+                      className="w-full block bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all text-center"
+                    >
+                      Submit Feedback
+                    </Link>
+                    <p className="text-[10px] text-center text-slate-500">Help us improve future events</p>
+                  </>
                 )}
               </div>
             </div>

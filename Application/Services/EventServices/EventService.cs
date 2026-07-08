@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using Domain.ENUMs;
+using Domain.Entities;
+using Application.Core.DTOs.Feedbacks;
 
 namespace Application.Services.EventServices
 {
@@ -15,12 +17,14 @@ namespace Application.Services.EventServices
         private readonly IEventRepository _repo;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IFeedbackRepository feedbackRepo;
 
-        public EventService(IEventRepository repo, IMapper mapper, IUnitOfWork unitOfWork)
+        public EventService(IEventRepository repo, IMapper mapper, IUnitOfWork unitOfWork, IFeedbackRepository feedbackRepo)
         {
             _repo = repo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            this.feedbackRepo = feedbackRepo;
         }
 
         public async Task<List<EventDetailsDto>> GetAllEvents()
@@ -67,14 +71,14 @@ namespace Application.Services.EventServices
             {
                 if (criteria.SortBy.ToLower() == "title")
                 {
-                    events = criteria.IsDescending 
-                        ? events.OrderByDescending(e => e.Title) 
+                    events = criteria.IsDescending
+                        ? events.OrderByDescending(e => e.Title)
                         : events.OrderBy(e => e.Title);
                 }
                 else if (criteria.SortBy.ToLower() == "location")
                 {
-                    events = criteria.IsDescending 
-                        ? events.OrderByDescending(e => e.Place) 
+                    events = criteria.IsDescending
+                        ? events.OrderByDescending(e => e.Place)
                         : events.OrderBy(e => e.Place);
                 }
             }
@@ -83,7 +87,7 @@ namespace Application.Services.EventServices
                 events = events.OrderBy(e => e.Id);
             }
 
-            return _mapper.Map<List<EventDetailsDto>>(await events.ToListAsync()); 
+            return _mapper.Map<List<EventDetailsDto>>(await events.ToListAsync());
         }
         private async Task CalculateAttendeeRatings(Event eventEntity)
         {
@@ -91,8 +95,8 @@ namespace Application.Services.EventServices
                 return;
             int points = (int)(10 + eventEntity.TicketPrice / 10);
             foreach (var booking in eventEntity.Bookings
-                .Where(b => 
-                    b.Status == BookingStatus.Confirmed && 
+                .Where(b =>
+                    b.Status == BookingStatus.Confirmed &&
                     b.Attendee != null))
                 booking.Attendee.LoyaltyPoint += points; // final calculation of attendee ratings
         }
@@ -106,7 +110,7 @@ namespace Application.Services.EventServices
             if (eventEntity == null)
                 throw new KeyNotFoundException("Event not found");
 
-            if ((eventEntity.Status == EventStatus.Published || eventEntity.Status == EventStatus.SoldOut) 
+            if ((eventEntity.Status == EventStatus.Published || eventEntity.Status == EventStatus.SoldOut)
                 && eventEntity.EndDate <= DateTime.UtcNow)
             {
                 eventEntity.Status = EventStatus.Completed;
@@ -128,7 +132,7 @@ namespace Application.Services.EventServices
                 return false;
 
             eventEntity.RemainingTickets -= quantity;
-            
+
             if (eventEntity.RemainingTickets == 0)
                 eventEntity.Status = EventStatus.SoldOut;
 
@@ -145,7 +149,7 @@ namespace Application.Services.EventServices
 
             if (eventEntity == null)
                 throw new KeyNotFoundException("Event not found");
-            if(quantity == 0 || quantity + eventEntity.RemainingTickets > eventEntity.TotalTickets)
+            if (quantity == 0 || quantity + eventEntity.RemainingTickets > eventEntity.TotalTickets)
                 throw new InvalidOperationException("Invalid quantity to release");
 
             eventEntity.RemainingTickets += quantity;
@@ -174,6 +178,30 @@ namespace Application.Services.EventServices
                 ShareUrl = shareUrl,
                 ShareText = $"Check out \"{eventEntity.Title}\" on Forsa! {shareUrl}"
             };
+        }
+        // get all feedbacks for a specific event
+        public async Task<List<FeedbackDTO>> GetEventFeedbacks(int eventId)
+        {
+            var feedbacks = await feedbackRepo.GetQueryable()
+                .Where(f => f.EventId == eventId && !f.IsDeleted)
+                .Include(f => f.Attendee)
+                .Include(f => f.Event)
+                .ToListAsync();
+            List<FeedbackDTO> mappedFeedbacks = new List<FeedbackDTO>();
+            foreach (var feedback in feedbacks)
+            {
+                var FeedbackDTO = new FeedbackDTO
+                {
+                    Rating = feedback.Rating,
+                    Comment = feedback.Comment,
+                    AttendeeName = feedback.Attendee != null ? feedback.Attendee.FullName : "Anonymous",
+                    EventTitle = feedback.Event != null ? feedback.Event.Title : "Unknown Event",
+                    attendeeImageUrl = feedback.Attendee != null ? feedback.Attendee.ProfilePicture : null,
+                    attendeeId = feedback.Attendee != null ? feedback.Attendee.Id : 0 
+                };
+                mappedFeedbacks.Add(FeedbackDTO);
+            }
+            return mappedFeedbacks;
         }
     }
 }

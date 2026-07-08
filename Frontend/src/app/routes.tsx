@@ -60,6 +60,9 @@ import QRCodeScannerPage from "./pages/organizations/QRCodeScannerPage";
 import OrganizerProfilePage from "./pages/organizations/OrganizerProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import VerifyAccountPage from "./pages/auth/VerifyAccountPage";
+import EventFeedbacksPage from "./pages/events/EventFeedbacksPage";
+import EditFeedbackPage from "./pages/events/EditFeedbackPage";
+import DeleteFeedbackPage from "./pages/events/DeleteFeedbackPage";   
 export const router = createBrowserRouter([
   {
     path: "/admin/login",
@@ -122,7 +125,18 @@ export const router = createBrowserRouter([
         path: "events/:eventId/feedback",
         Component: FeedbackPage,
       },
-
+      {
+        path: "events/:eventId/feedbacks",           
+        Component: EventFeedbacksPage,
+      },
+      {
+          path: "events/:eventId/feedback/edit",
+          Component: EditFeedbackPage,
+      },
+      {
+          path: "events/:eventId/feedback/delete",
+          Component: DeleteFeedbackPage,
+      },
       {
         path: "organizations",
         Component: OrganizationsPage,

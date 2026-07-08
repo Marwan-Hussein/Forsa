@@ -332,6 +332,18 @@ namespace Application.Services.OrganizerServices
             return _mapper.Map<List<BookingRequestDetailsDto>>(requests);
         }
 
+        public async Task<List<BookingRequestDetailsDto>> GetOrganizerUpComingBookingRequestsAsync(int organizerId)
+        {
+            var requests = await _bookingRequestRepository.GetQueryable()
+                .Include(r => r.Organizer)
+                .Include(r => r.Place)
+                .Where(r => r.OrganizerId == organizerId && !r.IsDeleted && r.Status == RequestStatus.Accepted && r.StartTime > DateTime.UtcNow.TimeOfDay)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            return _mapper.Map<List<BookingRequestDetailsDto>>(requests);
+        }
+
         public async Task<List<TicketRequestDto>> GetOrganizerTicketRequestsAsync(int organizerId)
         {
             var bookings = await _bookingRepository.GetQueryable()

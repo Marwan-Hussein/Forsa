@@ -1,4 +1,5 @@
 using Application.Core.DTOs.AttendeeDTOs;
+using Application.Core.DTOs.Feedbacks;
 using Application.Core.Interfaces.AttendeeInterfaces;
 using AutoMapper;
 using Domain.Entities;
@@ -127,6 +128,170 @@ namespace Application.Services.AttendeeServices
             response.OrganizerName = organizerName;
 
             return response;
+        }
+        public async Task<UpdateFeedbackDTO> EditAttendeeFeedbackAsync(
+                                                                        int attendeeId,
+                                                                        int eventId,
+                                                                        UpdateFeedbackDTO dto)
+        {
+            // Validate attendee
+            var attendee = await _attendeeRepo.GetQueryable()
+                .FirstOrDefaultAsync(a => a.Id == attendeeId && !a.IsDeleted);
+
+            if (attendee == null)
+                throw new KeyNotFoundException("Attendee not found.");
+
+            // Validate event
+            var ev = await _eventRepo.GetQueryable()
+                .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
+
+            if (ev == null)
+                throw new KeyNotFoundException("Event not found.");
+
+            // Get existing feedback
+            var feedback = await _feedbackRepo.GetQueryable()
+                .FirstOrDefaultAsync(f =>
+                    f.AttendeeId == attendeeId &&
+                    f.EventId == eventId &&
+                    !f.IsDeleted);
+
+            if (feedback == null)
+                throw new KeyNotFoundException("Feedback not found.");
+
+            // Store old rating
+            int oldRating = feedback.Rating;
+
+            // Update feedback
+            feedback.Rating = dto.Rating;
+            feedback.Comment = dto.Comment;
+
+            _feedbackRepo.Update(feedback);
+
+            // Update Event Rating
+            if (ev.ReviewsCount > 0)
+            {
+                ev.AverageRating =
+                    ((ev.AverageRating * ev.ReviewsCount) - oldRating + dto.Rating)
+                    / ev.ReviewsCount;
+
+                _eventRepo.Update(ev);
+            }
+
+            // Update Organizer Rating
+            if (feedback.OrganizerId.HasValue)
+            {
+                var organizer = await _organizerRepo.GetQueryable()
+                    .FirstOrDefaultAsync(o =>
+                        o.Id == feedback.OrganizerId &&
+                        !o.IsDeleted);
+
+                if (organizer != null && organizer.ReviewsCount > 0)
+                {
+                    organizer.AverageRating =
+                        ((organizer.AverageRating * organizer.ReviewsCount) - oldRating + dto.Rating)
+                        / organizer.ReviewsCount;
+
+                    _organizerRepo.Update(organizer);
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return new UpdateFeedbackDTO
+            {
+                FeedbackId = feedback.Id,
+                Rating = feedback.Rating,
+                Comment = feedback.Comment
+            };
+        }
+        public async Task DeleteAttendeeFeedbackAsync(
+                                                int attendeeId,
+                                                int eventId)
+        {
+            var feedback = await _feedbackRepo.GetQueryable()
+                .FirstOrDefaultAsync(f =>
+                    f.AttendeeId == attendeeId &&
+                    f.EventId == eventId &&
+                    !f.IsDeleted);
+
+            if (feedback == null)
+                throw new KeyNotFoundException("Feedback not found.");
+
+            var ev = await _eventRepo.GetQueryable()
+                .FirstOrDefaultAsync(e =>
+                    e.Id == eventId &&
+                    !e.IsDeleted);
+
+            if (ev == null)
+                throw new KeyNotFoundException("Event not found.");
+
+            // Update Event Rating
+            if (ev.ReviewsCount > 1)
+            {
+                ev.AverageRating =
+                    ((ev.AverageRating * ev.ReviewsCount) - feedback.Rating)
+                    / (ev.ReviewsCount - 1);
+            }
+            else
+            {
+                ev.AverageRating = 0;
+            }
+
+            ev.ReviewsCount = Math.Max(0, ev.ReviewsCount - 1);
+
+            _eventRepo.Update(ev);
+
+            // Update Organizer Rating
+            if (feedback.OrganizerId.HasValue)
+            {
+                var organizer = await _organizerRepo.GetQueryable()
+                    .FirstOrDefaultAsync(o =>
+                        o.Id == feedback.OrganizerId &&
+                        !o.IsDeleted);
+
+                if (organizer != null)
+                {
+                    if (organizer.ReviewsCount > 1)
+                    {
+                        organizer.AverageRating =
+                            ((organizer.AverageRating * organizer.ReviewsCount) - feedback.Rating)
+                            / (organizer.ReviewsCount - 1);
+                    }
+                    else
+                    {
+                        organizer.AverageRating = 0;
+                    }
+
+                    organizer.ReviewsCount = Math.Max(0, organizer.ReviewsCount - 1);
+
+                    _organizerRepo.Update(organizer);
+                }
+            }
+
+            feedback.IsDeleted = true;
+
+            _feedbackRepo.Update(feedback);
+
+            await _unitOfWork.SaveChangesAsync();
+        }
+        public async Task<UpdateFeedbackDTO> GetMyFeedbackAsync(int attendeeId, int eventId)
+        {
+            var feedback = await _feedbackRepo.GetQueryable()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(f =>
+                    f.AttendeeId == attendeeId &&
+                    f.EventId == eventId &&
+                    !f.IsDeleted);
+
+            if (feedback == null)
+                throw new KeyNotFoundException("Feedback not found.");
+
+            return new UpdateFeedbackDTO
+            {
+                FeedbackId = feedback.Id,
+                Rating = feedback.Rating,
+                Comment = feedback.Comment
+            };
         }
     }
 }

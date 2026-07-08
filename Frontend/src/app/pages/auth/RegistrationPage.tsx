@@ -52,7 +52,7 @@ export default function RegistrationPage() {
 
     if (step === 1) {
       if (!formData.fullName.trim()) newErrors.fullName = "Required";
-      if (!formData.username.trim()) newErrors.username = "Required";
+      // if (!formData.username.trim()) newErrors.username = "Required";
       else if (formData.username.length < 3) newErrors.username = "Min 3 chars";
       if (!formData.email.trim()) newErrors.email = "Required";
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Invalid email";
@@ -100,6 +100,8 @@ export default function RegistrationPage() {
         password: formData.password,
         phoneNumber: formData.phone,
         location: formData.location,
+        UserName: formData.username,
+        birthdate: formData.birthdate,
         role: getRoleMap(registrationType)
       });
 

@@ -134,7 +134,10 @@ namespace Application.Services
             user.ProfilePicture = relativePath;
             user.LastModifiedAt = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
+            Console.WriteLine(_env.WebRootPath);
 
+
+            Console.WriteLine(uploadsDir);
             return relativePath;
         }
 

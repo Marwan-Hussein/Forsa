@@ -459,7 +459,26 @@ export default function EventDetailsPage() {
                 </div>
               </div>
             </div>
-
+                                {/* Feedback Section Button */}
+              <div className="border-t border-[rgba(82,109,130,0.2)] pt-8 mt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground">
+                      Reviews & Feedback
+                    </h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      See what attendees are saying about this event
+                    </p>
+                  </div>
+                  <Link
+                    to={`/events/${eventId}/feedbacks`}
+                    className="flex items-center gap-2 bg-white border border-[rgba(82,109,130,0.25)] hover:bg-slate-50 px-5 py-2.5 rounded-xl font-medium text-sm transition-all hover:shadow-sm"
+                  >
+                    View All Reviews
+                    <ArrowLeft className="w-4 h-4 rotate-180" />
+                  </Link>
+                </div>
+              </div>
             {/* Venue Location Map */}
             <div className="rounded-2xl border border-[rgba(82,109,130,0.14)] bg-white p-8 shadow-[0_4px_24px_-8px_rgba(39,55,77,0.12)]">
               <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-4">
