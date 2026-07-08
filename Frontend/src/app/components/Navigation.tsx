@@ -119,7 +119,7 @@ export function Navigation() {
           <div className="hidden md:flex items-center gap-6">
             {isLoggedIn && <NotificationBell />}
             {isLoggedIn ? (
-              <>
+              <div className="relative">
                 <button 
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full transition-all ${
@@ -147,7 +147,7 @@ export function Navigation() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
+                      className="absolute right-0 top-full z-50 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
                     >
                       <div className="p-4 border-b border-slate-100 bg-slate-50/50">
                         <p className="font-['Inter:Bold',sans-serif] text-slate-800">{userName}</p>
@@ -166,7 +166,7 @@ export function Navigation() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </>
+              </div>
             ) : (
               <Link
                 to="/login"
