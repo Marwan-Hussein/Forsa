@@ -1,7 +1,10 @@
 using Application.Core.DTOs.Admin;
 using Application.Core.DTOs.Place;
 using Application.Core.Interfaces.PlaceInterfaces;
+using Application.Core.Interfaces;
+using Application.Core.DTOs.CommonDTOs;
 using AutoMapper;
+using Domain.Entities;
 using Domain.ENUMs;
 using Domain.Entities.PlaceEntities;
 using Domain.Interfaces;
@@ -16,19 +19,25 @@ namespace Application.Services.PlaceServices
         private readonly IFeedbackRepository _feedbackRepo;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IGenericRepository<Notification> _notificationRepository;
+        private readonly INotifierService _notifierService;
 
         public PlaceAdminService(
             IPlaceRepository placeRepo,
             IQueryableRepository<PlaceAvailability> availabilityRepo,
             IFeedbackRepository feedbackRepo,
             IMapper mapper,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IGenericRepository<Notification> notificationRepository,
+            INotifierService notifierService)
         {
             _placeRepo = placeRepo;
             _availabilityRepo = availabilityRepo;
             _feedbackRepo = feedbackRepo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _notificationRepository = notificationRepository;
+            _notifierService = notifierService;
         }
 
         // GET /api/admin/places
@@ -115,7 +124,53 @@ namespace Application.Services.PlaceServices
             place.LastModifiedAt = DateTime.UtcNow;
 
             _placeRepo.Update(place);
+
+            if (place.OwnerId.HasValue)
+            {
+                #region notification
+                var msg = $"Your place '{place.Name}' status has been updated to {status}.";
+                if (status == PlaceStatus.Rejected && !string.IsNullOrWhiteSpace(reason))
+                {
+                    msg += $" Reason: {reason}";
+                }
+
+                var notification = new Notification
+                {
+                    Message = msg,
+                    Type = NotificationType.GeneralAlert,
+                    SentVia = DeliveryMethod.Email,
+                    Status = NotificationStatus.Pending,
+                    UserId = place.OwnerId.Value,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _notificationRepository.AddAsync(notification);
+                #endregion
+            }
+
             await _unitOfWork.SaveChangesAsync();
+
+            if (place.OwnerId.HasValue)
+            {
+                try
+                {
+                    var msg = $"Your place '{place.Name}' status has been updated to {status}.";
+                    if (status == PlaceStatus.Rejected && !string.IsNullOrWhiteSpace(reason))
+                    {
+                        msg += $" Reason: {reason}";
+                    }
+
+                    await _notifierService.SendAsync(place.OwnerId.Value, new NotificationMessageDto
+                    {
+                        Title = "Place Status Updated",
+                        Body = msg,
+                        Type = NotificationType.GeneralAlert.ToString()
+                    });
+                }
+                catch
+                {
+                    // Silence real-time notification failures to prevent blocking execution
+                }
+            }
 
             return true;
         }
@@ -143,7 +198,39 @@ namespace Application.Services.PlaceServices
             place.DeletedAt = DateTime.UtcNow;
 
             _placeRepo.Update(place);
+
+            if (place.OwnerId.HasValue)
+            {
+                var notification = new Notification
+                {
+                    Message = $"Your place '{place.Name}' has been deleted by an administrator.",
+                    Type = NotificationType.GeneralAlert,
+                    SentVia = DeliveryMethod.Email,
+                    Status = NotificationStatus.Pending,
+                    UserId = place.OwnerId.Value,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _notificationRepository.AddAsync(notification);
+            }
+
             await _unitOfWork.SaveChangesAsync();
+
+            if (place.OwnerId.HasValue)
+            {
+                try
+                {
+                    await _notifierService.SendAsync(place.OwnerId.Value, new NotificationMessageDto
+                    {
+                        Title = "Place Deleted",
+                        Body = $"Your place '{place.Name}' has been deleted by an administrator.",
+                        Type = NotificationType.GeneralAlert.ToString()
+                    });
+                }
+                catch
+                {
+                    // Silence real-time notification failures to prevent blocking execution
+                }
+            }
 
             return true;
         }

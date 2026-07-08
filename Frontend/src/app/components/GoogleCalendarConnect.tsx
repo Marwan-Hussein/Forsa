@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { ArrowRight, CalendarCheck, CheckCircle2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import GoogleCalendarLogo from "../../assets/google-calendar.svg";
 import { apiGet } from "../api/api";
 
@@ -23,14 +25,17 @@ const GoogleCalendarConnect: React.FC<GoogleCalendarConnectProps> = ({
   const [loading, setLoading] = useState(false);
   const [showConnectButton, setShowConnectButton] = useState(false);
   const [statusLoaded, setStatusLoaded] = useState(false);
+  const [statusError, setStatusError] = useState(false);
 
   useEffect(() => {
     const loadStatus = async () => {
       try {
+        setStatusError(false);
         const data = await apiGet<{ hasRefreshToken: boolean }>("/api/calendar/status");
         setShowConnectButton(!data.hasRefreshToken);
       } catch (err) {
         console.error("Failed to load Google Calendar status", err);
+        setStatusError(true);
         setShowConnectButton(false);
       } finally {
         setStatusLoaded(true);
@@ -61,85 +66,87 @@ const GoogleCalendarConnect: React.FC<GoogleCalendarConnectProps> = ({
       window.location.href = redirectUrl;
     } catch (err) {
       console.error(err);
-      alert("Unable to connect to Google Calendar.");
+      toast.error("Unable to connect to Google Calendar.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!statusLoaded || !showConnectButton) {
-    return null;
-  }
+  const isConnected = statusLoaded && !statusError && !showConnectButton;
 
   return (
-    <>
-      return (
-        <div className="fixed bottom-6 right-6 z-50">
-          <button
-            onClick={connectGoogleCalendar}
-            disabled={loading}
-            className="
-              group
-              flex
-              h-14
-              w-14
-              hover:w-72
-              items-center
-              justify-center
-              hover:justify-start
-              rounded-full
-              bg-[#4285F4]/40
-              hover:bg-[#4285F4]
-              backdrop-blur-sm
-              shadow-2xl
-              hover:shadow-[0_8px_24px_rgba(66,133,244,0.35)]
-              transition-all
-              duration-300
-              ease-in-out
-              overflow-hidden
-              px-4
-              disabled:opacity-80
-              disabled:cursor-not-allowed
-            "
-          >
-            <img
-              src={GoogleCalendarLogo}
-              alt="Google Calendar"
-              className="
-                w-10
-                h-10
-                min-w-10
-                object-contain
-                transition-transform
-                duration-300
-                ease-in-out
-                group-hover:scale-125
-                group-hover:rotate-12
-              "
-            />
+    <div className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl shadow-[var(--brand-navy)]/5">
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#4285f4] via-[#34a853] via-[#fbbc05] to-[#ea4335]" />
+      <div className="absolute -right-12 -top-12 h-28 w-28 rounded-full bg-[#4285f4]/10 blur-2xl transition-transform duration-500 group-hover:scale-125" />
 
-            <span
-              className="
-                opacity-0
-                max-w-0
-                group-hover:opacity-100
-                group-hover:max-w-xs
-                group-hover:ml-3
-                transition-all
-                duration-300
-                ease-in-out
-                whitespace-nowrap
-                text-white
-                font-semibold
-                text-sm
-              "
-            >
-              {loading ? "Connecting..." : "Connect Google Calendar"}
-            </span>
-          </button>
+      <div className="relative p-5">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-100 bg-slate-50 shadow-inner">
+            <img src={GoogleCalendarLogo} alt="Google Calendar" className="h-8 w-8 object-contain" />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-sm font-bold text-slate-800">Google Calendar</h3>
+              {statusLoaded && !statusError && (
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                    isConnected
+                      ? "bg-emerald-50 text-emerald-700"
+                      : "bg-blue-50 text-blue-700"
+                  }`}
+                >
+                  {isConnected ? <CheckCircle2 className="h-3 w-3" /> : <CalendarCheck className="h-3 w-3" />}
+                  {isConnected ? "Connected" : "Available"}
+                </span>
+              )}
+              {statusError && (
+                <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-bold text-rose-600">
+                  Unavailable
+                </span>
+              )}
+            </div>
+
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              Sync event plans and bookings with your personal calendar.
+            </p>
+          </div>
         </div>
-      );
-    </>
+
+        <div className="mt-4">
+          {!statusLoaded ? (
+            <div className="flex items-center justify-center gap-2 rounded-xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-500">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Checking calendar status
+            </div>
+          ) : isConnected ? (
+            <div className="flex items-center justify-between rounded-xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
+              <div>
+                <p className="text-sm font-bold text-emerald-800">Ready to sync</p>
+                <p className="text-xs text-emerald-700/80">Your Google Calendar is linked.</p>
+              </div>
+              <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+            </div>
+          ) : statusError ? (
+            <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-500">
+              Calendar status could not be loaded.
+            </div>
+          ) : (
+            <button
+              onClick={connectGoogleCalendar}
+              disabled={loading}
+              className="flex w-full items-center justify-between rounded-xl bg-[var(--brand-navy)] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-[var(--brand-navy)]/15 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[var(--brand-navy-hover)] disabled:translate-y-0 disabled:opacity-70"
+            >
+              <span className="inline-flex items-center gap-2">
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {loading ? "Connecting..." : "Connect account"}
+              </span>
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 

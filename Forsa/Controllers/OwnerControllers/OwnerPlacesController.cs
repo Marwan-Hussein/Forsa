@@ -1,5 +1,9 @@
 using Application.Core.DTOs.Place;
 using Application.Core.Interfaces.OwnerInterfaces;
+using Application.Core.Interfaces.AdminServices;
+using Application.Core.Interfaces;
+using Application.Core.DTOs.CommonDTOs;
+using Domain.ENUMs;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,14 +19,20 @@ namespace Forsa.Controllers.OwnerControllers
         private readonly IPlaceOwnerService _placeOwnerService;
         private readonly IPlaceAvailabilityService _availabilityService;
         private readonly IValidator<AddPlaceDto> _addPlaceValidator;
+        private readonly IAdminUserService _adminUserService;
+        private readonly INotifierService _notifierService;
 
         public OwnerPlacesController(
             IPlaceOwnerService placeOwnerService,
             IPlaceAvailabilityService availabilityService,
+            IAdminUserService adminUserService,
+            INotifierService notifierService,
             IValidator<AddPlaceDto> validator)
         {
             _placeOwnerService = placeOwnerService;
             _availabilityService = availabilityService;
+            _adminUserService = adminUserService;
+            _notifierService = notifierService;
             _addPlaceValidator = validator;
         }
 
@@ -44,6 +54,27 @@ namespace Forsa.Controllers.OwnerControllers
             try
             {
                 var result = await _placeOwnerService.AddNewPlaceAsync(GetOwnerId(), dto);
+                var admins = await _adminUserService.GetAllInRole(Roles.Admin, 1, 1000);
+
+                foreach (var admin in admins)
+                {
+                    try
+                    {
+                        await _notifierService.SendAsync(admin.Id, new NotificationMessageDto
+                        {
+                            Title = "New venue awaiting approval",
+                            Body = $"{result.Name} has been submitted and is pending admin review.",
+                            Type = "admin",
+                            Url = "/admin/places",
+                            SentAt = DateTimeOffset.UtcNow,
+                        });
+                    }
+                    catch
+                    {
+                        // continue notifying remaining admins even if one send fails
+                    }
+                }
+
                 return CreatedAtAction(nameof(GetMyPlace), new { id = result.PlaceId }, result);
             }
             catch (Exception)

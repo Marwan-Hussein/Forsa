@@ -2,6 +2,7 @@ using Application.Core.DTOs.Booking;
 using Application.Core.DTOs.Event;
 using Application.Core.Interfaces;
 using Application.Core.Interfaces.ExternalServicesInterfaces;
+using Application.Core.DTOs.CommonDTOs;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.BookingEntities;
@@ -24,6 +25,7 @@ namespace Application.Services
         private readonly IGoogleCalendarSyncService _calendarSync;
         private readonly IPaymentService _paymentService;
         private readonly IQueryableRepository<PaymentTransaction> _transactionRepository;
+        private readonly INotifierService _notifierService;
 
         public BookingService(
             IQueryableRepository<Event> eventRepository,
@@ -34,7 +36,8 @@ namespace Application.Services
             IQrService qrService,
             IGoogleCalendarSyncService calendarSync,
             IPaymentService paymentService,
-            IQueryableRepository<PaymentTransaction> transactionRepository)
+            IQueryableRepository<PaymentTransaction> transactionRepository,
+            INotifierService notifierService)
         {
             _eventRepository = eventRepository;
             _bookingRepository = bookingRepository;
@@ -45,6 +48,7 @@ namespace Application.Services
             _calendarSync = calendarSync;
             _paymentService = paymentService;
             _transactionRepository = transactionRepository;
+            _notifierService = notifierService;
         }
 
         public async Task<EventDetailsDto> GetEventDetailsAsync(int eventId)
@@ -174,6 +178,7 @@ namespace Application.Services
             booking.Status = BookingStatus.Confirmed;
             _bookingRepository.Update(booking);
 
+            #region notification
             var notification = new Notification
             {
                 Type = NotificationType.BookingConfirmation,
@@ -186,6 +191,21 @@ namespace Application.Services
 
             await _notificationRepository.AddAsync(notification);
             await _unitOfWork.SaveChangesAsync();
+
+            try
+            {
+                await _notifierService.SendAsync(booking.AttendeeId, new NotificationMessageDto
+                {
+                    Title = "Booking Approved",
+                    Body = $"Your ticket request for '{booking.Event.Title}' has been approved! Booking ID: {booking.Id}",
+                    Type = NotificationType.BookingConfirmation.ToString()
+                });
+            }
+            catch
+            {
+                // Silence real-time notification failures to prevent blocking execution
+            }
+            #endregion
         }
 
         public async Task RejectBookingAsync(int bookingId, string reason)
@@ -220,6 +240,20 @@ namespace Application.Services
 
             await _notificationRepository.AddAsync(notification);
             await _unitOfWork.SaveChangesAsync();
+
+            try
+            {
+                await _notifierService.SendAsync(booking.AttendeeId, new NotificationMessageDto
+                {
+                    Title = "Booking Rejected",
+                    Body = $"Your ticket request for '{booking.Event.Title}' has been rejected. Reason: {reason}",
+                    Type = NotificationType.BookingConfirmation.ToString()
+                });
+            }
+            catch
+            {
+                // Silence real-time notification failures to prevent blocking execution
+            }
         }
 
         public async Task CancelBookingAsync(int bookingId)

@@ -28,7 +28,7 @@ namespace Forsa.Seed
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
             // Ensure database is created/migrated
-            await context.Database.MigrateAsync();
+            //await context.Database.MigrateAsync();
 
             // 1. Seed Roles
             var roles = new[] { "Admin", "Attendee", "Organizer", "Owner" };
@@ -164,50 +164,50 @@ namespace Forsa.Seed
             var organizerUser = seededOrganizers.FirstOrDefault(o => o.Email == "iti@forsa.com") ?? seededOrganizers.First();
 
             // C. Seed Attendee
-            const string attendeeEmail1 = "attendee1@forsa.com";
+            const string attendeeEmail1 = "omier.ahmed@forsa.com";
             var attendeeUser1 = await userManager.FindByEmailAsync(attendeeEmail1);
             if (attendeeUser1 == null)
             {
                 var attendee = new Attendee
                 {
-                    FullName = "Mohamed Kotb",
+                    FullName = "Omier Ahmed",
                     UserName = attendeeEmail1,
                     NormalizedUserName = attendeeEmail1.ToUpperInvariant(),
                     Email = attendeeEmail1,
                     NormalizedEmail = attendeeEmail1.ToUpperInvariant(),
                     EmailConfirmed = true,
-                    PhoneNumber = "01200000000",
-                    Location = "Giza, Egypt",
-                    BirthDate = new DateTime(1998, 10, 20),
-                    ProfilePicture = string.Empty,
+                    PhoneNumber = "01045789123",
+                    Location = "Alexandria, Egypt",
+                    BirthDate = new DateTime(2005, 10, 20),
+                    ProfilePicture = "/uploads/profiles/18/22ce6200-e91d-4c4b-b2d9-86e66fb6cd8b.jpeg",
                     CreatedAt = DateTime.UtcNow,
                     IsDeleted = false,
-                    LoyaltyPoint = 50
+                    LoyaltyPoint = 0
                 };
                 var createResult = await userManager.CreateAsync(attendee, "Test@1234");
                 ThrowIfFailed(createResult, "Failed to create Attendee 1 user");
                 await userManager.AddToRoleAsync(attendee, "Attendee");
             }
 
-            const string attendeeEmail2 = "attendee2@forsa.com";
+            const string attendeeEmail2 = "adel.hefny@forsa.com";
             var attendeeUser2 = await userManager.FindByEmailAsync(attendeeEmail2);
             if (attendeeUser2 == null)
             {
                 var attendee = new Attendee
                 {
-                    FullName = "Heba Ahmed",
+                    FullName = "Adel Hefny",
                     UserName = attendeeEmail2,
                     NormalizedUserName = attendeeEmail2.ToUpperInvariant(),
                     Email = attendeeEmail2,
                     NormalizedEmail = attendeeEmail2.ToUpperInvariant(),
                     EmailConfirmed = true,
-                    PhoneNumber = "01500000000",
-                    Location = "Alexandria, Egypt",
-                    BirthDate = new DateTime(2000, 2, 14),
-                    ProfilePicture = string.Empty,
+                    PhoneNumber = "01145678901",
+                    Location = "Asuit, Egypt",
+                    BirthDate = new DateTime(2006, 2, 14),
+                    ProfilePicture = "/uploads/profiles/18/22ce6200-e91d-4c4b-b2d9-86e66fb6cd8b.jpeg",
                     CreatedAt = DateTime.UtcNow,
                     IsDeleted = false,
-                    LoyaltyPoint = 100
+                    LoyaltyPoint = 0
                 };
                 var createResult = await userManager.CreateAsync(attendee, "Test@1234");
                 ThrowIfFailed(createResult, "Failed to create Attendee 2 user");
@@ -215,21 +215,46 @@ namespace Forsa.Seed
                 attendeeUser2 = attendee;
             }
 
-            // D. Seed Owner
-            const string ownerEmail = "owner@forsa.com";
-            var ownerUser = await userManager.FindByEmailAsync(ownerEmail) as Owner;
-            if (ownerUser == null)
+            //// D. Seed Owner
+            const string ownerEmail1 = "Nagaty@forsa.com";
+            var ownerUser1 = await userManager.FindByEmailAsync(ownerEmail1) as Owner;
+            if (ownerUser1 == null)
             {
                 var owner = new Owner
                 {
-                    FullName = "Hassan Ibrahim",
-                    UserName = ownerEmail,
-                    NormalizedUserName = ownerEmail.ToUpperInvariant(),
-                    Email = ownerEmail,
-                    NormalizedEmail = ownerEmail.ToUpperInvariant(),
+                    FullName = "Mohamed Abo elnaga",
+                    UserName = ownerEmail1,
+                    NormalizedUserName = ownerEmail1.ToUpperInvariant(),
+                    Email = ownerEmail1,
+                    NormalizedEmail = ownerEmail1.ToUpperInvariant(),
                     EmailConfirmed = true,
-                    PhoneNumber = "01099999999",
-                    Location = "Cairo, Egypt",
+                    PhoneNumber = "01234567890",
+                    Location = "Giza, Egypt",
+                    BirthDate = new DateTime(1973, 11, 30),
+                    ProfilePicture = string.Empty,
+                    CreatedAt = DateTime.UtcNow,
+                    IsDeleted = false
+                };
+                var createResult = await userManager.CreateAsync(owner, "Test@1234");
+                ThrowIfFailed(createResult, "Failed to create Owner user");
+                await userManager.AddToRoleAsync(owner, "Owner");
+                ownerUser1 = owner;
+            }
+
+            const string ownerEmail2 = "Ayman.Bazaraa@forsa.com";
+            var ownerUser2 = await userManager.FindByEmailAsync(ownerEmail2) as Owner;
+            if (ownerUser2 == null)
+            {
+                var owner = new Owner
+                {
+                    FullName = "Ayman Bazaraa",
+                    UserName = ownerEmail2,
+                    NormalizedUserName = ownerEmail2.ToUpperInvariant(),
+                    Email = ownerEmail2,
+                    NormalizedEmail = ownerEmail2.ToUpperInvariant(),
+                    EmailConfirmed = true,
+                    PhoneNumber = "01145678901",
+                    Location = "Giza, Egypt",
                     BirthDate = new DateTime(1980, 11, 30),
                     ProfilePicture = string.Empty,
                     CreatedAt = DateTime.UtcNow,
@@ -238,18 +263,93 @@ namespace Forsa.Seed
                 var createResult = await userManager.CreateAsync(owner, "Test@1234");
                 ThrowIfFailed(createResult, "Failed to create Owner user");
                 await userManager.AddToRoleAsync(owner, "Owner");
-                ownerUser = owner;
+                ownerUser2 = owner;
             }
 
-            // 4. Seed Places (owned by Owner)
-            var places = new List<Place>();
-            if (!await context.Set<Place>().AnyAsync() && ownerUser != null)
+            const string ownerEmail3 = "Ali.Shaheen@forsa.com";
+            var ownerUser3 = await userManager.FindByEmailAsync(ownerEmail3) as Owner;
+            if (ownerUser3 == null)
+            {
+                var owner = new Owner
+                {
+                    FullName = "Ali Shaheen",
+                    UserName = ownerEmail3,
+                    NormalizedUserName = ownerEmail3.ToUpperInvariant(),
+                    Email = ownerEmail3,
+                    NormalizedEmail = ownerEmail3.ToUpperInvariant(),
+                    EmailConfirmed = true,
+                    PhoneNumber = "01145678902",
+                    Location = "Aswan, Egypt",
+                    BirthDate = new DateTime(1973, 11, 30),
+                    ProfilePicture = string.Empty,
+                    CreatedAt = DateTime.UtcNow,
+                    IsDeleted = false
+                };
+                var createResult = await userManager.CreateAsync(owner, "Test@1234");
+                ThrowIfFailed(createResult, "Failed to create Owner user");
+                await userManager.AddToRoleAsync(owner, "Owner");
+                ownerUser1 = owner;
+            }
+
+            const string ownerEmail4 = "Saweras@forsa.com";
+            var ownerUser4 = await userManager.FindByEmailAsync(ownerEmail4) as Owner;
+            if (ownerUser4 == null)
+            {
+                var owner = new Owner
+                {
+                    FullName = "Nageeb Saweras",
+                    UserName = ownerEmail4,
+                    NormalizedUserName = ownerEmail4.ToUpperInvariant(),
+                    Email = ownerEmail4,
+                    NormalizedEmail = ownerEmail4.ToUpperInvariant(),
+                    EmailConfirmed = true,
+                    PhoneNumber = "01222222222",
+                    Location = "Giza, Egypt",
+                    BirthDate = new DateTime(1960, 11, 30),
+                    ProfilePicture = string.Empty,
+                    CreatedAt = DateTime.UtcNow,
+                    IsDeleted = false
+                };
+                var createResult = await userManager.CreateAsync(owner, "Test@1234");
+                ThrowIfFailed(createResult, "Failed to create Owner user");
+                await userManager.AddToRoleAsync(owner, "Owner");
+                ownerUser1 = owner;
+            }
+
+            const string ownerEmail5 = "Hossam.Hassan@forsa.com";
+            var ownerUser5 = await userManager.FindByEmailAsync(ownerEmail5) as Owner;
+            if (ownerUser5 == null)
+            {
+                var owner = new Owner
+                {
+                    FullName = "Hossam Hassan",
+                    UserName = ownerEmail5,
+                    NormalizedUserName = ownerEmail5.ToUpperInvariant(),
+                    Email = ownerEmail5,
+                    NormalizedEmail = ownerEmail5.ToUpperInvariant(),
+                    EmailConfirmed = true,
+                    PhoneNumber = "01555999999",
+                    Location = "Damitee, Egypt",
+                    BirthDate = new DateTime(1958, 11, 30),
+                    ProfilePicture = string.Empty,
+                    CreatedAt = DateTime.UtcNow,
+                    IsDeleted = false
+                };
+                var createResult = await userManager.CreateAsync(owner, "Test@1234");
+                ThrowIfFailed(createResult, "Failed to create Owner user");
+                await userManager.AddToRoleAsync(owner, "Owner");
+                ownerUser1 = owner;
+            }
+
+        // 4. Seed Places (owned by Owner)
+        var places = new List<Place>();
+            if (!await context.Set<Place>().AnyAsync() && ownerUser1 != null)
             {
                 places.AddRange(new[]
                 {
                     new Place
                     {
-                        Name = "The Greek Campus",
+            Name = "The Greek Campus",
                         Location = "28 Falaki St, Bab Al Louq, Cairo",
                         Capacity = 800,
                         Description = "The Greek Campus is Cairo's first science and technology park, hosting startups, SMEs, and educational tech events.",
@@ -258,15 +358,15 @@ namespace Forsa.Seed
                         Status = PlaceStatus.Available,
                         FacilityName = FacilityName.WiFi,
                         IsLocked = false,
-                        OwnerId = ownerUser.Id,
+                        OwnerId = ownerUser1.Id,
                         Latitude = 30.0441m,
                         Longitude = 31.2397m,
                         GooglePlaceId = "ChIJ6Yt3wW8fWBQR3uFq2q-F890",
                         CreatedAt = DateTime.UtcNow
-                    },
+        },
                     new Place
                     {
-                        Name = "AUC Tahrir Square - Ewart Hall",
+            Name = "AUC Tahrir Square - Ewart Hall",
                         Location = "Tahrir Square, Downtown Cairo",
                         Capacity = 1000,
                         Description = "Ewart Memorial Hall is a historic, premium hall at the American University in Cairo (AUC), downtown.",
@@ -275,15 +375,15 @@ namespace Forsa.Seed
                         Status = PlaceStatus.Available,
                         FacilityName = FacilityName.WiFi,
                         IsLocked = false,
-                        OwnerId = ownerUser.Id,
+                        OwnerId = ownerUser1.Id,
                         Latitude = 30.0428m,
                         Longitude = 31.2403m,
                         GooglePlaceId = "ChIJN-SjRmsfWBQRgE_X20xH4M4",
                         CreatedAt = DateTime.UtcNow
-                    },
+        },
                     new Place
                     {
-                        Name = "CREATIVA Innovation Hub Giza",
+            Name = "CREATIVA Innovation Hub Giza",
                         Location = "Giza Governorate, close to Cairo University",
                         Capacity = 250,
                         Description = "A creative hub supported by the Ministry of Communications and IT (MCIT) for learning and hacking.",
@@ -292,15 +392,15 @@ namespace Forsa.Seed
                         Status = PlaceStatus.Available,
                         FacilityName = FacilityName.WiFi,
                         IsLocked = false,
-                        OwnerId = ownerUser.Id,
+                        OwnerId = ownerUser1.Id,
                         Latitude = 30.0263m,
                         Longitude = 31.2081m,
                         GooglePlaceId = "ChIJT_2fX3YfWBQRb_5W6p3h0i0",
                         CreatedAt = DateTime.UtcNow
-                    },
+        },
                     new Place
                     {
-                        Name = "Smart Village Conference Center",
+            Name = "Smart Village Conference Center",
                         Location = "KM 28 Cairo-Alexandria Desert Road, Giza",
                         Capacity = 1200,
                         Description = "World-class business park conference facility in the heart of Egypt's tech district.",
@@ -309,37 +409,37 @@ namespace Forsa.Seed
                         Status = PlaceStatus.Available,
                         FacilityName = FacilityName.WiFi,
                         IsLocked = false,
-                        OwnerId = ownerUser.Id,
+                        OwnerId = ownerUser1.Id,
                         Latitude = 30.0716m,
                         Longitude = 31.0182m,
                         GooglePlaceId = "ChIJk-tqO14fWBQRJ70FhT3f-vI",
                         CreatedAt = DateTime.UtcNow
-                    }
-                });
+        }
+    });
                 await context.Set<Place>().AddRangeAsync(places);
-                await context.SaveChangesAsync();
-            }
+    await context.SaveChangesAsync();
+}
             else
-            {
-                places = await context.Set<Place>().ToListAsync();
-            }
+{
+    places = await context.Set<Place>().ToListAsync();
+}
 
-            // 6. Seed Events (organized by Organizer, hosted at Place)
+//6.Seed Events(organized by Organizer, hosted at Place)
             var events = new List<Event>();
-            if (!await context.Set<Event>().AnyAsync() && seededOrganizers.Any() && places.Any())
-            {
-                var itiOrg = seededOrganizers.FirstOrDefault(o => o.Email == "iti@forsa.com") ?? seededOrganizers.First();
-                var alxOrg = seededOrganizers.FirstOrDefault(o => o.Email == "alx@forsa.com") ?? seededOrganizers.First();
-                var wuzzufOrg = seededOrganizers.FirstOrDefault(o => o.Email == "wuzzuf@forsa.com") ?? seededOrganizers.First();
-                var techneOrg = seededOrganizers.FirstOrDefault(o => o.Email == "techne@forsa.com") ?? seededOrganizers.First();
+if (!await context.Set<Event>().AnyAsync() && seededOrganizers.Any() && places.Any())
+{
+    var itiOrg = seededOrganizers.FirstOrDefault(o => o.Email == "iti@forsa.com") ?? seededOrganizers.First();
+    var alxOrg = seededOrganizers.FirstOrDefault(o => o.Email == "alx@forsa.com") ?? seededOrganizers.First();
+    var wuzzufOrg = seededOrganizers.FirstOrDefault(o => o.Email == "wuzzuf@forsa.com") ?? seededOrganizers.First();
+    var techneOrg = seededOrganizers.FirstOrDefault(o => o.Email == "techne@forsa.com") ?? seededOrganizers.First();
 
-                var greekCampus = places.FirstOrDefault(p => p.Name.Contains("Greek")) ?? places[0];
-                var aucTahrir = places.FirstOrDefault(p => p.Name.Contains("AUC")) ?? places[0];
-                var creativa = places.FirstOrDefault(p => p.Name.Contains("CREATIVA")) ?? places[0];
-                var smartVillage = places.FirstOrDefault(p => p.Name.Contains("Smart")) ?? places[0];
+    var greekCampus = places.FirstOrDefault(p => p.Name.Contains("Greek")) ?? places[0];
+    var aucTahrir = places.FirstOrDefault(p => p.Name.Contains("AUC")) ?? places[0];
+    var creativa = places.FirstOrDefault(p => p.Name.Contains("CREATIVA")) ?? places[0];
+    var smartVillage = places.FirstOrDefault(p => p.Name.Contains("Smart")) ?? places[0];
 
-                events.AddRange(new[]
-                {
+    events.AddRange(new[]
+    {
                     new Event
                     {
                         Title = "Techshift Summit Cairo 2026",
@@ -409,19 +509,19 @@ namespace Forsa.Seed
                         CreatedAt = DateTime.UtcNow
                     }
                 });
-                await context.Set<Event>().AddRangeAsync(events);
-                await context.SaveChangesAsync();
-            }
-            else
-            {
-                events = await context.Set<Event>().ToListAsync();
-            }
+    await context.Set<Event>().AddRangeAsync(events);
+    await context.SaveChangesAsync();
+}
+else
+{
+    events = await context.Set<Event>().ToListAsync();
+}
 
-            // 7. Seed Bookings (by Attendee for Event)
-            if (!await context.Set<Booking>().AnyAsync() && attendeeUser2 != null && events.Any())
-            {
-                var bookings = new[]
-                {
+// 7. Seed Bookings (by Attendee for Event)
+if (!await context.Set<Booking>().AnyAsync() && attendeeUser2 != null && events.Any())
+{
+    var bookings = new[]
+    {
                     new Booking
                     {
                         AttendeeId = attendeeUser2.Id,
@@ -445,15 +545,15 @@ namespace Forsa.Seed
                         IsDeleted = false
                     }
                 };
-                await context.Set<Booking>().AddRangeAsync(bookings);
-                await context.SaveChangesAsync();
-            }
+    await context.Set<Booking>().AddRangeAsync(bookings);
+    await context.SaveChangesAsync();
+}
 
-            // 8. Seed PromoCodes (by Organizer for Event)
-            if (!await context.Set<PromoCode>().AnyAsync() && organizerUser != null && events.Any())
-            {
-                var promoCodes = new[]
-                {
+// 8. Seed PromoCodes (by Organizer for Event)
+if (!await context.Set<PromoCode>().AnyAsync() && organizerUser != null && events.Any())
+{
+    var promoCodes = new[]
+    {
                     new PromoCode
                     {
                         Code = "TECH10",
@@ -483,15 +583,15 @@ namespace Forsa.Seed
                         CreatedAt = DateTime.UtcNow
                     }
                 };
-                await context.Set<PromoCode>().AddRangeAsync(promoCodes);
-                await context.SaveChangesAsync();
-            }
+    await context.Set<PromoCode>().AddRangeAsync(promoCodes);
+    await context.SaveChangesAsync();
+}
 
-            // 9. Seed Feedbacks
-            if (!await context.Set<Feedback>().AnyAsync() && attendeeUser2 != null && events.Any() && places.Any() && organizerUser != null)
-            {
-                var feedbacks = new[]
-                {
+// 9. Seed Feedbacks
+if (!await context.Set<Feedback>().AnyAsync() && attendeeUser2 != null && events.Any() && places.Any() && organizerUser != null)
+{
+    var feedbacks = new[]
+    {
                     new Feedback
                     {
                         Rating = 5,
@@ -511,9 +611,9 @@ namespace Forsa.Seed
                         CreatedAt = DateTime.UtcNow
                     }
                 };
-                await context.Set<Feedback>().AddRangeAsync(feedbacks);
-                await context.SaveChangesAsync();
-            }
+    await context.Set<Feedback>().AddRangeAsync(feedbacks);
+    await context.SaveChangesAsync();
+}
         }
 
         private static void ThrowIfFailed(IdentityResult result, string message)

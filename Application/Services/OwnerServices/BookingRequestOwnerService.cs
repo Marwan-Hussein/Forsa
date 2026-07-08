@@ -1,5 +1,7 @@
 using Application.Core.DTOs.Booking;
 using Application.Core.Interfaces.OwnerInterfaces;
+using Application.Core.Interfaces;
+using Application.Core.DTOs.CommonDTOs;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.BookingEntities;
@@ -18,6 +20,7 @@ namespace Application.Services.OwnerServices
         private readonly IPlaceRepository _placeRepo;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly INotifierService _notifierService;
 
         public BookingRequestOwnerService(
             IQueryableRepository<BookingRequest> bookingRequestRepo,
@@ -25,7 +28,8 @@ namespace Application.Services.OwnerServices
             IGenericRepository<Notification> notificationRepo,
             IPlaceRepository placeRepo,
             IMapper mapper,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            INotifierService notifierService)
         {
             _bookingRequestRepo = bookingRequestRepo;
             _availabilityRepo = availabilityRepo;
@@ -33,6 +37,7 @@ namespace Application.Services.OwnerServices
             _placeRepo = placeRepo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _notifierService = notifierService;
         }
 
         public async Task<List<BookingRequestDetailsDto>> GetOwnerBookingRequestsAsync(int ownerId)
@@ -153,6 +158,62 @@ namespace Application.Services.OwnerServices
             _bookingRequestRepo.Update(request);
             await _unitOfWork.SaveChangesAsync();
 
+            // Send real-time notifications after save changes succeeds
+            if (dto.AcceptRequest)
+            {
+                // Send conflict rejections
+                var conflictingRequests = await _bookingRequestRepo.GetQueryable()
+                    .Where(br =>
+                        br.PlaceId == request.PlaceId &&
+                        br.RequestedDate.Date == request.RequestedDate.Date &&
+                        br.Status == RequestStatus.Rejected &&
+                        br.RejectionReason == "Schedule conflict, date already booked." &&
+                        br.Id != requestId &&
+                        !br.IsDeleted)
+                    .ToListAsync();
+
+                #region AcceptanceNotification
+                foreach (var conflicting in conflictingRequests)
+                {
+                    try
+                    {
+                        await _notifierService.SendAsync(conflicting.OrganizerId, new NotificationMessageDto
+                        {
+                            Title = "Booking Request Rejected",
+                            Body = $"Your booking request for \"{request.Place.Name}\" on {conflicting.RequestedDate:yyyy-MM-dd} was rejected due to a schedule conflict.",
+                            Type = NotificationType.BookingRequestRejected.ToString()
+                        });
+                    }
+                    catch { }
+                }
+
+                // Send acceptance
+                try
+                {
+                    await _notifierService.SendAsync(request.OrganizerId, new NotificationMessageDto
+                    {
+                        Title = "Booking Request Accepted",
+                        Body = $"Your booking request for \"{request.Place.Name}\" on {request.RequestedDate:yyyy-MM-dd} has been accepted!",
+                        Type = NotificationType.BookingRequestAccepted.ToString()
+                    });
+                }
+                catch { }
+            }
+            else
+            {
+                // Send rejection
+                try
+                {
+                    await _notifierService.SendAsync(request.OrganizerId, new NotificationMessageDto
+                    {
+                        Title = "Booking Request Rejected",
+                        Body = $"Your booking request for \"{request.Place.Name}\" on {request.RequestedDate:yyyy-MM-dd} was rejected. Reason: {dto.RejectionReason}",
+                        Type = NotificationType.BookingRequestRejected.ToString()
+                    });
+                }
+                catch { }
+            }
+            #endregion
             return _mapper.Map<BookingRequestDetailsDto>(request);
         }
     }
