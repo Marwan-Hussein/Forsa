@@ -108,6 +108,10 @@ export const organizerApi = {
     return await apiDelete(`/api/organizers/booking-requests/${requestId}`);
   },
 
+  releasePlaceBookingSlot: async (requestId: number): Promise<any> => {
+    return await apiPost(`/api/organizers/bookings/${requestId}/release`, {});
+  },
+
   getEventDetails: async (eventId: number): Promise<any> => {
     return await apiGet(`/api/events/${eventId}/details`);
   },

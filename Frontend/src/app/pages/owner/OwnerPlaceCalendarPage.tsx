@@ -213,7 +213,7 @@ export default function OwnerPlaceCalendarPage() {
                   onClick={() => setStatus("Blocked")}
                   className={`py-3 rounded-xl border text-sm font-bold text-center transition-all cursor-pointer ${
                     status === "Blocked"
-                      ? "bg-slate-200 border-slate-400 text-slate-800 shadow-sm"
+                      ? "bg-rose-50 border-rose-500 text-rose-700 shadow-sm"
                       : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                   }`}
                 >

@@ -23,7 +23,10 @@ namespace Application.Mapping
                 .ForMember(d => d.OrganizerName, o => o.MapFrom(s => s.Organizer.FullName))
                 .ForMember(d => d.OrganizerEmail, o => o.MapFrom(s => s.Organizer.Email))
                 .ForMember(d => d.OrganizationName, o => o.MapFrom(s => s.Organizer.OrganizationName))
-                .ForMember(d => d.PlaceName, o => o.MapFrom(s => s.Place.Name));
+                .ForMember(d => d.PlaceName, o => o.MapFrom(s => s.Place.Name))
+                .ForMember(d => d.EventTitle, o => o.MapFrom(s => s.Event != null ? s.Event.Title : null))
+                .ForMember(d => d.EventStatus, o => o.MapFrom(s => s.Event != null ? s.Event.Status.ToString() : null))
+                .ForMember(d => d.EventEndDate, o => o.MapFrom(s => s.Event != null ? s.Event.EndDate : (DateTime?)null));
 
             CreateMap<Booking, AttendeeBookingDto>()
                 .ForMember(d => d.BookingId, o => o.MapFrom(s => s.Id))

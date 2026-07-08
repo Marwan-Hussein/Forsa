@@ -248,3 +248,10 @@ input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
   display: none !important;
 }
+
+/* Remove default today/default day background circle highlight from react-day-picker */
+.rdp-day_today:not(.rdp-day_selected) {
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+}

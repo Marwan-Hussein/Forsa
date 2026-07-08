@@ -34,6 +34,8 @@ export default function BookingRequestFormPage() {
     startTime: "",
     endTime: "",
   });
+  const [reservedSlots, setReservedSlots] = useState<any[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -49,7 +51,14 @@ export default function BookingRequestFormPage() {
           setPlace(placeData);
         }
         const eventData = await organizerApi.getEventsDashboard(organizerId);
-        setEvents(eventData || []);
+        const activeAndUnbookedEvents = (eventData || []).filter((e: any) => {
+          const statusLower = String(e.status || "").toLowerCase();
+          const isCompleted = statusLower === "completed";
+          const isCancelled = statusLower === "cancelled";
+          const isBooked = e.placeId !== null && e.placeId !== undefined && Number(e.placeId) > 0;
+          return !isCompleted && !isCancelled && !isBooked;
+        });
+        setEvents(activeAndUnbookedEvents);
       } catch (err: any) {
         toast.error("Failed to load data: " + err.message);
       } finally {
@@ -60,24 +69,196 @@ export default function BookingRequestFormPage() {
     fetchInitialData();
   }, [navigate, placeId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const parseTimeToMinutes = (timeStr: string | null): number | null => {
+    if (!timeStr) return null;
+    const parts = timeStr.split(":");
+    if (parts.length < 2) return null;
+    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+  };
 
-    if (name === "requestedDate" && value && place?.availabilities && place.availabilities.length > 0) {
-      const chosenDateStr = new Date(value).toISOString().split("T")[0];
-      const conflictSlot = place.availabilities.find(slot => {
-        const slotDateStr = new Date(slot.date).toISOString().split("T")[0];
-        return slotDateStr === chosenDateStr && (slot.status.toLowerCase() === "blocked" || slot.status.toLowerCase() === "booked");
+  const validateBookingTimes = (date: string, startTime: string, endTime: string): { isValid: boolean; message: string } => {
+    if (!place?.availabilities) return { isValid: true, message: "" };
+    const chosenDateStr = date.split("T")[0];
+    const slots = place.availabilities.filter(slot => {
+      const slotDateStr = slot.date.split("T")[0];
+      return slotDateStr === chosenDateStr;
+    });
+
+    if (slots.length === 0) {
+      return { isValid: false, message: "This venue has no published availability for this date." };
+    }
+
+    const availables = slots.filter(s => s.status.toLowerCase() === "available");
+    if (availables.length === 0) {
+      return { isValid: false, message: "This date is fully booked or blocked." };
+    }
+
+    if (startTime && endTime) {
+      const userStart = parseTimeToMinutes(startTime);
+      const userEnd = parseTimeToMinutes(endTime);
+      if (userStart === null || userEnd === null) return { isValid: true, message: "" };
+
+      // 1. Must fall within at least one Available slot
+      const isCovered = availables.some(slot => {
+        if (!slot.startTime && !slot.endTime) return true; // whole day available
+        const slotStart = parseTimeToMinutes(slot.startTime);
+        const slotEnd = parseTimeToMinutes(slot.endTime);
+        if (slotStart === null || slotEnd === null) return false;
+        return userStart >= slotStart && userEnd <= slotEnd;
       });
-      if (conflictSlot) {
-        toast.warning(`Note: This date is marked as ${conflictSlot.status.toUpperCase()} in the venue's calendar.`);
+
+      if (!isCovered) {
+        const ranges = availables.map(s => (s.startTime && s.endTime) ? `${s.startTime.substring(0, 5)} - ${s.endTime.substring(0, 5)}` : "Whole Day").join(", ");
+        return { isValid: false, message: `Requested time is outside the venue's available hours on this date (${ranges}).` };
+      }
+
+      // 2. Must not overlap with any Booked or Blocked slot
+      const unavailables = slots.filter(s => s.status.toLowerCase() === "booked" || s.status.toLowerCase() === "blocked");
+      for (const slot of unavailables) {
+        if (!slot.startTime && !slot.endTime) {
+          return { isValid: false, message: `This date is fully ${slot.status.toLowerCase()}.` };
+        }
+        const slotStart = parseTimeToMinutes(slot.startTime);
+        const slotEnd = parseTimeToMinutes(slot.endTime);
+        if (slotStart !== null && slotEnd !== null) {
+          if (userStart < slotEnd && userEnd > slotStart) {
+            return { isValid: false, message: `Selected time overlaps with a ${slot.status.toLowerCase()} slot: ${slot.startTime.substring(0, 5)} - ${slot.endTime.substring(0, 5)}.` };
+          }
+        }
       }
     }
+    return { isValid: true, message: "" };
+  };
+
+  const loadDateAvailability = (dateVal: string): boolean => {
+    if (!dateVal) {
+      setAvailableSlots([]);
+      setReservedSlots([]);
+      return true;
+    }
+    const chosenDateStr = dateVal.split("T")[0];
+    if (place?.availabilities) {
+      const slotsForDate = place.availabilities.filter(slot => {
+        const slotDateStr = slot.date.split("T")[0];
+        return slotDateStr === chosenDateStr;
+      });
+
+      if (slotsForDate.length === 0) {
+        toast.error("This venue has no published availability for this date. Please select another date.");
+        setAvailableSlots([]);
+        setReservedSlots([]);
+        return false;
+      }
+
+      const availables = slotsForDate.filter(s => s.status.toLowerCase() === "available");
+      if (availables.length === 0) {
+        toast.error("This date is fully booked or blocked by the host. Please select another date.");
+        setAvailableSlots([]);
+        setReservedSlots([]);
+        return false;
+      }
+
+      setAvailableSlots(availables);
+      setReservedSlots(slotsForDate.filter(s => s.status.toLowerCase() === "booked" || s.status.toLowerCase() === "blocked"));
+    }
+    return true;
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    if (name === "requestedDate") {
+      const isOK = loadDateAvailability(value);
+      if (!isOK) {
+        setFormData(prev => ({ ...prev, requestedDate: "", startTime: "", endTime: "" }));
+        return;
+      }
+    }
+
+    if (name === "startTime" || name === "endTime" || name === "requestedDate") {
+      const dateToCheck = name === "requestedDate" ? value : formData.requestedDate;
+      const startToCheck = name === "startTime" ? value : formData.startTime;
+      const endToCheck = name === "endTime" ? value : formData.endTime;
+
+      if (startToCheck && endToCheck) {
+        const startMin = parseTimeToMinutes(startToCheck);
+        const endMin = parseTimeToMinutes(endToCheck);
+        if (startMin !== null && endMin !== null && startMin >= endMin) {
+          toast.error("Start time must be before end time.");
+          setFormData(prev => ({ ...prev, [name]: "" }));
+          return;
+        }
+      }
+
+      if (dateToCheck && startToCheck && endToCheck) {
+        const check = validateBookingTimes(dateToCheck, startToCheck, endToCheck);
+        if (!check.isValid) {
+          toast.error(check.message);
+          setFormData(prev => ({ ...prev, startTime: "", endTime: "" }));
+          return;
+        }
+      }
+    }
+
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSelectEvent = (eventId: string) => {
-    setFormData(prev => ({ ...prev, eventId }));
+    const selectedEvent = events.find(e => String(e.eventId) === String(eventId));
+    let nextDate = "";
+    let nextStart = "";
+    let nextEnd = "";
+    
+    if (selectedEvent && selectedEvent.startDate) {
+      const startStr = selectedEvent.startDate.endsWith("Z") ? selectedEvent.startDate : selectedEvent.startDate + "Z";
+      const startDate = new Date(startStr);
+      if (!isNaN(startDate.getTime())) {
+        const year = startDate.getFullYear();
+        const month = String(startDate.getMonth() + 1).padStart(2, '0');
+        const day = String(startDate.getDate()).padStart(2, '0');
+        nextDate = `${year}-${month}-${day}`;
+        
+        const hours = String(startDate.getHours()).padStart(2, '0');
+        const minutes = String(startDate.getMinutes()).padStart(2, '0');
+        nextStart = `${hours}:${minutes}`;
+      }
+
+      if (selectedEvent.endDate) {
+        const endStr = selectedEvent.endDate.endsWith("Z") ? selectedEvent.endDate : selectedEvent.endDate + "Z";
+        const endDate = new Date(endStr);
+        if (!isNaN(endDate.getTime())) {
+          const endHours = String(endDate.getHours()).padStart(2, '0');
+          const endMinutes = String(endDate.getMinutes()).padStart(2, '0');
+          nextEnd = `${endHours}:${endMinutes}`;
+        }
+      }
+    }
+
+    if (nextDate) {
+      const isOK = loadDateAvailability(nextDate);
+      if (!isOK) {
+        nextDate = "";
+        nextStart = "";
+        nextEnd = "";
+      } else {
+        if (nextStart && nextEnd) {
+          const check = validateBookingTimes(nextDate, nextStart, nextEnd);
+          if (!check.isValid) {
+            toast.error(`Event hours conflict: ${check.message}`);
+            nextStart = "";
+            nextEnd = "";
+          }
+        }
+      }
+    }
+    
+    setFormData(prev => ({ 
+      ...prev, 
+      eventId,
+      requestedDate: nextDate,
+      startTime: nextStart,
+      endTime: nextEnd
+    }));
     setIsDropdownOpen(false);
   };
 
@@ -88,16 +269,15 @@ export default function BookingRequestFormPage() {
       return;
     }
 
-    if (formData.requestedDate && place?.availabilities && place.availabilities.length > 0) {
-      const chosenDateStr = new Date(formData.requestedDate).toISOString().split("T")[0];
-      const conflictSlot = place.availabilities.find(slot => {
-        const slotDateStr = new Date(slot.date).toISOString().split("T")[0];
-        return slotDateStr === chosenDateStr && (slot.status.toLowerCase() === "blocked" || slot.status.toLowerCase() === "booked");
-      });
-      if (conflictSlot) {
-        toast.error(`Submission blocked: This date is marked as ${conflictSlot.status.toUpperCase()} for this venue.`);
-        return;
-      }
+    if (!formData.requestedDate) {
+      toast.error("Please select a date");
+      return;
+    }
+
+    const check = validateBookingTimes(formData.requestedDate, formData.startTime, formData.endTime);
+    if (!check.isValid) {
+      toast.error(`Submission blocked: ${check.message}`);
+      return;
     }
 
     setIsSubmitting(true);
@@ -108,7 +288,7 @@ export default function BookingRequestFormPage() {
 
       const dto = {
         organizerId: organizerId,
-        requestedDate: new Date(formData.requestedDate).toISOString(),
+        requestedDate: `${formData.requestedDate}T00:00:00.000Z`,
         startTime: formData.startTime ? formData.startTime + ":00" : undefined,
         endTime: formData.endTime ? formData.endTime + ":00" : undefined
       };
@@ -236,10 +416,21 @@ export default function BookingRequestFormPage() {
                                           : "hover:bg-slate-50 border border-transparent"
                                       }`}
                                     >
-                                      <span className={`font-medium ${String(formData.eventId) === String(event.eventId) ? "text-violet-700 font-bold" : "text-slate-700"}`}>
-                                        {event.title}
-                                      </span>
-                                      <span className={`text-[11px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-md ${event.status === 0 ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"}`}>
+                                      <div className="flex flex-col min-w-0">
+                                        <span className={`font-medium truncate ${String(formData.eventId) === String(event.eventId) ? "text-violet-700 font-bold" : "text-slate-700"}`}>
+                                          {event.title}
+                                        </span>
+                                        {event.startDate && (
+                                          <span className="text-[11px] text-slate-400 font-normal mt-0.5">
+                                            {(() => {
+                                              const dateStr = event.startDate.endsWith("Z") ? event.startDate : event.startDate + "Z";
+                                              const d = new Date(dateStr);
+                                              return `${d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} at ${d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}`;
+                                            })()}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <span className={`text-[11px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-md shrink-0 ${event.status === 0 ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"}`}>
                                         {event.status === 0 ? "Pending" : "Active"}
                                       </span>
                                     </div>
@@ -278,6 +469,36 @@ export default function BookingRequestFormPage() {
                         onChange={handleChange}
                         className="w-full px-5 py-4 bg-white border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 font-bold text-slate-700 transition-all shadow-sm"
                       />
+                      {availableSlots.length > 0 && (
+                        <div className="mt-3 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
+                          <p className="text-sm font-bold text-emerald-800 mb-2">Available Hours for this date:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {availableSlots.map((slot, index) => {
+                              const isFullDay = !slot.startTime && !slot.endTime;
+                              return (
+                                <span key={index} className="px-3 py-1 bg-emerald-100 border border-emerald-250 text-emerald-800 font-semibold rounded-lg text-xs">
+                                  {isFullDay ? "Whole Day" : `${slot.startTime.substring(0, 5)} - ${slot.endTime.substring(0, 5)}`}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      {reservedSlots.length > 0 && (
+                        <div className="mt-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+                          <p className="text-sm font-bold text-amber-800 mb-2">Reserved/Unavailable Times for this date:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {reservedSlots.map((slot, index) => {
+                              const isFullDay = !slot.startTime && !slot.endTime;
+                              return (
+                                <span key={index} className="px-3 py-1 bg-amber-100 border border-amber-300 text-amber-800 font-semibold rounded-lg text-xs">
+                                  {isFullDay ? "Whole Day" : `${slot.startTime.substring(0, 5)} - ${slot.endTime.substring(0, 5)}`} ({slot.status})
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div>

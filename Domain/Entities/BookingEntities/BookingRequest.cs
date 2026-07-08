@@ -1,4 +1,5 @@
 using Domain.Common.Implementation;
+using Domain.Entities.EventEntities;
 using Domain.Entities.OrganizerEntities;
 using Domain.Entities.PlaceEntities;
 using Domain.ENUMs;
@@ -20,7 +21,7 @@ namespace Domain.Entities.BookingEntities
         // Navigation properties
 
         public Organizer Organizer { get; set; }
-        // public Event Event { get; set; } // to be created
+        public Event Event { get; set; }
         public Place Place { get; set; }
 
     }

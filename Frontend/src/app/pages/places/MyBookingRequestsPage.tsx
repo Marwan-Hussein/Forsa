@@ -304,6 +304,24 @@ export default function MyBookingRequestsPage() {
                             <Trash2 className="w-5 h-5" />
                           </button>
                         )}
+                        {(status === "approved" || isPaid) && (
+                          <button 
+                            onClick={async () => {
+                              if (window.confirm("Are you sure you want to release this venue booking request? This will make the date available to others again.")) {
+                                try {
+                                  await organizerApi.releasePlaceBookingSlot(request.requestId);
+                                  toast.success("Venue slot released successfully!");
+                                  fetchRequests();
+                                } catch (err: any) {
+                                  toast.error("Failed to release venue: " + err.message);
+                                }
+                              }
+                            }}
+                            className="flex items-center gap-2 px-3 py-2 border border-rose-200 text-rose-600 rounded-xl hover:bg-rose-50 transition-colors font-['Inter:Medium',sans-serif] text-sm bg-white"
+                          >
+                            Release Venue
+                          </button>
+                        )}
                         {status === "approved" && !isPaid && (
                           <button 
                             onClick={async () => {

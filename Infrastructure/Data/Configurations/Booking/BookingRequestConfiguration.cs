@@ -22,6 +22,12 @@ namespace Infrastructure.Data.Configurations
                    .WithMany()
                    .HasForeignKey(b => b.PlaceId)
                    .OnDelete(DeleteBehavior.NoAction);
+
+            // Event is related
+            builder.HasOne(b => b.Event)
+                   .WithMany()
+                   .HasForeignKey(b => b.EventId)
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

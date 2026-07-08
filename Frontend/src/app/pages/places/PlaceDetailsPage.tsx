@@ -53,8 +53,15 @@ export default function PlaceDetailsPage() {
               const requests = await organizerApi.getOrganizerBookingRequests(organizerId);
               const requestsForPlace = requests.filter((r: any) => String(r.placeId) === String(placeId));
               if (requestsForPlace.length > 0) {
-                 const activeRequest = requestsForPlace.find((r: any) => r.status === "Pending" || r.status === "Accepted");
-                 setExistingRequest(activeRequest || requestsForPlace[0]);
+                 const activeRequest = requestsForPlace.find((r: any) => {
+                   const reqStatus = String(r.status || "").toLowerCase();
+                   const evStatus = String(r.eventStatus || "").toLowerCase();
+                   const isRequestActive = reqStatus === "pending" || reqStatus === "accepted";
+                   const isEventConcluded = evStatus === "completed" || evStatus === "7" || evStatus === "cancelled" || evStatus === "6" || (r.eventEndDate && new Date(r.eventEndDate) < new Date());
+                   const isRequestCancelled = reqStatus === "cancelled" || reqStatus === "3";
+                   return isRequestActive && !isEventConcluded && !isRequestCancelled;
+                 });
+                 setExistingRequest(activeRequest || null);
               }
             } catch (err) {
               console.error("Failed to fetch requests", err);

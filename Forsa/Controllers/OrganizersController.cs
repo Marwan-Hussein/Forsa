@@ -414,5 +414,24 @@ namespace Forsa.Controllers
                 return StatusCode(500, new { message = $"An error occurred while submitting feedback: {ex.Message}" });
             }
         }
+
+        // POST: api/organizers/bookings/{requestId}/release
+        [HttpPost("bookings/{requestId:int}/release")]
+        public async Task<IActionResult> ReleasePlaceBookingSlot(int requestId)
+        {
+            try
+            {
+                await _organizerService.ReleaseBookingRequestVenueAsync(requestId);
+                return Ok(new { message = "Venue slot released successfully and returned to Available." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred while releasing venue slot: {ex.Message}" });
+            }
+        }
     }
 }

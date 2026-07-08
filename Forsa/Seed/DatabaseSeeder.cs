@@ -255,7 +255,7 @@ namespace Forsa.Seed
                         Description = "The Greek Campus is Cairo's first science and technology park, hosting startups, SMEs, and educational tech events.",
                         HourlyPrice = 120.00m,
                         DailyPrice = 900.00m,
-                        Status = PlaceStatus.Available,
+                        Status = PlaceStatus.Approved,
                         FacilityName = FacilityName.WiFi,
                         IsLocked = false,
                         OwnerId = ownerUser.Id,
@@ -272,7 +272,7 @@ namespace Forsa.Seed
                         Description = "Ewart Memorial Hall is a historic, premium hall at the American University in Cairo (AUC), downtown.",
                         HourlyPrice = 250.00m,
                         DailyPrice = 2000.00m,
-                        Status = PlaceStatus.Available,
+                        Status = PlaceStatus.Approved,
                         FacilityName = FacilityName.WiFi,
                         IsLocked = false,
                         OwnerId = ownerUser.Id,
@@ -289,7 +289,7 @@ namespace Forsa.Seed
                         Description = "A creative hub supported by the Ministry of Communications and IT (MCIT) for learning and hacking.",
                         HourlyPrice = 40.00m,
                         DailyPrice = 300.00m,
-                        Status = PlaceStatus.Available,
+                        Status = PlaceStatus.Approved,
                         FacilityName = FacilityName.WiFi,
                         IsLocked = false,
                         OwnerId = ownerUser.Id,
@@ -306,7 +306,7 @@ namespace Forsa.Seed
                         Description = "World-class business park conference facility in the heart of Egypt's tech district.",
                         HourlyPrice = 350.00m,
                         DailyPrice = 2500.00m,
-                        Status = PlaceStatus.Available,
+                        Status = PlaceStatus.Approved,
                         FacilityName = FacilityName.WiFi,
                         IsLocked = false,
                         OwnerId = ownerUser.Id,
@@ -322,6 +322,44 @@ namespace Forsa.Seed
             else
             {
                 places = await context.Set<Place>().ToListAsync();
+            }
+
+            // Seed PlaceMedias
+            if (!await context.Set<PlaceMedia>().AnyAsync() && places.Any())
+            {
+                var placeMedias = new List<PlaceMedia>();
+
+                // Greek Campus (Place 1)
+                placeMedias.AddRange(new[]
+                {
+                    new PlaceMedia { PlaceId = places[0].Id, MediaURL = "/uploads/places/1/3c5dfd05-3614-4ca3-8917-44e2bf61a011.jpg", MediaType = MediaType.Image, CreatedAt = DateTime.UtcNow },
+                    new PlaceMedia { PlaceId = places[0].Id, MediaURL = "/uploads/places/1/78cf142f-cf44-4aef-8d00-ce2af0037fb0.jfif", MediaType = MediaType.Image, CreatedAt = DateTime.UtcNow },
+                    new PlaceMedia { PlaceId = places[0].Id, MediaURL = "/uploads/places/1/93ddf056-5ceb-4759-b410-e1f8c4d7ab0e.jfif", MediaType = MediaType.Image, CreatedAt = DateTime.UtcNow },
+                    new PlaceMedia { PlaceId = places[0].Id, MediaURL = "/uploads/places/1/b9d301c8-962c-45ca-a183-3328cdafc5c4.jpg", MediaType = MediaType.Image, CreatedAt = DateTime.UtcNow },
+                    new PlaceMedia { PlaceId = places[0].Id, MediaURL = "/uploads/places/1/d289b316-61c1-49bc-8d2b-5c4abeac761b.jpg", MediaType = MediaType.Image, CreatedAt = DateTime.UtcNow },
+                });
+
+                // AUC (Place 2)
+                placeMedias.AddRange(new[]
+                {
+                    new PlaceMedia { PlaceId = places[1].Id, MediaURL = "/uploads/places/2/32c395e8-371d-4544-8346-0b432215a391.jpg", MediaType = MediaType.Image, CreatedAt = DateTime.UtcNow },
+                    new PlaceMedia { PlaceId = places[1].Id, MediaURL = "/uploads/places/2/3da4f6e3-120c-4a42-88d9-1b5e68935fae.jpg", MediaType = MediaType.Image, CreatedAt = DateTime.UtcNow },
+                    new PlaceMedia { PlaceId = places[1].Id, MediaURL = "/uploads/places/2/59765e5a-4574-4ac8-ae7e-ed8c0eb760ec.jpg", MediaType = MediaType.Image, CreatedAt = DateTime.UtcNow },
+                    new PlaceMedia { PlaceId = places[1].Id, MediaURL = "/uploads/places/2/8a127b63-0fb1-46e6-9a32-1f91e8162eaa.jpg", MediaType = MediaType.Image, CreatedAt = DateTime.UtcNow },
+                    new PlaceMedia { PlaceId = places[1].Id, MediaURL = "/uploads/places/2/eaa85226-ad65-4f2a-81e1-eb21d9f344a7.jfif", MediaType = MediaType.Image, CreatedAt = DateTime.UtcNow },
+                });
+
+                // CREATIVA (Place 3)
+                placeMedias.AddRange(new[]
+                {
+                    new PlaceMedia { PlaceId = places[2].Id, MediaURL = "/uploads/places/3/2a6ef81c-17b5-44c5-9329-f1ea81933132.jfif", MediaType = MediaType.Image, CreatedAt = DateTime.UtcNow },
+                    new PlaceMedia { PlaceId = places[2].Id, MediaURL = "/uploads/places/3/2ca9ffb7-68c2-46e8-bb89-ef1d87b4c508.jfif", MediaType = MediaType.Image, CreatedAt = DateTime.UtcNow },
+                    new PlaceMedia { PlaceId = places[2].Id, MediaURL = "/uploads/places/3/caf284f7-5c3e-4ebe-ba1b-6f0a6c7a80c8.jpg", MediaType = MediaType.Image, CreatedAt = DateTime.UtcNow },
+                    new PlaceMedia { PlaceId = places[2].Id, MediaURL = "/uploads/places/3/efc10705-1784-4f3a-bd0f-c0db3077e41f.jpg", MediaType = MediaType.Image, CreatedAt = DateTime.UtcNow },
+                });
+
+                await context.Set<PlaceMedia>().AddRangeAsync(placeMedias);
+                await context.SaveChangesAsync();
             }
 
             // 6. Seed Events (organized by Organizer, hosted at Place)
@@ -415,6 +453,51 @@ namespace Forsa.Seed
             else
             {
                 events = await context.Set<Event>().ToListAsync();
+            }
+
+            // Seed EventMedias
+            if (!await context.Set<EventMedia>().AnyAsync() && events.Any())
+            {
+                var eventMedias = new List<EventMedia>();
+
+                // Event 1: Techshift Summit Cairo 2026
+                eventMedias.Add(new EventMedia
+                {
+                    EventId = events[0].Id,
+                    MediaUrl = "/uploads/events/1/e94cdcef-93a3-4908-8046-48997a0c53f6.jfif",
+                    MediaType = "Image",
+                    CreatedAt = DateTime.UtcNow
+                });
+
+                // Event 2: Wuzzuf Annual Tech Career Fair 2026
+                eventMedias.Add(new EventMedia
+                {
+                    EventId = events[1].Id,
+                    MediaUrl = "/uploads/events/2/4f995008-bcaf-4365-a048-b102ac2f11ee.jpg",
+                    MediaType = "Image",
+                    CreatedAt = DateTime.UtcNow
+                });
+
+                // Event 3: ITI AI & Web Development Hackathon
+                eventMedias.Add(new EventMedia
+                {
+                    EventId = events[2].Id,
+                    MediaUrl = "/uploads/events/3/7285a4f2-5a69-41ed-b533-464a4734a558.png",
+                    MediaType = "Image",
+                    CreatedAt = DateTime.UtcNow
+                });
+
+                // Event 4: ALX Software Engineering Graduation & Pitch Day
+                eventMedias.Add(new EventMedia
+                {
+                    EventId = events[3].Id,
+                    MediaUrl = "/uploads/events/4/dd6298c2-d488-44b0-a8c0-7edb7d6e3e80.png",
+                    MediaType = "Image",
+                    CreatedAt = DateTime.UtcNow
+                });
+
+                await context.Set<EventMedia>().AddRangeAsync(eventMedias);
+                await context.SaveChangesAsync();
             }
 
             // 7. Seed Bookings (by Attendee for Event)

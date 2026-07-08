@@ -36,6 +36,7 @@ namespace Application.Services.OrganizerServices
         private readonly IQueryableRepository<PaymentTransaction> _transactionRepository;
         private readonly IQueryableRepository<WalletBalance> _walletRepo;
         private readonly IFeedbackRepository _feedbackRepo;
+        private readonly IQueryableRepository<Domain.Entities.PlaceEntities.PlaceAvailability> _availabilityRepository;
  
         public OrganizerService(
             IOrganizerRepository organizerRepo,
@@ -48,7 +49,8 @@ namespace Application.Services.OrganizerServices
             IGoogleCalendarSyncService calendarSync,
             IQueryableRepository<PaymentTransaction> transactionRepository,
             IQueryableRepository<WalletBalance> walletRepo,
-            IFeedbackRepository feedbackRepo)
+            IFeedbackRepository feedbackRepo,
+            IQueryableRepository<Domain.Entities.PlaceEntities.PlaceAvailability> availabilityRepository)
         {
             _organizerRepo = organizerRepo;
             _eventRepository = eventRepository;
@@ -61,6 +63,7 @@ namespace Application.Services.OrganizerServices
             _transactionRepository = transactionRepository;
             _walletRepo = walletRepo;
             _feedbackRepo = feedbackRepo;
+            _availabilityRepository = availabilityRepository;
         }
 
         public async Task<List<Organizer>> FilterOrganizers(OrganizerSearchParameters searchParameter)
@@ -208,6 +211,27 @@ namespace Application.Services.OrganizerServices
             ev.IsDeleted = true;
             _eventRepository.Update(ev);
 
+            // Revert place availability slot back to Available
+            var request = await _bookingRequestRepository.GetQueryable()
+                .FirstOrDefaultAsync(r => r.EventId == eventId && r.Status == RequestStatus.Accepted && !r.IsDeleted);
+            if (request != null)
+            {
+                request.Status = RequestStatus.Cancelled;
+                _bookingRequestRepository.Update(request);
+
+                var slot = await _availabilityRepository.GetQueryable()
+                    .FirstOrDefaultAsync(a => a.PlaceId == request.PlaceId 
+                                              && a.Date.Date == request.RequestedDate.Date 
+                                              && a.Status == PlaceStatus.Booked
+                                              && !a.IsDeleted);
+                if (slot != null)
+                {
+                    slot.Status = PlaceStatus.Available;
+                    slot.LastModifiedAt = DateTime.UtcNow;
+                    _availabilityRepository.Update(slot);
+                }
+            }
+
             // Void current attendee bookings and notify
             if (ev.Bookings != null)
             {
@@ -325,6 +349,7 @@ namespace Application.Services.OrganizerServices
             var requests = await _bookingRequestRepository.GetQueryable()
                 .Include(r => r.Organizer)
                 .Include(r => r.Place)
+                .Include(r => r.Event)
                 .Where(r => r.OrganizerId == organizerId && !r.IsDeleted)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
@@ -606,6 +631,48 @@ namespace Application.Services.OrganizerServices
             };
 
             await _feedbackRepo.AddAsync(feedback);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task ReleaseBookingRequestVenueAsync(int requestId)
+        {
+            var request = await _bookingRequestRepository.GetQueryable()
+                .Include(r => r.Place)
+                .FirstOrDefaultAsync(r => r.Id == requestId && !r.IsDeleted);
+
+            if (request == null)
+                throw new KeyNotFoundException("Booking request not found.");
+
+            // Find the booked availability slot for this place on this date
+            var slot = await _availabilityRepository.GetQueryable()
+                .FirstOrDefaultAsync(a => a.PlaceId == request.PlaceId 
+                                          && a.Date.Date == request.RequestedDate.Date 
+                                          && a.Status == PlaceStatus.Booked
+                                          && !a.IsDeleted);
+
+            if (slot != null)
+            {
+                slot.Status = PlaceStatus.Available;
+                slot.LastModifiedAt = DateTime.UtcNow;
+                _availabilityRepository.Update(slot);
+            }
+            else
+            {
+                // In case the slot doesn't exist, create an Available slot
+                var newSlot = new Domain.Entities.PlaceEntities.PlaceAvailability
+                {
+                    PlaceId = request.PlaceId,
+                    Date = request.RequestedDate.Date,
+                    Status = PlaceStatus.Available,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _availabilityRepository.AddAsync(newSlot);
+            }
+
+            request.Status = RequestStatus.Cancelled;
+            request.LastModifiedAt = DateTime.UtcNow;
+            _bookingRequestRepository.Update(request);
+
             await _unitOfWork.SaveChangesAsync();
         }
     }

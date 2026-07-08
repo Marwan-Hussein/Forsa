@@ -18,13 +18,23 @@ namespace Application.Services.EventServices
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFeedbackRepository feedbackRepo;
+        private readonly IQueryableRepository<Domain.Entities.BookingEntities.BookingRequest> _bookingRequestRepo;
+        private readonly IQueryableRepository<Domain.Entities.PlaceEntities.PlaceAvailability> _availabilityRepo;
 
-        public EventService(IEventRepository repo, IMapper mapper, IUnitOfWork unitOfWork, IFeedbackRepository feedbackRepo)
+        public EventService(
+            IEventRepository repo, 
+            IMapper mapper, 
+            IUnitOfWork unitOfWork, 
+            IFeedbackRepository feedbackRepo,
+            IQueryableRepository<Domain.Entities.BookingEntities.BookingRequest> bookingRequestRepo,
+            IQueryableRepository<Domain.Entities.PlaceEntities.PlaceAvailability> availabilityRepo)
         {
             _repo = repo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             this.feedbackRepo = feedbackRepo;
+            _bookingRequestRepo = bookingRequestRepo;
+            _availabilityRepo = availabilityRepo;
         }
 
         public async Task<List<EventDetailsDto>> GetAllEvents()
@@ -117,6 +127,26 @@ namespace Application.Services.EventServices
                 eventEntity.RemainingTickets = 0; // Locks further bookings
                 await CalculateAttendeeRatings(eventEntity); // Update attendee ratings based on bookings
 
+                // Revert booking requested place slot back to Available
+                if (eventEntity.PlaceId.HasValue)
+                {
+                    var request = await _bookingRequestRepo.GetQueryable()
+                        .FirstOrDefaultAsync(r => r.EventId == eventEntity.Id && r.Status == RequestStatus.Accepted && !r.IsDeleted);
+                    if (request != null)
+                    {
+                        var slot = await _availabilityRepo.GetQueryable()
+                            .FirstOrDefaultAsync(a => a.PlaceId == request.PlaceId 
+                                                      && a.Date.Date == request.RequestedDate.Date 
+                                                      && a.Status == PlaceStatus.Booked
+                                                      && !a.IsDeleted);
+                        if (slot != null)
+                        {
+                            slot.Status = PlaceStatus.Available;
+                            slot.LastModifiedAt = DateTime.UtcNow;
+                            _availabilityRepo.Update(slot);
+                        }
+                    }
+                }
 
                 _repo.Update(eventEntity);
                 await _unitOfWork.SaveChangesAsync();
