@@ -7,6 +7,7 @@ import { attendeeApi } from "../../api/attendeeApi";
 import { AttendeeProfileDto, UpdateAttendeeProfileDto } from "../../types";
 import { getUserIdFromToken } from "../../api/api";
 import { motion } from "motion/react";
+import GoogleCalendarConnect from "../../components/GoogleCalendarConnect";
 
 type ProfileFormData = UpdateAttendeeProfileDto & { userName: string; email: string };
 
@@ -286,11 +287,10 @@ export default function ProfilePage() {
       </div>
 
       {/* Content pulled up over hero */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-14">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 lg:-mt-14 pt-6 lg:pt-8 relative z-10">
         
         {/* Header */}
-        <div className="mb-6">
-        </div>
+        <div className="mb-10" />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
@@ -368,6 +368,22 @@ export default function ProfilePage() {
                 <ArrowLeft className="w-4 h-4 text-slate-300 rotate-180" />
               </button>
             </div>
+
+            {/* Third-party integrations */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 }}
+              className="space-y-3 mb-10"
+            >
+              <div className="px-1 mt-10">
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                  Third-party integrations
+                </p>
+                <h2 className="mt-1 text-lg font-bold text-slate-800">Connected services</h2>
+              </div>
+              <GoogleCalendarConnect />
+            </motion.div>
           </div>
 
           {/* Right Column: Form */}

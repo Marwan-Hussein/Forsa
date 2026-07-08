@@ -1,10 +1,13 @@
 
 using Application;
+using Application.Core.Interfaces;
+using Forsa.Hubs;
 using Application.Core.Interfaces.Auth.OTP;
 using Application.Services.Auth.OTP;
 using Application.Services.LLMServices;
 using Domain.Entities;
 using Domain.Interfaces.LLMInterfaces;
+using Forsa.Services;
 using Forsa.Seed;
 using Infrastructure;
 using Infrastructure.Data.DbContexts;
@@ -58,7 +61,8 @@ namespace Forsa
                 {
                     policy.WithOrigins("http://localhost:5173") // Vite dev server port
                           .AllowAnyHeader()
-                          .AllowAnyMethod();
+                          .AllowAnyMethod()
+                          .AllowCredentials();
                 });
             });
 
@@ -82,6 +86,8 @@ namespace Forsa
 
             builder.Services.AddApplicationServices(builder.Configuration);
             builder.Services.AddInfrastructureServices(builder.Configuration);
+            builder.Services.AddSignalR();
+            builder.Services.AddScoped<INotifierService, SignalRNotifierService>();
 
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
@@ -158,6 +164,7 @@ namespace Forsa
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.MapHub<NotificationsHub>("/hubs/notifications");
             app.MapControllers();
             app.MapFallbackToFile("index.html");
             app.Run();

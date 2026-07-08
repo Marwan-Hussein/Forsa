@@ -8,6 +8,7 @@ import { EASE_IN_OUT } from "../lib/motion";
 import { attendeeApi } from "../api/attendeeApi";
 import { getUserIdFromToken } from "../api/api";
 import { getDashboardPath, getUserRole } from "../utils/roleRouting";
+import { NotificationBell } from "./NotificationBell";
 
 export function Navigation() {
   const location = useLocation();
@@ -116,60 +117,56 @@ export function Navigation() {
           </div>
 
           <div className="hidden md:flex items-center gap-6">
+            {isLoggedIn && <NotificationBell />}
             {isLoggedIn ? (
-              <>
-
-
-                <div className="relative" ref={userMenuRef}>
-                  <button 
-                    onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full transition-all ${
-                      shouldElevate ? 'hover:bg-slate-100 border border-transparent' : 'bg-white/10 hover:bg-white/20 border border-white/20'
-                    }`}
-                  >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-['Inter:Bold',sans-serif] text-sm overflow-hidden ${
-
-                      shouldElevate ? 'bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-hover)] text-white' : 'bg-white text-[var(--brand-navy)]'
-                    }`}>
-                      {localStorage.getItem("forsa_profile_picture") ? (
-                        <img src={`${import.meta.env.VITE_API_BASE_URL || ""}${localStorage.getItem("forsa_profile_picture")}`} alt="Profile" className="w-full h-full object-cover" />
-                      ) : (
-                        userName.charAt(0)
-                      )}
-                    </div>
-                    <span className={`text-sm font-['Inter:Medium',sans-serif] ${shouldElevate ? 'text-slate-700' : 'text-white'}`}>
-                      {userName}
-                    </span>
-                  </button>
-
-                  <AnimatePresence>
-                    {userMenuOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
-                      >
-                        <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-                          <p className="font-['Inter:Bold',sans-serif] text-slate-800">{userName}</p>
-                          <p className="text-xs font-['Inter:Medium',sans-serif] text-slate-500 truncate">{userEmail}</p>
-                        </div>
-                        <div className="p-2">
-                          <Link to={dashboardPath} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-[var(--brand-navy)] transition-colors">
-                            <LayoutDashboard className="w-4 h-4" /> Dashboard
-                          </Link>
-                        </div>
-                        <div className="p-2 border-t border-slate-100">
-                          <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-rose-600 hover:bg-rose-50 transition-colors">
-                            <LogOut className="w-4 h-4" /> Sign Out
-                          </button>
-                        </div>
-                      </motion.div>
+              <div className="relative">
+                <button 
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full transition-all ${
+                    shouldElevate ? 'hover:bg-slate-100 border border-transparent' : 'bg-white/10 hover:bg-white/20 border border-white/20'
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-['Inter:Bold',sans-serif] text-sm overflow-hidden ${
+                    shouldElevate ? 'bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-hover)] text-white' : 'bg-white text-[var(--brand-navy)]'
+                  }`}>
+                    {localStorage.getItem("forsa_profile_picture") ? (
+                      <img src={`${import.meta.env.VITE_API_BASE_URL || ""}${localStorage.getItem("forsa_profile_picture")}`} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      userName.charAt(0)
                     )}
-                  </AnimatePresence>
-                </div>
-              </>
+                  </div>
+                  <span className={`text-sm font-['Inter:Medium',sans-serif] ${shouldElevate ? 'text-slate-700' : 'text-white'}`}>
+                    {userName}
+                  </span>
+                </button>
+
+                <AnimatePresence>
+                  {userMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 top-full z-50 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
+                    >
+                      <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                        <p className="font-['Inter:Bold',sans-serif] text-slate-800">{userName}</p>
+                        <p className="text-xs font-['Inter:Medium',sans-serif] text-slate-500 truncate">{userEmail}</p>
+                      </div>
+                      <div className="p-2">
+                        <Link to={dashboardPath} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-[var(--brand-navy)] transition-colors">
+                          <LayoutDashboard className="w-4 h-4" /> Dashboard
+                        </Link>
+                      </div>
+                      <div className="p-2 border-t border-slate-100">
+                        <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-rose-600 hover:bg-rose-50 transition-colors">
+                          <LogOut className="w-4 h-4" /> Sign Out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             ) : (
               <Link
                 to="/login"

@@ -14,7 +14,6 @@ import {
   endOfWeek,
 } from "date-fns";
 import { motion, AnimatePresence } from "motion/react";
-import GoogleCalendarConnect from "../../components/GoogleCalendarConnect";
 interface CalendarEvent {
   id: string;
   title: string;
@@ -283,7 +282,6 @@ export default function CalendarPage() {
           </div>
         </div>
       </div>
-      <GoogleCalendarConnect />
     </div>
   );
 }

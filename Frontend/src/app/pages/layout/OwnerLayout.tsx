@@ -16,6 +16,7 @@ import { motion } from "motion/react";
 import { getUserIdFromToken } from "../../api/api";
 import { ownerApi } from "../../api/ownerApi";
 import { Toaster } from "sonner";
+import { NotificationBell } from "../../components/NotificationBell";
 
 export default function OwnerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -154,6 +155,7 @@ export default function OwnerLayout() {
           </div>
           
           <div className="flex items-center gap-3 sm:gap-5">
+            <NotificationBell />
             <Link to="/owner/profile" className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold border-2 border-white shadow-md ml-2 cursor-pointer hover:scale-105 transition-transform overflow-hidden">
               {profilePictureUrl ? (
                 <img src={`${import.meta.env.VITE_API_BASE_URL || ""}${profilePictureUrl}`} alt="Profile" className="w-full h-full object-cover" />
