@@ -15,8 +15,7 @@ function Calendar({
   ...props
 }: React.ComponentProps<typeof DayPicker>) {
   return (
-    <>
-      <DayPicker
+    <DayPicker
       showOutsideDays={showOutsideDays}
       numberOfMonths={numberOfMonths}
       className={cn("p-3", className)}
@@ -71,8 +70,7 @@ function Calendar({
         ),
       }}
       {...props}
-      />
-    </>
+    />
   );
 }
 

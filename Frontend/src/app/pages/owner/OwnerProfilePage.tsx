@@ -7,6 +7,7 @@ import { ownerApi } from "../../api/ownerApi";
 
 import { getUserIdFromToken } from "../../api/api";
 import { motion } from "motion/react";
+import GoogleCalendarConnect from "../../components/GoogleCalendarConnect";
 
 const emptyFormData: any = {
   fullName: "",
@@ -265,25 +266,26 @@ export default function OwnerProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="bg-[#F8FAFC]">
       {/* Cover Hero */}
-      <div className="bg-gradient-to-br from-[#0B1929] via-[#1E3D61] to-[#0F2847] pt-24 pb-24 px-4 sm:px-6 lg:px-8">
+      <div className="bg-gradient-to-br from-[#0B1929] via-[#1E3D61] to-[#0F2847] pt-8 pb-16 px-4 sm:px-6 lg:px-8 rounded-3xl">
         <div className="max-w-5xl mx-auto">
-          <Link to="/owner" className="inline-flex items-center gap-2 text-blue-200 hover:text-white text-sm font-medium mb-6 group transition-colors">
+          <Link to="/owner" className="inline-flex items-center gap-2 text-blue-200 hover:text-white text-sm font-medium mb-4 group transition-colors">
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Dashboard
           </Link>
-          <div className="flex items-end justify-between">
+          <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">My Profile</h1>
               <p className="text-blue-100/70 mt-1">Manage your account and preferences</p>
             </div>
+            <GoogleCalendarConnect variant="button" />
           </div>
         </div>
       </div>
 
-      {/* Content pulled up over hero */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-14">
+      {/* Content wrapper with margin below Cover Hero */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         
         {/* Header */}
         <div className="mb-6">

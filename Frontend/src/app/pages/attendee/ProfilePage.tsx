@@ -279,9 +279,12 @@ export default function ProfilePage() {
               <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">My Profile</h1>
               <p className="text-blue-100/70 mt-1">Manage your account and preferences</p>
             </div>
-            <Link to="/interests" className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all">
-              <Bell className="w-4 h-4" /> Manage Interests
-            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <GoogleCalendarConnect variant="button" />
+              <Link to="/interests" className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all">
+                <Bell className="w-4 h-4" /> Manage Interests
+              </Link>
+            </div>
           </div>
         </div>
       </div>

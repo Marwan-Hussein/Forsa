@@ -16,11 +16,18 @@ interface GoogleCalendarConnectProps {
    * If omitted, current browser location is used.
    */
   returnUrl?: string;
+
+  /**
+   * The styling variant of the calendar connection control.
+   * Defaults to "card".
+   */
+  variant?: "card" | "button";
 }
 
 const GoogleCalendarConnect: React.FC<GoogleCalendarConnectProps> = ({
   endpoint = "/api/calendar/connect",
   returnUrl,
+  variant = "card",
 }) => {
   const [loading, setLoading] = useState(false);
   const [showConnectButton, setShowConnectButton] = useState(false);
@@ -73,6 +80,46 @@ const GoogleCalendarConnect: React.FC<GoogleCalendarConnectProps> = ({
   };
 
   const isConnected = statusLoaded && !statusError && !showConnectButton;
+
+  if (variant === "button") {
+    if (!statusLoaded) {
+      return (
+        <button
+          disabled
+          type="button"
+          className="flex items-center gap-2 bg-white/10 border border-white/10 text-white/50 px-4 py-2.5 rounded-xl text-sm font-semibold cursor-not-allowed select-none"
+        >
+          <Loader2 className="w-4 h-4 animate-spin text-white/60" />
+          <span>Sync Status</span>
+        </button>
+      );
+    }
+
+    if (isConnected) {
+      return (
+        <div className="flex items-center gap-2 bg-emerald-500/20 border border-emerald-500/30 text-emerald-200 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm select-none">
+          <img src={GoogleCalendarLogo} alt="" className="w-6 h-6 object-contain" />
+          <span>Google Calendar Connected</span>
+        </div>
+      );
+    }
+
+    return (
+      <button
+        onClick={connectGoogleCalendar}
+        disabled={loading}
+        type="button"
+        className="flex items-center gap-2.5 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+      >
+        {loading ? (
+          <Loader2 className="w-6 h-6 animate-spin" />
+        ) : (
+          <img src={GoogleCalendarLogo} alt="" className="w-6 h-6 object-contain" />
+        )}
+        <span>{loading ? "Connecting..." : "Sync Google Calendar"}</span>
+      </button>
+    );
+  }
 
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl shadow-[var(--brand-navy)]/5">
