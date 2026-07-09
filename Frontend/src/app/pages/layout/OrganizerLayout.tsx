@@ -9,7 +9,8 @@ import {
   Menu,
   X,
   ScanLine,
-  MessageSquare
+  MessageSquare,
+  Home
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { ForSaLogo } from "../../components/ForSaLogo";
@@ -199,6 +200,15 @@ export default function OrganizerLayout() {
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-violet-600 transition-colors"
                     >
                       <Settings className="w-4 h-4" /> My Profile
+                    </Link>
+                  </div>
+                  <div className="p-2 border-t border-slate-100">
+                    <Link 
+                      to="/" 
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-violet-600 transition-colors"
+                    >
+                      <Home className="w-4 h-4" /> Back to Home
                     </Link>
                   </div>
                   <div className="p-2 border-t border-slate-100">

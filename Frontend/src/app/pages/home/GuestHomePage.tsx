@@ -24,6 +24,7 @@ import { EventCard } from "../../components/EventCard";
 import { apiGet } from "../../api/api";
 import type { Event as EventType } from "../../types/index";
 import { mapEventDetailsDtoToEvent } from "../../utils/mappers";
+import { getUserRole, getDashboardPath } from "../../utils/roleRouting";
 
 // Premium Color Palette Constants
 const DEEP_NAVY = "var(--brand-navy)";
@@ -52,6 +53,7 @@ const itemVariants = {
 
 export default function GuestHomePage() {
   const navigate = useNavigate();
+  const isLoggedIn = !!localStorage.getItem("forsa_token");
   const [eventFilter, setEventFilter] = useState<"all" | "week" | "month" | "featured">("featured");
   const [navElevated, setNavElevated] = useState(false);
   const [events, setEvents] = useState<EventType[]>([]);
@@ -449,18 +451,29 @@ export default function GuestHomePage() {
               Join thousands of professionals, enthusiasts, and creators on ForSa. Elevate your event experience today.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
-              <Link
-                to="/register"
-                className="w-full sm:w-auto px-10 py-4 rounded-full text-[var(--brand-navy)] bg-white font-bold text-lg shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300 hover:-translate-y-1"
-              >
-                Join ForSa Now
-              </Link>
-              <Link
-                to="/register?type=organization"
-                className="w-full sm:w-auto px-10 py-4 rounded-full text-white font-bold text-lg bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all duration-300"
-              >
-                Become an Organizer
-              </Link>
+              {isLoggedIn ? (
+                <Link
+                  to={getDashboardPath(getUserRole())}
+                  className="w-full sm:w-auto px-10 py-4 rounded-full text-[var(--brand-navy)] bg-white font-bold text-lg shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300 hover:-translate-y-1"
+                >
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/register"
+                    className="w-full sm:w-auto px-10 py-4 rounded-full text-[var(--brand-navy)] bg-white font-bold text-lg shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300 hover:-translate-y-1"
+                  >
+                    Join ForSa Now
+                  </Link>
+                  <Link
+                    to="/register?type=organization"
+                    className="w-full sm:w-auto px-10 py-4 rounded-full text-white font-bold text-lg bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all duration-300"
+                  >
+                    Become an Organizer
+                  </Link>
+                </>
+              )}
             </div>
           </ScrollReveal>
         </div>

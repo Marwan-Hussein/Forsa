@@ -28,6 +28,7 @@ import {
   pageVariants,
 } from "../../lib/motion";
 import { mapEventDetailsDtoToEvent, parseBackendDate } from "../../utils/mappers";
+import { getUserRole } from "../../utils/roleRouting";
 
 export default function EventDetailsPage() {
   const { eventId } = useParams<{ eventId: string }>();
@@ -45,6 +46,8 @@ export default function EventDetailsPage() {
 
   const token = localStorage.getItem("forsa_token");
   const userId = token ? getUserIdFromToken() : null;
+  const role = getUserRole();
+  const isAttendee = !role || (role !== "Admin" && role !== "Owner" && role !== "PlaceOwner" && role !== "Organizer");
 
   useEffect(() => {
     const fetchUserBooking = async () => {
@@ -284,17 +287,19 @@ export default function EventDetailsPage() {
                 )}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--brand-slate-contrast)]/40 via-transparent to-transparent" />
                 <div className="absolute top-4 right-4 flex gap-2">
-                  <motion.button
-                    type="button"
-                    whileTap={{ scale: 0.92 }}
-                    transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
-                    onClick={() => eventId && toggleWishlist(eventId)}
-                    className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-white text-muted-foreground shadow-md transition-colors duration-300 ease-in-out hover:bg-muted"
-                  >
-                    <Heart
-                      className={`h-5 w-5 ${eventId && isInWishlist(eventId) ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
-                    />
-                  </motion.button>
+                  {isAttendee && (
+                    <motion.button
+                      type="button"
+                      whileTap={{ scale: 0.92 }}
+                      transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
+                      onClick={() => eventId && toggleWishlist(eventId)}
+                      className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-white text-muted-foreground shadow-md transition-colors duration-300 ease-in-out hover:bg-muted"
+                    >
+                      <Heart
+                        className={`h-5 w-5 ${eventId && isInWishlist(eventId) ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
+                      />
+                    </motion.button>
+                  )}
                   <motion.button
                     type="button"
                     whileTap={{ scale: 0.92 }}
@@ -529,51 +534,53 @@ export default function EventDetailsPage() {
                 </p>
               </div>
 
-              {isCompleted ? (
-                <button
-                  type="button"
-                  disabled
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 py-3 font-['Inter:Medium',sans-serif] text-[16px] font-semibold text-slate-400 border border-slate-200 cursor-not-allowed select-none"
-                >
-                  <Ticket className="h-5 w-5 text-slate-300" />
-                  Event Completed
-                </button>
-              ) : userBooking ? (
-                userBooking.status.toLowerCase() === "pending" ? (
-                  <motion.button
-                    type="button"
-                    onClick={handlePayPendingBooking}
-                    disabled={paying}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
-                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 py-3 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-white shadow-lg ring-1 ring-white/10 transition-all hover:shadow-xl hover:brightness-105"
-                  >
-                    <Ticket className="h-5 w-5" />
-                    {paying ? "Processing..." : "Complete Payment"}
-                  </motion.button>
-                ) : (
+              {isAttendee && (
+                isCompleted ? (
                   <button
                     type="button"
                     disabled
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-100 py-3 font-['Inter:Medium',sans-serif] text-[16px] font-semibold text-emerald-800 border border-emerald-200"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 py-3 font-['Inter:Medium',sans-serif] text-[16px] font-semibold text-slate-400 border border-slate-200 cursor-not-allowed select-none"
                   >
-                    <Ticket className="h-5 w-5 text-emerald-700" />
-                    Ticket Confirmed
+                    <Ticket className="h-5 w-5 text-slate-300" />
+                    Event Completed
                   </button>
+                ) : userBooking ? (
+                  userBooking.status.toLowerCase() === "pending" ? (
+                    <motion.button
+                      type="button"
+                      onClick={handlePayPendingBooking}
+                      disabled={paying}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
+                      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 py-3 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-white shadow-lg ring-1 ring-white/10 transition-all hover:shadow-xl hover:brightness-105"
+                    >
+                      <Ticket className="h-5 w-5" />
+                      {paying ? "Processing..." : "Complete Payment"}
+                    </motion.button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled
+                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-100 py-3 font-['Inter:Medium',sans-serif] text-[16px] font-semibold text-emerald-800 border border-emerald-200"
+                    >
+                      <Ticket className="h-5 w-5 text-emerald-700" />
+                      Ticket Confirmed
+                    </button>
+                  )
+                ) : (
+                  <motion.button
+                    type="button"
+                    onClick={() => setShowBookingModal(true)}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
+                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[var(--brand-slate-contrast)] to-[#1e2936] py-3 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-[#dde6ed] shadow-lg ring-1 ring-white/10 transition-shadow duration-300 ease-in-out hover:shadow-xl"
+                  >
+                    <Ticket className="h-5 w-5" />
+                    Book Tickets
+                  </motion.button>
                 )
-              ) : (
-                <motion.button
-                  type="button"
-                  onClick={() => setShowBookingModal(true)}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
-                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[var(--brand-slate-contrast)] to-[#1e2936] py-3 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-[#dde6ed] shadow-lg ring-1 ring-white/10 transition-shadow duration-300 ease-in-out hover:shadow-xl"
-                >
-                  <Ticket className="h-5 w-5" />
-                  Book Tickets
-                </motion.button>
               )}
 
               <div className="mt-4 pt-4 border-t border-[rgba(82,109,130,0.2)]">
@@ -606,7 +613,7 @@ export default function EventDetailsPage() {
                   {organization.description}
                 </p>
                 <Link
-                  to={`/organizations/${organization.id}`}
+                  to={`/organizations/${organization.id}?returnTo=/events/${eventId}`}
                   className="w-full bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Building2 className="w-4 h-4" />

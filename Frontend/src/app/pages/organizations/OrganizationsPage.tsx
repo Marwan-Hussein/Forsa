@@ -132,7 +132,13 @@ export default function OrganizationsPage() {
             className="inline-flex items-center gap-2 mb-6 text-white/70 hover:text-white transition-colors font-medium text-sm backdrop-blur-md bg-white/5 px-4 py-2 rounded-full border border-white/10"
           >
             <ArrowLeft className="w-4 h-4" />
-            {isSpecificOrg ? (returnTo ? "Back to Owner Dashboard" : "Back to Organizers") : "Back to Home"}
+            {isSpecificOrg
+              ? returnTo
+                ? returnTo.includes("/events")
+                  ? "Return to Event"
+                  : "Back to Owner Dashboard"
+                : "Back to Organizers"
+              : "Back to Home"}
           </Link>
           
           <div className="flex items-center gap-4 mb-4">
