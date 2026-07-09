@@ -1,6 +1,7 @@
 using Application.Core.DTOs.Booking;
 using Application.Core.Interfaces.OwnerInterfaces;
 using Application.Core.Interfaces;
+using Application.Core.Interfaces.Auth.OTP;
 using Application.Core.DTOs.CommonDTOs;
 using AutoMapper;
 using Domain.Entities;
@@ -16,28 +17,25 @@ namespace Application.Services.OwnerServices
     {
         private readonly IQueryableRepository<BookingRequest> _bookingRequestRepo;
         private readonly IQueryableRepository<PlaceAvailability> _availabilityRepo;
-        private readonly IGenericRepository<Notification> _notificationRepo;
         private readonly IPlaceRepository _placeRepo;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly INotifierService _notifierService;
+        private readonly IEmailService _emailService;
 
         public BookingRequestOwnerService(
             IQueryableRepository<BookingRequest> bookingRequestRepo,
             IQueryableRepository<PlaceAvailability> availabilityRepo,
-            IGenericRepository<Notification> notificationRepo,
             IPlaceRepository placeRepo,
             IMapper mapper,
             IUnitOfWork unitOfWork,
-            INotifierService notifierService)
+            IEmailService emailService)
         {
             _bookingRequestRepo = bookingRequestRepo;
             _availabilityRepo = availabilityRepo;
-            _notificationRepo = notificationRepo;
             _placeRepo = placeRepo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
-            _notifierService = notifierService;
+            _emailService = emailService;
         }
 
         public async Task<List<BookingRequestDetailsDto>> GetOwnerBookingRequestsAsync(int ownerId)
@@ -93,6 +91,7 @@ namespace Application.Services.OwnerServices
                 // Auto reject all other Pending requests on the same place + same date
                 var conflictingRequests = await _bookingRequestRepo.GetQueryable()
                     .Include(br => br.Organizer)
+                    .Include(br => br.Place)
                     .Where(br =>
                         br.PlaceId == request.PlaceId &&
                         br.RequestedDate.Date == request.RequestedDate.Date &&
@@ -108,28 +107,27 @@ namespace Application.Services.OwnerServices
                     conflicting.LastModifiedAt = DateTime.UtcNow;
                     _bookingRequestRepo.Update(conflicting);
 
-                    // Notify the rejected organizer
-                    await _notificationRepo.AddAsync(new Notification
+                    // email the rejected organizer
+
+                    var Message = $"Your booking request for \"{request.Place.Name}\" on {conflicting.RequestedDate:yyyy-MM-dd} was rejected due to a schedule conflict.";
+                    var conflictedOrganizerEmail = conflicting.Organizer?.Email;
+                    if(conflictedOrganizerEmail is not null)
                     {
-                        Message = $"Your booking request for \"{request.Place.Name}\" on {conflicting.RequestedDate:yyyy-MM-dd} was rejected due to a schedule conflict.",
-                        Type = NotificationType.BookingRequestRejected,
-                        SentVia = DeliveryMethod.Email,
-                        Status = NotificationStatus.Pending,
-                        UserId = conflicting.OrganizerId,
-                        CreatedAt = DateTime.UtcNow
-                    });
+                        await _emailService.SendAsync(conflictedOrganizerEmail,
+                            "Booking Request Rejected",
+                            Message);
+                    }
                 }
 
                 // Notify the accepted organizer
-                await _notificationRepo.AddAsync(new Notification
+                var message = $"Your booking request for \"{request.Place.Name}\" on {request.RequestedDate:yyyy-MM-dd} has been accepted!";
+                var acceptedOrganizerEmail = request.Organizer?.Email;
+                if(acceptedOrganizerEmail is not null)
                 {
-                    Message = $"Your booking request for \"{request.Place.Name}\" on {request.RequestedDate:yyyy-MM-dd} has been accepted!",
-                    Type = NotificationType.BookingRequestAccepted,
-                    SentVia = DeliveryMethod.Email,
-                    Status = NotificationStatus.Pending,
-                    UserId = request.OrganizerId,
-                    CreatedAt = DateTime.UtcNow
-                });
+                    await _emailService.SendAsync(acceptedOrganizerEmail,
+                        "Booking Request Accepted",
+                        message);
+                }
             }
             else
             {
@@ -143,15 +141,22 @@ namespace Application.Services.OwnerServices
                 request.RejectionReason = dto.RejectionReason;
 
                 // Notify the rejected organizer
-                await _notificationRepo.AddAsync(new Notification
+                var message = $"Your booking request for \"{request.Place.Name}\" on {request.RequestedDate:yyyy-MM-dd} was rejected. Reason: {dto.RejectionReason}";
+                var rejectedOrganizerEmail = request.Organizer?.Email;
+
+                if (!string.IsNullOrWhiteSpace(rejectedOrganizerEmail))
                 {
-                    Message = $"Your booking request for \"{request.Place.Name}\" on {request.RequestedDate:yyyy-MM-dd} was rejected. Reason: {dto.RejectionReason}",
-                    Type = NotificationType.BookingRequestRejected,
-                    SentVia = DeliveryMethod.Email,
-                    Status = NotificationStatus.Pending,
-                    UserId = request.OrganizerId,
-                    CreatedAt = DateTime.UtcNow
-                });
+                    try
+                    {
+                        await _emailService.SendAsync(rejectedOrganizerEmail,
+                            "Booking Request Rejected",
+                            message);
+                    }
+                    catch
+                    {
+                        // Silence email failures so owner request processing still succeeds
+                    }
+                }
             }
 
             request.LastModifiedAt = DateTime.UtcNow;
@@ -171,49 +176,7 @@ namespace Application.Services.OwnerServices
                         br.Id != requestId &&
                         !br.IsDeleted)
                     .ToListAsync();
-
-                #region AcceptanceNotification
-                foreach (var conflicting in conflictingRequests)
-                {
-                    try
-                    {
-                        await _notifierService.SendAsync(conflicting.OrganizerId, new NotificationMessageDto
-                        {
-                            Title = "Booking Request Rejected",
-                            Body = $"Your booking request for \"{request.Place.Name}\" on {conflicting.RequestedDate:yyyy-MM-dd} was rejected due to a schedule conflict.",
-                            Type = NotificationType.BookingRequestRejected.ToString()
-                        });
-                    }
-                    catch { }
-                }
-
-                // Send acceptance
-                try
-                {
-                    await _notifierService.SendAsync(request.OrganizerId, new NotificationMessageDto
-                    {
-                        Title = "Booking Request Accepted",
-                        Body = $"Your booking request for \"{request.Place.Name}\" on {request.RequestedDate:yyyy-MM-dd} has been accepted!",
-                        Type = NotificationType.BookingRequestAccepted.ToString()
-                    });
-                }
-                catch { }
             }
-            else
-            {
-                // Send rejection
-                try
-                {
-                    await _notifierService.SendAsync(request.OrganizerId, new NotificationMessageDto
-                    {
-                        Title = "Booking Request Rejected",
-                        Body = $"Your booking request for \"{request.Place.Name}\" on {request.RequestedDate:yyyy-MM-dd} was rejected. Reason: {dto.RejectionReason}",
-                        Type = NotificationType.BookingRequestRejected.ToString()
-                    });
-                }
-                catch { }
-            }
-            #endregion
             return _mapper.Map<BookingRequestDetailsDto>(request);
         }
     }

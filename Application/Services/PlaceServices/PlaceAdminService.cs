@@ -20,8 +20,6 @@ namespace Application.Services.PlaceServices
         private readonly IFeedbackRepository _feedbackRepo;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IGenericRepository<Notification> _notificationRepository;
-        private readonly INotifierService _notifierService;
         private readonly IEmailService _emailService;
 
         public PlaceAdminService(
@@ -30,8 +28,6 @@ namespace Application.Services.PlaceServices
             IFeedbackRepository feedbackRepo,
             IMapper mapper,
             IUnitOfWork unitOfWork,
-            IGenericRepository<Notification> notificationRepository,
-            INotifierService notifierService,
             IEmailService emailService)
         {
             _placeRepo = placeRepo;
@@ -39,8 +35,6 @@ namespace Application.Services.PlaceServices
             _feedbackRepo = feedbackRepo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
-            _notificationRepository = notificationRepository;
-            _notifierService = notifierService;
             _emailService = emailService;
         }
 
@@ -132,23 +126,12 @@ namespace Application.Services.PlaceServices
 
             if (place.OwnerId.HasValue)
             {
-                #region notification
+                #region Email -> notify the owner about the status change
                 var msg = $"Your place '{place.Name}' status has been updated to {status}.";
                 if (status == PlaceStatus.Rejected && !string.IsNullOrWhiteSpace(reason))
                 {
                     msg += $" Reason: {reason}";
                 }
-
-                var notification = new Notification
-                {
-                    Message = msg,
-                    Type = NotificationType.GeneralAlert,
-                    SentVia = DeliveryMethod.Email,
-                    Status = NotificationStatus.Pending,
-                    UserId = place.OwnerId.Value,
-                    CreatedAt = DateTime.UtcNow
-                };
-                await _notificationRepository.AddAsync(notification);
 
                 if (!string.IsNullOrWhiteSpace(place.Owner?.Email))
                 {
@@ -158,39 +141,12 @@ namespace Application.Services.PlaceServices
                             "Place Status Updated",
                             msg);
                     }
-                    catch
-                    {
-                        // Silence email failures so status update still succeeds
-                    }
+                    catch {}
                 }
                 #endregion
             }
 
             await _unitOfWork.SaveChangesAsync();
-
-            if (place.OwnerId.HasValue)
-            {
-                try
-                {
-                    var msg = $"Your place '{place.Name}' status has been updated to {status}.";
-                    if (status == PlaceStatus.Rejected && !string.IsNullOrWhiteSpace(reason))
-                    {
-                        msg += $" Reason: {reason}";
-                    }
-
-                    await _notifierService.SendAsync(place.OwnerId.Value, new NotificationMessageDto
-                    {
-                        Title = "Place Status Updated",
-                        Body = msg,
-                        Type = NotificationType.GeneralAlert.ToString()
-                    });
-                }
-                catch
-                {
-                    // Silence real-time notification failures to prevent blocking execution
-                }
-            }
-
             return true;
         }
 
@@ -221,16 +177,7 @@ namespace Application.Services.PlaceServices
 
             if (place.OwnerId.HasValue)
             {
-                var notification = new Notification
-                {
-                    Message = $"Your place '{place.Name}' has been deleted by an administrator.",
-                    Type = NotificationType.GeneralAlert,
-                    SentVia = DeliveryMethod.Email,
-                    Status = NotificationStatus.Pending,
-                    UserId = place.OwnerId.Value,
-                    CreatedAt = DateTime.UtcNow
-                };
-                await _notificationRepository.AddAsync(notification);
+                var msg = $"Your place '{place.Name}' has been deleted by an administrator.";
 
                 if (!string.IsNullOrWhiteSpace(place.Owner?.Email))
                 {
@@ -238,34 +185,13 @@ namespace Application.Services.PlaceServices
                     {
                         await _emailService.SendAsync(place.Owner.Email,
                             "Place Deleted",
-                            notification.Message);
+                            msg);
                     }
-                    catch
-                    {
-                        // Silence email failures so delete still succeeds
-                    }
+                    catch {}
                 }
             }
 
             await _unitOfWork.SaveChangesAsync();
-
-            if (place.OwnerId.HasValue)
-            {
-                try
-                {
-                    await _notifierService.SendAsync(place.OwnerId.Value, new NotificationMessageDto
-                    {
-                        Title = "Place Deleted",
-                        Body = $"Your place '{place.Name}' has been deleted by an administrator.",
-                        Type = NotificationType.GeneralAlert.ToString()
-                    });
-                }
-                catch
-                {
-                    // Silence real-time notification failures to prevent blocking execution
-                }
-            }
-
             return true;
         }
 

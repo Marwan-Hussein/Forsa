@@ -31,7 +31,6 @@ namespace Application.Services.EventServices
             IUnitOfWork unitOfWork,
             IFeedbackRepository feedbackRepo,
             IQueryableRepository<Domain.Entities.BookingEntities.BookingRequest> bookingRequestRepo,
-            INotifierService notifierService,
             IQueryableRepository<Domain.Entities.PlaceEntities.PlaceAvailability> availabilityRepo,
             IEmailService emailService)
         {
