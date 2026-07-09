@@ -10,6 +10,7 @@ namespace Application.Core.Interfaces
         Task<UserProfileDto?> GetProfileAsync(int userId);
         Task<UserProfileDto?> UpdateProfileAsync(int userId, UpdateUserProfileDto dto);
         Task<string> UploadProfilePictureAsync(int userId, Microsoft.AspNetCore.Http.IFormFile file);
+        Task<bool> RemoveProfilePictureAsync(int userId);
 
         // Organizer-specific
         Task<OrganizerProfileDto?> GetOrganizerProfileAsync(int organizerId);

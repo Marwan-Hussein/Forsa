@@ -168,6 +168,15 @@ export const organizerApi = {
     const data = await response.json();
     return data.url;
   },
+  deleteProfilePicture: async (id: number): Promise<void> => {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+    const token = localStorage.getItem("forsa_token");
+    const response = await fetch(`${baseUrl}/api/organizers/${id}/profile-picture`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error("Failed to remove profile picture");
+  },
 
   processPlaceCheckout: async (requestId: number): Promise<any> => {
     return await apiPost(`/api/organizers/booking-requests/${requestId}/checkout`, {});

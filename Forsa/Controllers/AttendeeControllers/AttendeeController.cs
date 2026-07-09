@@ -89,6 +89,22 @@ namespace Forsa.Controllers.AttendeeControllers
             }
         }
 
+        [HttpDelete("{id:int}/profile-picture")]
+        [Authorize(Policy = "AttendeeOnly")]
+        public async Task<ActionResult> RemoveProfilePicture(int id)
+        {
+            try
+            {
+                var result = await _userProfileService.RemoveProfilePictureAsync(id);
+                if (!result) return NotFound(new { message = "No profile picture to remove." });
+                return Ok(new { message = "Profile picture removed." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         // -------------------------- attendee/interests endpoints --------------------------
 
         // GET: api/attendees/{id}/interests

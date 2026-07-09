@@ -113,5 +113,21 @@ namespace Forsa.Controllers.OwnerControllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpDelete("{id}/profile-picture")]
+        [Authorize(Roles = "Owner,PlaceOwner")]
+        public async Task<ActionResult> RemoveProfilePicture(int id)
+        {
+            try
+            {
+                var result = await _profileService.RemoveProfilePictureAsync(id);
+                if (!result) return NotFound(new { message = "No profile picture to remove." });
+                return Ok(new { message = "Profile picture removed." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

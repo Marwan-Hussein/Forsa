@@ -20,6 +20,7 @@ export function Navigation() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("Guest");
   const [userEmail, setUserEmail] = useState("user@forsa.com");
+  const [profilePic, setProfilePic] = useState<string | null>(localStorage.getItem("forsa_profile_picture"));
   const dashboardPath = getDashboardPath(getUserRole());
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export function Navigation() {
           attendeeApi.getProfile(userId).then(profile => {
             if (profile.profilePicture) {
               localStorage.setItem("forsa_profile_picture", profile.profilePicture);
+              setProfilePic(profile.profilePicture);
             }
           }).catch(() => {});
         }
@@ -44,7 +46,14 @@ export function Navigation() {
     const onScroll = () => setNavElevated(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    
+    const handleProfileUpdate = () => setProfilePic(localStorage.getItem("forsa_profile_picture"));
+    window.addEventListener("profilePictureUpdated", handleProfileUpdate);
+    
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("profilePictureUpdated", handleProfileUpdate);
+    };
   }, []);
 
   const handleSignOut = () => {
@@ -129,8 +138,8 @@ export function Navigation() {
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center font-['Inter:Bold',sans-serif] text-sm overflow-hidden ${
                     shouldElevate ? 'bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-hover)] text-white' : 'bg-white text-[var(--brand-navy)]'
                   }`}>
-                    {localStorage.getItem("forsa_profile_picture") ? (
-                      <img src={`${import.meta.env.VITE_API_BASE_URL || ""}${localStorage.getItem("forsa_profile_picture")}`} alt="Profile" className="w-full h-full object-cover" />
+                    {profilePic ? (
+                      <img src={profilePic.startsWith('http') ? profilePic : `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}${profilePic.startsWith('/') ? '' : '/'}${profilePic}`} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
                       userName.charAt(0)
                     )}

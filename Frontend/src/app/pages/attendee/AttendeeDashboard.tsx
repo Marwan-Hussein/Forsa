@@ -522,7 +522,8 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
 function CleanCard({ event, isInWishlist, onToggle }: { event: EventDetailsDto; isInWishlist: boolean; onToggle: (id: string | number) => void }) {
   const date = new Date(event.startDate);
   const formattedDate = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  const eventImg = (event as any).imageUrl || "";
+  const rawImg = (event as any).imageUrl || "";
+  const eventImg = rawImg.startsWith('http') ? rawImg : (rawImg ? `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}${rawImg.startsWith('/') ? '' : '/'}${rawImg}` : "");
 
   return (
     <motion.div 
@@ -643,7 +644,8 @@ function OverviewView({
           </h2>
           <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden shadow-sm">
             {recentWishlist.length > 0 ? recentWishlist.slice(0, 3).map((event) => {
-              const eventImg = event.imageUrl || "";
+              const rawImg = event.imageUrl || "";
+              const eventImg = rawImg.startsWith('http') ? rawImg : (rawImg ? `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}${rawImg.startsWith('/') ? '' : '/'}${rawImg}` : "");
               return (
                 <Link key={event.eventId} to={`/events/${event.eventId}`} className="flex items-center gap-3.5 p-3.5 hover:bg-slate-50/70 transition-colors group">
                   <div className="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden shrink-0">
@@ -767,6 +769,7 @@ export default function AttendeeDashboard() {
   const { wishlist, toggle: toggleWishlist, loading: wishlistLoading } = useWishlist();
   const [userName, setUserName] = useState("there");
   const [userEmail, setUserEmail] = useState("attendee@forsa.com");
+  const [profilePic, setProfilePic] = useState<string | null>(localStorage.getItem("forsa_profile_picture"));
   const [allEvents, setAllEvents] = useState<EventDetailsDto[]>([]);
   const [myTickets, setMyTickets] = useState<AttendeeBookingDto[]>([]);
   const [recommendedEvents, setRecommendedEvents] = useState<EventDetailsDto[]>([]);
@@ -783,6 +786,9 @@ export default function AttendeeDashboard() {
 
     setUserName(localStorage.getItem("forsa_user_name") || "Attendee User");
     setUserEmail(localStorage.getItem("forsa_user_email") || "attendee@forsa.com");
+
+    const handleProfileUpdate = () => setProfilePic(localStorage.getItem("forsa_profile_picture"));
+    window.addEventListener("profilePictureUpdated", handleProfileUpdate);
 
     async function loadData() {
       if (!userId) return;
@@ -831,6 +837,8 @@ export default function AttendeeDashboard() {
     }
     
     loadData();
+
+    return () => window.removeEventListener("profilePictureUpdated", handleProfileUpdate);
   }, [userId, wishlist.length, navigate]);
 
   const handleTabChange = (tab: string) => {
@@ -859,8 +867,12 @@ export default function AttendeeDashboard() {
           <aside className="lg:col-span-1 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm sticky top-24 z-10">
             {/* User Profile Mini Badge */}
             <div className="flex flex-col items-center text-center pb-5 border-b border-slate-200">
-              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-hover)] text-white flex items-center justify-center font-bold text-xl shadow-md shadow-[var(--brand-navy)]/15 mb-3">
-                {userName.charAt(0)}
+              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-hover)] text-white flex items-center justify-center font-bold text-xl shadow-md shadow-[var(--brand-navy)]/15 mb-3 overflow-hidden">
+                {profilePic ? (
+                  <img src={profilePic.startsWith('http') ? profilePic : `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}${profilePic.startsWith('/') ? '' : '/'}${profilePic}`} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  userName.charAt(0)
+                )}
               </div>
               <h3 className="font-semibold text-slate-800 text-base leading-snug truncate max-w-full">{userName}</h3>
               <p className="text-xs text-slate-500 font-semibold truncate max-w-full mt-1.5">{userEmail}</p>

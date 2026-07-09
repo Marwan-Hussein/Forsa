@@ -165,6 +165,22 @@ namespace Forsa.Controllers
             }
         }
 
+        [HttpDelete("{id}/profile-picture")]
+        [Authorize(Roles = "Organizer")]
+        public async Task<ActionResult> RemoveProfilePicture(int id)
+        {
+            try
+            {
+                var result = await _profileService.RemoveProfilePictureAsync(id);
+                if (!result) return NotFound(new { message = "No profile picture to remove." });
+                return Ok(new { message = "Profile picture removed." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         // POST: api/organizers/{id}/subscribe
         [Authorize(Policy = "AuthenticatedUser")]
         [HttpPost("{id:int}/subscribe")]

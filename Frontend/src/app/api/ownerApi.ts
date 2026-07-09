@@ -188,6 +188,15 @@ export const ownerApi = {
     const data = await response.json();
     return data.url;
   },
+  deleteProfilePicture: async (id: number): Promise<void> => {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+    const token = localStorage.getItem("forsa_token");
+    const response = await fetch(`${baseUrl}/api/owner/${id}/profile-picture`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error("Failed to remove profile picture");
+  },
 
   submitOrganizerFeedback: async (bookingRequestId: number, data: { rating: number; comment: string }): Promise<any> => {
     return await apiPost(`/api/owner/booking-requests/${bookingRequestId}/feedback`, data);
