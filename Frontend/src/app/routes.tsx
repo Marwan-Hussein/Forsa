@@ -47,6 +47,7 @@ import OwnerPlaceMediaPage from "./pages/owner/OwnerPlaceMediaPage";
 import OwnerBookingsPage from "./pages/owner/OwnerBookingsPage";
 import OwnerProfilePage from "./pages/owner/OwnerProfilePage";
 import OwnerPlaceCalendarPage from "./pages/owner/OwnerPlaceCalendarPage";
+import OwnerReviewsPage from "./pages/owner/OwnerReviewsPage";
 
 // Organizer Portal Imports
 import OrganizerLayout from "./pages/layout/OrganizerLayout";
@@ -241,6 +242,10 @@ export const router = createBrowserRouter([
       {
         path: "profile",
         Component: OwnerProfilePage,
+      },
+      {
+        path: "reviews",
+        Component: OwnerReviewsPage,
       },
     ],
   },

@@ -5,5 +5,6 @@ namespace Application.Core.Interfaces.OwnerInterfaces
     public interface IOwnerFeedbackService
     {
         Task<OrganizerFeedbackResponseDto> SubmitOrganizerFeedbackAsync(int ownerId, int bookingRequestId, OrganizerFeedbackDto dto);
+        Task<List<OwnerReceivedFeedbackDto>> GetOwnerReceivedFeedbacksAsync(int ownerId);
     }
 }

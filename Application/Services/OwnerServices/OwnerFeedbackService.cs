@@ -92,5 +92,29 @@ namespace Application.Services.OwnerServices
                 CreatedAt = feedback.CreatedAt
             };
         }
+
+        public async Task<List<OwnerReceivedFeedbackDto>> GetOwnerReceivedFeedbacksAsync(int ownerId)
+        {
+            var feedbacks = await _feedbackRepo.GetQueryable()
+                .Include(f => f.Place)
+                .Include(f => f.Organizer)
+                .Include(f => f.Event)
+                .Where(f => f.Place != null && f.Place.OwnerId == ownerId && !f.IsDeleted && f.OrganizerId != null)
+                .OrderByDescending(f => f.CreatedAt)
+                .Select(f => new OwnerReceivedFeedbackDto
+                {
+                    Id = f.Id,
+                    Rating = f.Rating,
+                    Comment = f.Comment,
+                    OrganizerName = f.Organizer != null ? f.Organizer.FullName : string.Empty,
+                    PlaceName = f.Place != null ? f.Place.Name : string.Empty,
+                    PlaceId = f.PlaceId ?? 0,
+                    EventTitle = f.Event != null ? f.Event.Title : string.Empty,
+                    CreatedAt = f.CreatedAt
+                })
+                .ToListAsync();
+
+            return feedbacks;
+        }
     }
 }
