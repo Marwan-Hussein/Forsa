@@ -20,19 +20,16 @@ namespace Forsa.Controllers.OwnerControllers
         private readonly IPlaceAvailabilityService _availabilityService;
         private readonly IValidator<AddPlaceDto> _addPlaceValidator;
         private readonly IAdminUserService _adminUserService;
-        private readonly INotifierService _notifierService;
 
         public OwnerPlacesController(
             IPlaceOwnerService placeOwnerService,
             IPlaceAvailabilityService availabilityService,
             IAdminUserService adminUserService,
-            INotifierService notifierService,
             IValidator<AddPlaceDto> validator)
         {
             _placeOwnerService = placeOwnerService;
             _availabilityService = availabilityService;
             _adminUserService = adminUserService;
-            _notifierService = notifierService;
             _addPlaceValidator = validator;
         }
 
