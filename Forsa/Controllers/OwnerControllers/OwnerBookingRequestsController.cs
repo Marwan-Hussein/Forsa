@@ -86,6 +86,21 @@ namespace Forsa.Controllers.OwnerControllers
             catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
             catch (Exception) { return StatusCode(500, new { message = "An error occurred while submitting feedback." }); }
         }
+
+        [HttpGet("~/api/owner/reviews")]
+        public async Task<ActionResult<List<OwnerReceivedFeedbackDto>>> GetReceivedReviews()
+        {
+            try
+            {
+                var ownerId = GetOwnerId();
+                var result = await _feedbackService.GetOwnerReceivedFeedbacksAsync(ownerId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching reviews.", details = ex.Message });
+            }
+        }
     }
 }
 
