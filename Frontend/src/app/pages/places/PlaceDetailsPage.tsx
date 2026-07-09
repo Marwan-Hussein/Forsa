@@ -184,7 +184,7 @@ export default function PlaceDetailsPage() {
             {/* Background Blur */}
             {place.images && place.images.length > 0 && (
               <img 
-                src={place.images[selectedImage].startsWith('http') ? place.images[selectedImage] : `http://localhost:5000${place.images[selectedImage].startsWith('/') ? '' : '/'}${place.images[selectedImage]}`}
+                src={place.images[selectedImage].startsWith('http') ? place.images[selectedImage] : `https://forsa-app.runasp.net${place.images[selectedImage].startsWith('/') ? '' : '/'}${place.images[selectedImage]}`}
                 alt="blur background" 
                 className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-40 scale-110 pointer-events-none select-none"
               />
@@ -193,7 +193,7 @@ export default function PlaceDetailsPage() {
             {/* Crisp Centered Active Image */}
             <div className="relative w-full h-full flex items-center justify-center z-10 p-4">
               <ImageWithFallback
-                src={place.images && place.images.length > selectedImage ? (place.images[selectedImage].startsWith('http') ? place.images[selectedImage] : `http://localhost:5000${place.images[selectedImage].startsWith('/') ? '' : '/'}${place.images[selectedImage]}`) : "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop"}
+                src={place.images && place.images.length > selectedImage ? (place.images[selectedImage].startsWith('http') ? place.images[selectedImage] : `https://forsa-app.runasp.net${place.images[selectedImage].startsWith('/') ? '' : '/'}${place.images[selectedImage]}`) : "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop"}
                 alt={place.name}
                 className="max-h-full max-w-full object-contain rounded-2xl shadow-lg transition-all duration-300"
               />
@@ -204,7 +204,7 @@ export default function PlaceDetailsPage() {
           {place.images && place.images.length > 1 && (
             <div className="flex gap-2.5 overflow-x-auto py-2.5 px-1 scrollbar-none">
               {place.images.map((img: string, idx: number) => {
-                const imgUrl = img.startsWith('http') ? img : `http://localhost:5000${img.startsWith('/') ? '' : '/'}${img}`;
+                const imgUrl = img.startsWith('http') ? img : `https://forsa-app.runasp.net${img.startsWith('/') ? '' : '/'}${img}`;
                 return (
                   <button 
                     key={idx}

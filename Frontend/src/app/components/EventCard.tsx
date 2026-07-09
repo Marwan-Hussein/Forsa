@@ -4,6 +4,7 @@ import { Calendar, Clock, MapPin, Users, Heart } from "lucide-react";
 import { Event } from "../types";
 import { ImageWithFallback } from "@/app/components/ImageWithFallback";
 import { parseBackendDate } from "../utils/mappers";
+import { getUserRole } from "../utils/roleRouting";
 import {
   EASE_IN_OUT,
   EASE_SCROLL,
@@ -30,6 +31,8 @@ export function EventCard({
   reveal = "mount",
 }: EventCardProps) {
   const navigate = useNavigate();
+  const role = getUserRole();
+  const isAttendee = !role || (role !== "Admin" && role !== "Owner" && role !== "PlaceOwner" && role !== "Organizer");
   const now = new Date();
   const startDate = event.startDate ? parseBackendDate(event.startDate) : null;
   const endDate = event.endDate ? parseBackendDate(event.endDate) : null;
@@ -108,7 +111,7 @@ export function EventCard({
             <ImageWithFallback
               alt={event.title}
               className="absolute inset-0 h-full w-full object-cover"
-              src={event.image.startsWith("/") ? `http://localhost:5000${event.image}` : event.image}
+              src={event.image.startsWith("/") ? `https://forsa-app.runasp.net${event.image}` : event.image}
             />
           ) : (
             <ImageWithFallback
@@ -129,8 +132,8 @@ export function EventCard({
         >
           {event.category}
         </div>
-        {/* Wishlist Button */}
-        {showActions && onToggleWishlist && (
+         {/* Wishlist Button */}
+        {isAttendee && showActions && onToggleWishlist && (
           <button
             type="button"
             onClick={(e) => {

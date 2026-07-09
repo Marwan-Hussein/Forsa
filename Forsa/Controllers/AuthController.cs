@@ -192,12 +192,12 @@ namespace Forsa.Controllers
             {
                 if (result.NeedsRoleSelection)
                 {
-                    return Redirect($"http://localhost:5173/login?externalRegister=true&provider={Uri.EscapeDataString(result.Provider)}&providerKey={Uri.EscapeDataString(result.ProviderKey)}&email={Uri.EscapeDataString(result.Email)}&name={Uri.EscapeDataString(result.Name ?? "")}");
+                    return Redirect($"https://forsa-app.runasp.net/login?externalRegister=true&provider={Uri.EscapeDataString(result.Provider)}&providerKey={Uri.EscapeDataString(result.ProviderKey)}&email={Uri.EscapeDataString(result.Email)}&name={Uri.EscapeDataString(result.Name ?? "")}");
                 }
-                return Redirect($"http://localhost:5173/login?error={Uri.EscapeDataString(result.Message)}");
+                return Redirect($"https://forsa-app.runasp.net/login?error={Uri.EscapeDataString(result.Message)}");
             }
 
-            return Redirect($"http://localhost:5173/login?token={result.User.Token}&refreshToken={result.User.RefreshToken}&fullName={Uri.EscapeDataString(result.User.FullName)}&email={Uri.EscapeDataString(result.User.Email)}");
+            return Redirect($"https://forsa-app.runasp.net/login?token={result.User.Token}&refreshToken={result.User.RefreshToken}&fullName={Uri.EscapeDataString(result.User.FullName)}&email={Uri.EscapeDataString(result.User.Email)}");
         }
 
         [HttpPost("external-register")]

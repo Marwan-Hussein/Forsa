@@ -228,7 +228,7 @@ export default function OrganizerReviewsPage() {
                 year: "numeric"
               });
               const rawImg = review.attendeeImageUrl || "";
-              const attendeeImg = rawImg.startsWith('http') ? rawImg : (rawImg ? `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}${rawImg.startsWith('/') ? '' : '/'}${rawImg}` : "");
+              const attendeeImg = rawImg.startsWith('http') ? rawImg : (rawImg ? `${import.meta.env.VITE_API_BASE_URL || "https://forsa-app.runasp.net"}${rawImg.startsWith('/') ? '' : '/'}${rawImg}` : "");
               
               return (
                 <div

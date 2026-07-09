@@ -138,7 +138,7 @@ export function Navigation() {
                     shouldElevate ? 'bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-hover)] text-white' : 'bg-white text-[var(--brand-navy)]'
                   }`}>
                     {profilePic ? (
-                      <img src={profilePic.startsWith('http') ? profilePic : `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}${profilePic.startsWith('/') ? '' : '/'}${profilePic}`} alt="Profile" className="w-full h-full object-cover" />
+                      <img src={profilePic.startsWith('http') ? profilePic : `${import.meta.env.VITE_API_BASE_URL || "https://forsa-app.runasp.net"}${profilePic.startsWith('/') ? '' : '/'}${profilePic}`} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
                       userName.charAt(0)
                     )}

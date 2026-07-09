@@ -255,3 +255,14 @@ input[type="password"]::-ms-clear {
   border: none !important;
   outline: none !important;
 }
+
+/* Custom selection styling for better visibility in input fields */
+input::selection, textarea::selection {
+  background-color: rgba(59, 130, 246, 0.5) !important;
+  color: #ffffff !important;
+}
+
+::selection {
+  background-color: rgba(59, 130, 246, 0.4) !important;
+  color: #ffffff !important;
+}

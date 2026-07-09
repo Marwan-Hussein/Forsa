@@ -168,7 +168,7 @@ export default function PlacesPage() {
               >
                 <div className="relative h-64 overflow-hidden bg-slate-100">
                   <ImageWithFallback
-                    src={place.images && place.images.length > 0 ? (place.images[0].startsWith('http') ? place.images[0] : `http://localhost:5000${place.images[0].startsWith('/') ? '' : '/'}${place.images[0]}`) : "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop"}
+                    src={place.images && place.images.length > 0 ? (place.images[0].startsWith('http') ? place.images[0] : `https://forsa-app.runasp.net${place.images[0].startsWith('/') ? '' : '/'}${place.images[0]}`) : "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop"}
                     alt={place.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />

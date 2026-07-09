@@ -22,7 +22,6 @@ Thumbs.db
 
 # Environment files (VERY IMPORTANT)
 appsettings.Development.json
-appsettings.Local.json
 
 # Secrets (never push these)
 secrets.json

@@ -22,7 +22,7 @@ interface FeedbackDTO {
 function resolveImageUrl(rawUrl: string | undefined): string {
   if (!rawUrl) return "";
   if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) return rawUrl;
-  const base = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/+$/, "");
+  const base = (import.meta.env.VITE_API_BASE_URL || "https://forsa-app.runasp.net").replace(/\/+$/, "");
   const path = rawUrl.startsWith("/") ? rawUrl : `/${rawUrl}`;
   return `${base}${path}`;
 }

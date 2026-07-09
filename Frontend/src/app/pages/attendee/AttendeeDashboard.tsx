@@ -523,7 +523,7 @@ function CleanCard({ event, isInWishlist, onToggle }: { event: EventDetailsDto; 
   const date = new Date(event.startDate);
   const formattedDate = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   const rawImg = (event as any).imageUrl || "";
-  const eventImg = rawImg.startsWith('http') ? rawImg : (rawImg ? `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}${rawImg.startsWith('/') ? '' : '/'}${rawImg}` : "");
+  const eventImg = rawImg.startsWith('http') ? rawImg : (rawImg ? `${import.meta.env.VITE_API_BASE_URL || "https://forsa-app.runasp.net"}${rawImg.startsWith('/') ? '' : '/'}${rawImg}` : "");
 
   return (
     <motion.div 
@@ -645,7 +645,7 @@ function OverviewView({
           <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden shadow-sm">
             {recentWishlist.length > 0 ? recentWishlist.slice(0, 3).map((event) => {
               const rawImg = event.imageUrl || "";
-              const eventImg = rawImg.startsWith('http') ? rawImg : (rawImg ? `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}${rawImg.startsWith('/') ? '' : '/'}${rawImg}` : "");
+              const eventImg = rawImg.startsWith('http') ? rawImg : (rawImg ? `${import.meta.env.VITE_API_BASE_URL || "https://forsa-app.runasp.net"}${rawImg.startsWith('/') ? '' : '/'}${rawImg}` : "");
               return (
                 <Link key={event.eventId} to={`/events/${event.eventId}`} className="flex items-center gap-3.5 p-3.5 hover:bg-slate-50/70 transition-colors group">
                   <div className="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden shrink-0">
@@ -869,7 +869,7 @@ export default function AttendeeDashboard() {
             <div className="flex flex-col items-center text-center pb-5 border-b border-slate-200">
               <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-hover)] text-white flex items-center justify-center font-bold text-xl shadow-md shadow-[var(--brand-navy)]/15 mb-3 overflow-hidden">
                 {profilePic ? (
-                  <img src={profilePic.startsWith('http') ? profilePic : `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}${profilePic.startsWith('/') ? '' : '/'}${profilePic}`} alt="Profile" className="w-full h-full object-cover" />
+                  <img src={profilePic.startsWith('http') ? profilePic : `${import.meta.env.VITE_API_BASE_URL || "https://forsa-app.runasp.net"}${profilePic.startsWith('/') ? '' : '/'}${profilePic}`} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   userName.charAt(0)
                 )}
