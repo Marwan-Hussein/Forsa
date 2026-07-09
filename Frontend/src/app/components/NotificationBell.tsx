@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { Link } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { Bell, Check, ChevronRight, X } from "lucide-react";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import * as signalR from "@microsoft/signalr";
 import { useNotificationContext, type NotificationMessageDto } from "../contexts/NotificationContext";
 
@@ -15,6 +15,11 @@ const hubUrl = `${API_BASE_URL}/hubs/notifications`;
 export function NotificationBell() {
   const { notifications, unreadCount, addNotification, markAsRead, removeNotification } = useNotificationContext();
   const [open, setOpen] = useState(false);
+  const addNotificationRef = useRef(addNotification);
+
+  useEffect(() => {
+    addNotificationRef.current = addNotification;
+  }, [addNotification]);
 
   const recentNotifications = useMemo(() => notifications.slice(0, 4), [notifications]);
 
@@ -30,29 +35,37 @@ export function NotificationBell() {
       .build();
 
     connection.on("receiveNotification", (message: NotificationMessageDto) => {
-      addNotification(message);
+      console.log("Notification received via SignalR:", message);
+      addNotificationRef.current(message);
       toast.success(message.title || "New notification", {
         description: message.body,
       });
     });
 
+    connection.onreconnecting((error) => console.warn("SignalR reconnecting:", error));
+    connection.onreconnected(() => console.log("SignalR reconnected"));
+
     connection.onclose((error) => {
       if (error) {
-        console.error("SignalR connection closed", error);
+        console.error("SignalR connection closed with error:", error);
+      } else {
+        console.log("SignalR connection closed gracefully");
       }
     });
 
     connection
       .start()
+      .then(() => console.log("SignalR connected"))
       .catch((error) => console.error("Failed to connect to notifications hub", error));
 
     return () => {
-      connection.stop().catch(() => {});
+      connection.stop().catch((err) => console.error("Error stopping SignalR connection:", err));
     };
-  }, [addNotification]);
+  }, []);
 
   return (
     <div className="relative">
+      <Toaster position="top-right" />
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
