@@ -60,6 +60,13 @@ namespace Application.Services.EventServices
                 oldMedia.IsDeleted = true;
                 oldMedia.DeletedAt = DateTime.UtcNow;
                 _mediaRepo.Update(oldMedia);
+
+                // Delete physical file
+                if (!string.IsNullOrEmpty(oldMedia.MediaUrl))
+                {
+                    var physicalPath = Path.Combine(_env.WebRootPath ?? "wwwroot", oldMedia.MediaUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(physicalPath)) System.IO.File.Delete(physicalPath);
+                }
             }
 
             var uploadedMedia = new List<EventMedia>();

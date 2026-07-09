@@ -154,6 +154,16 @@ namespace Forsa
                 app.UseSwaggerUI();
             }
 
+            // Ensure wwwroot exists and WebRootPath is correctly set before configuring static files
+            if (string.IsNullOrWhiteSpace(app.Environment.WebRootPath))
+            {
+                app.Environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            }
+            if (!Directory.Exists(app.Environment.WebRootPath))
+            {
+                Directory.CreateDirectory(app.Environment.WebRootPath);
+            }
+
             // Enable serving static files (for uploaded images in wwwroot)
             app.UseStaticFiles();
 

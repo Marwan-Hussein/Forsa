@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { User, Mail, Phone, MapPin, Calendar, Save, ArrowLeft, Camera, Shield, Bell, Star, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Phone, MapPin, Calendar, Save, ArrowLeft, Camera, Shield, Bell, Star, Eye, EyeOff, Trash2, ImagePlus } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError, apiPost } from "../../api/api";
 import { organizerApi } from "../../api/organizerApi";
@@ -84,6 +84,11 @@ export default function OrganizerProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
+  const [originalProfilePictureUrl, setOriginalProfilePictureUrl] = useState<string | null>(null);
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [pendingImagePreview, setPendingImagePreview] = useState<string | null>(null);
+  const [pendingRemove, setPendingRemove] = useState(false);
+  const [showPicMenu, setShowPicMenu] = useState(false);
 
   // Password change states
   const [showSecurityModal, setShowSecurityModal] = useState(false);
@@ -157,6 +162,7 @@ export default function OrganizerProfilePage() {
         setFormData(mappedProfile);
         setOriginalData(mappedProfile);
         setProfilePictureUrl(profile.profilePicture || null);
+        setOriginalProfilePictureUrl(profile.profilePicture || null);
       } catch (error) {
         if (!isActive) return;
         setLoadError(getErrorMessage(error, "Failed to load profile."));
@@ -198,12 +204,18 @@ export default function OrganizerProfilePage() {
   const handleEdit = () => {
     setIsEditing(true);
     setOriginalData({ ...formData });
+    setOriginalProfilePictureUrl(profilePictureUrl);
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setFormData({ ...originalData });
     setErrors({});
+    setProfilePictureUrl(originalProfilePictureUrl);
+    if (pendingImagePreview) URL.revokeObjectURL(pendingImagePreview);
+    setPendingImageFile(null);
+    setPendingImagePreview(null);
+    setPendingRemove(false);
   };
 
   const handleSave = async () => {
@@ -217,6 +229,25 @@ export default function OrganizerProfilePage() {
       setFormData(mappedProfile);
       setOriginalData(mappedProfile);
       setErrors({});
+
+      if (pendingRemove) {
+        await organizerApi.deleteProfilePicture(organizerId!);
+        setProfilePictureUrl(null);
+        localStorage.removeItem("forsa_profile_picture");
+        window.dispatchEvent(new Event("profilePictureUpdated"));
+      } else if (pendingImageFile) {
+        const url = await organizerApi.uploadProfilePicture(organizerId!, pendingImageFile);
+        setProfilePictureUrl(url);
+        localStorage.setItem("forsa_profile_picture", url);
+        window.dispatchEvent(new Event("profilePictureUpdated"));
+      }
+
+      if (pendingImagePreview) URL.revokeObjectURL(pendingImagePreview);
+      setPendingImageFile(null);
+      setPendingImagePreview(null);
+      setPendingRemove(false);
+      setOriginalProfilePictureUrl(pendingRemove ? null : profilePictureUrl);
+
       setIsEditing(false);
       toast.success("Profile updated successfully.");
     } catch (error) {
@@ -228,17 +259,26 @@ export default function OrganizerProfilePage() {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
     const file = e.target.files[0];
-    try {
-      const url = await organizerApi.uploadProfilePicture(organizerId!, file);
-      setProfilePictureUrl(url);
-      toast.success("Profile picture updated");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to upload image");
-    }
+    if (pendingImagePreview) URL.revokeObjectURL(pendingImagePreview);
+    setPendingImageFile(file);
+    setPendingImagePreview(URL.createObjectURL(file));
+    setPendingRemove(false);
+    setShowPicMenu(false);
   };
+
+  const handleImageRemove = () => {
+    if (pendingImagePreview) URL.revokeObjectURL(pendingImagePreview);
+    setPendingImageFile(null);
+    setPendingImagePreview(null);
+    setPendingRemove(true);
+    setProfilePictureUrl(null);
+    setShowPicMenu(false);
+  };
+
+  const displayedPicture = pendingRemove ? null : (pendingImagePreview || (profilePictureUrl ? (profilePictureUrl.startsWith('http') ? profilePictureUrl : `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}${profilePictureUrl.startsWith('/') ? '' : '/'}${profilePictureUrl}`) : null));
 
   if (isLoading) {
     return (
@@ -307,8 +347,8 @@ export default function OrganizerProfilePage() {
               <div className="relative pt-8 pb-6 px-8">
                 <div className="relative mb-4 inline-block">
                   <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#1E3D61] to-[#0F2847] flex items-center justify-center border-4 border-white shadow-lg mx-auto overflow-hidden">
-                    {profilePictureUrl ? (
-                      <img src={`${import.meta.env.VITE_API_BASE_URL || ""}${profilePictureUrl}`} alt="Profile" className="w-full h-full object-cover" />
+                    {displayedPicture ? (
+                      <img src={displayedPicture} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-4xl font-bold text-white">
                         {formData.fullName.charAt(0) || "U"}
@@ -316,10 +356,32 @@ export default function OrganizerProfilePage() {
                     )}
                   </div>
                   {isEditing && (
-                    <label className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#1E3D61] rounded-xl flex items-center justify-center text-white shadow-md hover:bg-[#152D4A] transition-colors cursor-pointer">
-                      <Camera className="w-4 h-4" />
-                      <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
-                    </label>
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setShowPicMenu(!showPicMenu)}
+                        className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#1E3D61] rounded-xl flex items-center justify-center text-white shadow-md hover:bg-[#152D4A] transition-colors cursor-pointer"
+                      >
+                        <Camera className="w-4 h-4" />
+                      </button>
+                      {showPicMenu && (
+                        <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-xl border border-slate-200 py-1 w-44 z-50">
+                          <label className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer w-full">
+                            <ImagePlus className="w-4 h-4" /> Change Picture
+                            <input type="file" hidden accept="image/*" onChange={handleImageSelect} />
+                          </label>
+                          {(profilePictureUrl || pendingImagePreview) && !pendingRemove && (
+                            <button
+                              type="button"
+                              onClick={handleImageRemove}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 w-full text-left"
+                            >
+                              <Trash2 className="w-4 h-4" /> Remove Picture
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
                 <h2 className="font-bold text-xl text-slate-800 mb-0.5">

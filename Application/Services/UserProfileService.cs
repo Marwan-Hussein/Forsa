@@ -134,11 +134,26 @@ namespace Application.Services
             user.ProfilePicture = relativePath;
             user.LastModifiedAt = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
-            Console.WriteLine(_env.WebRootPath);
 
-
-            Console.WriteLine(uploadsDir);
             return relativePath;
+        }
+
+        public async Task<bool> RemoveProfilePictureAsync(int userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null || user.IsDeleted) throw new KeyNotFoundException("User not found");
+
+            if (string.IsNullOrEmpty(user.ProfilePicture)) return false;
+
+            // Delete physical file
+            var physicalPath = Path.Combine(_env.WebRootPath ?? "wwwroot", user.ProfilePicture.TrimStart('/'));
+            if (File.Exists(physicalPath)) File.Delete(physicalPath);
+
+            user.ProfilePicture = null;
+            user.LastModifiedAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
+
+            return true;
         }
 
         // Private helpers
