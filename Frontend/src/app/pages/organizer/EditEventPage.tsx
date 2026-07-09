@@ -39,6 +39,7 @@ export default function EditEventPage() {
   const [eventPlaceLocation, setEventPlaceLocation] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [originalStartDate, setOriginalStartDate] = useState<Date | undefined>(undefined); // saved event start — used for lock logic
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -62,7 +63,11 @@ export default function EditEventPage() {
         const booked = data.bookedTickets ?? ((data.totalTickets || 0) - (data.remainingTickets || 0));
         setBookedTicketsCount(booked);
 
-        if (data.startDate) setStartDate(parseBackendDate(data.startDate));
+        if (data.startDate) {
+          const parsed = parseBackendDate(data.startDate);
+          setStartDate(parsed);
+          setOriginalStartDate(parsed);
+        }
         if (data.endDate) setEndDate(parseBackendDate(data.endDate));
         if (data.imageUrl) setExistingImageUrl(data.imageUrl);
         if (data.placeId) {
@@ -109,8 +114,10 @@ export default function EditEventPage() {
     }
   };
 
+  // Lock is based on the ORIGINAL saved event start date — not the form's current value.
+  // This prevents a form entry mistake from immediately locking all fields.
   const isWithin24HoursOrDone = eventStatus.toLowerCase() === "completed" ||
-    (startDate && (startDate.getTime() - new Date().getTime()) < 24 * 60 * 60 * 1000);
+    (originalStartDate && (originalStartDate.getTime() - new Date().getTime()) < 24 * 60 * 60 * 1000);
   const isTicketPriceDisabled = isWithin24HoursOrDone || bookedTicketsCount > 0;
   const isLocationDisabled = !!isWithin24HoursOrDone;
   const isStartedOrCompleted = isWithin24HoursOrDone; // kept for date pickers
@@ -136,12 +143,18 @@ export default function EditEventPage() {
     setIsSubmitting(true);
 
     try {
+      // Serialize as local datetime (no UTC conversion) so the server stores the time the user actually intended.
+      const toLocalISOString = (d: Date) => {
+        const pad = (n: number) => String(n).padStart(2, "0");
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      };
+
       const dto = {
         title: formData.title,
         description: formData.description,
         category: formData.category,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
+        startDate: toLocalISOString(startDate),
+        endDate: toLocalISOString(endDate),
         ticketPrice: parseFloat(formData.ticketPrice),
         totalTickets: parseInt(formData.totalTickets, 10),
         customLocation: hasPlaceId ? undefined : (hasOwnPlace ? formData.customLocation : undefined)

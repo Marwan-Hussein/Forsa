@@ -50,7 +50,7 @@ function renderEventStatusBadge(event: any) {
         </span>
         {isMissingLocation && (
           <p className="text-[11px] text-amber-600 font-semibold leading-normal font-['Inter:Medium',sans-serif] mt-0.5">
-            ⚠️ Missing location. Reserve a venue or add custom location.
+            ⚠️ Missing location. Reserve a venue or add custom location for admin approval and publishing.
           </p>
         )}
       </div>

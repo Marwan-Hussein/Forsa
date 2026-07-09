@@ -90,13 +90,19 @@ export default function CreateEventPage() {
         return;
       }
 
+      // Serialize as local datetime (no UTC conversion) so the server stores the intended local time.
+      const toLocalISOString = (d: Date) => {
+        const pad = (n: number) => String(n).padStart(2, "0");
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      };
+
       const dto = {
         organizerId: organizerId,
         title: formData.title,
         description: formData.description,
         category: formData.category,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
+        startDate: toLocalISOString(startDate),
+        endDate: toLocalISOString(endDate),
         ticketPrice: parseFloat(formData.ticketPrice),
         totalTickets: parseInt(formData.totalTickets, 10),
         customLocation: hasOwnPlace ? formData.customLocation : undefined
