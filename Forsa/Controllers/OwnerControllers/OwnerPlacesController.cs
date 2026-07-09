@@ -54,27 +54,6 @@ namespace Forsa.Controllers.OwnerControllers
             try
             {
                 var result = await _placeOwnerService.AddNewPlaceAsync(GetOwnerId(), dto);
-                var admins = await _adminUserService.GetAllInRole(Roles.Admin, 1, 1000);
-
-                foreach (var admin in admins)
-                {
-                    try
-                    {
-                        await _notifierService.SendAsync(admin.Id, new NotificationMessageDto
-                        {
-                            Title = "New venue awaiting approval",
-                            Body = $"{result.Name} has been submitted and is pending admin review.",
-                            Type = "admin",
-                            Url = "/admin/places",
-                            SentAt = DateTimeOffset.UtcNow,
-                        });
-                    }
-                    catch
-                    {
-                        // continue notifying remaining admins even if one send fails
-                    }
-                }
-
                 return CreatedAtAction(nameof(GetMyPlace), new { id = result.PlaceId }, result);
             }
             catch (Exception)

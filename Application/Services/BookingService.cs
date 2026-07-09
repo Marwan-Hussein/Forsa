@@ -1,6 +1,7 @@
 using Application.Core.DTOs.Booking;
 using Application.Core.DTOs.Event;
 using Application.Core.Interfaces;
+using Application.Core.Interfaces.Auth.OTP;
 using Application.Core.Interfaces.ExternalServicesInterfaces;
 using Application.Core.DTOs.CommonDTOs;
 using AutoMapper;
@@ -26,6 +27,7 @@ namespace Application.Services
         private readonly IPaymentService _paymentService;
         private readonly IQueryableRepository<PaymentTransaction> _transactionRepository;
         private readonly INotifierService _notifierService;
+        private readonly IEmailService _emailService;
 
         public BookingService(
             IQueryableRepository<Event> eventRepository,
@@ -37,18 +39,20 @@ namespace Application.Services
             IGoogleCalendarSyncService calendarSync,
             IPaymentService paymentService,
             IQueryableRepository<PaymentTransaction> transactionRepository,
-            INotifierService notifierService)
+            INotifierService notifierService,
+            IEmailService emailService)
         {
             _eventRepository = eventRepository;
             _bookingRepository = bookingRepository;
-            _notificationRepository = notificationRepository;
+            _notification_repository = notificationRepository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
-            _qrService = qrService;
+            _qr_service = qrService;
             _calendarSync = calendarSync;
             _paymentService = paymentService;
             _transactionRepository = transactionRepository;
             _notifierService = notifierService;
+            _emailService = emailService;
         }
 
         public async Task<EventDetailsDto> GetEventDetailsAsync(int eventId)
@@ -167,6 +171,7 @@ namespace Application.Services
         {
             var booking = await _bookingRepository.GetQueryable()
                 .Include(b => b.Event)
+                .Include(b => b.Attendee)
                 .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
 
             if (booking == null)
@@ -192,12 +197,26 @@ namespace Application.Services
             await _notificationRepository.AddAsync(notification);
             await _unitOfWork.SaveChangesAsync();
 
+            if (!string.IsNullOrWhiteSpace(booking.Attendee?.Email))
+            {
+                try
+                {
+                    await _emailService.SendAsync(booking.Attendee.Email,
+                        "Booking Approved",
+                        notification.Message);
+                }
+                catch
+                {
+                    // Silence email failures so booking approval still succeeds
+                }
+            }
+
             try
             {
                 await _notifierService.SendAsync(booking.AttendeeId, new NotificationMessageDto
                 {
                     Title = "Booking Approved",
-                    Body = $"Your ticket request for '{booking.Event.Title}' has been approved! Booking ID: {booking.Id}",
+                    Body = notification.Message,
                     Type = NotificationType.BookingConfirmation.ToString()
                 });
             }
@@ -212,6 +231,7 @@ namespace Application.Services
         {
             var booking = await _bookingRepository.GetQueryable()
                 .Include(b => b.Event)
+                .Include(b => b.Attendee)
                 .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
 
             if (booking == null)
@@ -241,12 +261,26 @@ namespace Application.Services
             await _notificationRepository.AddAsync(notification);
             await _unitOfWork.SaveChangesAsync();
 
+            if (!string.IsNullOrWhiteSpace(booking.Attendee?.Email))
+            {
+                try
+                {
+                    await _emailService.SendAsync(booking.Attendee.Email,
+                        "Booking Rejected",
+                        notification.Message);
+                }
+                catch
+                {
+                    // Silence email failures so rejection still succeeds
+                }
+            }
+
             try
             {
                 await _notifierService.SendAsync(booking.AttendeeId, new NotificationMessageDto
                 {
                     Title = "Booking Rejected",
-                    Body = $"Your ticket request for '{booking.Event.Title}' has been rejected. Reason: {reason}",
+                    Body = notification.Message,
                     Type = NotificationType.BookingConfirmation.ToString()
                 });
             }
