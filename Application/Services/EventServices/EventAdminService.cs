@@ -8,6 +8,7 @@ using Domain.Entities.AttendeeEntities;
 using Domain.ENUMs;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Application.Core.Helpers;
 
 namespace Application.Services.EventServices
 {
@@ -51,15 +52,25 @@ namespace Application.Services.EventServices
 
             _repo.Update(ev);
             #region Email to organization
-            var message = $"Your event '{ev.Title}' status has been updated to {status}.";
+            var title = "Event Status Updated 📢";
+            var bodyText = $"Hello Organizer!\n\nWe wanted to update you on your event submission, **{ev.Title}**. The administrative team has reviewed and updated its status to **{status}**. 📋\n\nYou can view the full details and manage the event by logging into your organizer dashboard.";
+            
+            var details = new Dictionary<string, string>
+            {
+                { "Event Title", ev.Title },
+                { "New Status", status.ToString() },
+                { "Date Updated", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm UTC") }
+            };
+
+            var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
             var organizerEmail = ev.Organizer?.Email;
             if (organizerEmail is not null)
             {
                 try
                 {
                     await _emailService.SendAsync(organizerEmail,
-                        @"'{ev.Title}' Status Updated",
-                        message);
+                        $"'{ev.Title}' Status Updated",
+                        htmlBody);
                 }
                 catch
                 {
@@ -72,19 +83,33 @@ namespace Application.Services.EventServices
             {
                 var organizerName = ev.Organizer?.FullName ?? "An organizer you follow";
                 var subscribers = await _subRepository.GetQueryable()
+                    .Include(s => s.Attendee)
                     .Where(s => s.OrganizerId == ev.OrganizerId)
                     .ToListAsync();
 
-                var message2 = $"Organizer '{organizerName}' has published a new event: '{ev.Title}'!";
+                var subTitle = "New Event Published! ✨";
+                var subBody = $"Exciting news! **{organizerName}**, an organizer you follow, has just published a brand new event: **{ev.Title}**! 🚀\n\nBe among the first to check it out, view the details, and book your tickets before they sell out. We hope to see you there!";
+                
+                var subDetails = new Dictionary<string, string>
+                {
+                    { "Event Title", ev.Title },
+                    { "Organized By", organizerName },
+                    { "Platform", "Forsa" }
+                };
+
+                var subHtmlBody = EmailTemplateHelper.BuildHtmlTemplate(subTitle, subBody, subDetails);
                 foreach (var sub in subscribers)
                 {
-                    try
+                    if (!string.IsNullOrWhiteSpace(sub.Attendee?.Email))
                     {
-                        await _emailService.SendAsync(sub.Attendee?.Email, @"'{ev.Title}' Published", message2);
-                    }
-                    catch
-                    {
-                        // Silence email failures so the status update still succeeds
+                        try
+                        {
+                            await _emailService.SendAsync(sub.Attendee.Email, $"'{ev.Title}' Published", subHtmlBody);
+                        }
+                        catch
+                        {
+                            // Silence email failures so the status update still succeeds
+                        }
                     }
                 }
             }
@@ -97,6 +122,7 @@ namespace Application.Services.EventServices
         public async Task<bool> SoftDeleteAsync(int eventId)
         {
             var ev = await _repo.GetQueryable()
+                                .Include(e => e.Organizer)
                                 .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
             if (ev == null)
                 return false;
@@ -108,14 +134,24 @@ namespace Application.Services.EventServices
 
             await _unitOfWork.SaveChangesAsync();
 
-            var message = $"Your event '{ev.Title}' has been deleted by an administrator.";
+            var title = "Event Listing Removed 🚨";
+            var bodyText = $"Hello Organizer.\n\nWe are writing to notify you that your event listing, **{ev.Title}**, has been removed from Forsa by an administrator. 🛑\n\nIf you have any questions or believe this deletion was in error, please contact support for clarification.";
+            
+            var details = new Dictionary<string, string>
+            {
+                { "Event Title", ev.Title },
+                { "Action Taken", "Removed by Administrator" },
+                { "Date Removed", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm UTC") }
+            };
+
+            var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
             if (ev.Organizer?.Email is not null)
             {
                 try
                 {
                     await _emailService.SendAsync(ev.Organizer.Email,
                         "Event Deleted",
-                        message);
+                        htmlBody);
                 }
                 catch
                 {

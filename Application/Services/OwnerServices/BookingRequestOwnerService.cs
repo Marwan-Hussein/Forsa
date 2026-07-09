@@ -10,6 +10,7 @@ using Domain.Entities.PlaceEntities;
 using Domain.ENUMs;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Application.Core.Helpers;
 
 namespace Application.Services.OwnerServices
 {
@@ -108,25 +109,44 @@ namespace Application.Services.OwnerServices
                     _bookingRequestRepo.Update(conflicting);
 
                     // email the rejected organizer
+                    var conflictTitle = "Booking Request Conflict ⚠️";
+                    var conflictBody = $"Hello Organizer!\n\nThank you for requesting to book our venue. Unfortunately, your booking request for the venue **{request.Place.Name}** on **{conflicting.RequestedDate:yyyy-MM-dd}** could not be accepted due to a schedule conflict, as the venue has already been booked for that date. 🗓️\n\nWe apologize for this inconvenience and encourage you to browse alternative dates or other venues on the Forsa platform.";
+                    
+                    var conflictDetails = new Dictionary<string, string>
+                    {
+                        { "Venue Name", request.Place.Name },
+                        { "Requested Date", conflicting.RequestedDate.ToString("yyyy-MM-dd") },
+                        { "Status", "Rejected (Schedule Conflict)" }
+                    };
 
-                    var Message = $"Your booking request for \"{request.Place.Name}\" on {conflicting.RequestedDate:yyyy-MM-dd} was rejected due to a schedule conflict.";
+                    var conflictHtml = EmailTemplateHelper.BuildHtmlTemplate(conflictTitle, conflictBody, conflictDetails);
                     var conflictedOrganizerEmail = conflicting.Organizer?.Email;
                     if(conflictedOrganizerEmail is not null)
                     {
                         await _emailService.SendAsync(conflictedOrganizerEmail,
                             "Booking Request Rejected",
-                            Message);
+                            conflictHtml);
                     }
                 }
 
                 // Notify the accepted organizer
-                var message = $"Your booking request for \"{request.Place.Name}\" on {request.RequestedDate:yyyy-MM-dd} has been accepted!";
+                var acceptTitle = "Booking Request Approved! 🎉";
+                var acceptBody = $"Congratulations Organizer!\n\nYour request to book **{request.Place.Name}** on **{request.RequestedDate:yyyy-MM-dd}** has been accepted by the venue owner! 🥳\n\nThe venue has been officially reserved for your event. You can access full scheduling and contact information via your dashboard.";
+                
+                var acceptDetails = new Dictionary<string, string>
+                {
+                    { "Venue Name", request.Place.Name },
+                    { "Requested Date", request.RequestedDate.ToString("yyyy-MM-dd") },
+                    { "Booking Status", "Confirmed & Accepted" }
+                };
+
+                var acceptHtml = EmailTemplateHelper.BuildHtmlTemplate(acceptTitle, acceptBody, acceptDetails);
                 var acceptedOrganizerEmail = request.Organizer?.Email;
                 if(acceptedOrganizerEmail is not null)
                 {
                     await _emailService.SendAsync(acceptedOrganizerEmail,
                         "Booking Request Accepted",
-                        message);
+                        acceptHtml);
                 }
             }
             else
@@ -141,7 +161,18 @@ namespace Application.Services.OwnerServices
                 request.RejectionReason = dto.RejectionReason;
 
                 // Notify the rejected organizer
-                var message = $"Your booking request for \"{request.Place.Name}\" on {request.RequestedDate:yyyy-MM-dd} was rejected. Reason: {dto.RejectionReason}";
+                var rejectTitle = "Booking Request Declined ❌";
+                var rejectBody = $"Hello Organizer.\n\nWe are writing to let you know that your request to book the venue **{request.Place.Name}** on **{request.RequestedDate:yyyy-MM-dd}** has been declined by the venue owner. 😔\n\nThe owner provided the following feedback for this decision:\n\n**Reason:** {dto.RejectionReason}\n\nWe appreciate your understanding and hope you find another suitable slot or venue on our platform.";
+                
+                var rejectDetails = new Dictionary<string, string>
+                {
+                    { "Venue Name", request.Place.Name },
+                    { "Requested Date", request.RequestedDate.ToString("yyyy-MM-dd") },
+                    { "Status", "Declined" },
+                    { "Reason", dto.RejectionReason }
+                };
+
+                var rejectHtml = EmailTemplateHelper.BuildHtmlTemplate(rejectTitle, rejectBody, rejectDetails);
                 var rejectedOrganizerEmail = request.Organizer?.Email;
 
                 if (!string.IsNullOrWhiteSpace(rejectedOrganizerEmail))
@@ -150,7 +181,7 @@ namespace Application.Services.OwnerServices
                     {
                         await _emailService.SendAsync(rejectedOrganizerEmail,
                             "Booking Request Rejected",
-                            message);
+                            rejectHtml);
                     }
                     catch
                     {

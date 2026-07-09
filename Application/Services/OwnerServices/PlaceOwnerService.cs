@@ -11,6 +11,7 @@ using Domain.ENUMs;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Application.Core.Helpers;
 
 namespace Application.Services.OwnerServices
 {
@@ -68,6 +69,21 @@ namespace Application.Services.OwnerServices
             var admins = await _adminUserService.GetAllInRole(Roles.Admin, 1, 1000);
             _logger.LogInformation("[PlaceOwnerService] Found {AdminCount} admin(s) to notify", admins.Count);
 
+            var title = "New Venue Submission 📥";
+            var bodyText = $"Hello Administrator!\n\nA new venue has been submitted on the Forsa platform by a venue owner and is currently awaiting your review and approval. 🔍\n\nPlease log in to the Forsa Administration portal to examine the venue details, pictures, and scheduling parameters.";
+            
+            var details = new Dictionary<string, string>
+            {
+                { "Venue Name", place.Name },
+                { "Location", place.Location },
+                { "Capacity", place.Capacity.ToString() },
+                { "Hourly Price", $"${place.HourlyPrice}" },
+                { "Daily Price", $"${place.DailyPrice}" },
+                { "Submitted At", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm UTC") }
+            };
+
+            var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
+
             foreach (var admin in admins)
             {
                 if (!string.IsNullOrWhiteSpace(admin.Email))
@@ -76,7 +92,7 @@ namespace Application.Services.OwnerServices
                     {
                         await _emailService.SendAsync(admin.Email,
                             "New Place Awaiting Approval",
-                            $"A new venue '{place.Name}' has been submitted by an owner and is awaiting your review.");
+                            htmlBody);
                     }
                     catch{}
                 }
