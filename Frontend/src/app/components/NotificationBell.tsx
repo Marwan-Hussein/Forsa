@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { Link } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { Bell, Check, ChevronRight, X } from "lucide-react";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import * as signalR from "@microsoft/signalr";
 import { useNotificationContext, type NotificationMessageDto } from "../contexts/NotificationContext";
 
@@ -65,7 +65,6 @@ export function NotificationBell() {
 
   return (
     <div className="relative">
-      <Toaster position="top-right" />
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
