@@ -124,11 +124,12 @@ namespace Application.Services
             // Update event remaining tickets
             eventEntity.RemainingTickets -= dto.NumberOfTickets;
             _eventRepository.Update(eventEntity);
-            #region email booking status
+
+            #region Email booking status
             // send email
             var message = eventEntity.TicketPrice <= 0
-                ? $"Your ticket request for '{eventEntity.Title}' has been confirmed! Booking ID: {booking.Id}"
-                : $"Your ticket request for '{eventEntity.Title}' has been received and is pending approval. Booking ID: {booking.Id}";
+                ? $"Your ticket request for '{eventEntity.Title}' has been confirmed! Booking ID"
+                : $"Your ticket request for '{eventEntity.Title}' has been received and is pending approval.";
             var attendeeEmail = _bookingRepository.GetQueryable()
                 .Where(b => b.Id == booking.Id)
                 .Select(b => b.Attendee.Email)
@@ -175,46 +176,23 @@ namespace Application.Services
             booking.Status = BookingStatus.Confirmed;
             _bookingRepository.Update(booking);
 
-            #region notification
-            var notification = new Notification
-            {
-                Type = NotificationType.BookingConfirmation,
-                SentVia = DeliveryMethod.Email,
-                UserId = booking.AttendeeId,
-                Message = $"Your ticket request for '{booking.Event.Title}' has been approved! Booking ID: {booking.Id}",
-                Status = NotificationStatus.Pending,
-                IsDeleted = false
-            };
+            #region Email approve booking
 
-            await _notificationRepository.AddAsync(notification);
             await _unitOfWork.SaveChangesAsync();
 
             if (!string.IsNullOrWhiteSpace(booking.Attendee?.Email))
             {
                 try
                 {
+                    var message = $"Your ticket request for '{booking.Event.Title}' has been approved!";
                     await _emailService.SendAsync(booking.Attendee.Email,
                         "Booking Approved",
-                        notification.Message);
+                        message);
                 }
                 catch
                 {
                     // Silence email failures so booking approval still succeeds
                 }
-            }
-
-            try
-            {
-                await _notifierService.SendAsync(booking.AttendeeId, new NotificationMessageDto
-                {
-                    Title = "Booking Approved",
-                    Body = notification.Message,
-                    Type = NotificationType.BookingConfirmation.ToString()
-                });
-            }
-            catch
-            {
-                // Silence real-time notification failures to prevent blocking execution
             }
             #endregion
         }
