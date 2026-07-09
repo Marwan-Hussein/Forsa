@@ -61,7 +61,7 @@ namespace Forsa
             {
                 options.AddPolicy("Frontend", policy =>
                 {
-                    policy.WithOrigins("http://localhost:5173") // Vite dev server port
+                    policy.WithOrigins("http://localhost:5173", "https://forsa-app.runasp.net/") // Vite dev server port
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials();

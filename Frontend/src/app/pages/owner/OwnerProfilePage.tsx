@@ -274,7 +274,7 @@ export default function OwnerProfilePage() {
     setShowPicMenu(false);
   };
 
-  const displayedPicture = pendingRemove ? null : (pendingImagePreview || (profilePictureUrl ? (profilePictureUrl.startsWith('http') ? profilePictureUrl : `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}${profilePictureUrl.startsWith('/') ? '' : '/'}${profilePictureUrl}`) : null));
+  const displayedPicture = pendingRemove ? null : (pendingImagePreview || (profilePictureUrl ? (profilePictureUrl.startsWith('http') ? profilePictureUrl : `${import.meta.env.VITE_API_BASE_URL || "https://forsa-app.runasp.net"}${profilePictureUrl.startsWith('/') ? '' : '/'}${profilePictureUrl}`) : null));
 
   if (isLoading) {
     return (

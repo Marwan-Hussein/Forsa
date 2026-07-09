@@ -276,7 +276,7 @@ export default function EventDetailsPage() {
                   <ImageWithFallback
                     alt={event.title}
                     className="h-full w-full object-cover"
-                    src={event.image.startsWith("/") ? `http://localhost:5000${event.image}` : event.image}
+                    src={event.image.startsWith("/") ? `https://forsa-app.runasp.net${event.image}` : event.image}
                   />
                 ) : (
                   <ImageWithFallback
