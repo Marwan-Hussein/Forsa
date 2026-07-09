@@ -9,6 +9,7 @@ using Domain.Entities;
 using Domain.Entities.BookingEntities;
 using Domain.Entities.EventEntities;
 using Domain.Entities.PaymentEntities;
+using Domain.Entities.AttendeeEntities;
 using Domain.ENUMs;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,7 @@ namespace Application.Services
         private readonly IPaymentService _paymentService;
         private readonly IQueryableRepository<PaymentTransaction> _transactionRepository;
         private readonly IEmailService _emailService;
+        private readonly IQueryableRepository<Attendee> _attendeeRepository;
 
         public BookingService(
             IQueryableRepository<Event> eventRepository,
@@ -37,7 +39,8 @@ namespace Application.Services
             IGoogleCalendarSyncService calendarSync,
             IPaymentService paymentService,
             IQueryableRepository<PaymentTransaction> transactionRepository,
-            IEmailService emailService)
+            IEmailService emailService,
+            IQueryableRepository<Attendee> attendeeRepository)
         {
             _eventRepository = eventRepository;
             _bookingRepository = bookingRepository;
@@ -48,6 +51,7 @@ namespace Application.Services
             _paymentService = paymentService;
             _transactionRepository = transactionRepository;
             _emailService = emailService;
+            _attendeeRepository = attendeeRepository;
         }
 
         public async Task<EventDetailsDto> GetEventDetailsAsync(int eventId)
@@ -70,8 +74,22 @@ namespace Application.Services
 
         public async Task<BookingResponseDto> CreateBookingAsync(CreateBookingRequestDto dto)
         {
-
             dto.NumberOfTickets = 1;
+
+            // Check if attendee profile is completed (phone, location, birthdate)
+            var attendee = await _attendeeRepository.GetQueryable()
+                .FirstOrDefaultAsync(a => a.Id == dto.AttendeeId);
+            if (attendee == null)
+                throw new KeyNotFoundException("Attendee not found");
+
+            if (string.IsNullOrWhiteSpace(attendee.PhoneNumber) || 
+                string.IsNullOrWhiteSpace(attendee.Location) || 
+                attendee.Location == "Not Specified" ||
+                attendee.BirthDate == default(DateTime) || 
+                attendee.BirthDate.Year <= 1)
+            {
+                throw new InvalidOperationException("Please complete your profile (Phone Number, Location, and Birth Date) before booking.");
+            }
 
             // Get event and validate
             var eventEntity = await _eventRepository.GetQueryable()

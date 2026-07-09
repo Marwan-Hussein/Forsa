@@ -200,5 +200,9 @@ export const ownerApi = {
 
   submitOrganizerFeedback: async (bookingRequestId: number, data: { rating: number; comment: string }): Promise<any> => {
     return await apiPost(`/api/owner/booking-requests/${bookingRequestId}/feedback`, data);
+  },
+
+  getOwnerReviews: async (): Promise<any[]> => {
+    return await apiGet(`/api/owner/reviews`);
   }
 };

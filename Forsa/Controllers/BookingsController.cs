@@ -65,7 +65,7 @@ namespace Forsa.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred while creating the booking\n {ex.Message}\n {ex}");
+                return StatusCode(500, new { message = "An error occurred while creating the booking.", details = ex.Message });
             }
         }
 

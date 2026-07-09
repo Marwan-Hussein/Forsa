@@ -28,13 +28,14 @@ const validationFieldMap: Record<string, keyof ProfileFormData> = {
 };
 
 function mapProfileToForm(profile: AttendeeProfileDto): ProfileFormData {
+  const bDate = profile.birthDate ? profile.birthDate.slice(0, 10) : "";
   return {
     fullName: profile.fullName ?? "",
     userName: profile.userName ?? "",
     email: profile.email ?? "",
     phoneNumber: profile.phoneNumber ?? "",
     location: profile.location ?? "",
-    birthDate: profile.birthDate ? profile.birthDate.slice(0, 10) : "",
+    birthDate: (bDate.startsWith("0001") || bDate === "") ? "" : bDate,
   };
 }
 
@@ -397,16 +398,6 @@ export default function ProfilePage() {
                     <MapPin className="w-3.5 h-3.5" />{formData.location}
                   </div>
                 )}
-              </div>
-              <div className="grid grid-cols-2 divide-x divide-slate-100 border-t border-slate-100">
-                <div className="py-4">
-                  <p className="font-bold text-xl text-slate-800">-</p>
-                  <p className="text-slate-500 text-xs mt-0.5">Attended</p>
-                </div>
-                <div className="py-4">
-                  <p className="font-bold text-xl text-[var(--brand-navy)]">-</p>
-                  <p className="text-slate-500 text-xs mt-0.5">Upcoming</p>
-                </div>
               </div>
             </motion.div>
 

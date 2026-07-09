@@ -8,7 +8,8 @@ import {
   Settings,
   Menu,
   X,
-  ClipboardList
+  ClipboardList,
+  MessageSquare
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { ForSaLogo } from "../../components/ForSaLogo";
@@ -69,6 +70,7 @@ export default function OwnerLayout() {
     { name: "Dashboard", path: "/owner", icon: LayoutDashboard, exact: true },
     { name: "My Venues", path: "/owner/places", icon: MapPin },
     { name: "Booking Requests", path: "/owner/bookings", icon: CalendarCheck },
+    { name: "Venue Reviews", path: "/owner/reviews", icon: MessageSquare },
     { name: "Profile", path: "/owner/profile", icon: Settings },
   ];
 

@@ -47,6 +47,7 @@ import OwnerPlaceMediaPage from "./pages/owner/OwnerPlaceMediaPage";
 import OwnerBookingsPage from "./pages/owner/OwnerBookingsPage";
 import OwnerProfilePage from "./pages/owner/OwnerProfilePage";
 import OwnerPlaceCalendarPage from "./pages/owner/OwnerPlaceCalendarPage";
+import OwnerReviewsPage from "./pages/owner/OwnerReviewsPage";
 
 // Organizer Portal Imports
 import OrganizerLayout from "./pages/layout/OrganizerLayout";
@@ -58,6 +59,7 @@ import BookingRequestsPage from "./pages/organizations/BookingRequestsPage";
 import ManageAttendeesPage from "./pages/organizations/ManageAttendeesPage";
 import QRCodeScannerPage from "./pages/organizations/QRCodeScannerPage";
 import OrganizerProfilePage from "./pages/organizations/OrganizerProfilePage";
+import OrganizerReviewsPage from "./pages/organizer/OrganizerReviewsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import VerifyAccountPage from "./pages/auth/VerifyAccountPage";
 import EventFeedbacksPage from "./pages/events/EventFeedbacksPage";
@@ -241,6 +243,10 @@ export const router = createBrowserRouter([
         path: "profile",
         Component: OwnerProfilePage,
       },
+      {
+        path: "reviews",
+        Component: OwnerReviewsPage,
+      },
     ],
   },
   {
@@ -306,6 +312,10 @@ export const router = createBrowserRouter([
       {
         path: "profile",
         Component: OrganizerProfilePage,
+      },
+      {
+        path: "reviews",
+        Component: OrganizerReviewsPage,
       },
     ],
   },
