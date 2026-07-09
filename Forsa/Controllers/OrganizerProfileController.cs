@@ -227,5 +227,38 @@ namespace Forsa.Controllers
                 return StatusCode(500, $"An error occurred while toggling subscription: {ex.Message}");
             }
         }
+
+        // GET: api/organizers/{id:int}/reviews
+        [HttpGet("{id:int}/reviews")]
+        public async Task<ActionResult<IEnumerable<Application.Core.DTOs.Organizer.OrganizerFeedbackDTO>>> GetOrganizerReviews(int id, [FromServices] ForsaDbContext context)
+        {
+            try
+            {
+                var reviews = await context.Set<Domain.Entities.Feedback>()
+                    .Include(f => f.Event)
+                    .Include(f => f.Attendee)
+                    .Where(f => f.Event != null && f.Event.OrganizerId == id && !f.IsDeleted && f.AttendeeId != null && f.Attendee != null)
+                    .OrderByDescending(f => f.CreatedAt)
+                    .Select(f => new Application.Core.DTOs.Organizer.OrganizerFeedbackDTO
+                    {
+                        Id = f.Id,
+                        Rating = f.Rating,
+                        Comment = f.Comment,
+                        AttendeeId = f.AttendeeId.Value,
+                        AttendeeName = f.Attendee != null ? f.Attendee.FullName : string.Empty,
+                        AttendeeImageUrl = f.Attendee != null ? f.Attendee.ProfilePicture : string.Empty,
+                        EventId = f.EventId ?? 0,
+                        EventTitle = f.Event != null ? f.Event.Title : string.Empty,
+                        CreatedAt = f.CreatedAt
+                    })
+                    .ToListAsync();
+
+                return Ok(reviews);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while fetching organizer reviews: {ex.Message}");
+            }
+        }
     }
 }

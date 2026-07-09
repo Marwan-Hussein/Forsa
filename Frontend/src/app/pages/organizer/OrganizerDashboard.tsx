@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { 
   Ticket, CalendarCheck, DollarSign, MapPin, 
   Sparkles, Plus, ArrowRight, TrendingUp,
-  Activity
+  Activity, Star, MessageSquare
 } from "lucide-react";
 import { motion, useSpring, useTransform } from "motion/react";
 import { organizerApi, OrganizerDashboardStats } from "../../api/organizerApi";
@@ -119,6 +119,7 @@ function renderEventStatusBadge(event: any) {
 export default function OrganizerDashboard() {
   const [stats, setStats] = useState<OrganizerDashboardStats | null>(null);
   const [events, setEvents] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -131,12 +132,14 @@ export default function OrganizerDashboard() {
       }
 
       try {
-        const [statsData, eventsData] = await Promise.all([
+        const [statsData, eventsData, reviewsData] = await Promise.all([
           organizerApi.getDashboardStats(organizerId),
-          organizerApi.getEventsDashboard(organizerId)
+          organizerApi.getEventsDashboard(organizerId),
+          organizerApi.getOrganizerReviews(organizerId)
         ]);
         setStats(statsData);
         setEvents(eventsData.slice(0, 5));
+        setReviews(reviewsData || []);
       } catch (err) {
         console.error("Error fetching dashboard data", err);
       } finally {
@@ -339,38 +342,111 @@ export default function OrganizerDashboard() {
           </div>
         </div>
 
-        {/* Fun CTA Card - Elegantly colored */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.3, type: "spring" }}
-          className="bg-indigo-600 rounded-[2.5rem] p-8 shadow-2xl shadow-indigo-500/30 flex flex-col justify-center items-center text-center text-white relative overflow-hidden"
-        >
-          {/* Decorative shapes */}
-          <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full blur-2xl" />
-          <div className="absolute -top-10 -left-10 w-40 h-40 border-4 border-white/10 rounded-full" />
-          <div className="absolute -bottom-10 -right-10 w-40 h-40 border-4 border-white/10 rounded-full" />
+        {/* Sidebar Space with Reviews & CTA */}
+        <div className="space-y-8 flex flex-col justify-between h-full">
+          {/* Reviews Widget */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-[2.5rem] p-6 shadow-xl shadow-slate-200/40 border border-white flex flex-col justify-between flex-1">
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="font-['Outfit:Bold',sans-serif] font-bold text-slate-800 text-lg">Attendee Reviews</h3>
+                  <p className="text-xs text-slate-400">Feedback from your events</p>
+                </div>
+                <Link
+                  to="/organizer/reviews"
+                  className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1"
+                >
+                  View All <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
 
-          <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mb-8 relative z-10 shadow-inner border border-white/20 transform rotate-3 group-hover:rotate-6 transition-transform">
-            <TrendingUp className="w-10 h-10 text-white" />
+              {reviews.length === 0 ? (
+                <div className="text-center py-8">
+                  <MessageSquare className="w-12 h-12 text-slate-350 mx-auto mb-2" />
+                  <p className="text-xs text-slate-500 font-medium">No reviews received yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  <div className="flex items-center gap-3">
+                    <span className="text-4xl font-black text-indigo-700">
+                      {(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)}
+                    </span>
+                    <div>
+                      <div className="flex gap-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => {
+                          const avg = reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length;
+                          return (
+                            <Star
+                              key={i}
+                              className={`w-3.5 h-3.5 ${
+                                i < Math.round(avg) ? "fill-amber-400 text-amber-400" : "text-slate-200"
+                              }`}
+                            />
+                          );
+                        })}
+                      </div>
+                      <p className="text-[10px] font-bold text-slate-450 uppercase mt-0.5">{reviews.length} reviews</p>
+                    </div>
+                  </div>
+
+                  {/* Distribution bars */}
+                  <div className="space-y-2">
+                    {[5, 4, 3, 2, 1].map((stars) => {
+                      const count = reviews.filter((r) => r.rating === stars).length;
+                      const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+                      return (
+                        <div key={stars} className="flex items-center gap-2 text-xs font-medium text-slate-500">
+                          <span className="w-3 text-right">{stars}</span>
+                          <Star className="w-3 h-3 fill-amber-400 text-amber-400 shrink-0" />
+                          <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-indigo-500 rounded-full"
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                          <span className="w-8 text-right text-[10px] text-slate-400">{count}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-          
-          <h2 className="text-3xl font-['Outfit:Bold',sans-serif] font-bold mb-3 relative z-10">
-            Grow Your Reach!
-          </h2>
-          <p className="text-indigo-100 text-base mb-8 font-['Inter:Medium',sans-serif] relative z-10 max-w-[250px]">
-            Ready to host an unforgettable experience? Let's bring your next event to life.
-          </p>
-          
-          <Link 
-            to="/organizer/events/new"
-            className="w-full py-4 bg-white text-indigo-700 rounded-2xl font-['Inter:Bold',sans-serif] text-lg hover:bg-slate-50 transition-all shadow-xl active:scale-95 relative z-10 flex items-center justify-center gap-2 group"
+
+          {/* Fun CTA Card - Elegantly colored */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.3, type: "spring" }}
+            className="bg-indigo-600 rounded-[2.5rem] p-8 shadow-2xl shadow-indigo-500/30 flex flex-col justify-center items-center text-center text-white relative overflow-hidden"
           >
-            Start Now
-            <Sparkles className="w-5 h-5 group-hover:animate-pulse" />
-          </Link>
-        </motion.div>
+            {/* Decorative shapes */}
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full blur-2xl" />
+            <div className="absolute -top-10 -left-10 w-40 h-40 border-4 border-white/10 rounded-full" />
+            <div className="absolute -bottom-10 -right-10 w-40 h-40 border-4 border-white/10 rounded-full" />
+
+            <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mb-8 relative z-10 shadow-inner border border-white/20 transform rotate-3 group-hover:rotate-6 transition-transform">
+              <TrendingUp className="w-10 h-10 text-white" />
+            </div>
+            
+            <h2 className="text-3xl font-['Outfit:Bold',sans-serif] font-bold mb-3 relative z-10">
+              Grow Your Reach!
+            </h2>
+            <p className="text-indigo-100 text-base mb-8 font-['Inter:Medium',sans-serif] relative z-10 max-w-[250px]">
+              Ready to host an unforgettable experience? Let's bring your next event to life.
+            </p>
+            
+            <Link 
+              to="/organizer/events/new"
+              className="w-full py-4 bg-white text-indigo-700 rounded-2xl font-['Inter:Bold',sans-serif] text-lg hover:bg-slate-50 transition-all shadow-xl active:scale-95 relative z-10 flex items-center justify-center gap-2 group"
+            >
+              Start Now
+              <Sparkles className="w-5 h-5 group-hover:animate-pulse" />
+            </Link>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

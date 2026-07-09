@@ -8,7 +8,8 @@ import {
   Settings,
   Menu,
   X,
-  ScanLine
+  ScanLine,
+  MessageSquare
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { ForSaLogo } from "../../components/ForSaLogo";
@@ -72,6 +73,7 @@ export default function OrganizerLayout() {
     { name: "Venue Requests", path: "/organizer/venue-requests", icon: MapPin },
     { name: "Ticket Requests", path: "/organizer/ticket-requests", icon: Bell },
     { name: "Scan QR Tickets", path: "/organizer/events/1/scan", icon: ScanLine },
+    { name: "Attendee Reviews", path: "/organizer/reviews", icon: MessageSquare },
     { name: "Profile", path: "/organizer/profile", icon: Settings },
   ];
 

@@ -58,6 +58,7 @@ import BookingRequestsPage from "./pages/organizations/BookingRequestsPage";
 import ManageAttendeesPage from "./pages/organizations/ManageAttendeesPage";
 import QRCodeScannerPage from "./pages/organizations/QRCodeScannerPage";
 import OrganizerProfilePage from "./pages/organizations/OrganizerProfilePage";
+import OrganizerReviewsPage from "./pages/organizer/OrganizerReviewsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import VerifyAccountPage from "./pages/auth/VerifyAccountPage";
 import EventFeedbacksPage from "./pages/events/EventFeedbacksPage";
@@ -306,6 +307,10 @@ export const router = createBrowserRouter([
       {
         path: "profile",
         Component: OrganizerProfilePage,
+      },
+      {
+        path: "reviews",
+        Component: OrganizerReviewsPage,
       },
     ],
   },

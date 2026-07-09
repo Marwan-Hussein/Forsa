@@ -184,5 +184,9 @@ export const organizerApi = {
 
   submitPlaceFeedback: async (organizerId: number, placeId: number, eventId: number, rating: number, comment: string): Promise<any> => {
     return await apiPost(`/api/organizers/${organizerId}/places/${placeId}/events/${eventId}/feedback`, { rating, comment });
+  },
+
+  getOrganizerReviews: async (organizerId: number): Promise<any[]> => {
+    return await apiGet(`/api/organizers/${organizerId}/reviews`);
   }
 };
