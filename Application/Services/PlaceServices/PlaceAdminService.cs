@@ -10,6 +10,7 @@ using Domain.ENUMs;
 using Domain.Entities.PlaceEntities;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Application.Core.Helpers;
 
 namespace Application.Services.PlaceServices
 {
@@ -127,11 +128,39 @@ namespace Application.Services.PlaceServices
             if (place.OwnerId.HasValue)
             {
                 #region Email -> notify the owner about the status change
-                var msg = $"Your place '{place.Name}' status has been updated to {status}.";
+                var title = "Venue Status Updated 🏛️";
+                var bodyText = $"Hello!\n\nWe wanted to let you know that the listing status of your venue, **{place.Name}**, has been updated to **{status}** by the Forsa administrative team. ";
+                
+                if (status == PlaceStatus.Approved)
+                {
+                    bodyText += "Congratulations! Your venue is now active on the Forsa platform. Organizers can search for your place and request bookings. 🎉";
+                }
+                else if (status == PlaceStatus.Rejected)
+                {
+                    bodyText += "Unfortunately, your venue listing could not be approved at this time. 📝";
+                    if (!string.IsNullOrWhiteSpace(reason))
+                    {
+                        bodyText += $"\n\n**Reason for Rejection:** {reason}";
+                    }
+                }
+                else
+                {
+                    bodyText += $"Your venue status is currently: {status}. ⏳";
+                }
+
+                var details = new Dictionary<string, string>
+                {
+                    { "Venue Name", place.Name },
+                    { "New Status", status.ToString() },
+                    { "Date Reviewed", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm UTC") }
+                };
+
                 if (status == PlaceStatus.Rejected && !string.IsNullOrWhiteSpace(reason))
                 {
-                    msg += $" Reason: {reason}";
+                    details.Add("Rejection Reason", reason);
                 }
+
+                var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
 
                 if (!string.IsNullOrWhiteSpace(place.Owner?.Email))
                 {
@@ -139,7 +168,7 @@ namespace Application.Services.PlaceServices
                     {
                         await _emailService.SendAsync(place.Owner.Email,
                             "Place Status Updated",
-                            msg);
+                            htmlBody);
                     }
                     catch {}
                 }
@@ -177,7 +206,17 @@ namespace Application.Services.PlaceServices
 
             if (place.OwnerId.HasValue)
             {
-                var msg = $"Your place '{place.Name}' has been deleted by an administrator.";
+                var title = "Venue Listing Removed 🚨";
+                var bodyText = $"Hello!\n\nWe are writing to inform you that your venue listing, **{place.Name}**, has been removed from the Forsa platform by our administration team. 🛑\n\nAs a result of this action, your venue is no longer visible to event organizers, and any future booking requests cannot be processed. If you believe this was done in error or would like to request reinstatement, please contact our support team.";
+                
+                var details = new Dictionary<string, string>
+                {
+                    { "Venue Name", place.Name },
+                    { "Action Taken", "Removed by Administrator" },
+                    { "Date Removed", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm UTC") }
+                };
+
+                var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
 
                 if (!string.IsNullOrWhiteSpace(place.Owner?.Email))
                 {
@@ -185,7 +224,7 @@ namespace Application.Services.PlaceServices
                     {
                         await _emailService.SendAsync(place.Owner.Email,
                             "Place Deleted",
-                            msg);
+                            htmlBody);
                     }
                     catch {}
                 }

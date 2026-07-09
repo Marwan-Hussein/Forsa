@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Domain.ENUMs;
 using Application.Core.DTOs.Feedbacks;
+using Application.Core.Helpers;
 
 namespace Application.Services.EventServices
 {
@@ -170,8 +171,16 @@ namespace Application.Services.EventServices
                         try
                         {
                             #region email loyalty points -> attendee
-                            var message = $"Your loyalty points have been increased by {points} points for attending the event '{eventEntity.Title}'!";
-                            await _emailService.SendAsync(booking.Attendee.Email, "Loyalty Points Increased", message);
+                            var title = "Loyalty Points Earned! 🏆";
+                            var bodyText = $"Thank you for attending the event **{eventEntity.Title}**! We hope you had a fantastic experience. 🌟\n\nAs a thank you, we have credited **{points}** loyalty points to your account! You can use these points to unlock special benefits, discounts, and rewards on Forsa. Keep attending events to earn more!";
+                            var details = new Dictionary<string, string>
+                            {
+                                { "Event Attended", eventEntity.Title },
+                                { "Points Earned", $"+{points} Points" },
+                                { "Status", "Credited to Account" }
+                            };
+                            var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
+                            await _emailService.SendAsync(booking.Attendee.Email, "Loyalty Points Increased", htmlBody);
                             #endregion
                         }
                         catch

@@ -126,7 +126,6 @@ export function Navigation() {
           </div>
 
           <div className="hidden md:flex items-center gap-6">
-            {isLoggedIn && <NotificationBell />}
             {isLoggedIn ? (
               <div className="relative">
                 <button 

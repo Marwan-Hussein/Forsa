@@ -13,6 +13,7 @@ using Domain.Entities.AttendeeEntities;
 using Domain.ENUMs;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Application.Core.Helpers;
 
 namespace Application.Services
 {
@@ -141,15 +142,27 @@ namespace Application.Services
 
             #region Email booking status
             // send email
-            var message = eventEntity.TicketPrice <= 0
-                ? $"Your ticket request for '{eventEntity.Title}' has been confirmed! Booking ID"
-                : $"Your ticket request for '{eventEntity.Title}' has been received and is pending approval.";
-            var attendeeEmail = _attendeeRepository.GetQueryable()
-                .Where(a => a.Id == dto.AttendeeId)
-                .Select(a => a.Email)
+            var title = eventEntity.TicketPrice <= 0 ? "Booking Confirmed! 🎟️" : "Booking Request Received ⏳";
+            var bodyText = eventEntity.TicketPrice <= 0
+                ? $"Great news! Your ticket booking for **{eventEntity.Title}** has been successfully confirmed. Your spot is reserved, and we are excited to have you join us! 🎉\n\nBelow are your booking details. Please keep them handy."
+                : $"Thank you for your booking request! Your ticket request for **{eventEntity.Title}** has been received and is currently pending approval. We will notify you as soon as the request has been processed. ⏳\n\nBelow are the details of your request.";
+            
+            var details = new Dictionary<string, string>
+            {
+                { "Event Title", eventEntity.Title },
+                { "Booking Reference", booking.QRCode },
+                { "Number of Tickets", booking.NumberOfTickets.ToString() },
+                { "Booking Date", booking.BookingDate.ToString("yyyy-MM-dd HH:mm UTC") },
+                { "Booking Status", booking.Status.ToString() }
+            };
+
+            var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
+            var attendeeEmail = _bookingRepository.GetQueryable()
+                .Where(b => b.Id == booking.Id)
+                .Select(b => b.Attendee.Email)
                 .FirstOrDefault();
 
-            await _emailService.SendAsync(attendeeEmail, "Your Booking Status", message);
+            await _emailService.SendAsync(attendeeEmail, "Your Booking Status", htmlBody);
             #endregion
             // Save all changes
             await _unitOfWork.SaveChangesAsync();
@@ -198,10 +211,21 @@ namespace Application.Services
             {
                 try
                 {
-                    var message = $"Your ticket request for '{booking.Event.Title}' has been approved!";
+                    var title = "Booking Approved! 🎟️";
+                    var bodyText = $"Excellent! Your booking request for **{booking.Event.Title}** has been approved by the organizer. Your tickets are now valid and your attendance is confirmed! 🥳\n\nGet ready for an amazing experience. Please have your ticket details ready when attending the event.";
+                    
+                    var details = new Dictionary<string, string>
+                    {
+                        { "Event Title", booking.Event.Title },
+                        { "Booking Reference", booking.QRCode },
+                        { "Booking Status", "Approved & Confirmed" },
+                        { "Tickets Booked", booking.NumberOfTickets.ToString() }
+                    };
+
+                    var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
                     await _emailService.SendAsync(booking.Attendee.Email,
                         "Booking Approved",
-                        message);
+                        htmlBody);
                 }
                 catch
                 {
@@ -238,10 +262,21 @@ namespace Application.Services
             {
                 try
                 {
-                    var message = $"Your ticket request for '{booking.Event.Title}' has been rejected. Reason: {reason}";
+                    var title = "Booking Request Declined ❌";
+                    var bodyText = $"Hello.\n\nWe regret to inform you that your booking request for the event **{booking.Event.Title}** has been declined. 😔\n\nThe organizer provided the following feedback:\n\n**Reason:** {reason}\n\nAny pending payments will be resolved accordingly. We hope you can find another event to attend on Forsa!";
+                    
+                    var details = new Dictionary<string, string>
+                    {
+                        { "Event Title", booking.Event.Title },
+                        { "Booking Reference", booking.QRCode },
+                        { "Booking Status", "Declined" },
+                        { "Reason", reason }
+                    };
+
+                    var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
                     await _emailService.SendAsync(booking.Attendee.Email,
                         "Booking Rejected",
-                        message);
+                        htmlBody);
                 }
                 catch
                 {
@@ -300,8 +335,18 @@ namespace Application.Services
                 }
             }
 
-            var message = $"Your booking for '{booking.Event.Title}' has been cancelled.";
-            await _emailService.SendAsync(booking.Attendee.Email, "Booking Cancelled", message);
+            var title = "Booking Cancelled 🛑";
+            var bodyText = $"This email confirms that your booking for the event **{booking.Event.Title}** has been cancelled as requested. 🗑️\n\nIf you did not request this cancellation or have any questions about refunds or re-booking, please reach out to our team.";
+            
+            var details = new Dictionary<string, string>
+            {
+                { "Event Title", booking.Event.Title },
+                { "Booking Reference", booking.QRCode },
+                { "Booking Status", "Cancelled" }
+            };
+
+            var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
+            await _emailService.SendAsync(booking.Attendee.Email, "Booking Cancelled", htmlBody);
             // Save all changes
             await _unitOfWork.SaveChangesAsync();
 
