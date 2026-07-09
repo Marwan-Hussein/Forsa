@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Link } from "react-router";
-import { ArrowLeft, Calendar, Tag, FileText, Ticket, DollarSign, LayoutList, RefreshCw, Image as ImageIcon, MapPin } from "lucide-react";
+import { ArrowLeft, Calendar, Tag, FileText, Ticket, DollarSign, LayoutList, RefreshCw, Image as ImageIcon, MapPin, AlertCircle } from "lucide-react";
 import { motion } from "motion/react";
 import { organizerApi } from "../../api/organizerApi";
 import { getUserIdFromToken } from "../../api/api";
@@ -43,6 +43,7 @@ export default function EditEventPage() {
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [eventStatus, setEventStatus] = useState("");
+  const [bookedTicketsCount, setBookedTicketsCount] = useState(0);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -57,6 +58,10 @@ export default function EditEventPage() {
           customLocation: data.customLocation || ""
         });
         setEventStatus(data.status || "");
+        
+        const booked = data.bookedTickets ?? ((data.totalTickets || 0) - (data.remainingTickets || 0));
+        setBookedTicketsCount(booked);
+
         if (data.startDate) setStartDate(parseBackendDate(data.startDate));
         if (data.endDate) setEndDate(parseBackendDate(data.endDate));
         if (data.imageUrl) setExistingImageUrl(data.imageUrl);
@@ -104,7 +109,11 @@ export default function EditEventPage() {
     }
   };
 
-  const isStartedOrCompleted = eventStatus.toLowerCase() === "completed" || (startDate && startDate < new Date());
+  const isWithin24HoursOrDone = eventStatus.toLowerCase() === "completed" ||
+    (startDate && (startDate.getTime() - new Date().getTime()) < 24 * 60 * 60 * 1000);
+  const isTicketPriceDisabled = isWithin24HoursOrDone || bookedTicketsCount > 0;
+  const isLocationDisabled = !!isWithin24HoursOrDone;
+  const isStartedOrCompleted = isWithin24HoursOrDone; // kept for date pickers
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,6 +192,20 @@ export default function EditEventPage() {
           <p className="text-slate-500 font-['Inter:Medium',sans-serif] mt-1">Update the details of your event.</p>
         </div>
       </div>
+
+      {eventStatus.toLowerCase() === "draft" && !hasPlaceId && !formData.customLocation && (
+        <div className="bg-amber-50 border-l-4 border-amber-500 p-5 rounded-2xl flex items-start gap-3.5 shadow-sm mb-6">
+          <AlertCircle className="w-5.5 h-5.5 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-bold text-amber-800 font-['Inter:Bold',sans-serif]">
+              Action Required: Missing Event Location
+            </p>
+            <p className="text-xs text-amber-700 font-['Inter:Medium',sans-serif] mt-1 leading-relaxed">
+              This event cannot be submitted for approval yet. Please reserve a venue or provide a custom location before submitting it for admin approval and publishing.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white/90 backdrop-blur-sm rounded-[2rem] shadow-xl shadow-slate-200/40 border border-white p-6 md:p-10 relative overflow-hidden">
         <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-indigo-500 opacity-[0.03] blur-3xl rounded-full pointer-events-none" />
@@ -308,28 +331,40 @@ export default function EditEventPage() {
                 <MapPin className="w-3.5 h-3.5 text-slate-400" />
                 {eventPlaceLocation}
               </p>
+              {isLocationDisabled && (
+                <p className="text-xs text-rose-500 font-semibold mt-2 flex items-center gap-1 font-['Inter:Bold',sans-serif]">
+                  ⚠️ Location is locked because the event starts in less than 24 hours.
+                </p>
+              )}
             </div>
           ) : (
             <>
               <div className="space-y-4 pt-4 border-t border-slate-100">
-                <label className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700">
-                  Event Venue / Location
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700">
+                    Event Venue / Location
+                  </label>
+                  {isLocationDisabled && (
+                    <span className="text-xs text-rose-500 font-bold flex items-center gap-1 font-['Inter:Bold',sans-serif]">
+                      {"⚠️ Location locked (< 24h to start)"}
+                    </span>
+                  )}
+                </div>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button
                     type="button"
-                    disabled={isStartedOrCompleted}
+                    disabled={isLocationDisabled}
                     onClick={() => setHasOwnPlace(false)}
-                    className={`flex-1 p-5 rounded-2xl border-2 text-left flex flex-col gap-2 transition-all ${!hasOwnPlace ? 'border-indigo-500 bg-indigo-50/10' : 'border-slate-200 hover:border-slate-300'} ${isStartedOrCompleted ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    className={`flex-1 p-5 rounded-2xl border-2 text-left flex flex-col gap-2 transition-all ${!hasOwnPlace ? 'border-indigo-500 bg-indigo-50/10' : 'border-slate-200 hover:border-slate-300'} ${isLocationDisabled ? 'opacity-65 cursor-not-allowed bg-slate-50' : ''}`}
                   >
                     <span className="font-bold text-slate-800 text-sm font-['Inter:Bold',sans-serif]">Book a Registered ForSa Venue</span>
                     <span className="text-xs text-slate-500 leading-relaxed font-['Inter:Regular',sans-serif]">Submit a booking request to one of our premium venue owners. The event will remain a draft until booking is paid.</span>
                   </button>
                   <button
                     type="button"
-                    disabled={isStartedOrCompleted}
+                    disabled={isLocationDisabled}
                     onClick={() => setHasOwnPlace(true)}
-                    className={`flex-1 p-5 rounded-2xl border-2 text-left flex flex-col gap-2 transition-all ${hasOwnPlace ? 'border-indigo-500 bg-indigo-50/10' : 'border-slate-200 hover:border-slate-300'} ${isStartedOrCompleted ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    className={`flex-1 p-5 rounded-2xl border-2 text-left flex flex-col gap-2 transition-all ${hasOwnPlace ? 'border-indigo-500 bg-indigo-50/10' : 'border-slate-200 hover:border-slate-300'} ${isLocationDisabled ? 'opacity-65 cursor-not-allowed bg-slate-50' : ''}`}
                   >
                     <span className="font-bold text-slate-800 text-sm font-['Inter:Bold',sans-serif]">Use My Own Venue / Location</span>
                     <span className="text-xs text-slate-500 leading-relaxed font-['Inter:Regular',sans-serif]">Specify your own address directly. The event will be published immediately on creation.</span>
@@ -352,17 +387,17 @@ export default function EditEventPage() {
                         required
                         value={formData.customLocation}
                         onChange={handleChange}
-                        disabled={isStartedOrCompleted}
+                        disabled={isLocationDisabled}
                         placeholder="e.g. 28 Falaki St, Bab Al Louq, Cairo" 
                         className={cn(
                           "w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 shadow-sm rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all",
-                          isStartedOrCompleted && "opacity-60 cursor-not-allowed bg-slate-100"
+                          isLocationDisabled && "opacity-60 cursor-not-allowed bg-slate-100"
                         )}
                       />
                     </div>
                   </div>
 
-                  <div className={isStartedOrCompleted ? "pointer-events-none opacity-60" : ""}>
+                  <div className={isLocationDisabled ? "pointer-events-none opacity-60 bg-slate-50 rounded-2xl p-1" : ""}>
                     <p className="text-xs text-slate-500 mb-2 font-['Inter:Medium',sans-serif]">Pinpoint exact location on map</p>
                     <MapPicker
                       address={formData.customLocation}
@@ -406,10 +441,17 @@ export default function EditEventPage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700 flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-indigo-500" />
-                Ticket Price (EGP)
-              </label>
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700 flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-indigo-500" />
+                  Ticket Price (EGP)
+                </label>
+                {bookedTicketsCount > 0 && (
+                  <span className="text-[11px] text-amber-600 font-bold font-['Inter:Bold',sans-serif]">
+                    Locked (Tickets Booked)
+                  </span>
+                )}
+              </div>
               <input 
                 type="number" 
                 name="ticketPrice"
@@ -418,11 +460,11 @@ export default function EditEventPage() {
                 step="0.01"
                 value={formData.ticketPrice}
                 onChange={handleChange}
-                disabled={isStartedOrCompleted}
+                disabled={isTicketPriceDisabled}
                 placeholder="e.g. 250" 
                 className={cn(
                   "w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all",
-                  isStartedOrCompleted && "opacity-60 cursor-not-allowed bg-slate-100"
+                  isTicketPriceDisabled && "opacity-60 cursor-not-allowed bg-slate-100"
                 )}
               />
             </div>

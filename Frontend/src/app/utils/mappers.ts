@@ -1,12 +1,22 @@
 import { Event, EventDetailsDto, AttendeeBookingDto, WishlistEventDto } from "../types";
 
+export function parseBackendDate(dateStr: string | null | undefined): Date {
+  if (!dateStr) return new Date();
+  
+  // Strip "Z" and timezone offsets to treat the date as local nominal time, avoiding timezone conversion shifts
+  const cleanStr = dateStr.replace(/Z$/, "").replace(/[+-]\d{2}:\d{2}$/, "");
+  const parsed = new Date(cleanStr);
+  return isNaN(parsed.getTime()) ? new Date() : parsed;
+}
+
 export function mapEventDetailsDtoToEvent(dto: EventDetailsDto): Event {
+  const parsedDate = parseBackendDate(dto.startDate);
   return {
     id: dto.eventId.toString(),
     title: dto.title || "Untitled Event",
     date: dto.startDate || new Date().toISOString(),
     time: dto.startDate 
-      ? new Date(dto.startDate).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+      ? parsedDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
       : "TBD",
     startDate: dto.startDate,
     endDate: dto.endDate,
@@ -29,12 +39,13 @@ export function mapEventDetailsDtoToEvent(dto: EventDetailsDto): Event {
 }
 
 export function mapBookingDtoToEvent(dto: AttendeeBookingDto): Event {
+  const parsedDate = parseBackendDate(dto.eventStartDate);
   return {
     id: dto.eventId.toString(),
     title: dto.eventTitle || "Untitled Booking",
     date: dto.eventStartDate || new Date().toISOString(),
     time: dto.eventStartDate 
-      ? new Date(dto.eventStartDate).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+      ? parsedDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
       : "TBD",
     location: dto.eventPlace || "TBD",
     attendees: 0,
@@ -51,12 +62,13 @@ export function mapBookingDtoToEvent(dto: AttendeeBookingDto): Event {
 }
 
 export function mapWishlistEventDtoToEvent(dto: WishlistEventDto): Event {
+  const parsedDate = parseBackendDate(dto.startDate);
   return {
     id: dto.eventId.toString(),
     title: dto.title || "Untitled Saved Event",
     date: dto.startDate || new Date().toISOString(),
     time: dto.startDate 
-      ? new Date(dto.startDate).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+      ? parsedDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
       : "TBD",
     location: "TBD",
     attendees: 0,
@@ -72,14 +84,3 @@ export function mapWishlistEventDtoToEvent(dto: WishlistEventDto): Event {
   };
 }
 
-export function parseBackendDate(dateStr: string | null | undefined): Date {
-  if (!dateStr) return new Date();
-  
-  // If the date string has no timezone suffix or offset, treat it as UTC by appending 'Z'
-  if (!dateStr.endsWith("Z") && !/[+-]\d{2}:\d{2}$/.test(dateStr)) {
-    return new Date(dateStr + "Z");
-  }
-  
-  const parsed = new Date(dateStr);
-  return isNaN(parsed.getTime()) ? new Date() : parsed;
-}

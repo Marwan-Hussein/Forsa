@@ -59,8 +59,8 @@ namespace Application.Services.OwnerServices
             if (conflict != null)
             {
                 // If a slot already exists for this date, update it instead of creating a duplicate
-                conflict.StartTime = dto.StartTime;
-                conflict.EndTime = dto.EndTime;
+                conflict.StartTime = dto.StartTime ?? new TimeSpan(9, 0, 0);
+                conflict.EndTime = dto.EndTime ?? new TimeSpan(21, 0, 0);
                 conflict.Status = status;
                 conflict.LastModifiedAt = DateTime.UtcNow;
                 _availabilityRepo.Update(conflict);
@@ -71,12 +71,12 @@ namespace Application.Services.OwnerServices
                 {
                     await _calendarSync.UpdateOwnerAvailabilityInCalendarAsync(
                         ownerId, conflict.GoogleCalendarEventId,
-                        place.Name, dto.Date, dto.StartTime, dto.EndTime, status.ToString());
+                        place.Name, dto.Date, conflict.StartTime, conflict.EndTime, status.ToString());
                 }
                 else
                 {
                     var gcEventId = await _calendarSync.SyncOwnerAvailabilityToCalendarAsync(
-                        ownerId, place.Name, dto.Date, dto.StartTime, dto.EndTime, status.ToString());
+                        ownerId, place.Name, dto.Date, conflict.StartTime, conflict.EndTime, status.ToString());
                     if (!string.IsNullOrWhiteSpace(gcEventId))
                     {
                         conflict.GoogleCalendarEventId = gcEventId;
@@ -92,8 +92,8 @@ namespace Application.Services.OwnerServices
             var slot = new PlaceAvailability
             {
                 Date = dto.Date.Date,
-                StartTime = dto.StartTime,
-                EndTime = dto.EndTime,
+                StartTime = dto.StartTime ?? new TimeSpan(9, 0, 0),
+                EndTime = dto.EndTime ?? new TimeSpan(21, 0, 0),
                 Status = status,
                 PlaceId = placeId,
                 CreatedAt = DateTime.UtcNow

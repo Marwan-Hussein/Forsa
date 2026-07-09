@@ -7,6 +7,7 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.BookingEntities;
 using Domain.Entities.PlaceEntities;
+using Domain.Entities.EventEntities;
 using Domain.ENUMs;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ namespace Application.Services.OwnerServices
         private readonly IQueryableRepository<BookingRequest> _bookingRequestRepo;
         private readonly IQueryableRepository<PlaceAvailability> _availabilityRepo;
         private readonly IPlaceRepository _placeRepo;
+        private readonly IQueryableRepository<Event> _eventRepo;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailService _emailService;
@@ -27,6 +29,7 @@ namespace Application.Services.OwnerServices
             IQueryableRepository<BookingRequest> bookingRequestRepo,
             IQueryableRepository<PlaceAvailability> availabilityRepo,
             IPlaceRepository placeRepo,
+            IQueryableRepository<Event> eventRepo,
             IMapper mapper,
             IUnitOfWork unitOfWork,
             IEmailService emailService)
@@ -34,6 +37,7 @@ namespace Application.Services.OwnerServices
             _bookingRequestRepo = bookingRequestRepo;
             _availabilityRepo = availabilityRepo;
             _placeRepo = placeRepo;
+            _eventRepo = eventRepo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _emailService = emailService;
@@ -76,6 +80,19 @@ namespace Application.Services.OwnerServices
             {
                 // ACCEPT
                 request.Status = RequestStatus.Accepted;
+
+                // Transition associated Event status from Draft to Pending and assign PlaceId
+                var associatedEvent = await _eventRepo.GetQueryable()
+                    .FirstOrDefaultAsync(e => e.Id == request.EventId && !e.IsDeleted);
+                if (associatedEvent != null)
+                {
+                    associatedEvent.PlaceId = request.PlaceId;
+                    if (associatedEvent.Status == EventStatus.Draft)
+                    {
+                        associatedEvent.Status = EventStatus.Pending; // Submitted for admin approval
+                    }
+                    _eventRepo.Update(associatedEvent);
+                }
 
                 // Create a Booked availability entry
                 var bookedSlot = new PlaceAvailability

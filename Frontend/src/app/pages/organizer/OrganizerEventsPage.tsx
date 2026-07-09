@@ -42,10 +42,18 @@ function renderEventStatusBadge(event: any) {
   }
   // Draft (0)
   if (statusStr === "draft" || statusStr === "0") {
+    const isMissingLocation = !event.placeId && !event.customLocation;
     return (
-      <span className="px-3 py-1.5 rounded-xl text-xs uppercase tracking-wider font-bold shadow-sm bg-slate-100 text-slate-650 border border-slate-200">
-        Draft
-      </span>
+      <div className="flex flex-col gap-1.5">
+        <span className="px-3 py-1.5 rounded-xl text-xs uppercase tracking-wider font-bold shadow-sm bg-slate-100 text-slate-650 border border-slate-200 w-fit">
+          Draft
+        </span>
+        {isMissingLocation && (
+          <p className="text-[11px] text-amber-600 font-semibold leading-normal font-['Inter:Medium',sans-serif] mt-0.5">
+            ⚠️ Missing location. Reserve a venue or add custom location.
+          </p>
+        )}
+      </div>
     );
   }
   // Pending (1)

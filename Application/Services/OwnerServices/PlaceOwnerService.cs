@@ -214,6 +214,8 @@ namespace Application.Services.OwnerServices
                     {
                         PlaceId = placeId,
                         Date = targetDate,
+                        StartTime = new TimeSpan(9, 0, 0),
+                        EndTime = new TimeSpan(21, 0, 0),
                         Status = PlaceStatus.Available,
                         CreatedAt = DateTime.UtcNow
                     };

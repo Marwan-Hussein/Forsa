@@ -520,7 +520,7 @@ function PassbookTicket({ booking }: { booking: AttendeeBookingDto }) {
 }
 
 function CleanCard({ event, isInWishlist, onToggle }: { event: EventDetailsDto; isInWishlist: boolean; onToggle: (id: string | number) => void }) {
-  const date = new Date(event.startDate);
+  const date = parseBackendDate(event.startDate);
   const formattedDate = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   const rawImg = (event as any).imageUrl || "";
   const eventImg = rawImg.startsWith('http') ? rawImg : (rawImg ? `${import.meta.env.VITE_API_BASE_URL || "https://forsa-app.runasp.net"}${rawImg.startsWith('/') ? '' : '/'}${rawImg}` : "");

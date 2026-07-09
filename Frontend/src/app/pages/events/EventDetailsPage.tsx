@@ -385,12 +385,20 @@ export default function EventDetailsPage() {
                       Date
                     </p>
                     <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] text-foreground">
-                      {new Date(event.date).toLocaleDateString("en-US", {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                      {(() => {
+                        const start = event.startDate ? parseBackendDate(event.startDate) : parseBackendDate(event.date);
+                        const end = event.endDate ? parseBackendDate(event.endDate) : null;
+                        const formatDate = (d: Date) => d.toLocaleDateString("en-US", {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        });
+                        if (!end || start.toDateString() === end.toDateString()) {
+                          return formatDate(start);
+                        }
+                        return `${formatDate(start)} - ${formatDate(end)}`;
+                      })()}
                     </p>
                   </div>
                 </div>

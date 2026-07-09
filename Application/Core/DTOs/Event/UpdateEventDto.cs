@@ -10,5 +10,7 @@ namespace Application.Core.DTOs.Event
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public string? CustomLocation { get; set; }
+        public double TicketPrice { get; set; }
+        public int TotalTickets { get; set; }
     }
 }

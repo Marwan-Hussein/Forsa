@@ -160,30 +160,66 @@ namespace Application.Services.OrganizerServices
             if (ev == null)
                 throw new KeyNotFoundException("Event not found");
 
-            if (DateTime.UtcNow - ev.CreatedAt > TimeSpan.FromHours(24))
+            // Check if any tickets have been booked (Confirmed or Pending)
+            bool hasBookings = await _bookingRepository.GetQueryable()
+                .AnyAsync(b => b.EventId == eventId && (b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Pending) && !b.IsDeleted);
+
+            // Determine if we are within 24 hours of the event start (or it's already completed)
+            bool isWithin24HoursOrDone = ev.StartDate - DateTime.UtcNow < TimeSpan.FromHours(24) || ev.Status == EventStatus.Completed;
+
+            // Rule 1: Title, description, and category are ALWAYS editable — no restriction.
+
+            // Rule 2 & 3: Ticket price is locked once ANY ticket is booked (regardless of timing)
+            if (hasBookings && dto.TicketPrice != ev.TicketPrice)
             {
-                throw new InvalidOperationException("Cannot edit the event after 24 hours from its creation.");
+                throw new InvalidOperationException("Ticket price cannot be edited because tickets have already been booked for this event.");
             }
 
-            bool isConcludedOrStarted = ev.StartDate <= DateTime.UtcNow || ev.Status == EventStatus.Completed;
-
-            if (isConcludedOrStarted)
+            // Rule 4: Dates, location, and total tickets are locked within 24 hours of the event start
+            if (isWithin24HoursOrDone)
             {
-                if (ev.StartDate != dto.StartDate || 
-                    ev.EndDate != dto.EndDate || 
-                    ev.CustomLocation != dto.CustomLocation)
+                if (ev.StartDate != dto.StartDate || ev.EndDate != dto.EndDate)
                 {
-                    throw new InvalidOperationException("Cannot adjust dates or location once the event has started or completed.");
+                    throw new InvalidOperationException("Event dates cannot be changed within 24 hours of the event start time or after the event has completed.");
+                }
+
+                if (ev.CustomLocation != dto.CustomLocation)
+                {
+                    throw new InvalidOperationException("Event location cannot be changed within 24 hours of the event start time or after the event has completed.");
+                }
+
+                if (dto.TotalTickets != ev.TotalTickets)
+                {
+                    throw new InvalidOperationException("Total ticket count cannot be changed within 24 hours of the event start time.");
                 }
             }
 
+            // Apply always-editable fields
             ev.Title = dto.Title;
             ev.Description = dto.Description;
             ev.Category = dto.Category;
-            ev.StartDate = dto.StartDate;
-            ev.EndDate = dto.EndDate;
-            ev.CustomLocation = dto.CustomLocation;
-            if (ev.Status == EventStatus.Draft && !string.IsNullOrWhiteSpace(dto.CustomLocation))
+
+            // Apply date/location fields only if not locked
+            if (!isWithin24HoursOrDone)
+            {
+                ev.StartDate = dto.StartDate;
+                ev.EndDate = dto.EndDate;
+                ev.CustomLocation = dto.CustomLocation;
+
+                // Adjust total tickets and remaining tickets
+                int ticketsDiff = dto.TotalTickets - ev.TotalTickets;
+                ev.TotalTickets = dto.TotalTickets;
+                ev.RemainingTickets = Math.Max(0, ev.RemainingTickets + ticketsDiff);
+            }
+
+            // Apply price only if not booked
+            if (!hasBookings)
+            {
+                ev.TicketPrice = dto.TicketPrice;
+            }
+
+            // If draft and now has a custom location, submit for approval
+            if (ev.Status == EventStatus.Draft && !string.IsNullOrWhiteSpace(ev.CustomLocation))
             {
                 ev.Status = EventStatus.Pending;
             }

@@ -211,11 +211,19 @@ export function EventCard({
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 shrink-0 text-accent" />
             <span className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground">
-              {new Date(event.date).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
+              {(() => {
+                const start = event.startDate ? parseBackendDate(event.startDate) : parseBackendDate(event.date);
+                const end = event.endDate ? parseBackendDate(event.endDate) : null;
+                const formatDate = (d: Date) => d.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                });
+                if (!end || start.toDateString() === end.toDateString()) {
+                  return formatDate(start);
+                }
+                return `${formatDate(start)} - ${formatDate(end)}`;
+              })()}
             </span>
           </div>
           <div className="flex items-center gap-2">
