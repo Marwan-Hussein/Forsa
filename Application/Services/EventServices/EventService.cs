@@ -1,6 +1,7 @@
 using Application.Core.DTOs.Event;
 using Application.Core.Interfaces.EventInterfaces;
 using Application.Core.Interfaces;
+using Application.Core.Interfaces.Auth.OTP;
 using Application.Core.DTOs.CommonDTOs;
 using AutoMapper;
 using Domain.Entities;
@@ -20,32 +21,27 @@ namespace Application.Services.EventServices
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFeedbackRepository feedbackRepo;
-
-
-        private readonly INotifierService _notifierService;
         private readonly IQueryableRepository<Domain.Entities.BookingEntities.BookingRequest> _bookingRequestRepo;
         private readonly IQueryableRepository<Domain.Entities.PlaceEntities.PlaceAvailability> _availabilityRepo;
-
-        private readonly IGenericRepository<Notification> _notificationRepository;
+        private readonly IEmailService _emailService;
 
         public EventService(
-            IEventRepository repo, 
-            IMapper mapper, 
-            IUnitOfWork unitOfWork, 
+            IEventRepository repo,
+            IMapper mapper,
+            IUnitOfWork unitOfWork,
             IFeedbackRepository feedbackRepo,
             IQueryableRepository<Domain.Entities.BookingEntities.BookingRequest> bookingRequestRepo,
-            IGenericRepository<Notification> notificationRepository,
             INotifierService notifierService,
-            IQueryableRepository<Domain.Entities.PlaceEntities.PlaceAvailability> availabilityRepo)
+            IQueryableRepository<Domain.Entities.PlaceEntities.PlaceAvailability> availabilityRepo,
+            IEmailService emailService)
         {
             _repo = repo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             this.feedbackRepo = feedbackRepo;
-            _notificationRepository = notificationRepository;
-            _notifierService = notifierService;
             _bookingRequestRepo = bookingRequestRepo;
             _availabilityRepo = availabilityRepo;
+            _emailService = emailService;
         }
 
         public async Task<List<EventDetailsDto>> GetAllEvents()
@@ -122,18 +118,6 @@ namespace Application.Services.EventServices
             {
                 booking.Attendee.LoyaltyPoint += points; // final calculation of attendee ratings
 
-                #region notification
-                var notification = new Notification
-                {
-                    Message = $"Your loyalty points have been increased by {points} points for attending the event '{eventEntity.Title}'!",
-                    Type = NotificationType.GeneralAlert,
-                    SentVia = DeliveryMethod.Email,
-                    Status = NotificationStatus.Pending,
-                    UserId = booking.AttendeeId,
-                    CreatedAt = DateTime.UtcNow
-                };
-                await _notificationRepository.AddAsync(notification);
-                #endregion
             }
         }
         public async Task EvaluateEventStatusAsync(int eventId)
@@ -160,8 +144,8 @@ namespace Application.Services.EventServices
                     if (request != null)
                     {
                         var slot = await _availabilityRepo.GetQueryable()
-                            .FirstOrDefaultAsync(a => a.PlaceId == request.PlaceId 
-                                                      && a.Date.Date == request.RequestedDate.Date 
+                            .FirstOrDefaultAsync(a => a.PlaceId == request.PlaceId
+                                                      && a.Date.Date == request.RequestedDate.Date
                                                       && a.Status == PlaceStatus.Booked
                                                       && !a.IsDeleted);
                         if (slot != null)
@@ -180,18 +164,16 @@ namespace Application.Services.EventServices
                 {
                     int points = (int)(10 + eventEntity.TicketPrice / 10);
                     foreach (var booking in eventEntity.Bookings
-                        .Where(b => 
-                            b.Status == BookingStatus.Confirmed && 
+                        .Where(b =>
+                            b.Status == BookingStatus.Confirmed &&
                             b.Attendee != null))
                     {
                         try
                         {
-                            await _notifierService.SendAsync(booking.AttendeeId, new NotificationMessageDto
-                            {
-                                Title = "Loyalty Points Increased",
-                                Body = $"Your loyalty points have been increased by {points} points for attending the event '{eventEntity.Title}'!",
-                                Type = NotificationType.GeneralAlert.ToString()
-                            });
+                            #region email loyalty points -> attendee
+                            var message = $"Your loyalty points have been increased by {points} points for attending the event '{eventEntity.Title}'!";
+                            await _emailService.SendAsync(booking.Attendee.Email, "Loyalty Points Increased", message);
+                            #endregion
                         }
                         catch
                         {
@@ -276,7 +258,7 @@ namespace Application.Services.EventServices
                     AttendeeName = feedback.Attendee != null ? feedback.Attendee.FullName : "Anonymous",
                     EventTitle = feedback.Event != null ? feedback.Event.Title : "Unknown Event",
                     attendeeImageUrl = feedback.Attendee != null ? feedback.Attendee.ProfilePicture : null,
-                    attendeeId = feedback.Attendee != null ? feedback.Attendee.Id : 0 
+                    attendeeId = feedback.Attendee != null ? feedback.Attendee.Id : 0
                 };
                 mappedFeedbacks.Add(FeedbackDTO);
             }

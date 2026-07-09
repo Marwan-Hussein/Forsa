@@ -19,27 +19,23 @@ namespace Application.Services
     {
         private readonly IQueryableRepository<Event> _eventRepository;
         private readonly IQueryableRepository<Booking> _bookingRepository;
-        private readonly IGenericRepository<Notification> _notificationRepository;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IQrService _qrService;
         private readonly IGoogleCalendarSyncService _calendarSync;
         private readonly IPaymentService _paymentService;
         private readonly IQueryableRepository<PaymentTransaction> _transactionRepository;
-        private readonly INotifierService _notifierService;
         private readonly IEmailService _emailService;
 
         public BookingService(
             IQueryableRepository<Event> eventRepository,
             IQueryableRepository<Booking> bookingRepository,
-            IGenericRepository<Notification> notificationRepository,
             IMapper mapper,
             IUnitOfWork unitOfWork,
             IQrService qrService,
             IGoogleCalendarSyncService calendarSync,
             IPaymentService paymentService,
             IQueryableRepository<PaymentTransaction> transactionRepository,
-            INotifierService notifierService,
             IEmailService emailService)
         {
             _eventRepository = eventRepository;
@@ -135,7 +131,7 @@ namespace Application.Services
                 .Select(b => b.Attendee.Email)
                 .FirstOrDefault();
 
-            _emailService.SendAsync(attendeeEmail, "Your Booking Status", message);
+            await _emailService.SendAsync(attendeeEmail, "Your Booking Status", message);
             #endregion
             // Save all changes
             await _unitOfWork.SaveChangesAsync();
@@ -218,45 +214,21 @@ namespace Application.Services
             booking.Event.RemainingTickets += booking.NumberOfTickets;
             _eventRepository.Update(booking.Event);
 
-            var notification = new Notification
-            {
-                Type = NotificationType.BookingConfirmation,
-                SentVia = DeliveryMethod.Email,
-                UserId = booking.AttendeeId,
-                Message = $"Your ticket request for '{booking.Event.Title}' has been rejected. Reason: {reason}",
-                Status = NotificationStatus.Pending,
-                IsDeleted = false
-            };
-
-            await _notificationRepository.AddAsync(notification);
             await _unitOfWork.SaveChangesAsync();
 
             if (!string.IsNullOrWhiteSpace(booking.Attendee?.Email))
             {
                 try
                 {
+                    var message = $"Your ticket request for '{booking.Event.Title}' has been rejected. Reason: {reason}";
                     await _emailService.SendAsync(booking.Attendee.Email,
                         "Booking Rejected",
-                        notification.Message);
+                        message);
                 }
                 catch
                 {
                     // Silence email failures so rejection still succeeds
                 }
-            }
-
-            try
-            {
-                await _notifierService.SendAsync(booking.AttendeeId, new NotificationMessageDto
-                {
-                    Title = "Booking Rejected",
-                    Body = notification.Message,
-                    Type = NotificationType.BookingConfirmation.ToString()
-                });
-            }
-            catch
-            {
-                // Silence real-time notification failures to prevent blocking execution
             }
         }
 
@@ -310,19 +282,8 @@ namespace Application.Services
                 }
             }
 
-            // Create cancellation notification
-            var notification = new Notification
-            {
-                Type = NotificationType.BookingConfirmation,
-                SentVia = DeliveryMethod.Email,
-                UserId = booking.AttendeeId,
-                Message = $"Your booking for '{booking.Event.Title}' has been cancelled. Booking ID: {booking.Id}",
-                Status = NotificationStatus.Pending,
-                IsDeleted = false
-            };
-
-            await _notificationRepository.AddAsync(notification);
-
+            var message = $"Your booking for '{booking.Event.Title}' has been cancelled.";
+            await _emailService.SendAsync(booking.Attendee.Email, "Booking Cancelled", message);
             // Save all changes
             await _unitOfWork.SaveChangesAsync();
 

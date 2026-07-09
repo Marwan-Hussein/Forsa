@@ -1,6 +1,7 @@
 using Application.Core.DTOs.Event;
 using Application.Core.Interfaces.EventInterfaces;
 using Application.Core.Interfaces;
+using Application.Core.Interfaces.Auth.OTP;
 using Application.Core.DTOs.CommonDTOs;
 using Domain.Entities;
 using Domain.Entities.AttendeeEntities;
@@ -15,24 +16,21 @@ namespace Application.Services.EventServices
         private readonly IEventService _eventService;
         private readonly IEventRepository _repo;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IGenericRepository<Notification> _notificationRepository;
-        private readonly INotifierService _notifierService;
         private readonly IQueryableRepository<AttendeeSubsOrganizer> _subRepository;
+        private readonly IEmailService _emailService;
 
         public EventAdminService(
             IEventService eventService,
             IEventRepository repo,
             IUnitOfWork unitOfWork,
-            IGenericRepository<Notification> notificationRepository,
-            INotifierService notifierService,
-            IQueryableRepository<AttendeeSubsOrganizer> subRepository)
+            IQueryableRepository<AttendeeSubsOrganizer> subRepository,
+            IEmailService emailService)
         {
             _eventService = eventService;
             _repo = repo;
             _unitOfWork = unitOfWork;
-            _notificationRepository = notificationRepository;
-            _notifierService = notifierService;
             _subRepository = subRepository;
+            _emailService = emailService;
         }
 
         public Task<List<EventDetailsDto>> GetAllAsync(EventSearchParameterDto parameters)
@@ -52,17 +50,22 @@ namespace Application.Services.EventServices
             ev.LastModifiedAt = DateTime.UtcNow;
 
             _repo.Update(ev);
-            #region notification
-            var notification = new Notification
+            #region Email to organization
+            var message = $"Your event '{ev.Title}' status has been updated to {status}.";
+            var organizerEmail = ev.Organizer?.Email;
+            if (organizerEmail is not null)
             {
-                Message = $"Your event '{ev.Title}' status has been updated to {status}.",
-                Type = NotificationType.EventUpdate,
-                SentVia = DeliveryMethod.Email,
-                Status = NotificationStatus.Pending,
-                UserId = ev.OrganizerId,
-                CreatedAt = DateTime.UtcNow
-            };
-            await _notificationRepository.AddAsync(notification);
+                try
+                {
+                    await _emailService.SendAsync(organizerEmail,
+                        @"'{ev.Title}' Status Updated",
+                        message);
+                }
+                catch
+                {
+                    // Silence email failures so the status update still succeeds
+                }
+            }
 
             // Notify subscribers if published
             if (status == EventStatus.Published)
@@ -72,61 +75,21 @@ namespace Application.Services.EventServices
                     .Where(s => s.OrganizerId == ev.OrganizerId)
                     .ToListAsync();
 
-                foreach (var sub in subscribers)
-                {
-                    var subNotification = new Notification
-                    {
-                        Message = $"Organizer '{organizerName}' has published a new event: '{ev.Title}'!",
-                        Type = NotificationType.EventUpdate,
-                        SentVia = DeliveryMethod.Email,
-                        Status = NotificationStatus.Pending,
-                        UserId = sub.AttendeeId,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    await _notificationRepository.AddAsync(subNotification);
-                }
-            }
-
-            await _unitOfWork.SaveChangesAsync();
-
-            try
-            {
-                await _notifierService.SendAsync(ev.OrganizerId, new NotificationMessageDto
-                {
-                    Title = "Event Status Updated",
-                    Body = $"Your event '{ev.Title}' status has been updated to {status}.",
-                    Type = NotificationType.EventUpdate.ToString()
-                });
-            }
-            catch
-            {
-                // Silence real-time notification failures to prevent blocking execution
-            }
-
-            if (status == EventStatus.Published)
-            {
-                var organizerName = ev.Organizer?.FullName ?? "An organizer you follow";
-                var subscribers = await _subRepository.GetQueryable()
-                    .Where(s => s.OrganizerId == ev.OrganizerId)
-                    .ToListAsync();
-
+                var message2 = $"Organizer '{organizerName}' has published a new event: '{ev.Title}'!";
                 foreach (var sub in subscribers)
                 {
                     try
                     {
-                        await _notifierService.SendAsync(sub.AttendeeId, new NotificationMessageDto
-                        {
-                            Title = "New Event Published",
-                            Body = $"Organizer '{organizerName}' has published a new event: '{ev.Title}'!",
-                            Type = NotificationType.EventUpdate.ToString()
-                        });
+                        await _emailService.SendAsync(sub.Attendee?.Email, @"'{ev.Title}' Published", message2);
                     }
                     catch
                     {
-                        // Silence real-time notification failures to prevent blocking execution
+                        // Silence email failures so the status update still succeeds
                     }
                 }
             }
+
+            await _unitOfWork.SaveChangesAsync();
             #endregion
             return true;
         }
@@ -143,33 +106,22 @@ namespace Application.Services.EventServices
 
             _repo.Update(ev);
 
-            var notification = new Notification
-            {
-                Message = $"Your event '{ev.Title}' has been deleted by an administrator.",
-                Type = NotificationType.EventUpdate,
-                SentVia = DeliveryMethod.Email,
-                Status = NotificationStatus.Pending,
-                UserId = ev.OrganizerId,
-                CreatedAt = DateTime.UtcNow
-            };
-            await _notificationRepository.AddAsync(notification);
-
             await _unitOfWork.SaveChangesAsync();
 
-            try
+            var message = $"Your event '{ev.Title}' has been deleted by an administrator.";
+            if (ev.Organizer?.Email is not null)
             {
-                await _notifierService.SendAsync(ev.OrganizerId, new NotificationMessageDto
+                try
                 {
-                    Title = "Event Deleted",
-                    Body = $"Your event '{ev.Title}' has been deleted by an administrator.",
-                    Type = NotificationType.EventUpdate.ToString()
-                });
+                    await _emailService.SendAsync(ev.Organizer.Email,
+                        "Event Deleted",
+                        message);
+                }
+                catch
+                {
+                    // Silence email failures so the delete still succeeds
+                }
             }
-            catch
-            {
-                // Silence real-time notification failures to prevent blocking execution
-            }
-
             return true;
         }
     }
