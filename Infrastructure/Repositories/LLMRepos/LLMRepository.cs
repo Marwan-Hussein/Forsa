@@ -1,4 +1,4 @@
-﻿using Domain.Entities.BookingEntities;
+using Domain.Entities.BookingEntities;
 using Domain.Interfaces;
 using Domain.Interfaces.BookingInterfaces;
 using Domain.Interfaces.LLMInterfaces;
@@ -31,19 +31,30 @@ namespace Infrastructure.Repositories.LLM
 
         public async Task<string> GetEntityDetailedProfileAsync(string entityType, string entityIdentifier)
         {
-            if (entityType.ToLower() == "venue")
+            if (string.Equals(entityType, "venue", StringComparison.OrdinalIgnoreCase))
             {
-                var venue = await _placeRepository.GetPlaceByEntityIdentifier(entityIdentifier);
-                if (venue == null) return "Sorry, I couldn't find any details about this venue.";
-
-                return $"Venue Name: {venue.Name}, Location: {venue.Location}, Max Capacity: {venue.Capacity} people, Features: {venue.Description}.";
+                try
+                {
+                    var venue = await _placeRepository.GetPlaceByEntityIdentifier(entityIdentifier);
+                    return $"Venue Name: {venue.Name}, Location: {venue.Location}, Max Capacity: {venue.Capacity} people, Features: {venue.Description}.";
+                }
+                catch (KeyNotFoundException)
+                {
+                    return "Sorry, I couldn't find any details about this venue.";
+                }
             }
             else
             {
-                var @event = await _eventRepository.GetEventByEntityIdentifier(entityIdentifier);
-                if (@event == null) return "Sorry, I couldn't find any event with this name.";
-
-                return $"Event: {@event.Title}, Category: {@event.Category}, Venue Location: {@event.Place.Location}, Date: {@event.StartDate:dd/MM/yyyy hh:mm tt}, Ticket Prices Start From: {@event.TicketPrice} EGP, Remaining Tickets: {@event.RemainingTickets}.";
+                try
+                {
+                    var @event = await _eventRepository.GetEventByEntityIdentifier(entityIdentifier);
+                    var locationStr = @event.Place != null ? @event.Place.Location : @event.CustomLocation ?? "TBA";
+                    return $"Event: {@event.Title}, Category: {@event.Category}, Venue Location: {locationStr}, Date: {@event.StartDate:dd/MM/yyyy hh:mm tt}, Ticket Prices Start From: {@event.TicketPrice} EGP, Remaining Tickets: {@event.RemainingTickets}.";
+                }
+                catch (KeyNotFoundException)
+                {
+                    return "Sorry, I couldn't find any event with this name.";
+                }
             }
         }
 
@@ -60,16 +71,26 @@ namespace Infrastructure.Repositories.LLM
 
         public async Task<string> GetUserHistoryAndStatusAsync(string userId)
         {
-            var bookings = await _bookingRepository.GetBookingsByUserIdAsync(userId);
+            try
+            {
+                var bookings = await _bookingRepository.GetBookingsByUserIdAsync(userId);
+                if (bookings == null || !bookings.Any())
+                    return "You do not have any bookings or tickets registered under your account on the platform yet.";
 
-            if (!bookings.Any()) return "You do not have any bookings or tickets registered under your account on the platform yet.";
-
-            return "Your Recent Bookings:\n" + string.Join("\n", bookings.Select(b => $"- Ticket for [{b.Event.Title}] on {b.BookingDate:dd/MM/yyyy} | Ticket Status: {b.Status}"));
+                return "Your Recent Bookings:\n" + string.Join("\n", bookings.Select(b => {
+                    var title = b.Event != null ? b.Event.Title : "Unknown Event";
+                    return $"- Ticket for [{title}] on {b.BookingDate:dd/MM/yyyy} | Ticket Status: {b.Status}";
+                }));
+            }
+            catch (KeyNotFoundException)
+            {
+                return "You do not have any bookings or tickets registered under your account on the platform yet.";
+            }
         }
 
         public async Task<string> SearchPlatformRegistryAsync(string searchType, string keyword, string location, string date)
         {
-            if (searchType.ToLower() == "venues")
+            if (string.Equals(searchType, "venues", StringComparison.OrdinalIgnoreCase))
             {
                 var venueQuery = _placeRepository.GetQueryable();
                 if (!string.IsNullOrEmpty(keyword)) venueQuery = venueQuery.Where(v => v.Name.Contains(keyword) || v.Description.Contains(keyword));
@@ -84,13 +105,22 @@ namespace Infrastructure.Repositories.LLM
             {
                 var eventQuery = _eventRepository.GetQueryableWithPlace();
                 if (!string.IsNullOrEmpty(keyword)) eventQuery = eventQuery.Where(e => e.Title.Contains(keyword) || e.Category.Contains(keyword));
-                if (!string.IsNullOrEmpty(location)) eventQuery = eventQuery.Where(e => e.Place.Location.Contains(location));
+                if (!string.IsNullOrEmpty(location))
+                {
+                    eventQuery = eventQuery.Where(e =>
+                        (e.Place != null && e.Place.Location.Contains(location)) ||
+                        (e.CustomLocation != null && e.CustomLocation.Contains(location))
+                    );
+                }
                 if (!string.IsNullOrEmpty(date) && DateTime.TryParse(date, out var parsedDate)) eventQuery = eventQuery.Where(e => e.StartDate.Date == parsedDate.Date);
 
                 var events = await eventQuery.Where(e => e.StartDate >= DateTime.UtcNow).Take(3).ToListAsync();
                 if (!events.Any()) return "No upcoming events match your search criteria at the moment.";
 
-                return "Available Events:\n" + string.Join("\n", events.Select(e => $"- Event [{e.Title}] at {e.Place.Location} on {e.StartDate:dd/MM/yyyy}"));
+                return "Available Events:\n" + string.Join("\n", events.Select(e => {
+                    var locationStr = e.Place != null ? e.Place.Location : e.CustomLocation ?? "TBA";
+                    return $"- Event [{e.Title}] at {locationStr} on {e.StartDate:dd/MM/yyyy}";
+                }));
             }
         }
 

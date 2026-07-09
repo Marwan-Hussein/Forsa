@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +9,6 @@ namespace Application.Core.Interfaces.LLMInterfaces
 {
     public interface ILLMService
     {
-        Task<string> ExecuteChatAsync(string userMessage, List<ChatHistoryMessageDto> history);
+        Task<string> ExecuteChatAsync(string userMessage, List<ChatHistoryMessageDto> history, string? systemContext = null);
     }
 }

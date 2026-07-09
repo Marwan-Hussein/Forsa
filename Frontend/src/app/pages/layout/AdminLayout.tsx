@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router";
+import { NavLink, Outlet, useNavigate, Link } from "react-router";
 import { 
   LayoutDashboard, 
   Users, 
@@ -15,6 +15,7 @@ import { ForSaLogo } from "../../components/ForSaLogo";
 import { motion } from "motion/react";
 import { Toaster } from "sonner";
 import { NotificationBell } from "../../components/NotificationBell";
+import { AiChatbot } from "../../components/AiChatbot";
 
 function parseJwt(token: string) {
   try {
@@ -100,7 +101,9 @@ export default function AdminLayout() {
 
         <div className="h-20 flex items-center justify-between px-6 border-b border-white/10 relative z-10">
           <div className="flex items-center gap-3.5">
-            <ForSaLogo className="h-9 brightness-0 invert" />
+            <Link to="/">
+              <ForSaLogo className="h-9 brightness-0 invert cursor-pointer hover:opacity-90 transition-opacity" />
+            </Link>
             <div className="h-6 w-[1px] bg-white/20 self-center" />
             <span className="text-lg font-bold tracking-wide text-white whitespace-nowrap">Admin Portal</span>
           </div>
@@ -187,6 +190,7 @@ export default function AdminLayout() {
           </div>
         </div>
       </main>
+      <AiChatbot />
     </div>
   );
 }

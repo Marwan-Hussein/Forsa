@@ -18,6 +18,7 @@ import { getUserIdFromToken } from "../../api/api";
 import { organizerApi } from "../../api/organizerApi";
 import { Toaster } from "sonner";
 import { NotificationBell } from "../../components/NotificationBell";
+import { AiChatbot } from "../../components/AiChatbot";
 
 export default function OrganizerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -109,7 +110,9 @@ export default function OrganizerLayout() {
 
         <div className="h-20 flex items-center justify-between px-6 border-b border-white/10 relative z-10">
           <div className="flex items-center gap-3.5">
-            <ForSaLogo className="h-9 brightness-0 invert" />
+            <Link to="/">
+              <ForSaLogo className="h-9 brightness-0 invert cursor-pointer hover:opacity-90 transition-opacity" />
+            </Link>
             <div className="h-6 w-[1px] bg-white/20 self-center" />
             <span className="text-lg font-bold tracking-wide text-white whitespace-nowrap">Organizer Portal</span>
           </div>
@@ -222,6 +225,7 @@ export default function OrganizerLayout() {
           </div>
         </div>
       </main>
+      <AiChatbot />
     </div>
   );
 }

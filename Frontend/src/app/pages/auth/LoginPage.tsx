@@ -108,9 +108,9 @@ export default function LoginPage() {
   };
 
   const routeByRole = (role: string) => {
-    if (role === "Admin") return "/admin";
-    if (role === "Owner" || role === "PlaceOwner") return "/owner";
-    if (role === "Organizer") return "/organizer";
+    if (role === "Admin") return "/";
+    if (role === "Owner" || role === "PlaceOwner") return "/";
+    if (role === "Organizer") return "/";
     return "/dashboard";
   };
 

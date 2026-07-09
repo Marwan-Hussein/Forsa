@@ -17,6 +17,8 @@ using Microsoft.SemanticKernel;
 using StackExchange.Redis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Polly;
+using Polly.Extensions.Http;
 namespace Forsa
 {
     public class Program
@@ -125,23 +127,41 @@ namespace Forsa
                     }
                 });
             });
+            
+            builder.Services.AddHttpClient("GeminiClient")
+                .AddPolicyHandler(HttpPolicyExtensions
+                    .HandleTransientHttpError()
+                    .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(2 * retryAttempt)));
+
             builder.Services.AddHttpContextAccessor();
-            builder.Services.AddScoped(sp =>
+
+            // 2. Register your Semantic Kernel Services as Transient or Scoped
+            builder.Services.AddTransient<Application.Services.LLMServices.ForsaSystemPlugin>();
+            builder.Services.AddTransient<Domain.Interfaces.LLMInterfaces.ILLMRepository, Infrastructure.Repositories.LLM.LLMRepository>();
+            builder.Services.AddTransient<Application.Core.Interfaces.LLMInterfaces.ILLMService, Application.Services.LLMServices.LLMService>();
+
+            // 3. Register the Kernel safely so it can resolve scoped DbContexts
+            builder.Services.AddTransient<Kernel>(sp =>
             {
                 var config = sp.GetRequiredService<IConfiguration>();
                 var modelId = config["LLM:ModelId"];
                 var apiKey = config["LLM:APIKey"];
+
+                var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+                var geminiClient = httpClientFactory.CreateClient("GeminiClient");
+
                 var kernelBuilder = Kernel.CreateBuilder();
 
-                kernelBuilder.AddGoogleAIGeminiChatCompletion(modelId, apiKey);
+                kernelBuilder.AddGoogleAIGeminiChatCompletion(modelId, apiKey, httpClient: geminiClient);
 
-                var LLMRepo = sp.GetRequiredService<ILLMRepository>();
-                var httpAccessor = sp.GetRequiredService<IHttpContextAccessor>();
-                var forsaPlugin = new ForsaSystemPlugin(LLMRepo, httpAccessor);
+                var kernel = kernelBuilder.Build();
 
-                kernelBuilder.Plugins.AddFromObject(forsaPlugin, "ForsaSystemPlugin");
+                // Inject the plugin dynamically using the service provider
+                var forsaPlugin = sp.GetRequiredService<Application.Services.LLMServices.ForsaSystemPlugin>();
+                kernel.Plugins.AddFromObject(forsaPlugin, "ForsaSystemPlugin");
 
-                return kernelBuilder.Build();
+                return kernel;
             });
 
             var app = builder.Build();

@@ -91,7 +91,7 @@ namespace Application.Services.Auth
             user.CreatedAt = DateTime.UtcNow;
             user.IsBlocked = false;
             user.IsDeleted = false;
-            user.ProfilePicture = "/defaultProfilePicture.png";
+            //user.ProfilePicture = "/defaultProfilePicture.png";
             user.BirthDate = registerDto.birthdate;
 
             var refreshToken = refreshTokenService.GenerateToken();

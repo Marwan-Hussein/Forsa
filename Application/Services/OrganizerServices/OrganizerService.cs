@@ -160,6 +160,11 @@ namespace Application.Services.OrganizerServices
             if (ev == null)
                 throw new KeyNotFoundException("Event not found");
 
+            if (DateTime.UtcNow - ev.CreatedAt > TimeSpan.FromHours(24))
+            {
+                throw new InvalidOperationException("Cannot edit the event after 24 hours from its creation.");
+            }
+
             bool isConcludedOrStarted = ev.StartDate <= DateTime.UtcNow || ev.Status == EventStatus.Completed;
 
             if (isConcludedOrStarted)
