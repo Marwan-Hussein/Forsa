@@ -157,10 +157,7 @@ namespace Application.Services
             };
 
             var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
-            var attendeeEmail = _bookingRepository.GetQueryable()
-                .Where(b => b.Id == booking.Id)
-                .Select(b => b.Attendee.Email)
-                .FirstOrDefault();
+            var attendeeEmail = attendee.Email;
 
             await _emailService.SendAsync(attendeeEmail, "Your Booking Status", htmlBody);
             #endregion
