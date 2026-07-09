@@ -44,14 +44,12 @@ namespace Application.Services
         {
             _eventRepository = eventRepository;
             _bookingRepository = bookingRepository;
-            _notification_repository = notificationRepository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
-            _qr_service = qrService;
+            _qrService = qrService;
             _calendarSync = calendarSync;
             _paymentService = paymentService;
             _transactionRepository = transactionRepository;
-            _notifierService = notifierService;
             _emailService = emailService;
         }
 
@@ -75,7 +73,7 @@ namespace Application.Services
 
         public async Task<BookingResponseDto> CreateBookingAsync(CreateBookingRequestDto dto)
         {
-            
+
             dto.NumberOfTickets = 1;
 
             // Get event and validate
@@ -98,8 +96,8 @@ namespace Application.Services
 
             // Check for duplicate booking
             var existingBooking = await _bookingRepository.GetQueryable()
-                .AnyAsync(b => b.AttendeeId == dto.AttendeeId 
-                          && b.EventId == dto.EventId 
+                .AnyAsync(b => b.AttendeeId == dto.AttendeeId
+                          && b.EventId == dto.EventId
                           && (b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Pending));
 
             if (existingBooking)
@@ -126,24 +124,18 @@ namespace Application.Services
             // Update event remaining tickets
             eventEntity.RemainingTickets -= dto.NumberOfTickets;
             _eventRepository.Update(eventEntity);
-
-            // Create notification
-            var message = eventEntity.TicketPrice <= 0 
+            #region email booking status
+            // send email
+            var message = eventEntity.TicketPrice <= 0
                 ? $"Your ticket request for '{eventEntity.Title}' has been confirmed! Booking ID: {booking.Id}"
                 : $"Your ticket request for '{eventEntity.Title}' has been received and is pending approval. Booking ID: {booking.Id}";
+            var attendeeEmail = _bookingRepository.GetQueryable()
+                .Where(b => b.Id == booking.Id)
+                .Select(b => b.Attendee.Email)
+                .FirstOrDefault();
 
-            var notification = new Notification
-            {
-                Type = NotificationType.BookingConfirmation,
-                SentVia = DeliveryMethod.Email,
-                UserId = dto.AttendeeId,
-                Message = message,
-                Status = NotificationStatus.Pending,
-                IsDeleted = false
-            };
-
-            await _notificationRepository.AddAsync(notification);
-
+            _emailService.SendAsync(attendeeEmail, "Your Booking Status", message);
+            #endregion
             // Save all changes
             await _unitOfWork.SaveChangesAsync();
 
@@ -330,7 +322,7 @@ namespace Application.Services
 
                 booking.Event.RemainingTickets += booking.NumberOfTickets;
                 _eventRepository.Update(booking.Event);
-                
+
                 var pendingTransaction = await _transactionRepository.GetQueryable()
                     .FirstOrDefaultAsync(t => t.ReferenceId == bookingId && t.ItemType == "EventBooking" && t.TransactionStatus == TransactionStatus.Pending);
                 if (pendingTransaction != null)
@@ -347,7 +339,7 @@ namespace Application.Services
                 SentVia = DeliveryMethod.Email,
                 UserId = booking.AttendeeId,
                 Message = $"Your booking for '{booking.Event.Title}' has been cancelled. Booking ID: {booking.Id}",
-                Status =    NotificationStatus.Pending,
+                Status = NotificationStatus.Pending,
                 IsDeleted = false
             };
 
@@ -374,11 +366,12 @@ namespace Application.Services
             return _mapper.Map<BookingResponseDto>(booking);
         }
 
-        public async Task<byte[]> GetTicketFromQr(int bookingId) { 
+        public async Task<byte[]> GetTicketFromQr(int bookingId)
+        {
             var bookingInfo = await _bookingRepository.GetQueryable()
                 .Include(b => b.Event)
                 .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
-            if(bookingInfo == null)
+            if (bookingInfo == null)
                 throw new KeyNotFoundException("Booking not found");
             var qrPayload = System.Text.Json.JsonSerializer.Serialize(new
             {
@@ -386,12 +379,12 @@ namespace Application.Services
                 token = bookingInfo.QRCode
             });
             byte[] qrImage = _qrService.GenerateQrImage(qrPayload);
-            return qrImage; 
+            return qrImage;
         }
 
         public async Task<VerifyAttendanceResponseDto> VerifyAttendanceViaQrCodeAsync(int eventId, string qrCode)
         {
-            if(string.IsNullOrWhiteSpace(qrCode))
+            if (string.IsNullOrWhiteSpace(qrCode))
                 throw new ArgumentException("Scanned token cannot be empty.", nameof(qrCode));
 
             string finalToken = qrCode;

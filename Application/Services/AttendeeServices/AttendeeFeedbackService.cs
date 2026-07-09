@@ -1,21 +1,16 @@
 using Application.Core.DTOs.AttendeeDTOs;
 using Application.Core.DTOs.Feedbacks;
 using Application.Core.Interfaces.AttendeeInterfaces;
-using Application.Core.Interfaces;
-using Application.Core.DTOs.CommonDTOs;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.AttendeeEntities;
 using Domain.Entities.BookingEntities;
 using Domain.Entities.EventEntities;
-using Domain.Entities.OrganizerEntities;
 using Domain.ENUMs;
 using Domain.Interfaces;
 using Domain.Interfaces.OrganizerInterfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+using Application.Core.Interfaces.Auth.OTP;
 
 namespace Application.Services.AttendeeServices
 {
@@ -29,8 +24,6 @@ namespace Application.Services.AttendeeServices
         private readonly IFeedbackRepository _feedbackRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IGenericRepository<Notification> _notificationRepository;
-        private readonly INotifierService _notifierService;
 
         public AttendeeFeedbackService(
             IQueryableRepository<Attendee> attendeeRepo,
@@ -41,8 +34,7 @@ namespace Application.Services.AttendeeServices
             IFeedbackRepository feedbackRepo,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IGenericRepository<Notification> notificationRepository,
-            INotifierService notifierService)
+            IEmailService email)
         {
             _attendeeRepo = attendeeRepo;
             _eventRepo = eventRepo;
@@ -52,8 +44,6 @@ namespace Application.Services.AttendeeServices
             _feedbackRepo = feedbackRepo;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _notificationRepository = notificationRepository;
-            _notifierService = notifierService;
         }
 
         public async Task<FeedbackResponseDto> SubmitAttendeeFeedbackAsync(int attendeeId, int eventId, FeedbackDto dto)
@@ -128,36 +118,10 @@ namespace Application.Services.AttendeeServices
                 }
             }
 
-            #region notification
-            // Create notification for event organizer
-            var notification = new Notification
-            {
-                Message = $"Attendee '{attendee.FullName}' has submitted feedback for your event '{ev.Title}'.",
-                Type = NotificationType.GeneralAlert,
-                SentVia = DeliveryMethod.Email,
-                Status = NotificationStatus.Pending,
-                UserId = ev.OrganizerId,
-                CreatedAt = DateTime.UtcNow
-            };
-            await _notificationRepository.AddAsync(notification);
-
+            
             // 9. Save changes and map
             await _unitOfWork.SaveChangesAsync();
 
-            try
-            {
-                await _notifierService.SendAsync(ev.OrganizerId, new NotificationMessageDto
-                {
-                    Title = "New Event Feedback",
-                    Body = $"Attendee '{attendee.FullName}' has submitted feedback for your event '{ev.Title}'.",
-                    Type = NotificationType.GeneralAlert.ToString()
-                });
-            }
-            catch
-            {
-                // Silence real-time notification failures to prevent blocking execution
-            }
-            #endregion
             var response = _mapper.Map<FeedbackResponseDto>(feedback);
             response.OrganizerId = organizerId;
             response.OrganizerName = organizerName;
