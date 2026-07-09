@@ -2,6 +2,7 @@ using Application.Core.DTOs.Admin;
 using Application.Core.DTOs.Place;
 using Application.Core.Interfaces.PlaceInterfaces;
 using Application.Core.Interfaces;
+using Application.Core.Interfaces.Auth.OTP;
 using Application.Core.DTOs.CommonDTOs;
 using AutoMapper;
 using Domain.Entities;
@@ -21,6 +22,7 @@ namespace Application.Services.PlaceServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGenericRepository<Notification> _notificationRepository;
         private readonly INotifierService _notifierService;
+        private readonly IEmailService _emailService;
 
         public PlaceAdminService(
             IPlaceRepository placeRepo,
@@ -29,7 +31,8 @@ namespace Application.Services.PlaceServices
             IMapper mapper,
             IUnitOfWork unitOfWork,
             IGenericRepository<Notification> notificationRepository,
-            INotifierService notifierService)
+            INotifierService notifierService,
+            IEmailService emailService)
         {
             _placeRepo = placeRepo;
             _availabilityRepo = availabilityRepo;
@@ -38,6 +41,7 @@ namespace Application.Services.PlaceServices
             _unitOfWork = unitOfWork;
             _notificationRepository = notificationRepository;
             _notifierService = notifierService;
+            _emailService = emailService;
         }
 
         // GET /api/admin/places
@@ -111,6 +115,7 @@ namespace Application.Services.PlaceServices
         public async Task<bool> UpdateStatusAsync(int placeId, PlaceStatus status, string? reason)
         {
             var place = await _placeRepo.GetQueryable()
+                                        .Include(p => p.Owner)
                                         .FirstOrDefaultAsync(p => p.Id == placeId && !p.IsDeleted);
             if (place == null)
                 return false;
@@ -144,6 +149,20 @@ namespace Application.Services.PlaceServices
                     CreatedAt = DateTime.UtcNow
                 };
                 await _notificationRepository.AddAsync(notification);
+
+                if (!string.IsNullOrWhiteSpace(place.Owner?.Email))
+                {
+                    try
+                    {
+                        await _emailService.SendAsync(place.Owner.Email,
+                            "Place Status Updated",
+                            msg);
+                    }
+                    catch
+                    {
+                        // Silence email failures so status update still succeeds
+                    }
+                }
                 #endregion
             }
 
@@ -179,6 +198,7 @@ namespace Application.Services.PlaceServices
         public async Task<bool> SoftDeletePlaceAsync(int placeId)
         {
             var place = await _placeRepo.GetQueryable()
+                                        .Include(p => p.Owner)
                                         .FirstOrDefaultAsync(p => p.Id == placeId && !p.IsDeleted);
             if (place == null)
                 return false;
@@ -211,6 +231,20 @@ namespace Application.Services.PlaceServices
                     CreatedAt = DateTime.UtcNow
                 };
                 await _notificationRepository.AddAsync(notification);
+
+                if (!string.IsNullOrWhiteSpace(place.Owner?.Email))
+                {
+                    try
+                    {
+                        await _emailService.SendAsync(place.Owner.Email,
+                            "Place Deleted",
+                            notification.Message);
+                    }
+                    catch
+                    {
+                        // Silence email failures so delete still succeeds
+                    }
+                }
             }
 
             await _unitOfWork.SaveChangesAsync();

@@ -1,10 +1,16 @@
 using Application.Core.DTOs.Place;
+using Application.Core.DTOs.CommonDTOs;
 using Application.Core.Interfaces.OwnerInterfaces;
+using Application.Core.Interfaces.AdminServices;
+using Application.Core.Interfaces;
+using Application.Core.Interfaces.Auth.OTP;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Entities.PlaceEntities;
 using Domain.ENUMs;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services.OwnerServices
 {
@@ -14,18 +20,28 @@ namespace Application.Services.OwnerServices
         private readonly IQueryableRepository<PlaceAvailability> _availabilityRepo;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAdminUserService _adminUserService;
+        private readonly ILogger<PlaceOwnerService> _logger;
+        private readonly IEmailService _emailService;
 
         public PlaceOwnerService(
             IPlaceRepository placeRepo,
             IQueryableRepository<PlaceAvailability> availabilityRepo,
             IMapper mapper,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IAdminUserService adminUserService,
+            ILogger<PlaceOwnerService> logger,
+            IEmailService emailService)
         {
             _placeRepo = placeRepo;
             _availabilityRepo = availabilityRepo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _adminUserService = adminUserService;
+            _logger = logger;
+            _emailService = emailService;
         }
+
 
         // Place CRUD
 
@@ -44,6 +60,30 @@ namespace Application.Services.OwnerServices
                 await GenerateAvailabilitiesFromWeekdays(place.Id, dto.AvailableDays);
                 await _unitOfWork.SaveChangesAsync();
             }
+
+            // Notify all admins that a new place is awaiting review
+            _logger.LogInformation("[PlaceOwnerService] Notifying admins about new place '{PlaceName}' (Id={PlaceId}) submitted by OwnerId={OwnerId}",
+                place.Name, place.Id, ownerId);
+
+            var admins = await _adminUserService.GetAllInRole(Roles.Admin, 1, 1000);
+            _logger.LogInformation("[PlaceOwnerService] Found {AdminCount} admin(s) to notify", admins.Count);
+
+            foreach (var admin in admins)
+            {
+                if (!string.IsNullOrWhiteSpace(admin.Email))
+                {
+                    try
+                    {
+                        await _emailService.SendAsync(admin.Email,
+                            "New Place Awaiting Approval",
+                            $"A new venue '{place.Name}' has been submitted by an owner and is awaiting your review.");
+                    }
+                    catch{}
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
 
             return _mapper.Map<PlaceDetailsDto>(place);
         }
