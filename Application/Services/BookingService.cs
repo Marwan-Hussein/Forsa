@@ -287,6 +287,7 @@ namespace Application.Services
             // Get booking by id
             var booking = await _bookingRepository.GetQueryable()
                 .Include(b => b.Event)
+                .Include(b => b.Attendee)
                 .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
 
             if (booking == null)
@@ -308,9 +309,21 @@ namespace Application.Services
             {
                 // Has paid transaction -> Refund it (ProcessRefundAsync handles booking status and tickets update)
                 var refundResult = await _paymentService.ProcessRefundAsync(transaction.PaymentId);
-                if (!refundResult.IsSuccess)
+                if (refundResult.IsSuccess)
                 {
-                    throw new InvalidOperationException($"Refund failed: {refundResult.Message}");
+                    // Refund succeeded, also soft-delete the booking to match other cancellations
+                    booking.IsDeleted = true;
+                    _bookingRepository.Update(booking);
+                }
+                else
+                {
+                    // Refund failed, but we still cancel and soft-delete the booking in the database anyway
+                    booking.Status = BookingStatus.Cancelled;
+                    booking.IsDeleted = true;
+                    _bookingRepository.Update(booking);
+
+                    booking.Event.RemainingTickets += booking.NumberOfTickets;
+                    _eventRepository.Update(booking.Event);
                 }
             }
             else

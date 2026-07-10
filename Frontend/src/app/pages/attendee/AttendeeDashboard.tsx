@@ -800,13 +800,32 @@ export default function AttendeeDashboard() {
         const attended = await attendeeApi.getAttendedEvents(userId);
         setMyTickets(bookings);
 
-        // Fetch dynamic loyalty points
         let points = 0;
+        let matched: EventDetailsDto[] = [];
+        
         try {
           const profile = await attendeeApi.getProfile(userId);
           points = profile.loyaltyPoint || 0;
+          
+          const interestNames = (profile.interests || []).map(i => i.name.toLowerCase());
+
+          const activeEvents = events.filter(e => {
+            const statusStr = (e.status || "").toLowerCase();
+            return statusStr === "approved" || statusStr === "published" || statusStr === "soldout" || statusStr === "completed" || statusStr === "2" || statusStr === "4" || statusStr === "5" || statusStr === "7";
+          });
+
+          matched = activeEvents.filter(e => {
+            return interestNames.includes((e.category || "").toLowerCase());
+          });
+
+          setRecommendedEvents(matched.length ? matched : activeEvents.slice(0, 4));
         } catch (e) {
-          console.error("Failed to load user loyalty points", e);
+          console.error("Failed to load attendee profile for recommendations", e);
+          const activeEvents = events.filter(e => {
+            const statusStr = (e.status || "").toLowerCase();
+            return statusStr === "approved" || statusStr === "published" || statusStr === "soldout" || statusStr === "completed" || statusStr === "2" || statusStr === "4" || statusStr === "5" || statusStr === "7";
+          });
+          setRecommendedEvents(activeEvents.slice(0, 4));
         }
         
         setStats({
@@ -815,19 +834,6 @@ export default function AttendeeDashboard() {
           wishlist: wishlist.length,
           points
         });
-
-        // Filter recommendations dynamically by user interests
-        let matched: EventDetailsDto[] = [];
-        try {
-          const interests = await attendeeApi.getInterests(userId);
-          const interestNames = interests.map(i => i.name.toLowerCase());
-          matched = events.filter(e => 
-            interestNames.includes((e.category || "").toLowerCase())
-          );
-        } catch (e) {
-          console.error("Failed to load user interests for recommendations", e);
-        }
-        setRecommendedEvents(matched.length ? matched : events.slice(0, 4));
 
       } catch (err) {
         console.error("Failed to load dashboard data", err);
