@@ -28,42 +28,12 @@ namespace Forsa
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Trust the reverse-proxy headers so Request.Scheme = https and
-            builder.Services.Configure<ForwardedHeadersOptions>(options =>
-            {
-                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
-           
-                options.KnownNetworks.Clear();
-                options.KnownProxies.Clear();
-            });
-
             builder.Services.AddDbContext<ForsaDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>()
                             .AddEntityFrameworkStores<ForsaDbContext>()
                             .AddDefaultTokenProviders();
-            // comment
-            //// redis
-            //var redisConnection = builder.Configuration.GetConnectionString("Redis");
-            //builder.Services.AddSingleton<IConnectionMultiplexer>(sp=>
-            //    {
-            //        var configuration = ConfigurationOptions.Parse(redisConnection);
-            //        configuration.AbortOnConnectFail = false; // This prevents the crash
-            //        return ConnectionMultiplexer.Connect(configuration);
-            //    });
-            //builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
-            var redisConnection = builder.Configuration.GetConnectionString("Redis");
-            if (!string.IsNullOrWhiteSpace(redisConnection))
-            {
-                builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
-                {
-                    var configuration = ConfigurationOptions.Parse(redisConnection);
-                    configuration.AbortOnConnectFail = false;
-                    return ConnectionMultiplexer.Connect(configuration);
-                });
-
-                builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
-            }
+          
 
             // Add Frontend CORS policy
             builder.Services.AddCors(options =>
