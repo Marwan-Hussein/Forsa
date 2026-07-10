@@ -157,7 +157,7 @@ Forsa provides a centralized system where:
 | 3. [Mohamed Kotb](https://github.com/kotbb)              | [LinkedIn](https://www.linkedin.com/in/mohamedkotbb)                | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
 | 4. [Mohamed Nagy](https://github.com/Nagy101)            | [LinkedIn](https://www.linkedin.com/in/mohamed-nagy-36aa4b318)      | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
 | 5. [Zeyad Azzap](https://github.com/user5)               | [LinkedIn](https://www.linkedin.com/in/zeyad-azab)                  | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
-| 6. [Mazen Abdellatief](https://github.com/MazenAdelatee) | [LinkedIn](https://www.linkedin.com/in/mazen-abdellateef-3b37172b6) | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
+| 6. [Mazen Abdellatief](https://github.com/MazenAdelatee) | [LinkedIn](https://www.linkedin.com/in/mazen-abdellateef-3b37172b6) | - External Login with third party providers<br>- Generic QR service <br>- Promo Code service for Organizer <br>- Payment Integration <br>                            |
 
 ---
 
