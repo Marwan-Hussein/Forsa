@@ -148,7 +148,7 @@ namespace Application.Services.OwnerServices
 
                 // Notify the accepted organizer
                 var acceptTitle = "Booking Request Approved! 🎉";
-                var acceptBody = $"Congratulations Organizer!\n\nYour request to book **{request.Place.Name}** on **{request.RequestedDate:yyyy-MM-dd}** has been accepted by the venue owner! 🥳\n\nThe venue has been officially reserved for your event. You can access full scheduling and contact information via your dashboard.";
+                var acceptBody = $"Congratulations **{request.Organizer.FullName}**!\n\nYour request to book **{request.Place.Name}** on **{request.RequestedDate:yyyy-MM-dd}** has been accepted by the venue owner! 🥳\n\nThe venue has been officially reserved for your event. You can access full scheduling and contact information via your dashboard.";
                 
                 var acceptDetails = new Dictionary<string, string>
                 {

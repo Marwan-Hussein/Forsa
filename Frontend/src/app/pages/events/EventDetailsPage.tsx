@@ -412,7 +412,12 @@ export default function EventDetailsPage() {
                       Time
                     </p>
                     <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] text-foreground">
-                      {event.time}
+                      {(() => {
+                        const start = event.startDate ? parseBackendDate(event.startDate) : parseBackendDate(event.date);
+                        const end = event.endDate ? parseBackendDate(event.endDate) : null;
+                        const fmt = (d: Date) => d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+                        return end ? `${fmt(start)} → ${fmt(end)}` : fmt(start);
+                      })()}
                     </p>
                   </div>
                 </div>
