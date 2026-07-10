@@ -1,4 +1,3 @@
-
 using Application;
 using Application.Core.Interfaces;
 using Forsa.Hubs;
@@ -11,6 +10,7 @@ using Forsa.Services;
 using Forsa.Seed;
 using Infrastructure;
 using Infrastructure.Data.DbContexts;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
@@ -27,7 +27,16 @@ namespace Forsa
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // Trust the reverse-proxy headers so Request.Scheme = https and
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
            
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
+
             builder.Services.AddDbContext<ForsaDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>()
@@ -61,7 +70,7 @@ namespace Forsa
             {
                 options.AddPolicy("Frontend", policy =>
                 {
-                    policy.WithOrigins("http://localhost:5173", "https://forsa-app.runasp.net/") // Vite dev server port
+                    policy.WithOrigins("http://localhost:5173", "https://forsa-app.runasp.net") // Vite dev server + production
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials();
@@ -186,6 +195,9 @@ namespace Forsa
 
             // Enable serving static files (for uploaded images in wwwroot)
             app.UseStaticFiles();
+
+            // Trust reverse-proxy forwarded headers BEFORE routing / auth
+            app.UseForwardedHeaders();
 
             // Active Cors Middleware
             app.UseHttpsRedirection();
