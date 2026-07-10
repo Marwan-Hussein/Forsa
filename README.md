@@ -133,14 +133,25 @@ Forsa provides a centralized system where:
     }
   },
   "GoogleCalendar": {
-  "ServiceAccountKeyPath": "path-to-yout-serviceAccountKeyFile.json",
-  "ApplicationName": "Forsa",
-  "CalendarId": "primary"
+    "ServiceAccountKeyPath": "path-to-yout-serviceAccountKeyFile.json",
+    "ApplicationName": "Your-Application-Name",
+    "CalendarId": "primary"
   },
   "LLM": {
-  "ModelId": "",
-  "APIKey": ""
-}
+    "ModelId": "used-model-Id",
+    "APIKey": "your-LLM-APIKey"
+  },
+  "PaymentGateway": {
+    "PayMob": {
+      "PublicKey": "your-public-key",
+      "SecretKey": "your-secret-key",
+      "APIKey": "your-API-key",
+      "HMAC": "HMAC",
+      "IntegrationID": {
+        "OnlineCard": "your-id"
+      }
+    }
+  }
 }
 ```
 
@@ -150,14 +161,14 @@ Forsa provides a centralized system where:
 
 ## 🤝 Contributions
 
-| Contributor                                              | LinkedIn                                                            | Tasks and Lifecycles                                                                                                                            |
-| -------------------------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. [Marwan Hussein](https://github.com/Marwan-Hussein)   | [LinkedIn](https://linkedin.com/in/marwanhussein9)                  | - Forsa Logo<br>- OTP Service<br>- Admin Reports<br>- Event Services \[EvaluateEventStatus, DeductTicketInventory, ReleaseTicketInventory\]<br>- Google Calendar Integration<br>|
-| 2. [Mariam Ehab](https://github.com/Marria-m)            | [LinkedIn](https://www.linkedin.com/in/mariamehab1305)              | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
-| 3. [Mohamed Kotb](https://github.com/kotbb)              | [LinkedIn](https://www.linkedin.com/in/mohamedkotbb)                | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
-| 4. [Mohamed Nagy](https://github.com/Nagy101)            | [LinkedIn](https://www.linkedin.com/in/mohamed-nagy-36aa4b318)      | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
-| 5. [Zeyad Azzap](https://github.com/user5)               | [LinkedIn](https://www.linkedin.com/in/zeyad-azab)                  | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
-| 6. [Mazen Abdellatief](https://github.com/MazenAdelatee) | [LinkedIn](https://www.linkedin.com/in/mazen-abdellateef-3b37172b6) | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                |
+| Contributor                                              | LinkedIn                                                            | Tasks and Lifecycles                                                                                                                                                                                                                |
+| -------------------------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. [Marwan Hussein](https://github.com/Marwan-Hussein)   | [LinkedIn](https://linkedin.com/in/marwanhussein9)                  | - Email Services<br> - Redis Basing<br> - Notification Service \[SignalR\] - OTP Service<br>- Admin Reports<br>- Event Services \[EvaluateEventStatus, DeductTicketInventory, ReleaseTicketInventory\]<br>- Google Calendar Integration<br>- Graphic Design \[Logo, 404 Page, Loader, AI chatbot, UI Touches\]<br> |
+| 2. [Mariam Ehab](https://github.com/Marria-m)            | [LinkedIn](https://www.linkedin.com/in/mariamehab1305)              | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                                                                                                    |
+| 3. [Mohamed Kotb](https://github.com/kotbb)              | [LinkedIn](https://www.linkedin.com/in/mohamedkotbb)                | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                                                                                                    |
+| 4. [Mohamed Nagy](https://github.com/Nagy101)            | [LinkedIn](https://www.linkedin.com/in/mohamed-nagy-36aa4b318)      | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                                                                                                    |
+| 5. [Zeyad Azzap](https://github.com/user5)               | [LinkedIn](https://www.linkedin.com/in/zeyad-azab)                  | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                                                                                                    |
+| 6. [Mazen Abdellatief](https://github.com/MazenAdelatee) | [LinkedIn](https://www.linkedin.com/in/mazen-abdellateef-3b37172b6) | - Tas1<br>- Task2<br>- Task3<br>                                                                                                                                                                                                    |
 
 ---
 
