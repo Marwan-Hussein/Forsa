@@ -1,103 +1,88 @@
-# 🎯 Forsa – Event Management Web Application
+<div align="center">
 
-Forsa is a full-stack **web application** designed to simplify event management by connecting **Organizers**, **Venue Owners**, and **Attendees** in one unified platform.
+![Forsa Logo](GithubAssets/ForsaLogo.png)
 
-Built with modern technologies, Forsa focuses on **performance, scalability, and user experience**, enabling seamless event creation, booking, and management.
+![Forsa](https://img.shields.io/badge/Forsa-Event_Management-blue?style=for-the-badge)
+[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=for-the-badge&logo=dotnet)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/License-LGPL--2.1-green?style=for-the-badge)](LICENSE)
+
+**A full-stack web application designed to simplify event management by connecting Organizers, Venue Owners, and Attendees in one unified platform.**
+
+[Features](#-features) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [Contributions](#-contributions)
+
+</div>
 
 ---
 
 ## 📌 Overview
 
-Forsa provides a centralized system where:
+**Forsa** provides a centralized system focusing on **performance, scalability, and user experience**, enabling seamless event creation, booking, and management where:
 
-- 🧑‍💼 Organizers can create and manage events easily
-- 🏢 Venue Owners can list and control their venues
-- 🎟️ Attendees can explore and book events easily
-
----
-
-## 🚀 Features
-
-- 🔐 Authentication & Authorization (Role-Based)
-- 📅 Event Creation & Management
-- 🏢 Venue Listing & Booking System
-- 🎟️ Ticket Reservation
-- ⭐ Reviews & Ratings
-- 📊 Dashboard for Insights
-- 🌐 Fully Responsive Web UI
+- 🧑‍💼 **Organizers** can create and manage events easily
+- 🏢 **Venue Owners** can list and control their venues
+- 🎟️ **Attendees** can explore and book events easily
 
 ---
 
-## 🧠 User Roles & Guarantees
+## ✨ Features
 
 ### 😶‍🌫️ Guest
-
-**Responsibilities:**
-
-- Browse availble events
-
----
+- ✅ Browse available events
 
 ### 👤 Attendee
-
-**Responsibilities:**
-
-- Browse available events
-- Book tickets
-- Rate and review events
-
-**Guarantees:**
-
-- Easy and fast booking experience
-- Accurate and updated event information
-- Secure data handling
-
----
+- ✅ Browse available events
+- ✅ Book tickets with secure payment gateway (PayMob)
+- ✅ Rate and review events
+- ✅ **Guarantees:** Easy and fast booking experience, accurate and updated event information, secure data handling
 
 ### 🧑‍💼 Organizer
+- ✅ Create and manage events
+- ✅ Monitor bookings and attendees
+- ✅ Update event details
+- ✅ Google Calendar integration for scheduling
+- ✅ **Guarantees:** Efficient event management tools, real-time updates, reliable attendee tracking
 
-**Responsibilities:**
-
-- Create and manage events
-- Monitor bookings and attendees
-- Update event details
-
-**Guarantees:**
-
-- Efficient event management tools
-- Real-time updates
-- Reliable attendee tracking
+### 🏢 Venue Owner
+- ✅ List venues and availability
+- ✅ Handle booking requests
+- ✅ Manage schedules
+- ✅ **Guarantees:** Clear booking workflow, optimized scheduling system, increased exposure for venues
 
 ---
 
-### 🏢 Venue Owner
+## 🏗️ Architecture
 
-**Responsibilities:**
-
-- List venues and availability
-- Handle booking requests
-- Manage schedules
-
-**Guarantees:**
-
-- Clear booking workflow
-- Optimized scheduling system
-- Increased exposure for venues
+The solution follows a **Clean Architecture** pattern with clear separation of concerns:
+- **Domain:** Core entities and interfaces
+- **Application:** Business logic, use cases, and service interfaces
+- **Infrastructure:** Data access (Entity Framework Core), external services (Google Calendar, PayMob, LLM, Email, OTP)
+- **Frontend:** React/TypeScript web application using Tailwind CSS
+- **API:** RESTful API Backend (.NET Web API)
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer        | Technology                |
-| ------------ | ------------------------- |
-| Frontend     | Tailwind, Typescript      |
-| Web Pattern  | .NET Web API              |
-| Architecture | Clean Architure           |
-| Database     | SQL (Relational Database) |
-| ORM          | Entity Framework Core     |
+### Backend
+- **Framework**: .NET Web API
+- **Architecture**: Clean Architecture
+- **ORM**: Entity Framework Core
+- **Database**: SQL (Relational Database)
+- **Caching**: Redis
+- **Real-time**: SignalR for Notification Service
 
-### Required Settings:
+### Frontend
+- **Framework**: React / TypeScript
+- **Styling**: Tailwind CSS
 
+### Third-Party Integrations
+- **Payment**: PayMob
+- **Authentication**: Google OAuth & JWT
+- **Calendar**: Google Calendar API
+- **AI/LLM**: LLM integration
+- **Email**: SMTP Email Services
+
+### Required Settings (appsettings.json):
 ```json
 {
   "Logging": {
@@ -156,6 +141,49 @@ Forsa provides a centralized system where:
 ```
 
 ---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- .NET 8 SDK
+- SQL Server
+- Redis Server
+- Node.js & npm (for Frontend)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd Forsa
+   ```
+
+2. **Backend Setup**
+   - Restore dependencies for all projects:
+     ```bash
+     dotnet restore Domain/Domain.csproj
+     dotnet restore Application/Application.csproj
+     dotnet restore Infrastructure/Infrastructure.csproj
+     dotnet restore Forsa/Forsa.csproj
+     ```
+   - Update `Forsa/appsettings.json` with your connection strings, JWT settings, Google OAuth, Google Calendar, PayMob, and LLM credentials.
+   - Run EF Core migrations:
+     ```bash
+     dotnet ef database update
+     ```
+   - Run the API:
+     ```bash
+     cd Forsa
+     dotnet run
+     ```
+
+3. **Frontend Setup**
+   ```bash
+   cd Frontend
+   npm install
+   npm run dev
+   ```
 
 ---
 
