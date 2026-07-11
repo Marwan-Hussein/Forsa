@@ -243,7 +243,7 @@ export default function MyBookingRequestsPage() {
               filteredRequests.map((request, index) => {
                 const status = getStatusString(request.status);
                 const paidRequests = JSON.parse(localStorage.getItem("paid_booking_requests") || "[]");
-                const isPaid = paidRequests.includes(String(request.requestId));
+                const isPaid = request.isPaid || paidRequests.includes(String(request.requestId));
                 return (
                   <motion.div 
                     key={request.requestId}

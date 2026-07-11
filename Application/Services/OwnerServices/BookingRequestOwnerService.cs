@@ -13,6 +13,8 @@ using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Application.Core.Helpers;
 
+using Domain.Entities.PaymentEntities;
+
 namespace Application.Services.OwnerServices
 {
     public class BookingRequestOwnerService : IBookingRequestOwnerService
@@ -24,6 +26,7 @@ namespace Application.Services.OwnerServices
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailService _emailService;
+        private readonly IQueryableRepository<PaymentTransaction> _transactionRepo;
 
         public BookingRequestOwnerService(
             IQueryableRepository<BookingRequest> bookingRequestRepo,
@@ -32,7 +35,8 @@ namespace Application.Services.OwnerServices
             IQueryableRepository<Event> eventRepo,
             IMapper mapper,
             IUnitOfWork unitOfWork,
-            IEmailService emailService)
+            IEmailService emailService,
+            IQueryableRepository<PaymentTransaction> transactionRepo)
         {
             _bookingRequestRepo = bookingRequestRepo;
             _availabilityRepo = availabilityRepo;
@@ -41,6 +45,7 @@ namespace Application.Services.OwnerServices
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _emailService = emailService;
+            _transactionRepo = transactionRepo;
         }
 
         public async Task<List<BookingRequestDetailsDto>> GetOwnerBookingRequestsAsync(int ownerId)
@@ -52,7 +57,23 @@ namespace Application.Services.OwnerServices
                 .OrderByDescending(br => br.CreatedAt)
                 .ToListAsync();
 
-            return _mapper.Map<List<BookingRequestDetailsDto>>(requests);
+            var dtos = _mapper.Map<List<BookingRequestDetailsDto>>(requests);
+
+            if (dtos.Any())
+            {
+                var requestIds = dtos.Select(d => d.RequestId).ToList();
+                var paidRequestIds = await _transactionRepo.GetQueryable()
+                    .Where(t => t.ItemType == "PlaceBooking" && t.TransactionStatus == TransactionStatus.Completed && requestIds.Contains(t.ReferenceId))
+                    .Select(t => t.ReferenceId)
+                    .ToListAsync();
+
+                foreach (var dto in dtos)
+                {
+                    dto.IsPaid = paidRequestIds.Contains(dto.RequestId);
+                }
+            }
+
+            return dtos;
         }
 
         public async Task<BookingRequestDetailsDto> ProcessOrganizerBookingRequestAsync(
@@ -225,7 +246,11 @@ namespace Application.Services.OwnerServices
                         !br.IsDeleted)
                     .ToListAsync();
             }
-            return _mapper.Map<BookingRequestDetailsDto>(request);
+            var isPaid = await _transactionRepo.GetQueryable()
+                .AnyAsync(t => t.ReferenceId == request.Id && t.ItemType == "PlaceBooking" && t.TransactionStatus == TransactionStatus.Completed);
+            var result = _mapper.Map<BookingRequestDetailsDto>(request);
+            result.IsPaid = isPaid;
+            return result;
         }
     }
 }

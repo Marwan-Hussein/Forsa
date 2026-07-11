@@ -362,7 +362,9 @@ namespace Application.Services.OrganizerServices
                 .Include(r => r.Place)
                 .FirstOrDefaultAsync(r => r.Id == request.Id);
 
-            return _mapper.Map<BookingRequestDetailsDto>(populatedRequest ?? request);
+            var result = _mapper.Map<BookingRequestDetailsDto>(populatedRequest ?? request);
+            result.IsPaid = false;
+            return result;
         }
 
         public async Task CancelPendingBookingRequestAsync(int requestId)
@@ -395,7 +397,23 @@ namespace Application.Services.OrganizerServices
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
 
-            return _mapper.Map<List<BookingRequestDetailsDto>>(requests);
+            var dtos = _mapper.Map<List<BookingRequestDetailsDto>>(requests);
+
+            if (dtos.Any())
+            {
+                var requestIds = dtos.Select(d => d.RequestId).ToList();
+                var paidRequestIds = await _transactionRepository.GetQueryable()
+                    .Where(t => t.ItemType == "PlaceBooking" && t.TransactionStatus == TransactionStatus.Completed && requestIds.Contains(t.ReferenceId))
+                    .Select(t => t.ReferenceId)
+                    .ToListAsync();
+
+                foreach (var dto in dtos)
+                {
+                    dto.IsPaid = paidRequestIds.Contains(dto.RequestId);
+                }
+            }
+
+            return dtos;
         }
 
         public async Task<List<BookingRequestDetailsDto>> GetOrganizerUpComingBookingRequestsAsync(int organizerId)
@@ -407,7 +425,23 @@ namespace Application.Services.OrganizerServices
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
 
-            return _mapper.Map<List<BookingRequestDetailsDto>>(requests);
+            var dtos = _mapper.Map<List<BookingRequestDetailsDto>>(requests);
+
+            if (dtos.Any())
+            {
+                var requestIds = dtos.Select(d => d.RequestId).ToList();
+                var paidRequestIds = await _transactionRepository.GetQueryable()
+                    .Where(t => t.ItemType == "PlaceBooking" && t.TransactionStatus == TransactionStatus.Completed && requestIds.Contains(t.ReferenceId))
+                    .Select(t => t.ReferenceId)
+                    .ToListAsync();
+
+                foreach (var dto in dtos)
+                {
+                    dto.IsPaid = paidRequestIds.Contains(dto.RequestId);
+                }
+            }
+
+            return dtos;
         }
 
         public async Task<List<TicketRequestDto>> GetOrganizerTicketRequestsAsync(int organizerId)

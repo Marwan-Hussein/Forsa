@@ -37,7 +37,7 @@ export default function PlaceDetailsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const paidRequests = JSON.parse(localStorage.getItem("paid_booking_requests") || "[]");
-  const isPaid = existingRequest && paidRequests.includes(String(existingRequest.id || existingRequest.requestId));
+  const isPaid = existingRequest && (existingRequest.isPaid || paidRequests.includes(String(existingRequest.id || existingRequest.requestId)));
 
   useEffect(() => {
     const fetchPlaceAndRequests = async () => {

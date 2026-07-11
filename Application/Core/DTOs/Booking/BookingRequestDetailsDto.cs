@@ -4,6 +4,7 @@ namespace Application.Core.DTOs.Booking
     {
         public int RequestId { get; set; }
         public string Status { get; set; }
+        public bool IsPaid { get; set; }
         public DateTime RequestedDate { get; set; }
         public TimeSpan? StartTime { get; set; }
         public TimeSpan? EndTime { get; set; }
