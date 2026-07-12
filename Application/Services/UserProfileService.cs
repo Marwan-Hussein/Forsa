@@ -107,9 +107,9 @@ namespace Application.Services
             if (user == null || user.IsDeleted) throw new KeyNotFoundException("User not found");
 
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".jfif" };
             if (!allowedExtensions.Contains(extension))
-                throw new InvalidOperationException("Invalid image format. Allowed: .jpg, .jpeg, .png");
+                throw new InvalidOperationException("Invalid image format. Allowed: .jpg, .jpeg, .png, .jfif");
 
             var uploadsDir = Path.Combine(_env.WebRootPath ?? "wwwroot", "uploads", "profiles", userId.ToString());
             Directory.CreateDirectory(uploadsDir);

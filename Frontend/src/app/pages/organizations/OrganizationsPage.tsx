@@ -13,15 +13,19 @@ export default function OrganizationsPage() {
   const searchParams = new URLSearchParams(location.search);
   const returnTo = searchParams.get("returnTo");
 
-  // Helper for logo emoji
-  const getOrgLogoEmoji = (name: string): string => {
-    const lowercaseName = name.toLowerCase();
-    if (lowercaseName.includes("iti") || lowercaseName.includes("institute")) return "🎓";
-    if (lowercaseName.includes("alx")) return "💻";
-    if (lowercaseName.includes("riseup")) return "🚀";
-    if (lowercaseName.includes("wuzzuf")) return "💼";
-    if (lowercaseName.includes("techne") || lowercaseName.includes("summit")) return "⚡";
-    return "🏛️";
+  // Helper for logo avatar colors
+  const avatarColors = [
+    { bg: "#EEF2FF", text: "#4F46E5" }, // Indigo
+    { bg: "#F0FDF4", text: "#16A34A" }, // Emerald
+    { bg: "#FFFBEB", text: "#D97706" }, // Amber
+    { bg: "#FDF2F8", text: "#DB2777" }, // Pink
+    { bg: "#F5F3FF", text: "#7C3AED" }, // Violet
+    { bg: "#EFF6FF", text: "#2563EB" }, // Blue
+  ];
+
+  const getAvatarColors = (name: string) => {
+    const i = (name.charCodeAt(0) || 0) % avatarColors.length;
+    return avatarColors[i];
   };
 
   useEffect(() => {
@@ -34,7 +38,7 @@ export default function OrganizationsPage() {
           setSelectedOrganization({
             id: data.id.toString(),
             name: data.organizationName || data.fullName,
-            logo: getOrgLogoEmoji(data.organizationName || data.fullName),
+            profilePicture: data.profilePicture,
             description: `Official ForSa Partner. Dedicated to empowering the youth and tech community in Egypt with world-class events, workshops, and career accelerators.`,
             eventsCount: data.eventsCount || 0,
             followersCount: data.followersCount || 0,
@@ -51,7 +55,7 @@ export default function OrganizationsPage() {
           const mapped = data.map((item: any) => ({
             id: item.id.toString(),
             name: item.organizationName || item.fullName,
-            logo: getOrgLogoEmoji(item.organizationName || item.fullName),
+            profilePicture: item.profilePicture,
             description: `Official ForSa Partner. Dedicated to empowering the youth and tech community in Egypt with world-class events, workshops, and career accelerators.`,
             eventsCount: item.eventsCount || 0,
             followersCount: item.followersCount || 0,
@@ -210,9 +214,21 @@ export default function OrganizationsPage() {
                   className="bg-white rounded-[14px] border-[0.8px] border-[rgba(82,109,130,0.2)] p-6 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start gap-4 mb-4">
-                    <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
-                      {org.logo}
-                    </div>
+                    {org.profilePicture ? (
+                      <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
+                        <img
+                          src={org.profilePicture.startsWith("http") ? org.profilePicture : `${import.meta.env.VITE_API_BASE_URL || ""}${org.profilePicture.startsWith("/") ? "" : "/"}${org.profilePicture}`}
+                          alt={org.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold flex-shrink-0 font-['Inter:Bold',sans-serif] bg-[#1E3D61] text-white"
+                      >
+                        {org.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <h3 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-1 truncate">
                         {org.name}

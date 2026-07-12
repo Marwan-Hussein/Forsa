@@ -13,6 +13,7 @@ using Infrastructure.Data.DbContexts;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using StackExchange.Redis;
 using System.Text.Json;
@@ -23,7 +24,6 @@ namespace Forsa
 {
     public class Program
     {
-        // uncomment this and below in app.environment to run the seeder
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -77,35 +77,63 @@ namespace Forsa
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 
                 });
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-                {
-                    Name = "Authorization",
-                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-                    Scheme = "Bearer",
-                    BearerFormat = "JWT",
-                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                    Description = "JWT Authorization header using the Bearer scheme. Just paste your token directly here, the 'Bearer ' prefix will be added automatically."
-                });
 
-                c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+            builder.Services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
                 {
+                    var errors = context.ModelState
+                        .Where(e => e.Value.Errors.Count > 0)
+                        .ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                        );
+
+                    var errorMessages = context.ModelState
+                        .Where(e => e.Value.Errors.Count > 0)
+                        .SelectMany(kvp => kvp.Value.Errors.Select(e => e.ErrorMessage));
+
+                    var joinedMessage = string.Join(" ", errorMessages);
+
+                    return new BadRequestObjectResult(new
                     {
-                        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-                        {
-                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
-                            {
-                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        Array.Empty<string>()
-                    }
-                });
+                        message = joinedMessage,
+                        errors = errors
+                    });
+                };
             });
+
+            if (builder.Environment.IsDevelopment())
+            {
+                builder.Services.AddEndpointsApiExplorer();
+                builder.Services.AddSwaggerGen(c =>
+                {
+                    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                    {
+                        Name = "Authorization",
+                        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+                        Scheme = "Bearer",
+                        BearerFormat = "JWT",
+                        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                        Description = "JWT Authorization header using the Bearer scheme. Just paste your token directly here, the 'Bearer ' prefix will be added automatically."
+                    });
+
+                    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+                    {
+                        {
+                            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                            {
+                                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                                {
+                                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                                }
+                            },
+                            Array.Empty<string>()
+                        }
+                    });
+                });
+            }
             
             builder.Services.AddHttpClient("GeminiClient")
                 .AddPolicyHandler(HttpPolicyExtensions
@@ -145,10 +173,13 @@ namespace Forsa
 
             var app = builder.Build();
 
+            // Custom global exception middleware to handle unhandled exceptions cleanly in production
+            app.UseMiddleware<Forsa.Middleware.GlobalExceptionMiddleware>();
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                await DatabaseSeeder.SeedAsync(app.Services);
+                // await DatabaseSeeder.SeedAsync(app.Services);
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
@@ -156,7 +187,7 @@ namespace Forsa
             // Ensure wwwroot exists and WebRootPath is correctly set before configuring static files
             if (string.IsNullOrWhiteSpace(app.Environment.WebRootPath))
             {
-                app.Environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                app.Environment.WebRootPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
             }
             if (!Directory.Exists(app.Environment.WebRootPath))
             {
