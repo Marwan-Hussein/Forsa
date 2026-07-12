@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router";
 import { Search, Calendar, MapPin, CheckCircle, XCircle, Clock, Check, X, CalendarCheck, Loader2, ClipboardList, Star, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ownerApi, BookingRequest } from "../../api/ownerApi";
@@ -225,7 +226,9 @@ export default function OwnerBookingsPage() {
                               {booking.organizerName.charAt(0)}
                             </div>
                             <div>
-                              <p className="text-slate-800 text-sm font-bold leading-tight">{booking.organizerName}</p>
+                              <Link to={`/organizations/${booking.organizerId}?returnTo=%2Fowner%2Fbookings`} className="text-slate-800 text-sm font-bold leading-tight hover:underline hover:text-indigo-600 transition-colors">
+                                {booking.organizerName}
+                              </Link>
                               <p className="text-slate-400 text-xs">{booking.placeName}</p>
                             </div>
                           </div>
@@ -270,7 +273,9 @@ export default function OwnerBookingsPage() {
                             {booking.organizerName.charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-slate-800 text-sm font-bold truncate">{booking.organizerName}</p>
+                            <Link to={`/organizations/${booking.organizerId}?returnTo=%2Fowner%2Fbookings`} className="text-slate-800 text-sm font-bold truncate block hover:underline hover:text-indigo-600 transition-colors">
+                              {booking.organizerName}
+                            </Link>
                             <p className="text-slate-400 text-xs">Organizer</p>
                           </div>
                         </div>
@@ -362,7 +367,7 @@ export default function OwnerBookingsPage() {
         {confirmAction && (
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/75"
               onClick={() => setConfirmAction(null)}
             />
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 16 }}
@@ -399,7 +404,7 @@ export default function OwnerBookingsPage() {
         {feedbackModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/75"
               onClick={() => !isSubmittingFeedback && setFeedbackModal(null)}
             />
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 16 }}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { ArrowLeft, Building2, Info, MapPin, DollarSign, Loader2, Users } from "lucide-react";
+import { ArrowLeft, Building2, Info, MapPin, DollarSign, Loader2, Users, Calendar } from "lucide-react";
 import { ownerApi, AddPlaceDto } from "../../api/ownerApi";
 import { toast } from "sonner";
 import MapPicker from "../../components/map/MapPicker";
@@ -8,21 +8,35 @@ import MapPicker from "../../components/map/MapPicker";
 export default function OwnerAddPlacePage() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const weekdays = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+  const handleDayChange = (day: string) => {
+    setSelectedDays(prev => 
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+    );
+  };
   
-  const [formData, setFormData] = useState<AddPlaceDto>({
+  const [formData, setFormData] = useState<any>({
     name: "",
     location: "",
     description: "",
-    capacity: 100,
-    dailyPrice: 0,
-    hourlyPrice: 0,
+    capacity: "100",
+    dailyPrice: "",
+    hourlyPrice: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    let cleanedValue = value;
+    if (name.includes("Price") || name === "capacity") {
+      if (value.startsWith("0") && value.length > 1 && value[1] !== ".") {
+        cleanedValue = value.replace(/^0+/, "");
+      }
+    }
     setFormData(prev => ({
       ...prev,
-      [name]: name.includes("Price") || name === "capacity" ? Number(value) : value
+      [name]: cleanedValue
     }));
   };
 
@@ -34,8 +48,12 @@ export default function OwnerAddPlacePage() {
       // Fallback coordinates (Cairo) if the map fails to load
       const submissionData = {
         ...formData,
+        capacity: Number(formData.capacity) || 0,
+        dailyPrice: Number(formData.dailyPrice) || 0,
+        hourlyPrice: Number(formData.hourlyPrice) || 0,
         latitude: formData.latitude ?? 30.0444,
         longitude: formData.longitude ?? 31.2357,
+        availableDays: selectedDays.join(","),
       };
 
       const place = await ownerApi.addPlace(submissionData);
@@ -206,6 +224,38 @@ export default function OwnerAddPlacePage() {
               </div>
               <p className="text-xs text-slate-500 mt-2 font-['Inter:Regular',sans-serif]">Daily rate is usually cheaper than booking by the hour.</p>
             </div>
+          </div>
+        </div>
+
+        {/* Operating Days */}
+        <div className="bg-white rounded-2xl shadow-sm border border-[rgba(39,55,77,0.1)] p-6 sm:p-8 hover:border-blue-500/30 transition-colors">
+          <h2 className="text-xl font-['Inter:Bold',sans-serif] font-bold text-slate-800 mb-6 flex items-center gap-3">
+            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+              <Calendar className="w-5 h-5" />
+            </div>
+            Operating Days
+          </h2>
+          <p className="text-sm text-slate-500 mb-6 font-['Inter:Regular',sans-serif]">
+            Select the weekdays when this venue is open and available for event bookings. These are recurring weekdays, not calendar dates.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {weekdays.map(day => {
+              const isChecked = selectedDays.includes(day);
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => handleDayChange(day)}
+                  className={`min-w-[108px] flex-1 py-3 px-4 rounded-xl border text-sm font-bold text-center transition-all cursor-pointer active:scale-95 ${
+                    isChecked
+                      ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-600/15"
+                      : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  {day}
+                </button>
+              );
+            })}
           </div>
         </div>
 

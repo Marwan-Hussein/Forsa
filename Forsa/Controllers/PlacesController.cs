@@ -30,6 +30,11 @@ namespace Forsa.Controllers
                     .Where(p => (p.Status == PlaceStatus.Approved || p.Status == PlaceStatus.Available) && !p.IsDeleted && !p.IsBlocked && !p.IsLocked)
                     .ToListAsync();
 
+                var bookingRequests = await _context.Set<Domain.Entities.BookingEntities.BookingRequest>()
+                    .Include(r => r.Event)
+                    .Where(r => r.Status == RequestStatus.Accepted && !r.IsDeleted)
+                    .ToListAsync();
+
                 var placeDtos = places.Select(p => new PlaceSummaryDto
                 {
                     Id = p.Id,
@@ -39,7 +44,18 @@ namespace Forsa.Controllers
                     DailyPrice = p.DailyPrice,
                     FacilityName = Enum.IsDefined(typeof(FacilityName), p.FacilityName) ? p.FacilityName.ToString() : "Standard Space",
                     Images = p.PlaceMedias.Select(m => m.MediaURL).ToList(),
-                    Availabilities = p.PlaceAvailabilities.Select(a => new PlaceAvailabilityDto
+                    Availabilities = p.PlaceAvailabilities.Where(a => {
+                        if (a.Status == PlaceStatus.Booked)
+                        {
+                            var matchingRequest = bookingRequests.FirstOrDefault(r => r.PlaceId == p.Id && r.RequestedDate.Date == a.Date.Date);
+                            if (matchingRequest?.Event != null)
+                            {
+                                var isCompletedEvent = matchingRequest.Event.Status == EventStatus.Completed || matchingRequest.Event.EndDate <= DateTime.UtcNow;
+                                return !isCompletedEvent;
+                            }
+                        }
+                        return true;
+                    }).Select(a => new PlaceAvailabilityDto
                     {
                         Id = a.Id,
                         Date = a.Date,
@@ -75,6 +91,11 @@ namespace Forsa.Controllers
                 if (place == null)
                     return NotFound($"Place with id {id} not found.");
 
+                var bookingRequests = await _context.Set<Domain.Entities.BookingEntities.BookingRequest>()
+                    .Include(r => r.Event)
+                    .Where(r => r.PlaceId == id && r.Status == RequestStatus.Accepted && !r.IsDeleted)
+                    .ToListAsync();
+
                 var placeDto = new PlaceDetailsDto
                 {
                     PlaceId = place.Id,
@@ -97,7 +118,18 @@ namespace Forsa.Controllers
                     Longitude = place.Longitude,
                     GooglePlaceId = place.GooglePlaceId,
                     Images = place.PlaceMedias?.Select(m => m.MediaURL).ToList() ?? new List<string>(),
-                    Availabilities = place.PlaceAvailabilities?.Select(a => new PlaceAvailabilityDto
+                    Availabilities = place.PlaceAvailabilities?.Where(a => {
+                        if (a.Status == PlaceStatus.Booked)
+                        {
+                            var matchingRequest = bookingRequests.FirstOrDefault(r => r.RequestedDate.Date == a.Date.Date);
+                            if (matchingRequest?.Event != null)
+                            {
+                                var isCompletedEvent = matchingRequest.Event.Status == EventStatus.Completed || matchingRequest.Event.EndDate <= DateTime.UtcNow;
+                                return !isCompletedEvent;
+                            }
+                        }
+                        return true;
+                    }).Select(a => new PlaceAvailabilityDto
                     {
                         Id = a.Id,
                         Date = a.Date,

@@ -3,6 +3,7 @@ using Application.Core.Interfaces.AttendeeInterfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace Forsa.Controllers.AttendeeControllers
 {
@@ -60,7 +61,10 @@ namespace Forsa.Controllers.AttendeeControllers
                 var validationResult = await _updateProfileValidator.ValidateAsync(dto);
                 if (!validationResult.IsValid)
                 {
-                    return BadRequest(new { message = "Validation failed." });
+                    var errors = validationResult.Errors
+                        .GroupBy(e => e.PropertyName)
+                        .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+                    return BadRequest(new { message = "Validation failed.", errors });
                 }
 
                 var updated = await _service.UpdateProfileAsync(id, dto);
@@ -82,6 +86,22 @@ namespace Forsa.Controllers.AttendeeControllers
                 if (file == null || file.Length == 0) return BadRequest("File is empty");
                 var result = await _userProfileService.UploadProfilePictureAsync(id, file);
                 return Ok(new { url = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("{id:int}/profile-picture")]
+        [Authorize(Policy = "AttendeeOnly")]
+        public async Task<ActionResult> RemoveProfilePicture(int id)
+        {
+            try
+            {
+                var result = await _userProfileService.RemoveProfilePictureAsync(id);
+                if (!result) return NotFound(new { message = "No profile picture to remove." });
+                return Ok(new { message = "Profile picture removed." });
             }
             catch (Exception ex)
             {

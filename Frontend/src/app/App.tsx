@@ -2,11 +2,12 @@ import { RouterProvider } from "react-router";
 import { router } from "./routes";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { NotificationProvider } from "./contexts/NotificationContext";
 //import { ForsaIntroAnimation } from "./components/ForsaIntroAnimation/ForsaIntroAnimation";
 
 export default function App() {
   return (
-    <>
+    <NotificationProvider>
       {/* Plays once per real page load/refresh; never replays on SPA navigation. */}
       {/*<ForsaIntroAnimation />*/}
 
@@ -23,6 +24,6 @@ export default function App() {
         pauseOnHover
         theme="light"
       />
-    </>
+    </NotificationProvider>
   );
 }

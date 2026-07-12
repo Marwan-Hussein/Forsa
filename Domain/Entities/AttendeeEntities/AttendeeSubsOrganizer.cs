@@ -1,8 +1,9 @@
+using Domain.Common.Interfaces;
 using Domain.Entities.OrganizerEntities;
 
 namespace Domain.Entities.AttendeeEntities
 {
-    public class AttendeeSubsOrganizer
+    public class AttendeeSubsOrganizer : IEntity<int>
     {
         public int Id { get; set; }
         // Fks

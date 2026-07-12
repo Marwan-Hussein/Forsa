@@ -12,5 +12,7 @@ namespace Application.Core.DTOs.AttendeeDTOs
         public int NumberOfTickets { get; set; }
         public string Status { get; set; }
         public DateTime BookingDate { get; set; }
+        public string EventStatus { get; set; }
+        public bool HasSubmittedFeedback { get; set; }
     }
 }

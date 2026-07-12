@@ -1,4 +1,4 @@
-﻿using Application.Core.Interfaces.LLMInterfaces;
+using Application.Core.Interfaces.LLMInterfaces;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -24,17 +24,26 @@ namespace Application.Services.LLMServices
             _chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
         }
 
-        public async Task<string> ExecuteChatAsync(string userMessage, List<ChatHistoryMessageDto> history)
+        public async Task<string> ExecuteChatAsync(string userMessage, List<ChatHistoryMessageDto> history, string? systemContext = null)
         {
             var chatHistory = new ChatHistory();
 
-            // Updated System Prompt to English with clear formatting and instructions
             chatHistory.AddSystemMessage(
                 "You are 'Forsa Bot', the official AI smart assistant for the Forsa platform, which specializes in event management, ticketing, and venue hosting. " +
-                "Always communicate in a professional, polite, and welcoming manner. It is highly preferred to respond using light, friendly Tone and adapted to the user's language choice. " +
-                "The available tools and plugins are described in English. Map the user's queries to the correct tool parameters seamlessly. " +
-                "Always use the provided Plugins to fetch real-time data from the database. Never hallucinate, guess, or fabricate ticket prices, dates, or availability. " +
-                "If an organizer requests a sales report or specific event analytics, politely ask them to provide the Event ID first if they haven't mentioned it.");
+                "Always communicate in a professional, polite, and welcoming manner. Adapt your tone to be light, friendly, and match the user's language choice. " +
+                "CRITICAL INSTRUCTION: You have been provided with a specific 'User Context' containing the user's profile, active bookings, and dashboard stats. " +
+                "ALWAYS check this 'User Context' first to answer personal questions (e.g., 'What are my bookings?', 'How many events do I have?'). " +
+                "ONLY invoke plugins if the user asks for external information (like searching for new venues/events), real-time live inventory, or if the data is missing from the context. " +
+                "Never hallucinate or guess ticket prices, dates, or availability. If an organizer requests analytics, ask for the Event ID if missing." +
+                "Do NOT invoke any tools or functions to retrieve personal bookings, places, or statistics if that information is already provided to you in the 'FORSA USER CONTEXT'. Only read from the provided context. ONLY use tools for searching external events/venues or checking LIVE inventory when the user explicitly requests it. "
+            );
+
+            // Inject the rich user context passed from the frontend (profile, bookings, events, etc.)
+            // This allows the AI to answer personal questions without needing extra plugin calls.
+            if (!string.IsNullOrWhiteSpace(systemContext))
+            {
+                chatHistory.AddSystemMessage(systemContext);
+            }
 
             foreach (var msg in history)
             {

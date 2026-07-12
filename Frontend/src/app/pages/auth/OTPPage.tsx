@@ -225,7 +225,7 @@ export default function OTPPage() {
         </div>
 
         <Link to="/" className="relative z-10 block mb-auto">
-          <ForSaLogo className="h-10 text-white drop-shadow-lg" />
+          <ForSaLogo className="h-14 text-white drop-shadow-lg" />
         </Link>
 
         <div className="relative z-10 max-w-xl pb-12">
@@ -269,7 +269,7 @@ export default function OTPPage() {
               to="/"
               className="mb-8 inline-block lg:hidden"
             >
-              <ForSaLogo className="h-10 text-white" />
+              <ForSaLogo className="h-14 text-white" />
             </Link>
 
             <Link

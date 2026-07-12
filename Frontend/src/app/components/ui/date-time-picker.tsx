@@ -14,27 +14,34 @@ import {
 interface DateTimePickerProps {
   date: Date | undefined;
   setDate: (date: Date | undefined) => void;
+  disabled?: boolean;
 }
 
-export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(date);
+export function DateTimePicker({ date, setDate, disabled = false }: DateTimePickerProps) {
+  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
+    date && !isNaN(date.getTime()) ? date : undefined
+  );
   const [timeValue, setTimeValue] = React.useState<string>(
-    date ? format(date, "HH:mm") : "12:00"
+    date && !isNaN(date.getTime()) ? format(date, "HH:mm") : "12:00"
   );
 
   React.useEffect(() => {
-    setSelectedDate(date);
-    if (date) {
+    if (date && !isNaN(date.getTime())) {
+      setSelectedDate(date);
       setTimeValue(format(date, "HH:mm"));
+    } else {
+      setSelectedDate(undefined);
     }
   }, [date]);
 
   const handleDateSelect = (d: Date | undefined) => {
     if (!d) return;
-    const [hours, minutes] = timeValue.split(":").map(Number);
+    const parts = (timeValue || "12:00").split(":");
+    const hours = Number(parts[0]) || 0;
+    const minutes = Number(parts[1]) || 0;
     const newDate = new Date(d);
-    newDate.setHours(hours || 0);
-    newDate.setMinutes(minutes || 0);
+    newDate.setHours(hours);
+    newDate.setMinutes(minutes);
     setSelectedDate(newDate);
     setDate(newDate);
   };
@@ -42,8 +49,17 @@ export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = e.target.value;
     setTimeValue(time);
-    if (selectedDate) {
-      const [hours, minutes] = time.split(":").map(Number);
+    
+    if (!time) return; // Skip updating the Date state if the time input is cleared/invalid
+    
+    const parts = time.split(":");
+    if (parts.length < 2) return;
+    
+    const hours = Number(parts[0]);
+    const minutes = Number(parts[1]);
+    if (isNaN(hours) || isNaN(minutes)) return;
+    
+    if (selectedDate && !isNaN(selectedDate.getTime())) {
       const newDate = new Date(selectedDate);
       newDate.setHours(hours);
       newDate.setMinutes(minutes);
@@ -57,12 +73,14 @@ export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
       <PopoverTrigger asChild>
         <button
           type="button"
+          disabled={disabled}
           className={cn(
             "w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all flex items-center justify-between",
-            !selectedDate && "text-slate-400"
+            (!selectedDate || isNaN(selectedDate.getTime())) && "text-slate-400",
+            disabled && "opacity-60 cursor-not-allowed select-none bg-slate-100"
           )}
         >
-          {selectedDate ? format(selectedDate, "PPP 'at' p") : <span>Pick a date & time</span>}
+          {selectedDate && !isNaN(selectedDate.getTime()) ? format(selectedDate, "PPP 'at' p") : <span>Pick a date & time</span>}
           <CalendarIcon className="w-4 h-4 text-indigo-500 opacity-80" />
         </button>
       </PopoverTrigger>

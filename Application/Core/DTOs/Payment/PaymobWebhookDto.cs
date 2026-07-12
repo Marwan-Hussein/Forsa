@@ -5,10 +5,10 @@ namespace Application.Core.DTOs.Payment
     public class PaymobWebhookDto
     {
         [JsonPropertyName("type")]
-        public string Type { get; set; }
+        public string? Type { get; set; }
 
         [JsonPropertyName("obj")]
-        public PaymobWebhookObjDto Obj { get; set; }
+        public PaymobWebhookObjDto? Obj { get; set; }
     }
 
     public class PaymobWebhookObjDto
@@ -26,9 +26,18 @@ namespace Application.Core.DTOs.Payment
         public decimal AmountCents { get; set; }
 
         [JsonPropertyName("currency")]
-        public string Currency { get; set; }
+        public string? Currency { get; set; }
 
         [JsonPropertyName("intention_id")]
-        public string IntentionId { get; set; }
+        public string? IntentionId { get; set; }
+
+        [JsonPropertyName("payment_key_claims")]
+        public PaymobWebhookPaymentKeyClaimsDto? PaymentKeyClaims { get; set; }
+    }
+
+    public class PaymobWebhookPaymentKeyClaimsDto
+    {
+        [JsonPropertyName("next_payment_intention")]
+        public string? NextPaymentIntention { get; set; }
     }
 }

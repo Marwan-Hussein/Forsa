@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
+import { getDashboardPath } from "../utils/roleRouting";
 
 interface PageHeaderProps {
   backTo?: string;
@@ -12,7 +13,7 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({
-  backTo = "/dashboard",
+  backTo = getDashboardPath(),
   backLabel = "Back to Home",
   title,
   subtitle,

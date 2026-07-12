@@ -1,14 +1,19 @@
 using Application.Core.DTOs.Booking;
 using Application.Core.DTOs.Event;
 using Application.Core.Interfaces;
+using Application.Core.Interfaces.Auth.OTP;
 using Application.Core.Interfaces.ExternalServicesInterfaces;
+using Application.Core.DTOs.CommonDTOs;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.BookingEntities;
 using Domain.Entities.EventEntities;
+using Domain.Entities.PaymentEntities;
+using Domain.Entities.AttendeeEntities;
 using Domain.ENUMs;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Application.Core.Helpers;
 
 namespace Application.Services
 {
@@ -16,28 +21,37 @@ namespace Application.Services
     {
         private readonly IQueryableRepository<Event> _eventRepository;
         private readonly IQueryableRepository<Booking> _bookingRepository;
-        private readonly IGenericRepository<Notification> _notificationRepository;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IQrService _qrService;
         private readonly IGoogleCalendarSyncService _calendarSync;
+        private readonly IPaymentService _paymentService;
+        private readonly IQueryableRepository<PaymentTransaction> _transactionRepository;
+        private readonly IEmailService _emailService;
+        private readonly IQueryableRepository<Attendee> _attendeeRepository;
 
         public BookingService(
             IQueryableRepository<Event> eventRepository,
             IQueryableRepository<Booking> bookingRepository,
-            IGenericRepository<Notification> notificationRepository,
             IMapper mapper,
             IUnitOfWork unitOfWork,
             IQrService qrService,
-            IGoogleCalendarSyncService calendarSync)
+            IGoogleCalendarSyncService calendarSync,
+            IPaymentService paymentService,
+            IQueryableRepository<PaymentTransaction> transactionRepository,
+            IEmailService emailService,
+            IQueryableRepository<Attendee> attendeeRepository)
         {
             _eventRepository = eventRepository;
             _bookingRepository = bookingRepository;
-            _notificationRepository = notificationRepository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _qrService = qrService;
             _calendarSync = calendarSync;
+            _paymentService = paymentService;
+            _transactionRepository = transactionRepository;
+            _emailService = emailService;
+            _attendeeRepository = attendeeRepository;
         }
 
         public async Task<EventDetailsDto> GetEventDetailsAsync(int eventId)
@@ -60,8 +74,22 @@ namespace Application.Services
 
         public async Task<BookingResponseDto> CreateBookingAsync(CreateBookingRequestDto dto)
         {
-            
             dto.NumberOfTickets = 1;
+
+            // Check if attendee profile is completed (phone, location, birthdate)
+            var attendee = await _attendeeRepository.GetQueryable()
+                .FirstOrDefaultAsync(a => a.Id == dto.AttendeeId);
+            if (attendee == null)
+                throw new KeyNotFoundException("Attendee not found");
+
+            if (string.IsNullOrWhiteSpace(attendee.PhoneNumber) || 
+                string.IsNullOrWhiteSpace(attendee.Location) || 
+                attendee.Location == "Not Specified" ||
+                attendee.BirthDate == default(DateTime) || 
+                attendee.BirthDate.Year <= 1)
+            {
+                throw new InvalidOperationException("Please complete your profile (Phone Number, Location, and Birth Date) before booking.");
+            }
 
             // Get event and validate
             var eventEntity = await _eventRepository.GetQueryable()
@@ -73,9 +101,9 @@ namespace Application.Services
             if (eventEntity.Status != EventStatus.Published)
                 throw new InvalidOperationException("Event is not available for booking");
 
-            // Check if event has already started
-            if (eventEntity.StartDate <= DateTime.UtcNow)
-                throw new InvalidOperationException("Event has already started or passed");
+            // Check if event has already ended
+            if (eventEntity.EndDate <= DateTime.UtcNow)
+                throw new InvalidOperationException("Event has already ended");
 
             // Check if enough tickets are available
             if (eventEntity.RemainingTickets < dto.NumberOfTickets)
@@ -83,12 +111,12 @@ namespace Application.Services
 
             // Check for duplicate booking
             var existingBooking = await _bookingRepository.GetQueryable()
-                .AnyAsync(b => b.AttendeeId == dto.AttendeeId 
-                          && b.EventId == dto.EventId 
-                          && b.Status == BookingStatus.Confirmed);
+                .AnyAsync(b => b.AttendeeId == dto.AttendeeId
+                          && b.EventId == dto.EventId
+                          && (b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Pending));
 
             if (existingBooking)
-                throw new InvalidOperationException("You have already booked this event");
+                throw new InvalidOperationException("You have already booked this event or have a pending payment.");
 
             // Create booking
             var booking = new Booking
@@ -97,7 +125,7 @@ namespace Application.Services
                 EventId = dto.EventId,
                 NumberOfTickets = dto.NumberOfTickets,
                 QRCode = Guid.NewGuid().ToString("N"),
-                Status = BookingStatus.Pending,
+                Status = eventEntity.TicketPrice <= 0 ? BookingStatus.Confirmed : BookingStatus.Pending,
                 BookingDate = DateTime.UtcNow,
                 IsDeleted = false,
                 SpecialRequests = dto.SpecialRequests,
@@ -112,19 +140,27 @@ namespace Application.Services
             eventEntity.RemainingTickets -= dto.NumberOfTickets;
             _eventRepository.Update(eventEntity);
 
-            // Create notification
-            var notification = new Notification
+            #region Email booking status
+            // send email
+            var title = eventEntity.TicketPrice <= 0 ? "Booking Confirmed! 🎟️" : "Booking Request Received ⏳";
+            var bodyText = eventEntity.TicketPrice <= 0
+                ? $"Great news! Your ticket booking for **{eventEntity.Title}** has been successfully confirmed. Your spot is reserved, and we are excited to have you join us! 🎉\n\nBelow are your booking details. Please keep them handy."
+                : $"Thank you for your booking request! Your ticket request for **{eventEntity.Title}** has been received and is currently pending approval. We will notify you as soon as the request has been processed. ⏳\n\nBelow are the details of your request.";
+            
+            var details = new Dictionary<string, string>
             {
-                Type = NotificationType.BookingConfirmation,
-                SentVia = DeliveryMethod.Email,
-                UserId = dto.AttendeeId,
-                Message = $"Your ticket request for '{eventEntity.Title}' has been received and is pending approval. Booking ID: {booking.Id}",
-                Status = NotificationStatus.Pending,
-                IsDeleted = false
+                { "Event Title", eventEntity.Title },
+                { "Booking Reference", booking.QRCode },
+                { "Number of Tickets", booking.NumberOfTickets.ToString() },
+                { "Booking Date", booking.BookingDate.ToString("yyyy-MM-dd HH:mm UTC") },
+                { "Booking Status", booking.Status.ToString() }
             };
 
-            await _notificationRepository.AddAsync(notification);
+            var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
+            var attendeeEmail = attendee.Email;
 
+            await _emailService.SendAsync(attendeeEmail, "Your Booking Status", htmlBody);
+            #endregion
             // Save all changes
             await _unitOfWork.SaveChangesAsync();
 
@@ -152,6 +188,7 @@ namespace Application.Services
         {
             var booking = await _bookingRepository.GetQueryable()
                 .Include(b => b.Event)
+                .Include(b => b.Attendee)
                 .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
 
             if (booking == null)
@@ -163,24 +200,43 @@ namespace Application.Services
             booking.Status = BookingStatus.Confirmed;
             _bookingRepository.Update(booking);
 
-            var notification = new Notification
-            {
-                Type = NotificationType.BookingConfirmation,
-                SentVia = DeliveryMethod.Email,
-                UserId = booking.AttendeeId,
-                Message = $"Your ticket request for '{booking.Event.Title}' has been approved! Booking ID: {booking.Id}",
-                Status = NotificationStatus.Pending,
-                IsDeleted = false
-            };
+            #region Email approve booking
 
-            await _notificationRepository.AddAsync(notification);
             await _unitOfWork.SaveChangesAsync();
+
+            if (!string.IsNullOrWhiteSpace(booking.Attendee?.Email))
+            {
+                try
+                {
+                    var title = "Booking Approved! 🎟️";
+                    var bodyText = $"Excellent! Your booking request for **{booking.Event.Title}** has been approved by the organizer. Your tickets are now valid and your attendance is confirmed! 🥳\n\nGet ready for an amazing experience. Please have your ticket details ready when attending the event.";
+                    
+                    var details = new Dictionary<string, string>
+                    {
+                        { "Event Title", booking.Event.Title },
+                        { "Booking Reference", booking.QRCode },
+                        { "Booking Status", "Approved & Confirmed" },
+                        { "Tickets Booked", booking.NumberOfTickets.ToString() }
+                    };
+
+                    var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
+                    await _emailService.SendAsync(booking.Attendee.Email,
+                        "Booking Approved",
+                        htmlBody);
+                }
+                catch
+                {
+                    // Silence email failures so booking approval still succeeds
+                }
+            }
+            #endregion
         }
 
         public async Task RejectBookingAsync(int bookingId, string reason)
         {
             var booking = await _bookingRepository.GetQueryable()
                 .Include(b => b.Event)
+                .Include(b => b.Attendee)
                 .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
 
             if (booking == null)
@@ -197,18 +253,33 @@ namespace Application.Services
             booking.Event.RemainingTickets += booking.NumberOfTickets;
             _eventRepository.Update(booking.Event);
 
-            var notification = new Notification
-            {
-                Type = NotificationType.BookingConfirmation,
-                SentVia = DeliveryMethod.Email,
-                UserId = booking.AttendeeId,
-                Message = $"Your ticket request for '{booking.Event.Title}' has been rejected. Reason: {reason}",
-                Status = NotificationStatus.Pending,
-                IsDeleted = false
-            };
-
-            await _notificationRepository.AddAsync(notification);
             await _unitOfWork.SaveChangesAsync();
+
+            if (!string.IsNullOrWhiteSpace(booking.Attendee?.Email))
+            {
+                try
+                {
+                    var title = "Booking Request Declined ❌";
+                    var bodyText = $"Hello.\n\nWe regret to inform you that your booking request for the event **{booking.Event.Title}** has been declined. 😔\n\nThe organizer provided the following feedback:\n\n**Reason:** {reason}\n\nAny pending payments will be resolved accordingly. We hope you can find another event to attend on Forsa!";
+                    
+                    var details = new Dictionary<string, string>
+                    {
+                        { "Event Title", booking.Event.Title },
+                        { "Booking Reference", booking.QRCode },
+                        { "Booking Status", "Declined" },
+                        { "Reason", reason }
+                    };
+
+                    var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
+                    await _emailService.SendAsync(booking.Attendee.Email,
+                        "Booking Rejected",
+                        htmlBody);
+                }
+                catch
+                {
+                    // Silence email failures so rejection still succeeds
+                }
+            }
         }
 
         public async Task CancelBookingAsync(int bookingId)
@@ -216,38 +287,76 @@ namespace Application.Services
             // Get booking by id
             var booking = await _bookingRepository.GetQueryable()
                 .Include(b => b.Event)
+                .Include(b => b.Attendee)
                 .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
 
             if (booking == null)
                 throw new KeyNotFoundException("Booking not found");
 
-            // Check if cancellation is allowed (24 hours before event)
-            var cancellationDeadline = booking.Event.StartDate.AddHours(-24);
-            if (DateTime.UtcNow > cancellationDeadline)
-                throw new InvalidOperationException("Cannot cancel booking within 24 hours of event start");
+            // Check if cancellation is allowed (event has not ended yet)
+            if (DateTime.UtcNow > booking.Event.EndDate)
+                throw new InvalidOperationException("Cannot cancel booking after the event has ended");
 
-            // Update booking status
-            booking.Status = BookingStatus.Cancelled;
-            booking.IsDeleted = true;
-            _bookingRepository.Update(booking);
+            // Cannot cancel if already checked-in/attended
+            if (booking.Status == BookingStatus.Attended)
+                throw new InvalidOperationException("Cannot cancel booking after attending the event");
 
-            // Restore tickets to event
-            booking.Event.RemainingTickets += booking.NumberOfTickets;
-            _eventRepository.Update(booking.Event);
+            // Check for completed transaction
+            var transaction = await _transactionRepository.GetQueryable()
+                .FirstOrDefaultAsync(t => t.ReferenceId == bookingId && t.ItemType == "EventBooking" && t.TransactionStatus == TransactionStatus.Completed);
 
-            // Create cancellation notification
-            var notification = new Notification
+            if (transaction != null)
             {
-                Type = NotificationType.BookingConfirmation,
-                SentVia = DeliveryMethod.Email,
-                UserId = booking.AttendeeId,
-                Message = $"Your booking for '{booking.Event.Title}' has been cancelled. Booking ID: {booking.Id}",
-                Status =    NotificationStatus.Pending,
-                IsDeleted = false
+                // Has paid transaction -> Refund it (ProcessRefundAsync handles booking status and tickets update)
+                var refundResult = await _paymentService.ProcessRefundAsync(transaction.PaymentId);
+                if (refundResult.IsSuccess)
+                {
+                    // Refund succeeded, also soft-delete the booking to match other cancellations
+                    booking.IsDeleted = true;
+                    _bookingRepository.Update(booking);
+                }
+                else
+                {
+                    // Refund failed, but we still cancel and soft-delete the booking in the database anyway
+                    booking.Status = BookingStatus.Cancelled;
+                    booking.IsDeleted = true;
+                    _bookingRepository.Update(booking);
+
+                    booking.Event.RemainingTickets += booking.NumberOfTickets;
+                    _eventRepository.Update(booking.Event);
+                }
+            }
+            else
+            {
+                // Unpaid/Pending transaction -> just cancel booking
+                booking.Status = BookingStatus.Cancelled;
+                booking.IsDeleted = true;
+                _bookingRepository.Update(booking);
+
+                booking.Event.RemainingTickets += booking.NumberOfTickets;
+                _eventRepository.Update(booking.Event);
+
+                var pendingTransaction = await _transactionRepository.GetQueryable()
+                    .FirstOrDefaultAsync(t => t.ReferenceId == bookingId && t.ItemType == "EventBooking" && t.TransactionStatus == TransactionStatus.Pending);
+                if (pendingTransaction != null)
+                {
+                    pendingTransaction.TransactionStatus = TransactionStatus.Failed;
+                    _transactionRepository.Update(pendingTransaction);
+                }
+            }
+
+            var title = "Booking Cancelled 🛑";
+            var bodyText = $"This email confirms that your booking for the event **{booking.Event.Title}** has been cancelled as requested. 🗑️\n\nIf you did not request this cancellation or have any questions about refunds or re-booking, please reach out to our team.";
+            
+            var details = new Dictionary<string, string>
+            {
+                { "Event Title", booking.Event.Title },
+                { "Booking Reference", booking.QRCode },
+                { "Booking Status", "Cancelled" }
             };
 
-            await _notificationRepository.AddAsync(notification);
-
+            var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
+            await _emailService.SendAsync(booking.Attendee.Email, "Booking Cancelled", htmlBody);
             // Save all changes
             await _unitOfWork.SaveChangesAsync();
 
@@ -269,11 +378,12 @@ namespace Application.Services
             return _mapper.Map<BookingResponseDto>(booking);
         }
 
-        public async Task<byte[]> GetTicketFromQr(int bookingId) { 
+        public async Task<byte[]> GetTicketFromQr(int bookingId)
+        {
             var bookingInfo = await _bookingRepository.GetQueryable()
                 .Include(b => b.Event)
                 .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
-            if(bookingInfo == null)
+            if (bookingInfo == null)
                 throw new KeyNotFoundException("Booking not found");
             var qrPayload = System.Text.Json.JsonSerializer.Serialize(new
             {
@@ -281,12 +391,12 @@ namespace Application.Services
                 token = bookingInfo.QRCode
             });
             byte[] qrImage = _qrService.GenerateQrImage(qrPayload);
-            return qrImage; 
+            return qrImage;
         }
 
         public async Task<VerifyAttendanceResponseDto> VerifyAttendanceViaQrCodeAsync(int eventId, string qrCode)
         {
-            if(string.IsNullOrWhiteSpace(qrCode))
+            if (string.IsNullOrWhiteSpace(qrCode))
                 throw new ArgumentException("Scanned token cannot be empty.", nameof(qrCode));
 
             string finalToken = qrCode;

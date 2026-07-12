@@ -8,6 +8,7 @@ export interface OwnerDashboardStats {
   pendingRequests: number;
   confirmedRequests: number;
   totalEarnings: number;
+  availableBalance: number;
   averageRating: number;
 }
 
@@ -21,6 +22,7 @@ export interface Place {
   status: number | string;
   facilityName: string;
   reason?: string;
+  availableDays?: string;
 }
 
 export interface AddPlaceDto {
@@ -32,6 +34,7 @@ export interface AddPlaceDto {
   capacity: number;
   dailyPrice: number;
   hourlyPrice: number;
+  availableDays?: string;
 }
 
 export type UpdatePlaceDto = AddPlaceDto;
@@ -80,6 +83,24 @@ export const ownerApi = {
   updatePlace: async (id: number, dto: UpdatePlaceDto): Promise<Place> => {
     const p = await apiPut<any>(`/api/owner/places/${id}`, dto);
     return { ...p, id: p.placeId || p.id };
+  },
+
+  getPlaceCalendar: async (placeId: number, fromDate?: string, toDate?: string): Promise<any[]> => {
+    let url = `/api/owner/places/${placeId}/calendar`;
+    const params = [];
+    if (fromDate) params.push(`fromDate=${fromDate}`);
+    if (toDate) params.push(`toDate=${toDate}`);
+    if (params.length > 0) url += `?${params.join("&")}`;
+    return await apiGet(url);
+  },
+
+  setPlaceAvailability: async (placeId: number, dto: { date: string; startTime?: string; endTime?: string; status: number }): Promise<any> => {
+    return await apiPost(`/api/owner/places/${placeId}/calendar`, dto);
+  },
+
+  removePlaceAvailability: async (placeId: number, slotId: number): Promise<boolean> => {
+    await apiDelete(`/api/owner/places/${placeId}/calendar/${slotId}`);
+    return true;
   },
 
   getBookingRequests: async (): Promise<BookingRequest[]> => {
@@ -167,8 +188,21 @@ export const ownerApi = {
     const data = await response.json();
     return data.url;
   },
+  deleteProfilePicture: async (id: number): Promise<void> => {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+    const token = localStorage.getItem("forsa_token");
+    const response = await fetch(`${baseUrl}/api/owner/${id}/profile-picture`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error("Failed to remove profile picture");
+  },
 
   submitOrganizerFeedback: async (bookingRequestId: number, data: { rating: number; comment: string }): Promise<any> => {
     return await apiPost(`/api/owner/booking-requests/${bookingRequestId}/feedback`, data);
+  },
+
+  getOwnerReviews: async (): Promise<any[]> => {
+    return await apiGet(`/api/owner/reviews`);
   }
 };

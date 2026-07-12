@@ -1,12 +1,18 @@
 using Application.Core.DTOs.Event;
 using Application.Core.Interfaces.EventInterfaces;
+using Application.Core.Interfaces;
+using Application.Core.Interfaces.Auth.OTP;
+using Application.Core.DTOs.CommonDTOs;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Entities.EventEntities;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using Domain.ENUMs;
+using Application.Core.DTOs.Feedbacks;
+using Application.Core.Helpers;
 
 namespace Application.Services.EventServices
 {
@@ -15,12 +21,27 @@ namespace Application.Services.EventServices
         private readonly IEventRepository _repo;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IFeedbackRepository feedbackRepo;
+        private readonly IQueryableRepository<Domain.Entities.BookingEntities.BookingRequest> _bookingRequestRepo;
+        private readonly IQueryableRepository<Domain.Entities.PlaceEntities.PlaceAvailability> _availabilityRepo;
+        private readonly IEmailService _emailService;
 
-        public EventService(IEventRepository repo, IMapper mapper, IUnitOfWork unitOfWork)
+        public EventService(
+            IEventRepository repo,
+            IMapper mapper,
+            IUnitOfWork unitOfWork,
+            IFeedbackRepository feedbackRepo,
+            IQueryableRepository<Domain.Entities.BookingEntities.BookingRequest> bookingRequestRepo,
+            IQueryableRepository<Domain.Entities.PlaceEntities.PlaceAvailability> availabilityRepo,
+            IEmailService emailService)
         {
             _repo = repo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            this.feedbackRepo = feedbackRepo;
+            _bookingRequestRepo = bookingRequestRepo;
+            _availabilityRepo = availabilityRepo;
+            _emailService = emailService;
         }
 
         public async Task<List<EventDetailsDto>> GetAllEvents()
@@ -67,14 +88,14 @@ namespace Application.Services.EventServices
             {
                 if (criteria.SortBy.ToLower() == "title")
                 {
-                    events = criteria.IsDescending 
-                        ? events.OrderByDescending(e => e.Title) 
+                    events = criteria.IsDescending
+                        ? events.OrderByDescending(e => e.Title)
                         : events.OrderBy(e => e.Title);
                 }
                 else if (criteria.SortBy.ToLower() == "location")
                 {
-                    events = criteria.IsDescending 
-                        ? events.OrderByDescending(e => e.Place) 
+                    events = criteria.IsDescending
+                        ? events.OrderByDescending(e => e.Place)
                         : events.OrderBy(e => e.Place);
                 }
             }
@@ -83,7 +104,7 @@ namespace Application.Services.EventServices
                 events = events.OrderBy(e => e.Id);
             }
 
-            return _mapper.Map<List<EventDetailsDto>>(await events.ToListAsync()); 
+            return _mapper.Map<List<EventDetailsDto>>(await events.ToListAsync());
         }
         private async Task CalculateAttendeeRatings(Event eventEntity)
         {
@@ -91,10 +112,13 @@ namespace Application.Services.EventServices
                 return;
             int points = (int)(10 + eventEntity.TicketPrice / 10);
             foreach (var booking in eventEntity.Bookings
-                .Where(b => 
-                    b.Status == BookingStatus.Confirmed && 
+                .Where(b =>
+                    b.Status == BookingStatus.Confirmed &&
                     b.Attendee != null))
+            {
                 booking.Attendee.LoyaltyPoint += points; // final calculation of attendee ratings
+
+            }
         }
         public async Task EvaluateEventStatusAsync(int eventId)
         {
@@ -106,16 +130,65 @@ namespace Application.Services.EventServices
             if (eventEntity == null)
                 throw new KeyNotFoundException("Event not found");
 
-            if ((eventEntity.Status == EventStatus.Published || eventEntity.Status == EventStatus.SoldOut) 
+            if ((eventEntity.Status == EventStatus.Published || eventEntity.Status == EventStatus.SoldOut)
                 && eventEntity.EndDate <= DateTime.UtcNow)
             {
                 eventEntity.Status = EventStatus.Completed;
                 eventEntity.RemainingTickets = 0; // Locks further bookings
                 await CalculateAttendeeRatings(eventEntity); // Update attendee ratings based on bookings
-
+                // Revert booking requested place slot back to Available
+                if (eventEntity.PlaceId.HasValue)
+                {
+                    var request = await _bookingRequestRepo.GetQueryable()
+                        .FirstOrDefaultAsync(r => r.EventId == eventEntity.Id && r.Status == RequestStatus.Accepted && !r.IsDeleted);
+                    if (request != null)
+                    {
+                        var slot = await _availabilityRepo.GetQueryable()
+                            .FirstOrDefaultAsync(a => a.PlaceId == request.PlaceId
+                                                      && a.Date.Date == request.RequestedDate.Date
+                                                      && a.Status == PlaceStatus.Booked
+                                                      && !a.IsDeleted);
+                        if (slot != null)
+                        {
+                            slot.Status = PlaceStatus.Available;
+                            slot.LastModifiedAt = DateTime.UtcNow;
+                            _availabilityRepo.Update(slot);
+                        }
+                    }
+                }
 
                 _repo.Update(eventEntity);
                 await _unitOfWork.SaveChangesAsync();
+
+                if (eventEntity.Bookings != null)
+                {
+                    int points = (int)(10 + eventEntity.TicketPrice / 10);
+                    foreach (var booking in eventEntity.Bookings
+                        .Where(b =>
+                            b.Status == BookingStatus.Confirmed &&
+                            b.Attendee != null))
+                    {
+                        try
+                        {
+                            #region email loyalty points -> attendee
+                            var title = "Loyalty Points Earned! 🏆";
+                            var bodyText = $"Thank you for attending the event **{eventEntity.Title}**! We hope you had a fantastic experience. 🌟\n\nAs a thank you, we have credited **{points}** loyalty points to your account! You can use these points to unlock special benefits, discounts, and rewards on Forsa. Keep attending events to earn more!";
+                            var details = new Dictionary<string, string>
+                            {
+                                { "Event Attended", eventEntity.Title },
+                                { "Points Earned", $"+{points} Points" },
+                                { "Status", "Credited to Account" }
+                            };
+                            var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
+                            await _emailService.SendAsync(booking.Attendee.Email, "Loyalty Points Increased", htmlBody);
+                            #endregion
+                        }
+                        catch
+                        {
+                            // Silence real-time notification failures to prevent blocking execution
+                        }
+                    }
+                }
             }
         }
 
@@ -128,7 +201,7 @@ namespace Application.Services.EventServices
                 return false;
 
             eventEntity.RemainingTickets -= quantity;
-            
+
             if (eventEntity.RemainingTickets == 0)
                 eventEntity.Status = EventStatus.SoldOut;
 
@@ -145,7 +218,7 @@ namespace Application.Services.EventServices
 
             if (eventEntity == null)
                 throw new KeyNotFoundException("Event not found");
-            if(quantity == 0 || quantity + eventEntity.RemainingTickets > eventEntity.TotalTickets)
+            if (quantity == 0 || quantity + eventEntity.RemainingTickets > eventEntity.TotalTickets)
                 throw new InvalidOperationException("Invalid quantity to release");
 
             eventEntity.RemainingTickets += quantity;
@@ -174,6 +247,30 @@ namespace Application.Services.EventServices
                 ShareUrl = shareUrl,
                 ShareText = $"Check out \"{eventEntity.Title}\" on Forsa! {shareUrl}"
             };
+        }
+        // get all feedbacks for a specific event
+        public async Task<List<FeedbackDTO>> GetEventFeedbacks(int eventId)
+        {
+            var feedbacks = await feedbackRepo.GetQueryable()
+                .Where(f => f.EventId == eventId && !f.IsDeleted)
+                .Include(f => f.Attendee)
+                .Include(f => f.Event)
+                .ToListAsync();
+            List<FeedbackDTO> mappedFeedbacks = new List<FeedbackDTO>();
+            foreach (var feedback in feedbacks)
+            {
+                var FeedbackDTO = new FeedbackDTO
+                {
+                    Rating = feedback.Rating,
+                    Comment = feedback.Comment,
+                    AttendeeName = feedback.Attendee != null ? feedback.Attendee.FullName : "Anonymous",
+                    EventTitle = feedback.Event != null ? feedback.Event.Title : "Unknown Event",
+                    attendeeImageUrl = feedback.Attendee != null ? feedback.Attendee.ProfilePicture : null,
+                    attendeeId = feedback.Attendee != null ? feedback.Attendee.Id : 0
+                };
+                mappedFeedbacks.Add(FeedbackDTO);
+            }
+            return mappedFeedbacks;
         }
     }
 }

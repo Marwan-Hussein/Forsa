@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router";
+import { toast } from "sonner";
 import { ImageWithFallback } from "../../components/ImageWithFallback";
 import MapDisplay from "../../components/map/MapDisplay";
 import { placeApi, PlaceDetails } from "../../api/placeApi";
@@ -35,6 +36,9 @@ export default function PlaceDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const paidRequests = JSON.parse(localStorage.getItem("paid_booking_requests") || "[]");
+  const isPaid = existingRequest && (existingRequest.isPaid || paidRequests.includes(String(existingRequest.id || existingRequest.requestId)));
+
   useEffect(() => {
     const fetchPlaceAndRequests = async () => {
       try {
@@ -49,8 +53,15 @@ export default function PlaceDetailsPage() {
               const requests = await organizerApi.getOrganizerBookingRequests(organizerId);
               const requestsForPlace = requests.filter((r: any) => String(r.placeId) === String(placeId));
               if (requestsForPlace.length > 0) {
-                const activeRequest = requestsForPlace.find((r: any) => r.status === 0 || r.status === 1);
-                setExistingRequest(activeRequest || requestsForPlace[0]);
+                 const activeRequest = requestsForPlace.find((r: any) => {
+                   const reqStatus = String(r.status || "").toLowerCase();
+                   const evStatus = String(r.eventStatus || "").toLowerCase();
+                   const isRequestActive = reqStatus === "pending" || reqStatus === "accepted";
+                   const isEventConcluded = evStatus === "completed" || evStatus === "7" || evStatus === "cancelled" || evStatus === "6" || (r.eventEndDate && new Date(r.eventEndDate) < new Date());
+                   const isRequestCancelled = reqStatus === "cancelled" || reqStatus === "3";
+                   return isRequestActive && !isEventConcluded && !isRequestCancelled;
+                 });
+                 setExistingRequest(activeRequest || null);
               }
             } catch (err) {
               console.error("Failed to fetch requests", err);
@@ -173,7 +184,7 @@ export default function PlaceDetailsPage() {
             {/* Background Blur */}
             {place.images && place.images.length > 0 && (
               <img 
-                src={place.images[selectedImage].startsWith('http') ? place.images[selectedImage] : `http://localhost:5000${place.images[selectedImage].startsWith('/') ? '' : '/'}${place.images[selectedImage]}`}
+                src={place.images[selectedImage].startsWith('http') ? place.images[selectedImage] : `https://forsa-app.runasp.net${place.images[selectedImage].startsWith('/') ? '' : '/'}${place.images[selectedImage]}`}
                 alt="blur background" 
                 className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-40 scale-110 pointer-events-none select-none"
               />
@@ -182,7 +193,7 @@ export default function PlaceDetailsPage() {
             {/* Crisp Centered Active Image */}
             <div className="relative w-full h-full flex items-center justify-center z-10 p-4">
               <ImageWithFallback
-                src={place.images && place.images.length > selectedImage ? (place.images[selectedImage].startsWith('http') ? place.images[selectedImage] : `http://localhost:5000${place.images[selectedImage].startsWith('/') ? '' : '/'}${place.images[selectedImage]}`) : "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop"}
+                src={place.images && place.images.length > selectedImage ? (place.images[selectedImage].startsWith('http') ? place.images[selectedImage] : `https://forsa-app.runasp.net${place.images[selectedImage].startsWith('/') ? '' : '/'}${place.images[selectedImage]}`) : "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop"}
                 alt={place.name}
                 className="max-h-full max-w-full object-contain rounded-2xl shadow-lg transition-all duration-300"
               />
@@ -193,7 +204,7 @@ export default function PlaceDetailsPage() {
           {place.images && place.images.length > 1 && (
             <div className="flex gap-2.5 overflow-x-auto py-2.5 px-1 scrollbar-none">
               {place.images.map((img: string, idx: number) => {
-                const imgUrl = img.startsWith('http') ? img : `http://localhost:5000${img.startsWith('/') ? '' : '/'}${img}`;
+                const imgUrl = img.startsWith('http') ? img : `https://forsa-app.runasp.net${img.startsWith('/') ? '' : '/'}${img}`;
                 return (
                   <button 
                     key={idx}
@@ -261,6 +272,32 @@ export default function PlaceDetailsPage() {
                     </motion.div>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* Operating Days */}
+            <div className="pb-6 border-b border-slate-200">
+              <div className="mb-4">
+                <h2 className="text-xl font-bold text-slate-900 mb-1">Operating Days</h2>
+                <p className="text-slate-500 text-sm">
+                  This venue is open and accepts bookings on the following weekdays:
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                {place.availableDays ? (
+                  place.availableDays.split(",").map(day => (
+                    <span 
+                      key={day} 
+                      className="px-4 py-2 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-xl text-sm font-bold shadow-sm"
+                    >
+                      {day}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-slate-500 text-sm font-medium bg-slate-50 border border-slate-100 px-4 py-2 rounded-xl">
+                    Every day (No weekday restrictions)
+                  </span>
+                )}
               </div>
             </div>
 
@@ -404,13 +441,48 @@ export default function PlaceDetailsPage() {
                 </div>
 
                 {/* Call to Action */}
-                {existingRequest?.status === 0 ? (
+                {existingRequest?.status === "Pending" ? (
                   <button disabled className="w-full flex items-center justify-center py-4 bg-amber-50/80 text-amber-800 border border-amber-200/60 font-bold text-lg rounded-2xl mb-4 cursor-not-allowed">
                     <Clock className="w-5 h-5 mr-2" /> Request Pending
                   </button>
-                ) : existingRequest?.status === 1 ? (
+                ) : existingRequest?.status === "Accepted" && !isPaid ? (
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const res = await organizerApi.processPlaceCheckout(existingRequest.id || existingRequest.requestId);
+                        if (res && res.clientSecret) {
+                          localStorage.setItem("pending_payment_request_id", String(existingRequest.id || existingRequest.requestId));
+                          if (res.clientSecret.startsWith("mock_")) {
+                            const paidList = JSON.parse(localStorage.getItem("paid_booking_requests") || "[]");
+                            const reqId = String(existingRequest.id || existingRequest.requestId);
+                            if (!paidList.includes(reqId)) {
+                              paidList.push(reqId);
+                              localStorage.setItem("paid_booking_requests", JSON.stringify(paidList));
+                            }
+                            localStorage.removeItem("pending_payment_request_id");
+                            toast.success("Mock Payment Success", { description: "Simulated payment for testing." });
+                            // Force refresh state
+                            setExistingRequest((prev: any) => prev ? { ...prev } : null);
+                          } else if (res.clientSecret.startsWith("http")) {
+                            window.location.href = res.clientSecret;
+                          } else {
+                            const pubKey = res.publicKey || "pk_test_placeholder";
+                            window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${pubKey}&clientSecret=${res.clientSecret}`;
+                          }
+                        } else {
+                          toast.error("Could not initiate payment.");
+                        }
+                      } catch (err: any) {
+                        toast.error("Payment initiation failed", { description: err.message });
+                      }
+                    }}
+                    className="w-full flex items-center justify-center py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-lg rounded-2xl transition-all shadow-md hover:shadow-lg hover:shadow-emerald-500/20 active:scale-[0.98] mb-4"
+                  >
+                    <DollarSign className="w-5 h-5 mr-2" /> Pay Now
+                  </button>
+                ) : existingRequest?.status === "Accepted" && isPaid ? (
                   <button disabled className="w-full flex items-center justify-center py-4 bg-emerald-50/80 text-emerald-800 border border-emerald-250/60 font-bold text-lg rounded-2xl mb-4 cursor-not-allowed">
-                    <CheckCircle className="w-5 h-5 mr-2" /> Request Approved
+                    <CheckCircle className="w-5 h-5 mr-2 text-emerald-600" /> Booking Confirmed
                   </button>
                 ) : (
                   <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>

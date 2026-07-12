@@ -1,30 +1,42 @@
 using Application.Core.DTOs.Admin;
 using Application.Core.DTOs.Place;
 using Application.Core.Interfaces.PlaceInterfaces;
+using Application.Core.Interfaces;
+using Application.Core.Interfaces.Auth.OTP;
+using Application.Core.DTOs.CommonDTOs;
 using AutoMapper;
+using Domain.Entities;
 using Domain.ENUMs;
+using Domain.Entities.PlaceEntities;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Application.Core.Helpers;
 
 namespace Application.Services.PlaceServices
 {
     public class PlaceAdminService : IPlaceAdminService
     {
         private readonly IPlaceRepository _placeRepo;
+        private readonly IQueryableRepository<PlaceAvailability> _availabilityRepo;
         private readonly IFeedbackRepository _feedbackRepo;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IEmailService _emailService;
 
         public PlaceAdminService(
             IPlaceRepository placeRepo,
+            IQueryableRepository<PlaceAvailability> availabilityRepo,
             IFeedbackRepository feedbackRepo,
             IMapper mapper,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IEmailService emailService)
         {
             _placeRepo = placeRepo;
+            _availabilityRepo = availabilityRepo;
             _feedbackRepo = feedbackRepo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _emailService = emailService;
         }
 
         // GET /api/admin/places
@@ -34,6 +46,7 @@ namespace Application.Services.PlaceServices
 
             // Include all places except those that are soft deleted
             var query = _placeRepo.GetQueryable()
+                                  .Include(p => p.PlaceMedias)
                                   .Where(p => !p.IsDeleted);
 
             if (!string.IsNullOrWhiteSpace(parameters.Name))
@@ -66,6 +79,7 @@ namespace Application.Services.PlaceServices
             parameters ??= new PlaceSearchParameterDto();
 
             var query = _placeRepo.GetQueryable()
+                                  .Include(p => p.PlaceMedias)
                                   .Where(p => !p.IsDeleted && p.Status == PlaceStatus.Pending);
 
             if (!string.IsNullOrWhiteSpace(parameters.Name))
@@ -96,6 +110,7 @@ namespace Application.Services.PlaceServices
         public async Task<bool> UpdateStatusAsync(int placeId, PlaceStatus status, string? reason)
         {
             var place = await _placeRepo.GetQueryable()
+                                        .Include(p => p.Owner)
                                         .FirstOrDefaultAsync(p => p.Id == placeId && !p.IsDeleted);
             if (place == null)
                 return false;
@@ -109,8 +124,58 @@ namespace Application.Services.PlaceServices
             place.LastModifiedAt = DateTime.UtcNow;
 
             _placeRepo.Update(place);
-            await _unitOfWork.SaveChangesAsync();
 
+            if (place.OwnerId.HasValue)
+            {
+                #region Email -> notify the owner about the status change
+                var title = "Venue Status Updated 🏛️";
+                var bodyText = $"Hello!\n\nWe wanted to let you know that the listing status of your venue, **{place.Name}**, has been updated to **{status}** by the Forsa administrative team. ";
+                
+                if (status == PlaceStatus.Approved)
+                {
+                    bodyText += "Congratulations! Your venue is now active on the Forsa platform. Organizers can search for your place and request bookings. 🎉";
+                }
+                else if (status == PlaceStatus.Rejected)
+                {
+                    bodyText += "Unfortunately, your venue listing could not be approved at this time. 📝";
+                    if (!string.IsNullOrWhiteSpace(reason))
+                    {
+                        bodyText += $"\n\n**Reason for Rejection:** {reason}";
+                    }
+                }
+                else
+                {
+                    bodyText += $"Your venue status is currently: {status}. ⏳";
+                }
+
+                var details = new Dictionary<string, string>
+                {
+                    { "Venue Name", place.Name },
+                    { "New Status", status.ToString() },
+                    { "Date Reviewed", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm UTC") }
+                };
+
+                if (status == PlaceStatus.Rejected && !string.IsNullOrWhiteSpace(reason))
+                {
+                    details.Add("Rejection Reason", reason);
+                }
+
+                var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
+
+                if (!string.IsNullOrWhiteSpace(place.Owner?.Email))
+                {
+                    try
+                    {
+                        await _emailService.SendAsync(place.Owner.Email,
+                            "Place Status Updated",
+                            htmlBody);
+                    }
+                    catch {}
+                }
+                #endregion
+            }
+
+            await _unitOfWork.SaveChangesAsync();
             return true;
         }
 
@@ -118,16 +183,54 @@ namespace Application.Services.PlaceServices
         public async Task<bool> SoftDeletePlaceAsync(int placeId)
         {
             var place = await _placeRepo.GetQueryable()
+                                        .Include(p => p.Owner)
                                         .FirstOrDefaultAsync(p => p.Id == placeId && !p.IsDeleted);
             if (place == null)
                 return false;
+
+            var availabilities = await _availabilityRepo.GetQueryable()
+                .Where(a => a.PlaceId == placeId && !a.IsDeleted)
+                .ToListAsync();
+
+            foreach (var availability in availabilities)
+            {
+                availability.IsDeleted = true;
+                availability.DeletedAt = DateTime.UtcNow;
+                _availabilityRepo.Update(availability);
+            }
 
             place.IsDeleted = true;
             place.DeletedAt = DateTime.UtcNow;
 
             _placeRepo.Update(place);
-            await _unitOfWork.SaveChangesAsync();
 
+            if (place.OwnerId.HasValue)
+            {
+                var title = "Venue Listing Removed 🚨";
+                var bodyText = $"Hello!\n\nWe are writing to inform you that your venue listing, **{place.Name}**, has been removed from the Forsa platform by our administration team. 🛑\n\nAs a result of this action, your venue is no longer visible to event organizers, and any future booking requests cannot be processed. If you believe this was done in error or would like to request reinstatement, please contact our support team.";
+                
+                var details = new Dictionary<string, string>
+                {
+                    { "Venue Name", place.Name },
+                    { "Action Taken", "Removed by Administrator" },
+                    { "Date Removed", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm UTC") }
+                };
+
+                var htmlBody = EmailTemplateHelper.BuildHtmlTemplate(title, bodyText, details);
+
+                if (!string.IsNullOrWhiteSpace(place.Owner?.Email))
+                {
+                    try
+                    {
+                        await _emailService.SendAsync(place.Owner.Email,
+                            "Place Deleted",
+                            htmlBody);
+                    }
+                    catch {}
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
             return true;
         }
 
@@ -178,8 +281,8 @@ namespace Application.Services.PlaceServices
             if (feedback == null)
                 return false;
 
-            feedback.IsDeleted  = true;
-            feedback.DeletedAt  = DateTime.UtcNow;
+            feedback.IsDeleted = true;
+            feedback.DeletedAt = DateTime.UtcNow;
 
             _feedbackRepo.Update(feedback);
             await _unitOfWork.SaveChangesAsync();

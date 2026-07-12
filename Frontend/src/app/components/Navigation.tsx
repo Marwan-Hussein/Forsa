@@ -7,6 +7,8 @@ import { ForSaLogo } from "./ForSaLogo";
 import { EASE_IN_OUT } from "../lib/motion";
 import { attendeeApi } from "../api/attendeeApi";
 import { getUserIdFromToken } from "../api/api";
+import { getDashboardPath, getUserRole } from "../utils/roleRouting";
+import { NotificationBell } from "./NotificationBell";
 
 export function Navigation() {
   const location = useLocation();
@@ -18,6 +20,8 @@ export function Navigation() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("Guest");
   const [userEmail, setUserEmail] = useState("user@forsa.com");
+  const [profilePic, setProfilePic] = useState<string | null>(localStorage.getItem("forsa_profile_picture"));
+  const dashboardPath = getDashboardPath(getUserRole());
 
   useEffect(() => {
     const token = localStorage.getItem("forsa_token");
@@ -33,6 +37,7 @@ export function Navigation() {
           attendeeApi.getProfile(userId).then(profile => {
             if (profile.profilePicture) {
               localStorage.setItem("forsa_profile_picture", profile.profilePicture);
+              setProfilePic(profile.profilePicture);
             }
           }).catch(() => {});
         }
@@ -41,7 +46,14 @@ export function Navigation() {
     const onScroll = () => setNavElevated(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    
+    const handleProfileUpdate = () => setProfilePic(localStorage.getItem("forsa_profile_picture"));
+    window.addEventListener("profilePictureUpdated", handleProfileUpdate);
+    
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("profilePictureUpdated", handleProfileUpdate);
+    };
   }, []);
 
   const handleSignOut = () => {
@@ -72,6 +84,7 @@ export function Navigation() {
   }, [location.pathname]);
 
   const links = [
+    { path: "/", label: "Home" },
     { path: "/events", label: "Events" },
     { path: "/organizations", label: "Organizations" },
     { path: "/about", label: "About" },
@@ -92,10 +105,9 @@ export function Navigation() {
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group outline-none">
-            <ForSaLogo className={`h-8 md:h-9 w-auto transition-all duration-500 ${shouldElevate ? 'brightness-0' : 'brightness-0 invert'}`} />
-            <span className={`text-2xl font-['Inter:Bold',sans-serif] font-bold tracking-tight transition-colors duration-500 ${shouldElevate ? 'text-[#0A1625]' : 'text-white'}`}>
-              ForSa
-            </span>
+            {/* <ForSaLogo className={`h-12 md:h-14 w-auto transition-all duration-500 ${shouldElevate ? 'brightness-50' : 'brightness-50 invert'}`} /> */}
+            {/* <ForSaLogo className={`h-12 md:h-14 w-auto transition-all duration-500 brightness-50`} /> */}
+            <ForSaLogo className={`h-14 md:h-15 w-auto transition-all duration-500 ${shouldElevate ? 'brightness-70' : 'brightness-150'}`} />
           </Link>
           
           <div className="hidden md:flex items-center gap-8">
@@ -115,67 +127,54 @@ export function Navigation() {
 
           <div className="hidden md:flex items-center gap-6">
             {isLoggedIn ? (
-              <>
-                <Link 
-                  to="/notifications" 
-                  className={`relative p-2 rounded-full transition-colors ${
-                    shouldElevate ? 'text-slate-500 hover:bg-slate-100' : 'text-white hover:bg-white/10'
+              <div className="relative">
+                <button 
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full transition-all ${
+                    shouldElevate ? 'hover:bg-slate-100 border border-transparent' : 'bg-white/10 hover:bg-white/20 border border-white/20'
                   }`}
                 >
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white shadow-sm"></span>
-                </Link>
-
-                <div className="relative" ref={userMenuRef}>
-                  <button 
-                    onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full transition-all ${
-                      shouldElevate ? 'hover:bg-slate-100 border border-transparent' : 'bg-white/10 hover:bg-white/20 border border-white/20'
-                    }`}
-                  >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-['Inter:Bold',sans-serif] text-sm overflow-hidden ${
-
-                      shouldElevate ? 'bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-hover)] text-white' : 'bg-white text-[var(--brand-navy)]'
-                    }`}>
-                      {localStorage.getItem("forsa_profile_picture") ? (
-                        <img src={`${import.meta.env.VITE_API_BASE_URL || ""}${localStorage.getItem("forsa_profile_picture")}`} alt="Profile" className="w-full h-full object-cover" />
-                      ) : (
-                        userName.charAt(0)
-                      )}
-                    </div>
-                    <span className={`text-sm font-['Inter:Medium',sans-serif] ${shouldElevate ? 'text-slate-700' : 'text-white'}`}>
-                      {userName}
-                    </span>
-                  </button>
-
-                  <AnimatePresence>
-                    {userMenuOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
-                      >
-                        <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-                          <p className="font-['Inter:Bold',sans-serif] text-slate-800">{userName}</p>
-                          <p className="text-xs font-['Inter:Medium',sans-serif] text-slate-500 truncate">{userEmail}</p>
-                        </div>
-                        <div className="p-2">
-                          <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-[var(--brand-navy)] transition-colors">
-                            <LayoutDashboard className="w-4 h-4" /> Dashboard
-                          </Link>
-                        </div>
-                        <div className="p-2 border-t border-slate-100">
-                          <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-rose-600 hover:bg-rose-50 transition-colors">
-                            <LogOut className="w-4 h-4" /> Sign Out
-                          </button>
-                        </div>
-                      </motion.div>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-['Inter:Bold',sans-serif] text-sm overflow-hidden ${
+                    shouldElevate ? 'bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-navy-hover)] text-white' : 'bg-white text-[var(--brand-navy)]'
+                  }`}>
+                    {profilePic ? (
+                      <img src={profilePic.startsWith('http') ? profilePic : `${import.meta.env.VITE_API_BASE_URL || "https://forsa-app.runasp.net"}${profilePic.startsWith('/') ? '' : '/'}${profilePic}`} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      userName.charAt(0)
                     )}
-                  </AnimatePresence>
-                </div>
-              </>
+                  </div>
+                  <span className={`text-sm font-['Inter:Medium',sans-serif] ${shouldElevate ? 'text-slate-700' : 'text-white'}`}>
+                    {userName}
+                  </span>
+                </button>
+
+                <AnimatePresence>
+                  {userMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 top-full z-50 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
+                    >
+                      <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                        <p className="font-['Inter:Bold',sans-serif] text-slate-800">{userName}</p>
+                        <p className="text-xs font-['Inter:Medium',sans-serif] text-slate-500 truncate">{userEmail}</p>
+                      </div>
+                      <div className="p-2">
+                        <Link to={dashboardPath} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-[var(--brand-navy)] transition-colors">
+                          <LayoutDashboard className="w-4 h-4" /> Dashboard
+                        </Link>
+                      </div>
+                      <div className="p-2 border-t border-slate-100">
+                        <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-rose-600 hover:bg-rose-50 transition-colors">
+                          <LogOut className="w-4 h-4" /> Sign Out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             ) : (
               <Link
                 to="/login"
@@ -191,17 +190,7 @@ export function Navigation() {
           </div>
 
           <div className="md:hidden flex items-center gap-4">
-            {isLoggedIn && (
-              <Link 
-                to="/notifications" 
-                className={`relative p-2 rounded-full transition-colors ${
-                  shouldElevate ? 'text-slate-500' : 'text-white'
-                }`}
-              >
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white shadow-sm"></span>
-              </Link>
-            )}
+
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -236,7 +225,7 @@ export function Navigation() {
                 {isLoggedIn ? (
                   <>
                     <div className="my-2 border-t border-slate-100"></div>
-                    <Link to="/dashboard" className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50">
+                    <Link to={dashboardPath} className="flex items-center gap-3 rounded-xl px-4 py-3 font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50">
                       <LayoutDashboard className="w-5 h-5" /> Dashboard
                     </Link>
 

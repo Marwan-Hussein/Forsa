@@ -1,4 +1,4 @@
-﻿using Domain.Entities.BookingEntities;
+using Domain.Entities.BookingEntities;
 using Domain.Entities.EventEntities;
 using Domain.Interfaces.BookingInterfaces;
 using Infrastructure.Data.DbContexts;
@@ -17,10 +17,11 @@ namespace Infrastructure.Repositories.BookingRepos
         public async Task<List<Booking>> GetBookingsByUserIdAsync(string userId)
         {
             var bookings = await _context.Set<Booking>()
+                .Include(b => b.Event)
                 .Where(b => b.AttendeeId.ToString() == userId)
                 .OrderByDescending(b => b.BookingDate)
-                .Take(3).
-                ToListAsync();
+                .Take(3)
+                .ToListAsync();
 
             if (bookings == null || !bookings.Any())
                 throw new KeyNotFoundException($"No bookings found for user with ID '{userId}'.");

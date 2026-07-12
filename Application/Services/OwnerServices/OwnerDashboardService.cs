@@ -7,6 +7,8 @@ using Domain.ENUMs;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
+using Domain.Entities.PaymentEntities;
+
 namespace Application.Services.OwnerServices
 {
     public class OwnerDashboardService : IOwnerDashboardService
@@ -14,15 +16,21 @@ namespace Application.Services.OwnerServices
         private readonly IPlaceRepository _placeRepo;
         private readonly IQueryableRepository<BookingRequest> _bookingRequestRepo;
         private readonly IFeedbackRepository _feedbackRepo;
+        private readonly IQueryableRepository<PaymentTransaction> _transactionRepo;
+        private readonly IQueryableRepository<WalletBalance> _walletRepo;
 
         public OwnerDashboardService(
             IPlaceRepository placeRepo,
             IQueryableRepository<BookingRequest> bookingRequestRepo,
-            IFeedbackRepository feedbackRepo)
+            IFeedbackRepository feedbackRepo,
+            IQueryableRepository<PaymentTransaction> transactionRepo,
+            IQueryableRepository<WalletBalance> walletRepo)
         {
             _placeRepo = placeRepo;
             _bookingRequestRepo = bookingRequestRepo;
             _feedbackRepo = feedbackRepo;
+            _transactionRepo = transactionRepo;
+            _walletRepo = walletRepo;
         }
 
         public async Task<OwnerDashboardDto> GetOwnerDashboardStatsAsync(int ownerId)
@@ -44,11 +52,13 @@ namespace Application.Services.OwnerServices
             var pendingRequests = bookingRequests.Count(r => r.Status == RequestStatus.Pending);
             var confirmedRequests = bookingRequests.Count(r => r.Status == RequestStatus.Accepted);
 
-            // 3. Earnings Calculation (Accepted requests * Place DailyPrice)
-            // Assuming the booking is for 1 day for simplicity (RequestedDate)
-            decimal totalEarnings = bookingRequests
-                .Where(br => br.Status == RequestStatus.Accepted)
-                .Sum(br => br.Place.DailyPrice);
+            // 3. Earnings Calculation (Based on completed PaymentTransactions for this owner's place booking requests)
+            var ownerBookingRequestIds = bookingRequests.Select(br => br.Id).ToList();
+            decimal totalEarnings = await _transactionRepo.GetQueryable()
+                .Where(t => t.ItemType == "PlaceBooking" 
+                            && ownerBookingRequestIds.Contains(t.ReferenceId) 
+                            && t.TransactionStatus == TransactionStatus.Completed)
+                .SumAsync(t => t.Amount);
 
             // 4. Rating Calculation
             var feedbacks = await _feedbackRepo.GetAllAsync();
@@ -56,6 +66,10 @@ namespace Application.Services.OwnerServices
             var averageRating = ownerFeedbacks.Any() 
                 ? ownerFeedbacks.Average(f => (double)f.Rating) 
                 : 0.0;
+
+            // 5. Available Balance
+            var wallet = await _walletRepo.GetQueryable().FirstOrDefaultAsync(w => w.UserId == ownerId);
+            var availableBalance = wallet?.AvailableBalance ?? 0m;
 
             return new OwnerDashboardDto
             {
@@ -66,6 +80,7 @@ namespace Application.Services.OwnerServices
                 PendingRequests = pendingRequests,
                 ConfirmedRequests = confirmedRequests,
                 TotalEarnings = totalEarnings,
+                AvailableBalance = availableBalance,
                 AverageRating = Math.Round(averageRating, 1)
             };
         }

@@ -40,4 +40,11 @@
     <ProjectReference Include="..\Domain\Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="signalrdatabasenotifications\**\*.cs" />
+    <Content Remove="signalrdatabasenotifications\**\*" />
+    <EmbeddedResource Remove="signalrdatabasenotifications\**\*" />
+    <None Remove="signalrdatabasenotifications\**\*" />
+  </ItemGroup>
+
 </Project>

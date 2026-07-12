@@ -23,7 +23,7 @@ namespace Application.Services.EventServices
         private readonly IWebHostEnvironment _env;
 
         // Allowed extensions & size limits
-        private static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+        private static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".jfif" };
         private const long MaxImageSizeBytes = 5 * 1024 * 1024;    // 5 MB
 
         public EventMediaService(
@@ -49,6 +49,25 @@ namespace Application.Services.EventServices
             
             if (ev == null)
                 throw new KeyNotFoundException("Event not found or you don't own this event.");
+
+            // Clear existing active media for this event (since we are replacing/setting the cover image)
+            var existingMedia = await _mediaRepo.GetQueryable()
+                .Where(m => m.EventId == eventId && !m.IsDeleted)
+                .ToListAsync();
+
+            foreach (var oldMedia in existingMedia)
+            {
+                oldMedia.IsDeleted = true;
+                oldMedia.DeletedAt = DateTime.UtcNow;
+                _mediaRepo.Update(oldMedia);
+
+                // Delete physical file
+                if (!string.IsNullOrEmpty(oldMedia.MediaUrl))
+                {
+                    var physicalPath = Path.Combine(_env.WebRootPath ?? "wwwroot", oldMedia.MediaUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(physicalPath)) System.IO.File.Delete(physicalPath);
+                }
+            }
 
             var uploadedMedia = new List<EventMedia>();
 

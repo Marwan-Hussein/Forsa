@@ -222,6 +222,11 @@
     font-size: var(--text-base);
     font-weight: var(--font-weight-medium);
     line-height: 1.5;
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
   }
 
   input {
@@ -229,4 +234,35 @@
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
   }
+}
+
+[data-sonner-toast] [data-description] {
+  color: var(--muted-foreground) !important;
+}
+[data-sonner-toast] [data-title] {
+  color: var(--popover-foreground) !important;
+}
+
+/* Hide native browser password reveal eye icons */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
+}
+
+/* Remove default today/default day background circle highlight from react-day-picker */
+.rdp-day_today:not(.rdp-day_selected) {
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+}
+
+/* Custom selection styling for better visibility in input fields */
+input::selection, textarea::selection {
+  background-color: rgba(59, 130, 246, 0.5) !important;
+  color: #ffffff !important;
+}
+
+::selection {
+  background-color: rgba(59, 130, 246, 0.4) !important;
+  color: #ffffff !important;
 }

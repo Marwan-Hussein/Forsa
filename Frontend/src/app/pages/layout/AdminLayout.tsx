@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router";
+import { NavLink, Outlet, useNavigate, Link } from "react-router";
 import { 
   LayoutDashboard, 
   Users, 
@@ -8,12 +8,15 @@ import {
   Bell, 
   Settings,
   Menu,
-  X
+  X,
+  Home
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ForSaLogo } from "../../components/ForSaLogo";
 import { motion } from "motion/react";
 import { Toaster } from "sonner";
+import { NotificationBell } from "../../components/NotificationBell";
+import { AiChatbot } from "../../components/AiChatbot";
 
 function parseJwt(token: string) {
   try {
@@ -32,12 +35,16 @@ function parseJwt(token: string) {
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [userName, setUserName] = useState("Admin");
+  const [userEmail, setUserEmail] = useState("");
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("forsa_token");
     if (!token) {
-      navigate("/admin/login", { replace: true });
+      navigate("/login", { replace: true });
       return;
     }
 
@@ -45,8 +52,23 @@ export default function AdminLayout() {
     const roleClaim = decoded?.role || decoded?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
     
     if (roleClaim !== "Admin") {
-      navigate("/admin/login", { replace: true });
+      navigate("/login", { replace: true });
     }
+
+    // Populate user info from localStorage
+    const name = localStorage.getItem("forsa_user_name") || "Admin";
+    const email = localStorage.getItem("forsa_user_email") || "";
+    setUserName(name);
+    setUserEmail(email);
+
+    // Outside click detection
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [navigate]);
 
   const handleLogout = () => {
@@ -55,7 +77,7 @@ export default function AdminLayout() {
     localStorage.removeItem("forsa_user_name");
     localStorage.removeItem("forsa_user_email");
     localStorage.removeItem("role");
-    navigate("/admin/login");
+    navigate("/login");
   };
 
   const navItems = [
@@ -98,9 +120,12 @@ export default function AdminLayout() {
         </div>
 
         <div className="h-20 flex items-center justify-between px-6 border-b border-white/10 relative z-10">
-          <div className="flex items-center gap-3">
-            <ForSaLogo className="h-8 brightness-0 invert" />
-            <span className="font-['Inter:Bold',sans-serif] font-bold text-xl tracking-wide text-white">Admin Portal</span>
+          <div className="flex items-center gap-3.5">
+            <Link to="/">
+              <ForSaLogo className="h-9 brightness-0 invert cursor-pointer hover:opacity-90 transition-opacity" />
+            </Link>
+            <div className="h-6 w-[1px] bg-white/20 self-center" />
+            <span className="text-lg font-bold tracking-wide text-white whitespace-nowrap">Admin Portal</span>
           </div>
           <button className="lg:hidden text-slate-400 hover:text-white transition-colors" onClick={() => setSidebarOpen(false)}>
             <X className="w-6 h-6" />
@@ -141,16 +166,6 @@ export default function AdminLayout() {
             </NavLink>
           ))}
         </nav>
-
-        <div className="p-4 border-t border-white/10 relative z-10 bg-[var(--brand-deep-navy)]/50 backdrop-blur-md">
-          <button 
-            onClick={handleLogout}
-            className="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-300 font-['Inter:Medium',sans-serif]"
-          >
-            <LogOut className="w-5 h-5" />
-            <span>Logout</span>
-          </button>
-        </div>
       </aside>
 
       {/* Main Content Area */}
@@ -167,16 +182,48 @@ export default function AdminLayout() {
             </div>
           </div>
           
-          <div className="flex items-center gap-3 sm:gap-5">
-            <button className="relative p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
+          <div className="flex items-center gap-3 sm:gap-5 relative">
+            <NotificationBell />
             <button className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all hidden sm:block">
               <Settings className="w-5 h-5" />
             </button>
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[var(--brand-deep-navy)] to-[var(--brand-navy)] flex items-center justify-center text-white font-bold border-2 border-white shadow-md ml-2 cursor-pointer hover:scale-105 transition-transform">
-              A
+            
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="h-10 w-10 rounded-full bg-gradient-to-br from-[var(--brand-deep-navy)] to-[var(--brand-navy)] flex items-center justify-center text-white font-bold border-2 border-white shadow-md cursor-pointer hover:scale-105 transition-transform overflow-hidden"
+              >
+                {userName.charAt(0).toUpperCase()}
+              </button>
+              
+              {userMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-3 duration-200">
+                  <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                    <p className="font-['Inter:Bold',sans-serif] font-bold text-slate-800 text-sm">{userName}</p>
+                    <p className="text-xs font-['Inter:Medium',sans-serif] text-slate-500 truncate">{userEmail}</p>
+                  </div>
+                  <div className="p-2">
+                    <Link 
+                      to="/" 
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
+                    >
+                      <Home className="w-4 h-4" /> Back to Home
+                    </Link>
+                  </div>
+                  <div className="p-2 border-t border-slate-100">
+                    <button 
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        handleLogout();
+                      }} 
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-['Inter:Medium',sans-serif] text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-left"
+                    >
+                      <LogOut className="w-4 h-4" /> Logout
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </header>
@@ -188,6 +235,7 @@ export default function AdminLayout() {
           </div>
         </div>
       </main>
+      <AiChatbot />
     </div>
   );
 }

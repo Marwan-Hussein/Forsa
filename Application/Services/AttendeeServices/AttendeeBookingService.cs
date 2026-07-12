@@ -4,6 +4,7 @@ using AutoMapper;
 using Domain.Entities.BookingEntities;
 using Domain.ENUMs;
 using Domain.Interfaces;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.AttendeeServices
@@ -11,11 +12,13 @@ namespace Application.Services.AttendeeServices
     public class AttendeeBookingService : IAttendeeBookingService
     {
         private readonly IQueryableRepository<Booking> _bookingRepo;
+        private readonly IFeedbackRepository _feedbackRepo;
         private readonly IMapper _mapper;
 
-        public AttendeeBookingService(IQueryableRepository<Booking> bookingRepo, IMapper mapper)
+        public AttendeeBookingService(IQueryableRepository<Booking> bookingRepo, IFeedbackRepository feedbackRepo, IMapper mapper)
         {
             _bookingRepo = bookingRepo;
+            _feedbackRepo = feedbackRepo;
             _mapper = mapper;
         }
 
@@ -29,7 +32,20 @@ namespace Application.Services.AttendeeServices
                 .OrderByDescending(b => b.BookingDate)
                 .ToListAsync();
 
-            return _mapper.Map<List<AttendeeBookingDto>>(bookings);
+            var dtos = _mapper.Map<List<AttendeeBookingDto>>(bookings);
+
+            var eventIdsWithFeedback = await _feedbackRepo.GetQueryable()
+                .Where(f => f.AttendeeId == attendeeId && !f.IsDeleted && f.EventId != null)
+                .Select(f => f.EventId.Value)
+                .Distinct()
+                .ToListAsync();
+
+            foreach (var dto in dtos)
+            {
+                dto.HasSubmittedFeedback = eventIdsWithFeedback.Contains(dto.EventId);
+            }
+
+            return dtos;
         }
 
         public async Task<List<AttendeeBookingDto>> GetAttendedEventsAsync(int attendeeId)
@@ -42,7 +58,20 @@ namespace Application.Services.AttendeeServices
                 .OrderByDescending(b => b.Event.EndDate)
                 .ToListAsync();
 
-            return _mapper.Map<List<AttendeeBookingDto>>(bookings);
+            var dtos = _mapper.Map<List<AttendeeBookingDto>>(bookings);
+
+            var eventIdsWithFeedback = await _feedbackRepo.GetQueryable()
+                .Where(f => f.AttendeeId == attendeeId && !f.IsDeleted && f.EventId != null)
+                .Select(f => f.EventId.Value)
+                .Distinct()
+                .ToListAsync();
+
+            foreach (var dto in dtos)
+            {
+                dto.HasSubmittedFeedback = eventIdsWithFeedback.Contains(dto.EventId);
+            }
+
+            return dtos;
         }
 
         public async Task<List<AttendeeCalendarDto>> GetCalendarAsync(int attendeeId, DateTime? from, DateTime? to)

@@ -248,7 +248,7 @@ export default function BookingRequestsPage() {
                       <h3 className="font-['Inter:Bold',sans-serif] font-bold text-slate-800 text-lg truncate">{request.attendeeName}</h3>
                       <span className={`px-3 py-1 rounded-full text-xs font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider ${
                         displayStatus === 'pending' ? 'bg-amber-50 text-amber-600 border border-amber-200' :
-                        displayStatus === 'approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' :
+                        (displayStatus === 'approved' || displayStatus === 'attended') ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' :
                         'bg-rose-50 text-rose-600 border border-rose-200'
                       }`}>
                         {displayStatus}
@@ -268,22 +268,13 @@ export default function BookingRequestsPage() {
 
                   <div className="flex items-center gap-2 shrink-0">
                     {displayStatus === 'pending' && (
-                      <>
-                        <button 
-                          onClick={() => handleApprove(request.id)}
-                          className="p-3 text-emerald-600 bg-emerald-50 hover:bg-emerald-500 hover:text-white rounded-xl transition-all shadow-sm tooltip-trigger"
-                          title="Approve"
-                        >
-                          <CheckCircle className="w-5 h-5" />
-                        </button>
-                        <button 
-                          onClick={() => handleReject(request.id)}
-                          className="p-3 text-rose-600 bg-rose-50 hover:bg-rose-500 hover:text-white rounded-xl transition-all shadow-sm tooltip-trigger"
-                          title="Reject"
-                        >
-                          <XCircle className="w-5 h-5" />
-                        </button>
-                      </>
+                      <button 
+                        onClick={() => handleReject(request.id)}
+                        className="p-3 text-rose-600 bg-rose-50 hover:bg-rose-500 hover:text-white rounded-xl transition-all shadow-sm tooltip-trigger"
+                        title="Reject"
+                      >
+                        <XCircle className="w-5 h-5" />
+                      </button>
                     )}
                     <button 
                       onClick={() => setSelectedRequest(request)}
@@ -309,7 +300,7 @@ export default function BookingRequestsPage() {
 
       {/* Details Modal */}
       {selectedRequest && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-6 z-[60] cursor-pointer" onClick={() => setSelectedRequest(null)}>
+        <div className="fixed inset-0 bg-slate-900/80 flex items-center justify-center p-6 z-[60] cursor-pointer" onClick={() => setSelectedRequest(null)}>
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -337,7 +328,7 @@ export default function BookingRequestsPage() {
                     <h3 className="text-xl font-['Inter:Bold',sans-serif] font-bold text-slate-800">{selectedRequest.attendeeName}</h3>
                     <span className={`inline-block mt-1 px-3 py-1 rounded-full text-[11px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider ${
                       mapStatusForDisplay(selectedRequest.status) === 'pending' ? 'bg-amber-50 text-amber-600 border border-amber-200' :
-                      mapStatusForDisplay(selectedRequest.status) === 'approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' :
+                      (mapStatusForDisplay(selectedRequest.status) === 'approved' || mapStatusForDisplay(selectedRequest.status) === 'attended') ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' :
                       'bg-rose-50 text-rose-600 border border-rose-200'
                     }`}>
                       {mapStatusForDisplay(selectedRequest.status)}
@@ -383,20 +374,10 @@ export default function BookingRequestsPage() {
               <div className="p-6 border-t border-slate-100 flex gap-4 shrink-0 bg-slate-50/50">
                 <button
                   onClick={() => {
-                    handleApprove(selectedRequest.id);
-                    setSelectedRequest(null);
-                  }}
-                  className="flex-1 px-6 py-3.5 bg-emerald-500 text-white font-['Inter:Bold',sans-serif] font-bold rounded-xl hover:bg-emerald-600 transition-all shadow-md hover:shadow-emerald-500/30 hover:-translate-y-0.5 flex items-center justify-center gap-2"
-                >
-                  <CheckCircle className="w-5 h-5" />
-                  Approve Request
-                </button>
-                <button
-                  onClick={() => {
                     handleReject(selectedRequest.id);
                     setSelectedRequest(null);
                   }}
-                  className="flex-1 px-6 py-3.5 bg-rose-500 text-white font-['Inter:Bold',sans-serif] font-bold rounded-xl hover:bg-rose-600 transition-all shadow-md hover:shadow-rose-500/30 hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                  className="w-full px-6 py-3.5 bg-rose-500 text-white font-['Inter:Bold',sans-serif] font-bold rounded-xl hover:bg-rose-600 transition-all shadow-md hover:shadow-rose-500/30 hover:-translate-y-0.5 flex items-center justify-center gap-2"
                 >
                   <XCircle className="w-5 h-5" />
                   Reject Request
@@ -409,7 +390,7 @@ export default function BookingRequestsPage() {
       {/* Rejection Modal */}
       <AnimatePresence>
         {rejectingRequestId !== null && (
-          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-6 z-[70]">
+          <div className="fixed inset-0 bg-slate-900/80 flex items-center justify-center p-6 z-[70]">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}

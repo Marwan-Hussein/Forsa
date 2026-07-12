@@ -6,6 +6,7 @@ export interface OrganizerDashboardStats {
   pendingEvents: number;
   totalTicketsSold: number;
   totalRevenue: number;
+  availableBalance: number;
   totalPlacesBooked: number;
 }
 
@@ -31,6 +32,7 @@ export interface CreateEventDto {
   endDate: string;
   ticketPrice: number;
   totalTickets: number;
+  customLocation?: string;
 }
 
 export interface UpdateEventDto {
@@ -41,6 +43,7 @@ export interface UpdateEventDto {
   endDate: string;
   ticketPrice: number;
   totalTickets: number;
+  customLocation?: string;
 }
 
 export interface BookingRequestDto {
@@ -68,7 +71,7 @@ export const organizerApi = {
     formData.append('organizerId', organizerId.toString());
     formData.append('files', file);
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('forsa_token');
     const response = await fetch(`/api/organizers/events/${eventId}/media`, {
       method: 'POST',
       headers: {
@@ -105,6 +108,10 @@ export const organizerApi = {
     return await apiDelete(`/api/organizers/booking-requests/${requestId}`);
   },
 
+  releasePlaceBookingSlot: async (requestId: number): Promise<any> => {
+    return await apiPost(`/api/organizers/bookings/${requestId}/release`, {});
+  },
+
   getEventDetails: async (eventId: number): Promise<any> => {
     return await apiGet(`/api/events/${eventId}/details`);
   },
@@ -133,6 +140,10 @@ export const organizerApi = {
     return await apiPost(`/api/organizers/bookings/${bookingId}/check-in`, {});
   },
 
+  undoCheckIn: async (bookingId: number): Promise<void> => {
+    return await apiPost(`/api/organizers/bookings/${bookingId}/undo-check-in`, {});
+  },
+
   getProfile: async (id: number): Promise<any> => {
     return await apiGet(`/api/organizers/${id}/profile`);
   },
@@ -156,5 +167,26 @@ export const organizerApi = {
     if (!response.ok) throw new Error("Failed to upload image");
     const data = await response.json();
     return data.url;
+  },
+  deleteProfilePicture: async (id: number): Promise<void> => {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+    const token = localStorage.getItem("forsa_token");
+    const response = await fetch(`${baseUrl}/api/organizers/${id}/profile-picture`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error("Failed to remove profile picture");
+  },
+
+  processPlaceCheckout: async (requestId: number): Promise<any> => {
+    return await apiPost(`/api/organizers/booking-requests/${requestId}/checkout`, {});
+  },
+
+  submitPlaceFeedback: async (organizerId: number, placeId: number, eventId: number, rating: number, comment: string): Promise<any> => {
+    return await apiPost(`/api/organizers/${organizerId}/places/${placeId}/events/${eventId}/feedback`, { rating, comment });
+  },
+
+  getOrganizerReviews: async (organizerId: number): Promise<any[]> => {
+    return await apiGet(`/api/organizers/${organizerId}/reviews`);
   }
 };

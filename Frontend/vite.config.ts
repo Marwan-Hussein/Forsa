@@ -20,12 +20,12 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://localhost:7001',
+        target: 'https://forsa-app.runasp.net/',
         changeOrigin: true,
         secure: false,
       },
       '/uploads': {
-        target: 'http://localhost:5000',
+        target: 'https://forsa-app.runasp.net/',
         changeOrigin: true,
         secure: false,
       }

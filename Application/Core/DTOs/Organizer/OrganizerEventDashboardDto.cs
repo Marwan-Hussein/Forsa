@@ -7,8 +7,13 @@ namespace Application.Core.DTOs.Organizer
         public string Status { get; set; }
         public int TotalTickets { get; set; }
         public int RemainingTickets { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
         public int BookedTickets => TotalTickets - RemainingTickets;
         public double OccupancyPercentage => TotalTickets > 0
             ? Math.Round((double)BookedTickets / TotalTickets * 100, 1) : 0;
+        public int? PlaceId { get; set; }
+        public string? PlaceName { get; set; }
+        public bool HasReviewedPlace { get; set; }
     }
 }

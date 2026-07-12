@@ -12,5 +12,6 @@ namespace Application.Core.DTOs.Place
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }
         public string? GooglePlaceId { get; set; }
+        public string? AvailableDays { get; set; }
     }
 }

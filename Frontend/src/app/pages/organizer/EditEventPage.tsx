@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Link } from "react-router";
-import { ArrowLeft, Calendar, Tag, FileText, Ticket, DollarSign, LayoutList, RefreshCw, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Calendar, Tag, FileText, Ticket, DollarSign, LayoutList, RefreshCw, Image as ImageIcon, MapPin, AlertCircle } from "lucide-react";
 import { motion } from "motion/react";
 import { organizerApi } from "../../api/organizerApi";
 import { getUserIdFromToken } from "../../api/api";
@@ -14,6 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
+import MapPicker from "../../components/map/MapPicker";
+import { cn } from "../../components/ui/utils";
+import { parseBackendDate } from "../../utils/mappers";
 
 export default function EditEventPage() {
   const navigate = useNavigate();
@@ -25,11 +28,23 @@ export default function EditEventPage() {
     description: "",
     category: "",
     ticketPrice: "",
-    totalTickets: ""
+    totalTickets: "",
+    customLocation: ""
   });
+  const [hasOwnPlace, setHasOwnPlace] = useState(false);
+  const [mapLatitude, setMapLatitude] = useState<number | null>(null);
+  const [mapLongitude, setMapLongitude] = useState<number | null>(null);
+  const [hasPlaceId, setHasPlaceId] = useState(false);
+  const [eventPlaceName, setEventPlaceName] = useState("");
+  const [eventPlaceLocation, setEventPlaceLocation] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [originalStartDate, setOriginalStartDate] = useState<Date | undefined>(undefined); // saved event start — used for lock logic
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [eventStatus, setEventStatus] = useState("");
+  const [bookedTicketsCount, setBookedTicketsCount] = useState(0);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -40,10 +55,29 @@ export default function EditEventPage() {
           description: data.description || "",
           category: data.category || "",
           ticketPrice: data.ticketPrice?.toString() || "",
-          totalTickets: data.totalTickets?.toString() || ""
+          totalTickets: data.totalTickets?.toString() || "",
+          customLocation: data.customLocation || ""
         });
-        if (data.startDate) setStartDate(new Date(data.startDate));
-        if (data.endDate) setEndDate(new Date(data.endDate));
+        setEventStatus(data.status || "");
+        
+        const booked = data.bookedTickets ?? ((data.totalTickets || 0) - (data.remainingTickets || 0));
+        setBookedTicketsCount(booked);
+
+        if (data.startDate) {
+          const parsed = parseBackendDate(data.startDate);
+          setStartDate(parsed);
+          setOriginalStartDate(parsed);
+        }
+        if (data.endDate) setEndDate(parseBackendDate(data.endDate));
+        if (data.imageUrl) setExistingImageUrl(data.imageUrl);
+        if (data.placeId) {
+          setHasPlaceId(true);
+          setEventPlaceName(data.place || "Booked Venue");
+          setEventPlaceLocation(data.placeLocation || "");
+        } else {
+          setHasPlaceId(false);
+          setHasOwnPlace(!!data.customLocation);
+        }
       } catch (err: any) {
         toast.error("Failed to load event details: " + err.message);
         navigate("/organizer/events");
@@ -55,9 +89,16 @@ export default function EditEventPage() {
   }, [eventId, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    let cleanedValue = value;
+    if (name === "ticketPrice" || name === "totalTickets") {
+      if (value.startsWith("0") && value.length > 1 && value[1] !== ".") {
+        cleanedValue = value.replace(/^0+/, "");
+      }
+    }
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: cleanedValue
     }));
   };
 
@@ -67,9 +108,19 @@ export default function EditEventPage() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setImageFile(file);
+      setImagePreviewUrl(URL.createObjectURL(file));
     }
   };
+
+  // Lock is based on the ORIGINAL saved event start date — not the form's current value.
+  // This prevents a form entry mistake from immediately locking all fields.
+  const isWithin24HoursOrDone = eventStatus.toLowerCase() === "completed" ||
+    (originalStartDate && (originalStartDate.getTime() - new Date().getTime()) < 24 * 60 * 60 * 1000);
+  const isTicketPriceDisabled = isWithin24HoursOrDone || bookedTicketsCount > 0;
+  const isLocationDisabled = !!isWithin24HoursOrDone;
+  const isStartedOrCompleted = isWithin24HoursOrDone; // kept for date pickers
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,14 +143,21 @@ export default function EditEventPage() {
     setIsSubmitting(true);
 
     try {
+      // Serialize as local datetime (no UTC conversion) so the server stores the time the user actually intended.
+      const toLocalISOString = (d: Date) => {
+        const pad = (n: number) => String(n).padStart(2, "0");
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      };
+
       const dto = {
         title: formData.title,
         description: formData.description,
         category: formData.category,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
+        startDate: toLocalISOString(startDate),
+        endDate: toLocalISOString(endDate),
         ticketPrice: parseFloat(formData.ticketPrice),
-        totalTickets: parseInt(formData.totalTickets, 10)
+        totalTickets: parseInt(formData.totalTickets, 10),
+        customLocation: hasPlaceId ? undefined : (hasOwnPlace ? formData.customLocation : undefined)
       };
 
       await organizerApi.updateEventDetails(Number(eventId), dto);
@@ -147,6 +205,20 @@ export default function EditEventPage() {
           <p className="text-slate-500 font-['Inter:Medium',sans-serif] mt-1">Update the details of your event.</p>
         </div>
       </div>
+
+      {eventStatus.toLowerCase() === "draft" && !hasPlaceId && !formData.customLocation && (
+        <div className="bg-amber-50 border-l-4 border-amber-500 p-5 rounded-2xl flex items-start gap-3.5 shadow-sm mb-6">
+          <AlertCircle className="w-5.5 h-5.5 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-bold text-amber-800 font-['Inter:Bold',sans-serif]">
+              Action Required: Missing Event Location
+            </p>
+            <p className="text-xs text-amber-700 font-['Inter:Medium',sans-serif] mt-1 leading-relaxed">
+              This event cannot be submitted for approval yet. Please reserve a venue or provide a custom location before submitting it for admin approval and publishing.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white/90 backdrop-blur-sm rounded-[2rem] shadow-xl shadow-slate-200/40 border border-white p-6 md:p-10 relative overflow-hidden">
         <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-indigo-500 opacity-[0.03] blur-3xl rounded-full pointer-events-none" />
@@ -211,8 +283,29 @@ export default function EditEventPage() {
           <div className="space-y-2">
             <label className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700 flex items-center gap-2">
               <ImageIcon className="w-4 h-4 text-indigo-500" />
-              Add/Replace Cover Image
+              Event Cover Image
             </label>
+            
+            {(imagePreviewUrl || existingImageUrl) ? (
+              <div className="relative w-full max-w-md h-52 rounded-2xl overflow-hidden border border-slate-200 group shadow-sm bg-slate-50 mb-3">
+                <img 
+                  src={imagePreviewUrl || existingImageUrl || ""} 
+                  alt="Event Cover" 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent flex items-end p-4">
+                  <span className="bg-white/90 backdrop-blur-md text-slate-800 text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-sm border border-white/20">
+                    {imagePreviewUrl ? "New Preview" : "Current Cover Image"}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl p-6 bg-slate-50/50 text-slate-400 mb-3">
+                <ImageIcon className="w-10 h-10 mb-2 stroke-[1.5]" />
+                <span className="text-xs font-semibold">No cover image uploaded yet</span>
+              </div>
+            )}
+
             <input 
               type="file" 
               accept="image/*"
@@ -222,7 +315,7 @@ export default function EditEventPage() {
             {imageFile && (
               <p className="text-sm text-green-600 font-medium">Selected: {imageFile.name}</p>
             )}
-            <p className="text-xs text-slate-500 mt-1">Uploading a new image will replace the current cover image (if any).</p>
+            <p className="text-xs text-slate-500 mt-1">Uploading a new image will replace the current cover image.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -231,16 +324,113 @@ export default function EditEventPage() {
                 <Calendar className="w-4 h-4 text-indigo-500" />
                 Start Date & Time
               </label>
-              <DateTimePicker date={startDate} setDate={setStartDate} />
+              <DateTimePicker date={startDate} setDate={setStartDate} disabled={isStartedOrCompleted} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-indigo-500" />
                 End Date & Time
               </label>
-              <DateTimePicker date={endDate} setDate={setEndDate} />
+              <DateTimePicker date={endDate} setDate={setEndDate} disabled={isStartedOrCompleted} />
             </div>
           </div>
+
+          {/* Location / Venue Section */}
+          {hasPlaceId ? (
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+              <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider block mb-1 font-['Inter:Bold',sans-serif]">Booked ForSa Venue</span>
+              <p className="font-bold text-slate-800 text-base font-['Inter:Bold',sans-serif]">{eventPlaceName}</p>
+              <p className="text-xs text-slate-500 mt-1 font-['Inter:Regular',sans-serif] flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                {eventPlaceLocation}
+              </p>
+              {isLocationDisabled && (
+                <p className="text-xs text-rose-500 font-semibold mt-2 flex items-center gap-1 font-['Inter:Bold',sans-serif]">
+                  ⚠️ Location is locked because the event starts in less than 24 hours.
+                </p>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700">
+                    Event Venue / Location
+                  </label>
+                  {isLocationDisabled && (
+                    <span className="text-xs text-rose-500 font-bold flex items-center gap-1 font-['Inter:Bold',sans-serif]">
+                      {"⚠️ Location locked (< 24h to start)"}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    type="button"
+                    disabled={isLocationDisabled}
+                    onClick={() => setHasOwnPlace(false)}
+                    className={`flex-1 p-5 rounded-2xl border-2 text-left flex flex-col gap-2 transition-all ${!hasOwnPlace ? 'border-indigo-500 bg-indigo-50/10' : 'border-slate-200 hover:border-slate-300'} ${isLocationDisabled ? 'opacity-65 cursor-not-allowed bg-slate-50' : ''}`}
+                  >
+                    <span className="font-bold text-slate-800 text-sm font-['Inter:Bold',sans-serif]">Book a Registered ForSa Venue</span>
+                    <span className="text-xs text-slate-500 leading-relaxed font-['Inter:Regular',sans-serif]">Submit a booking request to one of our premium venue owners. The event will remain a draft until booking is paid.</span>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isLocationDisabled}
+                    onClick={() => setHasOwnPlace(true)}
+                    className={`flex-1 p-5 rounded-2xl border-2 text-left flex flex-col gap-2 transition-all ${hasOwnPlace ? 'border-indigo-500 bg-indigo-50/10' : 'border-slate-200 hover:border-slate-300'} ${isLocationDisabled ? 'opacity-65 cursor-not-allowed bg-slate-50' : ''}`}
+                  >
+                    <span className="font-bold text-slate-800 text-sm font-['Inter:Bold',sans-serif]">Use My Own Venue / Location</span>
+                    <span className="text-xs text-slate-500 leading-relaxed font-['Inter:Regular',sans-serif]">Specify your own address directly. The event will be published immediately on creation.</span>
+                  </button>
+                </div>
+              </div>
+
+              {hasOwnPlace && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-indigo-500" />
+                      Custom Location Address
+                    </label>
+                    <div className="relative">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                      <input 
+                        type="text" 
+                        name="customLocation"
+                        required
+                        value={formData.customLocation}
+                        onChange={handleChange}
+                        disabled={isLocationDisabled}
+                        placeholder="e.g. 28 Falaki St, Bab Al Louq, Cairo" 
+                        className={cn(
+                          "w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 shadow-sm rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all",
+                          isLocationDisabled && "opacity-60 cursor-not-allowed bg-slate-100"
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className={isLocationDisabled ? "pointer-events-none opacity-60 bg-slate-50 rounded-2xl p-1" : ""}>
+                    <p className="text-xs text-slate-500 mb-2 font-['Inter:Medium',sans-serif]">Pinpoint exact location on map</p>
+                    <MapPicker
+                      address={formData.customLocation}
+                      latitude={mapLatitude}
+                      longitude={mapLongitude}
+                      googlePlaceId={null}
+                      onChange={(data) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          customLocation: data.address
+                        }));
+                        setMapLatitude(data.latitude);
+                        setMapLongitude(data.longitude);
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2">
@@ -255,15 +445,26 @@ export default function EditEventPage() {
                 min="1"
                 value={formData.totalTickets}
                 onChange={handleChange}
+                disabled={isStartedOrCompleted}
                 placeholder="e.g. 500" 
-                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all"
+                className={cn(
+                  "w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all",
+                  isStartedOrCompleted && "opacity-60 cursor-not-allowed bg-slate-100"
+                )}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700 flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-indigo-500" />
-                Ticket Price (EGP)
-              </label>
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-['Inter:Bold',sans-serif] font-bold text-slate-700 flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-indigo-500" />
+                  Ticket Price (EGP)
+                </label>
+                {bookedTicketsCount > 0 && (
+                  <span className="text-[11px] text-amber-600 font-bold font-['Inter:Bold',sans-serif]">
+                    Locked (Tickets Booked)
+                  </span>
+                )}
+              </div>
               <input 
                 type="number" 
                 name="ticketPrice"
@@ -272,8 +473,12 @@ export default function EditEventPage() {
                 step="0.01"
                 value={formData.ticketPrice}
                 onChange={handleChange}
+                disabled={isTicketPriceDisabled}
                 placeholder="e.g. 250" 
-                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all"
+                className={cn(
+                  "w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 font-['Inter:Medium',sans-serif] text-slate-700 transition-all",
+                  isTicketPriceDisabled && "opacity-60 cursor-not-allowed bg-slate-100"
+                )}
               />
             </div>
           </div>

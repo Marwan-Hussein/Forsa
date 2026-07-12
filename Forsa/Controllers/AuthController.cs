@@ -101,6 +101,14 @@ namespace Forsa.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+            catch (Exception ex) when (ex.Message.Contains("verified"))
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex) when (ex.Message.Contains("User not found."))
+            {
+                return BadRequest(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "An error occurred while resending OTP.", detail = ex.Message });
@@ -137,11 +145,14 @@ namespace Forsa.Controllers
 
 
         [HttpGet("external-login")]
-        public IActionResult ExternalLogin(string provider, string role = "Attendee")
+        public IActionResult ExternalLogin(string provider, string? role = null)
         {
             var redirectUrl = Url.Action(nameof(ExternalCallBack), "Auth");
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
-            properties.Items["requestedRole"] = role;
+            if (role != null)
+            {
+                properties.Items["requestedRole"] = role;
+            }
             return Challenge(properties, provider);
         }
 
@@ -156,7 +167,7 @@ namespace Forsa.Controllers
             }
             var requestedRole = info.AuthenticationProperties.Items.ContainsKey("requestedRole")
                         ? info.AuthenticationProperties.Items["requestedRole"]
-                        : "Attendee";
+                        : null;
 
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
             var name = info.Principal.FindFirstValue(ClaimTypes.Name);
@@ -179,10 +190,25 @@ namespace Forsa.Controllers
             var frontEndHost = "https://forsa-app.runasp.net"; // Replace with your actual frontend host 
             if (!result.IsSuccess)
             {
+                if (result.NeedsRoleSelection)
+                {
+                    return Redirect($"https://forsa-app.runasp.net/login?externalRegister=true&provider={Uri.EscapeDataString(result.Provider)}&providerKey={Uri.EscapeDataString(result.ProviderKey)}&email={Uri.EscapeDataString(result.Email)}&name={Uri.EscapeDataString(result.Name ?? "")}");
+                }
                 return Redirect($"https://forsa-app.runasp.net/login?error={Uri.EscapeDataString(result.Message)}");
             }
 
             return Redirect($"https://forsa-app.runasp.net/login?token={result.User.Token}&refreshToken={result.User.RefreshToken}&fullName={Uri.EscapeDataString(result.User.FullName)}&email={Uri.EscapeDataString(result.User.Email)}");
+        }
+
+        [HttpPost("external-register")]
+        public async Task<IActionResult> ExternalRegister([FromBody] ExternalAuthDto request)
+        {
+            var result = await _externalAuth.ProcessExternalLoginAsync(request);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { message = result.Message });
+            }
+            return Ok(result.User);
         }
 
         [HttpPost("refresh-token")]
@@ -218,6 +244,56 @@ namespace Forsa.Controllers
             catch (Exception)
             {
                 return StatusCode(500, "An error occurred while revoking the token");
+            }
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto request)
+        {
+            try
+            {
+                await _authService.ForgotPasswordAsync(request.Email);
+                return Ok(new { message = "OTP verification code sent to your email." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto request)
+        {
+            try
+            {
+                var result = await _authService.ResetPasswordAsync(request);
+                return Ok(new { message = "Password reset successful." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        [HttpPost("change-password")]
+        public async Task<ActionResult<UserDto>> ChangePassword([FromBody] ChangePasswordDto request)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null)
+                {
+                    return Unauthorized(new { message = "User not authenticated." });
+                }
+
+                var userId = int.Parse(userIdClaim.Value);
+                var result = await _authService.ChangePasswordAsync(userId, request);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
     }

@@ -57,6 +57,21 @@ namespace Application.Services
                 transaction.PaymobIntentionId = mockIntentionId;
                 transactionRepo.Update(transaction);
                 await unitOfWork.SaveChangesAsync();
+                // Simulate Paymob webhook in mock mode so database updates immediately
+                var mockPayload = new PaymobWebhookDto
+                {
+                    Type = "TRANSACTION",
+                    Obj = new PaymobWebhookObjDto
+                    {
+                        Id = DateTime.UtcNow.Ticks,
+                        Success = true,
+                        IntentionId = mockIntentionId,
+                        AmountCents = transaction.Amount * 100,
+                        Currency = "EGP"
+                    }
+                };
+                
+                await ProcessPaymentCallbackAsync(mockPayload);
 
                 return new PaymentResponseDto
                 {
@@ -111,6 +126,7 @@ namespace Application.Services
                         IsSuccess = true,
                         Message = "Payment process initiated successfully.",
                         ClientSecret = clientSecret,
+                        PublicKey = configuration["PaymentGateway:PayMob:PublicKey"],
                         BookingId = transaction.ReferenceId
                     };
                 }
@@ -137,12 +153,16 @@ namespace Application.Services
         public async Task<bool> ProcessPaymentCallbackAsync(PaymobWebhookDto webhookPayload)
         {
             // 1. Guard Clauses
-            if (webhookPayload?.Obj == null || string.IsNullOrEmpty(webhookPayload.Obj.IntentionId))
+            if (webhookPayload?.Obj == null)
+                return false;
+
+            var intentionId = webhookPayload.Obj.IntentionId ?? webhookPayload.Obj.PaymentKeyClaims?.NextPaymentIntention;
+            if (string.IsNullOrEmpty(intentionId))
                 return false;
 
             // 2. Fetch transaction
             var transaction = await transactionRepo.GetQueryable()
-                .FirstOrDefaultAsync(t => t.PaymobIntentionId == webhookPayload.Obj.IntentionId);
+                .FirstOrDefaultAsync(t => t.PaymobIntentionId == intentionId);
 
             if (transaction == null) return false;
 
@@ -236,6 +256,15 @@ namespace Application.Services
             {
                 transaction.TransactionStatus = TransactionStatus.Completed;
                 request.Status = RequestStatus.Accepted;
+
+                // Set PlaceId on the event and publish it
+                var ev = await eventRepo.GetQueryable().FirstOrDefaultAsync(e => e.Id == request.EventId);
+                if (ev != null)
+                {
+                    ev.PlaceId = request.PlaceId;
+                    ev.Status = EventStatus.Pending;
+                    eventRepo.Update(ev);
+                }
 
                 if (request.Place != null && request.Place.OwnerId.HasValue)
                 {
@@ -699,7 +728,9 @@ namespace Application.Services
 
                     if (wallet != null)
                     {
-                        wallet.AvailableBalance -= transaction.Amount;
+                        var platformFee = transaction.Amount * 0.10m;
+                        var organizerShare = transaction.Amount - platformFee;
+                        wallet.AvailableBalance -= organizerShare;
                         wallet.LastModifiedAt = DateTime.UtcNow;
                         walletRepo.Update(wallet);
                     }

@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { User, Mail, Phone, MapPin, Calendar, Save, ArrowLeft, Camera, Shield, Bell, Star } from "lucide-react";
+import { User, Mail, Phone, MapPin, Calendar, Save, ArrowLeft, Camera, Shield, Bell, Star, Eye, EyeOff, Trash2, ImagePlus } from "lucide-react";
 import { toast } from "sonner";
-import { ApiError } from "../../api/api";
+import { ApiError, apiPost } from "../../api/api";
 import { attendeeApi } from "../../api/attendeeApi";
 import { AttendeeProfileDto, UpdateAttendeeProfileDto } from "../../types";
 import { getUserIdFromToken } from "../../api/api";
 import { motion } from "motion/react";
+import GoogleCalendarConnect from "../../components/GoogleCalendarConnect";
 
 type ProfileFormData = UpdateAttendeeProfileDto & { userName: string; email: string };
 
@@ -27,13 +28,14 @@ const validationFieldMap: Record<string, keyof ProfileFormData> = {
 };
 
 function mapProfileToForm(profile: AttendeeProfileDto): ProfileFormData {
+  const bDate = profile.birthDate ? profile.birthDate.slice(0, 10) : "";
   return {
     fullName: profile.fullName ?? "",
     userName: profile.userName ?? "",
     email: profile.email ?? "",
     phoneNumber: profile.phoneNumber ?? "",
     location: profile.location ?? "",
-    birthDate: profile.birthDate ? profile.birthDate.slice(0, 10) : "",
+    birthDate: (bDate.startsWith("0001") || bDate === "") ? "" : bDate,
   };
 }
 
@@ -80,6 +82,64 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
+  const [originalProfilePictureUrl, setOriginalProfilePictureUrl] = useState<string | null>(null);
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [pendingImagePreview, setPendingImagePreview] = useState<string | null>(null);
+  const [pendingRemove, setPendingRemove] = useState(false);
+  const [showPicMenu, setShowPicMenu] = useState(false);
+
+  // Password change states
+  const [showSecurityModal, setShowSecurityModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error("Please fill in all password fields.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("New password and confirmation password do not match.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters.");
+      return;
+    }
+
+    try {
+      setIsChangingPassword(true);
+      const result = await apiPost<{ token: string; refreshToken: string; fullName?: string; email?: string }>("/api/Auth/change-password", {
+        currentPassword,
+        newPassword
+      });
+
+      // Update active session tokens so Browser A remains logged in
+      localStorage.setItem("forsa_token", result.token);
+      localStorage.setItem("forsa_refresh_token", result.refreshToken);
+      if (result.fullName) localStorage.setItem("forsa_user_name", result.fullName);
+      if (result.email) localStorage.setItem("forsa_user_email", result.email);
+
+      toast.success("Password changed successfully!");
+      setShowSecurityModal(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowCurrentPassword(false);
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to change password.");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
 
   useEffect(() => {
     if (!attendeeId) {
@@ -100,6 +160,7 @@ export default function ProfilePage() {
         setFormData(mappedProfile);
         setOriginalData(mappedProfile);
         setProfilePictureUrl(profile.profilePicture || null);
+        setOriginalProfilePictureUrl(profile.profilePicture || null);
       } catch (error) {
         if (!isActive) return;
         setLoadError(getErrorMessage(error, "Failed to load profile."));
@@ -140,12 +201,19 @@ export default function ProfilePage() {
   const handleEdit = () => {
     setIsEditing(true);
     setOriginalData({ ...formData });
+    setOriginalProfilePictureUrl(profilePictureUrl);
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setFormData({ ...originalData });
     setErrors({});
+    // Discard pending image changes
+    setProfilePictureUrl(originalProfilePictureUrl);
+    if (pendingImagePreview) URL.revokeObjectURL(pendingImagePreview);
+    setPendingImageFile(null);
+    setPendingImagePreview(null);
+    setPendingRemove(false);
   };
 
   const handleSave = async () => {
@@ -159,6 +227,27 @@ export default function ProfilePage() {
       setFormData(mappedProfile);
       setOriginalData(mappedProfile);
       setErrors({});
+
+      // Handle pending image changes
+      if (pendingRemove) {
+        await attendeeApi.deleteProfilePicture(attendeeId!);
+        setProfilePictureUrl(null);
+        localStorage.removeItem("forsa_profile_picture");
+        window.dispatchEvent(new Event("profilePictureUpdated"));
+      } else if (pendingImageFile) {
+        const url = await attendeeApi.uploadProfilePicture(attendeeId!, pendingImageFile);
+        setProfilePictureUrl(url);
+        localStorage.setItem("forsa_profile_picture", url);
+        window.dispatchEvent(new Event("profilePictureUpdated"));
+      }
+
+      // Cleanup
+      if (pendingImagePreview) URL.revokeObjectURL(pendingImagePreview);
+      setPendingImageFile(null);
+      setPendingImagePreview(null);
+      setPendingRemove(false);
+      setOriginalProfilePictureUrl(pendingRemove ? null : (pendingImageFile ? profilePictureUrl : profilePictureUrl));
+
       setIsEditing(false);
       toast.success("Profile updated successfully.");
     } catch (error) {
@@ -170,17 +259,27 @@ export default function ProfilePage() {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
     const file = e.target.files[0];
-    try {
-      const url = await attendeeApi.uploadProfilePicture(attendeeId!, file);
-      setProfilePictureUrl(url);
-      toast.success("Profile picture updated");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to upload image");
-    }
+    if (pendingImagePreview) URL.revokeObjectURL(pendingImagePreview);
+    setPendingImageFile(file);
+    setPendingImagePreview(URL.createObjectURL(file));
+    setPendingRemove(false);
+    setShowPicMenu(false);
   };
+
+  const handleImageRemove = () => {
+    if (pendingImagePreview) URL.revokeObjectURL(pendingImagePreview);
+    setPendingImageFile(null);
+    setPendingImagePreview(null);
+    setPendingRemove(true);
+    setProfilePictureUrl(null);
+    setShowPicMenu(false);
+  };
+
+  // Compute the displayed image for the profile picture area
+  const displayedPicture = pendingRemove ? null : (pendingImagePreview || (profilePictureUrl ? (profilePictureUrl.startsWith('http') ? profilePictureUrl : `${import.meta.env.VITE_API_BASE_URL || "https://forsa-app.runasp.net"}${profilePictureUrl.startsWith('/') ? '' : '/'}${profilePictureUrl}`) : null));
 
   if (isLoading) {
     return (
@@ -225,19 +324,21 @@ export default function ProfilePage() {
               <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">My Profile</h1>
               <p className="text-blue-100/70 mt-1">Manage your account and preferences</p>
             </div>
-            <Link to="/interests" className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all">
-              <Bell className="w-4 h-4" /> Manage Interests
-            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <GoogleCalendarConnect variant="button" />
+              <Link to="/interests" className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all">
+                <Bell className="w-4 h-4" /> Manage Interests
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Content pulled up over hero */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-14">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 lg:-mt-14 pt-6 lg:pt-8 relative z-10">
         
         {/* Header */}
-        <div className="mb-6">
-        </div>
+        <div className="mb-10" />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
@@ -251,8 +352,8 @@ export default function ProfilePage() {
               <div className="relative pt-8 pb-6 px-8">
                 <div className="relative mb-4 inline-block">
                   <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[var(--brand-navy)] to-[var(--brand-hero-dark)] flex items-center justify-center border-4 border-white shadow-lg mx-auto overflow-hidden">
-                    {profilePictureUrl ? (
-                      <img src={`${import.meta.env.VITE_API_BASE_URL || ""}${profilePictureUrl}`} alt="Profile" className="w-full h-full object-cover" />
+                    {displayedPicture ? (
+                      <img src={displayedPicture} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-4xl font-bold text-slate-400">
                         {formData.fullName?.charAt(0) || "U"}
@@ -260,11 +361,32 @@ export default function ProfilePage() {
                     )}
                   </div>
                   {isEditing && (
-                    <label className="absolute -bottom-1 -right-1 w-8 h-8 bg-[var(--brand-navy)] rounded-xl flex items-center justify-center text-white shadow-md hover:bg-[var(--brand-navy-hover)] transition-colors cursor-pointer">
-
-                      <Camera className="w-4 h-4" />
-                      <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
-                    </label>
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setShowPicMenu(!showPicMenu)}
+                        className="absolute -bottom-1 -right-1 w-8 h-8 bg-[var(--brand-navy)] rounded-xl flex items-center justify-center text-white shadow-md hover:bg-[var(--brand-navy-hover)] transition-colors cursor-pointer"
+                      >
+                        <Camera className="w-4 h-4" />
+                      </button>
+                      {showPicMenu && (
+                        <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-xl border border-slate-200 py-1 w-44 z-50">
+                          <label className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer w-full">
+                            <ImagePlus className="w-4 h-4" /> Change Picture
+                            <input type="file" hidden accept="image/*" onChange={handleImageSelect} />
+                          </label>
+                          {(profilePictureUrl || pendingImagePreview) && !pendingRemove && (
+                            <button
+                              type="button"
+                              onClick={handleImageRemove}
+                              className="flex items-center gap-2 px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 w-full text-left"
+                            >
+                              <Trash2 className="w-4 h-4" /> Remove Picture
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
                 <h2 className="font-bold text-xl text-slate-800 mb-0.5">
@@ -276,16 +398,6 @@ export default function ProfilePage() {
                     <MapPin className="w-3.5 h-3.5" />{formData.location}
                   </div>
                 )}
-              </div>
-              <div className="grid grid-cols-2 divide-x divide-slate-100 border-t border-slate-100">
-                <div className="py-4">
-                  <p className="font-bold text-xl text-slate-800">-</p>
-                  <p className="text-slate-500 text-xs mt-0.5">Attended</p>
-                </div>
-                <div className="py-4">
-                  <p className="font-bold text-xl text-[var(--brand-navy)]">-</p>
-                  <p className="text-slate-500 text-xs mt-0.5">Upcoming</p>
-                </div>
               </div>
             </motion.div>
 
@@ -301,17 +413,10 @@ export default function ProfilePage() {
                 </div>
                 <ArrowLeft className="w-4 h-4 text-slate-300 rotate-180" />
               </Link>
-              <Link to="/notifications" className="w-full flex items-center gap-3 p-4 hover:bg-slate-50 transition-colors border-b border-slate-100 group text-left">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
-                  <Bell className="w-4 h-4 text-blue-500" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-slate-700 text-sm">Notifications</p>
-                  <p className="text-slate-400 text-xs">Manage alerts</p>
-                </div>
-                <ArrowLeft className="w-4 h-4 text-slate-300 rotate-180" />
-              </Link>
-              <button className="w-full flex items-center gap-3 p-4 hover:bg-slate-50 transition-colors text-left">
+              <button 
+                onClick={() => setShowSecurityModal(true)}
+                className="w-full flex items-center gap-3 p-4 hover:bg-slate-50 transition-colors text-left cursor-pointer"
+              >
                 <div className="w-9 h-9 rounded-xl bg-rose-50 flex items-center justify-center">
                   <Shield className="w-4 h-4 text-rose-500" />
                 </div>
@@ -322,6 +427,22 @@ export default function ProfilePage() {
                 <ArrowLeft className="w-4 h-4 text-slate-300 rotate-180" />
               </button>
             </div>
+
+            {/* Third-party integrations */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 }}
+              className="space-y-3 mb-10"
+            >
+              <div className="px-1 mt-10">
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                  Third-party integrations
+                </p>
+                <h2 className="mt-1 text-lg font-bold text-slate-800">Connected services</h2>
+              </div>
+              <GoogleCalendarConnect />
+            </motion.div>
           </div>
 
           {/* Right Column: Form */}
@@ -452,6 +573,128 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Change Password Modal */}
+      {showSecurityModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-100"
+          >
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                <Shield className="w-5 h-5 text-rose-500" />
+                Change Password
+              </h3>
+              <button 
+                onClick={() => {
+                  setShowSecurityModal(false);
+                  setCurrentPassword("");
+                  setNewPassword("");
+                  setConfirmPassword("");
+                  setShowCurrentPassword(false);
+                  setShowNewPassword(false);
+                  setShowConfirmPassword(false);
+                }}
+                className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-lg cursor-pointer"
+              >
+                <span className="text-xl font-bold">&times;</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleChangePassword} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Current Password</label>
+                <div className="relative group">
+                  <input
+                    type={showCurrentPassword ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full pl-4 pr-12 py-3 rounded-xl border border-slate-200 text-sm focus:border-[var(--brand-navy)] focus:ring-2 focus:ring-[var(--brand-navy)]/10 outline-none transition-all text-slate-800 text-left"
+                    placeholder="Enter current password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                  >
+                    {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">New Password</label>
+                <div className="relative group">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full pl-4 pr-12 py-3 rounded-xl border border-slate-200 text-sm focus:border-[var(--brand-navy)] focus:ring-2 focus:ring-[var(--brand-navy)]/10 outline-none transition-all text-slate-800 text-left"
+                    placeholder="Minimum 6 characters"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                  >
+                    {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Confirm New Password</label>
+                <div className="relative group">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full pl-4 pr-12 py-3 rounded-xl border border-slate-200 text-sm focus:border-[var(--brand-navy)] focus:ring-2 focus:ring-[var(--brand-navy)]/10 outline-none transition-all text-slate-800 text-left"
+                    placeholder="Re-enter new password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSecurityModal(false);
+                    setCurrentPassword("");
+                    setNewPassword("");
+                    setConfirmPassword("");
+                    setShowCurrentPassword(false);
+                    setShowNewPassword(false);
+                    setShowConfirmPassword(false);
+                  }}
+                  className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isChangingPassword}
+                  className="flex-1 px-4 py-3 bg-rose-500 hover:bg-rose-600 text-white font-semibold text-sm rounded-xl transition-all shadow-md shadow-rose-500/10 disabled:opacity-50 cursor-pointer"
+                >
+                  {isChangingPassword ? "Saving..." : "Change Password"}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

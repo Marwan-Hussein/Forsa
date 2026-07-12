@@ -4,6 +4,7 @@ namespace Application.Core.DTOs.Booking
     {
         public int RequestId { get; set; }
         public string Status { get; set; }
+        public bool IsPaid { get; set; }
         public DateTime RequestedDate { get; set; }
         public TimeSpan? StartTime { get; set; }
         public TimeSpan? EndTime { get; set; }
@@ -22,5 +23,8 @@ namespace Application.Core.DTOs.Booking
 
         // Event info
         public int EventId { get; set; }
+        public string? EventTitle { get; set; }
+        public string? EventStatus { get; set; }
+        public DateTime? EventEndDate { get; set; }
     }
 }

@@ -1,5 +1,9 @@
 using Application.Core.DTOs.Place;
 using Application.Core.Interfaces.OwnerInterfaces;
+using Application.Core.Interfaces.AdminServices;
+using Application.Core.Interfaces;
+using Application.Core.DTOs.CommonDTOs;
+using Domain.ENUMs;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,14 +19,17 @@ namespace Forsa.Controllers.OwnerControllers
         private readonly IPlaceOwnerService _placeOwnerService;
         private readonly IPlaceAvailabilityService _availabilityService;
         private readonly IValidator<AddPlaceDto> _addPlaceValidator;
+        private readonly IAdminUserService _adminUserService;
 
         public OwnerPlacesController(
             IPlaceOwnerService placeOwnerService,
             IPlaceAvailabilityService availabilityService,
+            IAdminUserService adminUserService,
             IValidator<AddPlaceDto> validator)
         {
             _placeOwnerService = placeOwnerService;
             _availabilityService = availabilityService;
+            _adminUserService = adminUserService;
             _addPlaceValidator = validator;
         }
 

@@ -175,6 +175,8 @@ export interface EventDetailsDTO {
   placeLongitude: number | null;
   googlePlaceId: string | null;
   availabilityStatus: string;
+  imageUrl?: string;
+  customLocation?: string;
 }
 
 export interface PlaceDetailsDTO {
@@ -194,4 +196,5 @@ export interface PlaceDetailsDTO {
   latitude: number | null;
   longitude: number | null;
   googlePlaceId: string | null;
+  images?: string[];
 }

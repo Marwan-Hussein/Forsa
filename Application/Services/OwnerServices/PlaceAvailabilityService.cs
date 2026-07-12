@@ -16,19 +16,22 @@ namespace Application.Services.OwnerServices
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGoogleCalendarSyncService _calendarSync;
+        private readonly IQueryableRepository<Domain.Entities.BookingEntities.BookingRequest> _bookingRequestRepo;
 
         public PlaceAvailabilityService(
             IPlaceRepository placeRepo,
             IQueryableRepository<PlaceAvailability> availabilityRepo,
             IMapper mapper,
             IUnitOfWork unitOfWork,
-            IGoogleCalendarSyncService calendarSync)
+            IGoogleCalendarSyncService calendarSync,
+            IQueryableRepository<Domain.Entities.BookingEntities.BookingRequest> bookingRequestRepo)
         {
             _placeRepo = placeRepo;
             _availabilityRepo = availabilityRepo;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _calendarSync = calendarSync;
+            _bookingRequestRepo = bookingRequestRepo;
         }
 
         public async Task<PlaceAvailabilityDto> UpdatePlaceAvailabilityCalendarAsync(
@@ -56,8 +59,8 @@ namespace Application.Services.OwnerServices
             if (conflict != null)
             {
                 // If a slot already exists for this date, update it instead of creating a duplicate
-                conflict.StartTime = dto.StartTime;
-                conflict.EndTime = dto.EndTime;
+                conflict.StartTime = dto.StartTime ?? new TimeSpan(9, 0, 0);
+                conflict.EndTime = dto.EndTime ?? new TimeSpan(21, 0, 0);
                 conflict.Status = status;
                 conflict.LastModifiedAt = DateTime.UtcNow;
                 _availabilityRepo.Update(conflict);
@@ -68,12 +71,12 @@ namespace Application.Services.OwnerServices
                 {
                     await _calendarSync.UpdateOwnerAvailabilityInCalendarAsync(
                         ownerId, conflict.GoogleCalendarEventId,
-                        place.Name, dto.Date, dto.StartTime, dto.EndTime, status.ToString());
+                        place.Name, dto.Date, conflict.StartTime, conflict.EndTime, status.ToString());
                 }
                 else
                 {
                     var gcEventId = await _calendarSync.SyncOwnerAvailabilityToCalendarAsync(
-                        ownerId, place.Name, dto.Date, dto.StartTime, dto.EndTime, status.ToString());
+                        ownerId, place.Name, dto.Date, conflict.StartTime, conflict.EndTime, status.ToString());
                     if (!string.IsNullOrWhiteSpace(gcEventId))
                     {
                         conflict.GoogleCalendarEventId = gcEventId;
@@ -89,8 +92,8 @@ namespace Application.Services.OwnerServices
             var slot = new PlaceAvailability
             {
                 Date = dto.Date.Date,
-                StartTime = dto.StartTime,
-                EndTime = dto.EndTime,
+                StartTime = dto.StartTime ?? new TimeSpan(9, 0, 0),
+                EndTime = dto.EndTime ?? new TimeSpan(21, 0, 0),
                 Status = status,
                 PlaceId = placeId,
                 CreatedAt = DateTime.UtcNow
@@ -136,7 +139,32 @@ namespace Application.Services.OwnerServices
                                    .ThenBy(a => a.StartTime)
                                    .ToListAsync();
 
-            return _mapper.Map<List<PlaceAvailabilityDto>>(slots);
+            // Fetch accepted booking requests with events for this place
+            var bookingRequests = await _bookingRequestRepo.GetQueryable()
+                .Include(r => r.Event)
+                .Where(r => r.PlaceId == placeId && r.Status == Domain.ENUMs.RequestStatus.Accepted && !r.IsDeleted)
+                .ToListAsync();
+
+            var dtos = new List<PlaceAvailabilityDto>();
+            foreach (var a in slots)
+            {
+                var isCompletedEvent = false;
+                if (a.Status == PlaceStatus.Booked)
+                {
+                    var matchingRequest = bookingRequests.FirstOrDefault(r => r.RequestedDate.Date == a.Date.Date);
+                    if (matchingRequest?.Event != null)
+                    {
+                        isCompletedEvent = matchingRequest.Event.Status == EventStatus.Completed || matchingRequest.Event.EndDate <= DateTime.UtcNow;
+                    }
+                }
+                
+                if (!isCompletedEvent)
+                {
+                    dtos.Add(_mapper.Map<PlaceAvailabilityDto>(a));
+                }
+            }
+
+            return dtos;
         }
 
         public async Task<bool> RemoveAvailabilitySlotAsync(int ownerId, int placeId, int slotId)
@@ -152,10 +180,22 @@ namespace Application.Services.OwnerServices
                 .FirstOrDefaultAsync(a => a.Id == slotId && a.PlaceId == placeId && !a.IsDeleted);
             if (slot == null) return false;
 
-            // 3. Only allow removing Available or Blocked — NOT Booked
+            // 3. Only allow removing Available or Blocked — NOT active Booked
             if (slot.Status == PlaceStatus.Booked)
-                throw new InvalidOperationException(
-                    "Cannot remove a Booked slot. Cancel the booking first.");
+            {
+                var matchingRequest = await _bookingRequestRepo.GetQueryable()
+                    .Include(r => r.Event)
+                    .FirstOrDefaultAsync(r => r.PlaceId == placeId && r.RequestedDate.Date == slot.Date.Date && r.Status == Domain.ENUMs.RequestStatus.Accepted && !r.IsDeleted);
+                
+                var isCompletedEvent = matchingRequest?.Event != null && 
+                                       (matchingRequest.Event.Status == EventStatus.Completed || matchingRequest.Event.EndDate <= DateTime.UtcNow);
+
+                if (!isCompletedEvent)
+                {
+                    throw new InvalidOperationException(
+                        "Cannot remove an active Booked slot. Cancel the booking first.");
+                }
+            }
 
             // 4. Soft-delete
             slot.IsDeleted = true;

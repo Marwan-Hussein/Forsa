@@ -155,6 +155,8 @@ export interface AttendeeBookingDto {
   numberOfTickets: number;
   status: string;
   bookingDate: string;
+  eventStatus?: string;
+  hasSubmittedFeedback?: boolean;
 }
 
 export interface AttendeeCalendarEventDto {

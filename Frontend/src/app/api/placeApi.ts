@@ -17,6 +17,7 @@ export interface PlaceSummary {
     endTime: string | null;
     status: string;
   }[];
+  availableDays?: string;
 }
 
 export interface PlaceDetails extends PlaceSummary {

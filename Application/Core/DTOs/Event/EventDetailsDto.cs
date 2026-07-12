@@ -23,5 +23,6 @@ namespace Application.Core.DTOs.Event
         public int OrganizerId { get; set; }
         public string OrganizerName { get; set; }
         public int OrganizerFollowersCount { get; set; }
+        public string? CustomLocation { get; set; }
     }
 }

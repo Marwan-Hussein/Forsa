@@ -55,7 +55,7 @@ export default function SubmitOrgToOwnerFeedbackPage() {
     
     // Show success message and redirect
     alert("Feedback submitted successfully! The venue owner will receive your review.");
-    navigate("/organization-dashboard");
+    navigate("/organizer");
   };
 
   const feedbackCategories = [
@@ -78,9 +78,9 @@ export default function SubmitOrgToOwnerFeedbackPage() {
       <main className="flex-1 px-6 py-8 max-w-4xl mx-auto w-full">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-          <Link to="/organization-dashboard" className="hover:text-accent">Dashboard</Link>
+          <Link to="/organizer" className="hover:text-accent">Dashboard</Link>
           <ChevronRight className="size-4" />
-          <Link to="/organization-dashboard" className="hover:text-accent">My Events</Link>
+          <Link to="/organizer" className="hover:text-accent">My Events</Link>
           <ChevronRight className="size-4" />
           <span className="text-foreground">Submit Feedback</span>
         </div>

@@ -13,7 +13,7 @@ export class ApiError extends Error {
     this.data = data;
   }
 }
- // 
+/////////////////////////
 export function getUserIdFromToken(): number | null {
   const token = localStorage.getItem("forsa_token");
   if (!token) return null;
@@ -28,7 +28,6 @@ export function getUserIdFromToken(): number | null {
     return null;
   }
 }
-
 async function readResponseBody(response: Response): Promise<unknown> {
   const contentType = response.headers.get("content-type") ?? "";
 
@@ -82,10 +81,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return data as T;
 }
 
+
+
 export async function apiGet<T>(path: string): Promise<T> {
   return request<T>(path);
 }
-
+export async function apiDelete<T>(path: string): Promise<T> {
+  return request<T>(path, {
+    method: "DELETE",
+  });
+}
 export async function apiPut<T>(path: string, body: unknown): Promise<T> {
   return request<T>(path, {
     method: "PUT",
@@ -114,10 +119,6 @@ export async function apiPatch<T>(path: string, body: unknown): Promise<T> {
     },
     body: JSON.stringify(body),
   });
-}
 
-export async function apiDelete<T>(path: string): Promise<T> {
-  return request<T>(path, {
-    method: "DELETE",
-  });
+  
 }

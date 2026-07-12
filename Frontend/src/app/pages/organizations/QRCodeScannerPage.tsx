@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { organizerApi } from "../../api/organizerApi";
 import { toast } from "react-toastify";
+import { parseBackendDate } from "../../utils/mappers";
 import { Html5Qrcode } from "html5-qrcode";
 
 interface ScanResult {
@@ -65,10 +66,20 @@ export default function QRCodeScannerPage() {
       setEventDetails(event);
       
       const checkedIn = attendees.filter((a: any) => a.checkInStatus === "Attended");
+      let latestScanTime: string | null = null;
+      if (checkedIn.length > 0) {
+        const times = checkedIn
+          .map((a: any) => a.checkInTime)
+          .filter((t: any) => !!t);
+        if (times.length > 0) {
+          times.sort();
+          latestScanTime = times[times.length - 1];
+        }
+      }
       setStats(prev => ({
         ...prev,
         totalScanned: checkedIn.length,
-        lastScanTime: checkedIn.length > 0 ? new Date().toISOString() : prev.lastScanTime
+        lastScanTime: latestScanTime || prev.lastScanTime
       }));
 
     } catch (err: any) {
@@ -286,7 +297,7 @@ export default function QRCodeScannerPage() {
           <div>
             <p className="text-sm font-['Inter:Medium',sans-serif] text-slate-500 mb-1">Last Scan</p>
             <p className="text-2xl font-['Inter:Bold',sans-serif] font-bold text-slate-800">
-              {stats.lastScanTime ? new Date(stats.lastScanTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "--:--"}
+              {stats.lastScanTime ? parseBackendDate(stats.lastScanTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "--:--"}
             </p>
           </div>
           <div className="w-12 h-12 bg-violet-50 text-violet-500 rounded-xl flex items-center justify-center transition-colors">
@@ -451,7 +462,7 @@ export default function QRCodeScannerPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/75"
               onClick={cancelManualEntry}
             />
             <motion.div

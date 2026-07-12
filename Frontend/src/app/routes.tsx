@@ -6,6 +6,8 @@ import AttendeeDashboard from "./pages/attendee/AttendeeDashboard";
 import LoginPage from "./pages/auth/LoginPage";
 import RegistrationPage from "./pages/auth/RegistrationPage";
 import OTPPage from "./pages/auth/OTPPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import ProfilePage from "./pages/attendee/ProfilePage";
 import InterestsPage from "./pages/attendee/InterestsPage";
 import EventsPage from "./pages/events/EventsPage";
@@ -23,6 +25,7 @@ import SubmitOrgToOwnerFeedbackPage from "./pages/places/SubmitOrgToOwnerFeedbac
 import ViewFeedbackRatingPage from "./pages/places/ViewFeedbackRatingPage";
 import AboutPage from "./pages/home/AboutPage";
 import ContactUsPage from "./pages/home/ContactUsPage";
+import PaymentResultPage from "./pages/payment/PaymentResultPage";
 
 import AdminLoginPage from "./pages/auth/AdminLoginPage";
 
@@ -43,6 +46,8 @@ import OwnerEditPlacePage from "./pages/owner/OwnerEditPlacePage";
 import OwnerPlaceMediaPage from "./pages/owner/OwnerPlaceMediaPage";
 import OwnerBookingsPage from "./pages/owner/OwnerBookingsPage";
 import OwnerProfilePage from "./pages/owner/OwnerProfilePage";
+import OwnerPlaceCalendarPage from "./pages/owner/OwnerPlaceCalendarPage";
+import OwnerReviewsPage from "./pages/owner/OwnerReviewsPage";
 
 // Organizer Portal Imports
 import OrganizerLayout from "./pages/layout/OrganizerLayout";
@@ -54,12 +59,18 @@ import BookingRequestsPage from "./pages/organizations/BookingRequestsPage";
 import ManageAttendeesPage from "./pages/organizations/ManageAttendeesPage";
 import QRCodeScannerPage from "./pages/organizations/QRCodeScannerPage";
 import OrganizerProfilePage from "./pages/organizations/OrganizerProfilePage";
-
+import OrganizerReviewsPage from "./pages/organizer/OrganizerReviewsPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import VerifyAccountPage from "./pages/auth/VerifyAccountPage";
+import EventFeedbacksPage from "./pages/events/EventFeedbacksPage";
+import EditFeedbackPage from "./pages/events/EditFeedbackPage";
+import DeleteFeedbackPage from "./pages/events/DeleteFeedbackPage";   
 export const router = createBrowserRouter([
   {
     path: "/admin/login",
     Component: AdminLoginPage,
   },
+  
   {
     path: "/",
     Component: Layout,
@@ -85,6 +96,18 @@ export const router = createBrowserRouter([
         Component: OTPPage,
       },
       {
+        path: "forgot-password",
+        Component: ForgotPasswordPage,
+      },
+      {
+        path: "verify-account",
+        Component: VerifyAccountPage,
+      },
+      {
+        path: "reset-password",
+        Component: ResetPasswordPage,
+      },
+      {
         path: "profile",
         Component: ProfilePage,
       },
@@ -104,7 +127,18 @@ export const router = createBrowserRouter([
         path: "events/:eventId/feedback",
         Component: FeedbackPage,
       },
-
+      {
+        path: "events/:eventId/feedbacks",           
+        Component: EventFeedbacksPage,
+      },
+      {
+          path: "events/:eventId/feedback/edit",
+          Component: EditFeedbackPage,
+      },
+      {
+          path: "events/:eventId/feedback/delete",
+          Component: DeleteFeedbackPage,
+      },
       {
         path: "organizations",
         Component: OrganizationsPage,
@@ -129,7 +163,15 @@ export const router = createBrowserRouter([
         path: "contact",
         Component: ContactUsPage,
       },
+      {
+        path: "payment-result",
+        Component: PaymentResultPage,
+      },
     ],
+  },
+  {
+    path: "*",
+    Component: NotFoundPage,
   },
   {
     path: "/admin",
@@ -190,12 +232,20 @@ export const router = createBrowserRouter([
         Component: OwnerPlaceMediaPage,
       },
       {
+        path: "places/:placeId/calendar",
+        Component: OwnerPlaceCalendarPage,
+      },
+      {
         path: "bookings",
         Component: OwnerBookingsPage,
       },
       {
         path: "profile",
         Component: OwnerProfilePage,
+      },
+      {
+        path: "reviews",
+        Component: OwnerReviewsPage,
       },
     ],
   },
@@ -262,6 +312,10 @@ export const router = createBrowserRouter([
       {
         path: "profile",
         Component: OrganizerProfilePage,
+      },
+      {
+        path: "reviews",
+        Component: OrganizerReviewsPage,
       },
     ],
   },

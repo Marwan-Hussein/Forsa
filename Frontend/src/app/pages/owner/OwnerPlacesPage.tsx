@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import {
   Plus, MapPin, Search, Edit2, Image as ImageIcon, Trash2,
   ShieldAlert, CheckCircle, Building2, TrendingUp, CalendarCheck,
-  Loader2, Info, AlertCircle, X, Sparkles
+  Loader2, Info, AlertCircle, X, Sparkles, Calendar
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ownerApi, Place } from "../../api/ownerApi";
@@ -274,9 +274,15 @@ export default function OwnerPlacesPage() {
                       >
                         <ImageIcon className="w-4 h-4" /> Media
                       </Link>
+                      <Link
+                        to={`/owner/places/${place.id}/calendar`}
+                        className="col-span-2 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50/50 border-2 border-indigo-100 hover:border-indigo-250 hover:bg-indigo-50 transition-all shadow-sm cursor-pointer"
+                      >
+                        <Calendar className="w-4 h-4" /> Manage Availability
+                      </Link>
                       <button
                         onClick={() => setDeletingId(place.id)}
-                        className="col-span-2 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-rose-600 hover:text-rose-700 bg-white border-2 border-rose-100 hover:bg-rose-50 hover:border-rose-200 transition-all shadow-sm"
+                        className="col-span-2 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-rose-600 hover:text-rose-700 bg-white border-2 border-rose-100 hover:bg-rose-50 hover:border-rose-200 transition-all shadow-sm cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" /> Remove Venue
                       </button>
@@ -297,7 +303,7 @@ export default function OwnerPlacesPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/75"
               onClick={() => setDeletingId(null)}
             />
             <motion.div

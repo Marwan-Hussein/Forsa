@@ -8,7 +8,7 @@ export function SiteFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-2">
             <Link to="/" className="inline-block transition-opacity duration-300 ease-in-out hover:opacity-80">
-              <ForSaLogo className="h-10 text-white mb-6" />
+              <ForSaLogo className="h-14 mb-6" style={{ filter: "brightness(0) invert(1)" }} />
             </Link>
             <p className="text-slate-400 font-light max-w-sm leading-relaxed text-base">
               The ultimate platform for discovering, organizing, and experiencing the world's most premium events and gatherings.
@@ -20,7 +20,6 @@ export function SiteFooter() {
               <li><Link to="/events" className="hover:text-white transition-colors">Browse Events</Link></li>
               <li><Link to="/places" className="hover:text-white transition-colors">Venues</Link></li>
               <li><Link to="/organizations" className="hover:text-white transition-colors">Organizers</Link></li>
-              <li><Link to="/login" className="hover:text-white transition-colors">Sign In</Link></li>
             </ul>
           </div>
           <div>

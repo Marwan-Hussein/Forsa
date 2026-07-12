@@ -1,4 +1,5 @@
 using Application.Core.DTOs.Auth;
+using Application.Core.Interfaces;
 using Application.Core.Interfaces.Auth;
 using Application.Core.Interfaces.Auth.OTP;
 using Application.Core.Settings;
@@ -16,7 +17,7 @@ namespace Application.Services.Auth
         IJwtService jwtService,
         IRefreshTokenService refreshTokenService,
         RoleManager<IdentityRole<int>> roleManager,
-        IOptions<JwtSettings> jwtSettings,IOTPService otpService) : IAuthService
+        IOptions<JwtSettings> jwtSettings,IOTPService otpService, IUserProfileService userProfileService) : IAuthService
     {
         private readonly JwtSettings jwtSettings = jwtSettings.Value;
 
@@ -85,11 +86,13 @@ namespace Application.Services.Auth
             else
                 user = mapper.Map<Domain.Entities.AttendeeEntities.Attendee>(registerDto);
 
-
+            user.UserName = registerDto.UserName is null ? registerDto.Email : registerDto.UserName;
             user.EmailConfirmed = false; // Need to verify OTP
             user.CreatedAt = DateTime.UtcNow;
             user.IsBlocked = false;
             user.IsDeleted = false;
+            //user.ProfilePicture = "/defaultProfilePicture.png";
+            user.BirthDate = registerDto.birthdate;
 
             var refreshToken = refreshTokenService.GenerateToken();
             user.RefreshTokens.Add(refreshTokenService.CreateRefreshToken(refreshToken));
@@ -158,6 +161,10 @@ namespace Application.Services.Auth
             {
                 throw new Exception("User not found.");
             }
+            if(user.EmailConfirmed)
+            {
+                throw new Exception("Email is already verified.");
+            }
 
             // Generate and send a new OTP
             await otpService.GenerateAndSendOTPAsync(resendOtpDto.Email);
@@ -167,10 +174,6 @@ namespace Application.Services.Auth
                 Email = resendOtpDto.Email,
                 Message = "A new verification code has been sent to your email address."
             };
-             
-
-            
-            
         }
 
         public async Task<UserDto> LoginAsync(LoginDto loginDto)
@@ -264,6 +267,98 @@ namespace Application.Services.Auth
 
             var errors = string.Join(", ", result.Errors.Select(e => e.Description));
             throw new Exception($"{message}: {errors}");
+        }
+
+        public async Task ForgotPasswordAsync(string email)
+        {
+            var user = await userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                throw new Exception("User with this email does not exist.");
+            }
+
+            await otpService.GenerateAndSendOTPAsync(email);
+        }
+
+        public async Task<bool> ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
+        {
+            var user = await userManager.Users
+                .Include(u => u.RefreshTokens)
+                .SingleOrDefaultAsync(u => u.Email == resetPasswordDto.Email);
+
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            var isValidOtp = await otpService.VerifyOTPAsync(resetPasswordDto.Email, resetPasswordDto.Otp);
+            if (!isValidOtp)
+            {
+                throw new Exception("Invalid or expired OTP code.");
+            }
+
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await userManager.ResetPasswordAsync(user, token, resetPasswordDto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception($"Failed to reset password: {errors}");
+            }
+
+            // Revoke all active refresh tokens to force re-login on all devices
+            if (user.RefreshTokens != null)
+            {
+                foreach (var activeToken in user.RefreshTokens.Where(t => t.IsActive))
+                {
+                    activeToken.RevokedOn = DateTime.UtcNow;
+                }
+                await userManager.UpdateAsync(user);
+            }
+
+            return true;
+        }
+
+        public async Task<UserDto> ChangePasswordAsync(int userId, ChangePasswordDto changePasswordDto)
+        {
+            var user = await userManager.Users
+                .Include(u => u.RefreshTokens)
+                .SingleOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            var result = await userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception(errors);
+            }
+
+            // Revoke all active refresh tokens to force re-login on all other devices
+            if (user.RefreshTokens != null)
+            {
+                foreach (var activeToken in user.RefreshTokens.Where(t => t.IsActive))
+                {
+                    activeToken.RevokedOn = DateTime.UtcNow;
+                }
+            }
+
+            // Generate new session tokens for the current browser session
+            var newRefreshToken = refreshTokenService.GenerateToken();
+            if (user.RefreshTokens == null)
+            {
+                user.RefreshTokens = new List<Domain.Entities.AuthEntities.RefreshToken>();
+            }
+            user.RefreshTokens.Add(refreshTokenService.CreateRefreshToken(newRefreshToken));
+
+            var updateResult = await userManager.UpdateAsync(user);
+            HandleResult(updateResult, "Failed to update user session after password change");
+
+            var roles = await userManager.GetRolesAsync(user);
+            return CreateUserDto(user, newRefreshToken, roles);
         }
     }
 }

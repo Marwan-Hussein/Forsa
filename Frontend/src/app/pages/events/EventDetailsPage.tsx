@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router";
+import { useParams, Link, useNavigate } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import { apiPost, apiGet, getUserIdFromToken } from "../../api/api";
@@ -16,6 +16,9 @@ import {
   Building2,
 } from "lucide-react";
 import { ImageWithFallback } from "../../components/ImageWithFallback";
+import { useWishlist } from "../../hooks/useWishlist";
+import { attendeeApi } from "../../api/attendeeApi";
+import { AttendeeBookingDto } from "../../types";
 import {
   DURATION_FAST,
   EASE_IN_OUT,
@@ -24,18 +27,71 @@ import {
   pageTransition,
   pageVariants,
 } from "../../lib/motion";
-import { mapEventDetailsDtoToEvent } from "../../utils/mappers";
+import { mapEventDetailsDtoToEvent, parseBackendDate } from "../../utils/mappers";
+import { getUserRole } from "../../utils/roleRouting";
 
 export default function EventDetailsPage() {
   const { eventId } = useParams<{ eventId: string }>();
+  const navigate = useNavigate();
   const [event, setEvent] = useState<any>(null);
   const [organization, setOrganization] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const [ticketCount, setTicketCount] = useState(1);
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const [isInWishlist, setIsInWishlist] = useState(false);
+  const { toggle: toggleWishlist, has: isInWishlist } = useWishlist();
   const [showShareModal, setShowShareModal] = useState(false);
+  const [userBooking, setUserBooking] = useState<AttendeeBookingDto | null>(null);
+  const [paying, setPaying] = useState(false);
+
+  const token = localStorage.getItem("forsa_token");
+  const userId = token ? getUserIdFromToken() : null;
+  const role = getUserRole();
+  const isAttendee = !role || (role !== "Admin" && role !== "Owner" && role !== "PlaceOwner" && role !== "Organizer");
+
+  useEffect(() => {
+    const fetchUserBooking = async () => {
+      if (!userId || !eventId) return;
+      try {
+        const bookings = await attendeeApi.getBookings(userId);
+        const booking = bookings.find(b => 
+          b.eventId === Number(eventId) && 
+          String(b.status).toLowerCase() !== "cancelled" && 
+          String(b.status).toLowerCase() !== "rejected"
+        );
+        setUserBooking(booking || null);
+      } catch (err) {
+        console.error("Failed to fetch user bookings", err);
+      }
+    };
+    fetchUserBooking();
+  }, [eventId, userId]);
+
+  const handlePayPendingBooking = async () => {
+    if (!userBooking) return;
+    try {
+      setPaying(true);
+      const paymentResult = await apiPost(`/api/bookings/${userBooking.bookingId}/checkout`, {}) as any;
+      if (paymentResult && paymentResult.clientSecret) {
+        if (paymentResult.clientSecret.startsWith("mock_")) {
+          toast.success("Mock Payment Success", { description: "Simulated payment for testing." });
+          setTimeout(() => navigate("/dashboard"), 1500);
+        } else if (paymentResult.clientSecret.startsWith("http")) {
+          window.location.href = paymentResult.clientSecret;
+          return;
+        } else {
+          const pubKey = paymentResult.publicKey || "pk_test_placeholder";
+          window.location.href = `https://accept.paymob.com/unifiedcheckout/?publicKey=${pubKey}&clientSecret=${paymentResult.clientSecret}`;
+          return;
+        }
+      }
+    } catch (err: any) {
+      console.error("Payment initiation failed", err);
+      toast.error(err.message || "Failed to initiate payment.");
+    } finally {
+      setPaying(false);
+    }
+  };
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -45,11 +101,22 @@ export default function EventDetailsPage() {
         setEvent(mapEventDetailsDtoToEvent(dto));
         
         // Use real organization data from the event details response
+        const name = dto.organizerName || "Organizer";
+        const getOrgLogoEmoji = (orgName: string): string => {
+          const lowercaseName = orgName.toLowerCase();
+          if (lowercaseName.includes("iti") || lowercaseName.includes("institute")) return "🎓";
+          if (lowercaseName.includes("alx")) return "💻";
+          if (lowercaseName.includes("riseup")) return "🚀";
+          if (lowercaseName.includes("wuzzuf")) return "💼";
+          if (lowercaseName.includes("techne") || lowercaseName.includes("summit")) return "⚡";
+          return "🏛️";
+        };
+
         setOrganization({ 
-          name: dto.organizerName || "Organizer", 
-          logo: "🏛️", 
+          name: name, 
+          logo: getOrgLogoEmoji(name), 
           id: dto.organizerId || "org1", 
-          description: "Event Organizer", 
+          description: `Official ForSa Partner: ${name}. Join us for outstanding educational and networking events in Egypt.`, 
           followersCount: dto.organizerFollowersCount || 0 
         });
       } catch (err) {
@@ -101,19 +168,28 @@ export default function EventDetailsPage() {
       }
       const userId = getUserIdFromToken();
 
-      await apiPost(`/api/bookings`, {
+      const bookingResult = await apiPost(`/api/bookings`, {
         attendeeId: userId,
         eventId: Number(eventId),
         numberOfTickets: ticketCount,
         specialRequests: ""
-      });
+      }) as any;
+
       setShowBookingModal(false);
-      toast.success("Booking confirmed", {
-        description: `${ticketCount} ticket(s) for ${event.title}.`,
-      });
-    } catch (error) {
+
+      if (totalPrice > 0) {
+        toast.success("Booking created successfully!", {
+          description: "Please complete your payment on the dashboard.",
+        });
+      } else {
+        const ticketWord = ticketCount === 1 ? "ticket" : "tickets";
+        toast.success(`Booking confirmed: ${ticketCount} ${ticketWord} for ${event.title}`);
+      }
+
+      setTimeout(() => navigate("/dashboard"), 1500);
+    } catch (error: any) {
       toast.error("Booking failed", {
-        description: "Not enough tickets available or event not found.",
+        description: error.message || "Not enough tickets available or event not found.",
       });
     }
   };
@@ -151,6 +227,14 @@ export default function EventDetailsPage() {
     toast.success("Link copied", { description: "Paste it anywhere to share this event." });
     setShowShareModal(false);
   };
+  const now = new Date();
+  const startDate = event?.startDate ? parseBackendDate(event.startDate) : null;
+  const endDate = event?.endDate ? parseBackendDate(event.endDate) : null;
+  const statusStr = (event?.status || "").toLowerCase();
+  
+  const isApprovedOrActive = statusStr === "approved" || statusStr === "published" || statusStr === "soldout" || statusStr === "2" || statusStr === "4" || statusStr === "5";
+  const isLive = isApprovedOrActive && startDate && endDate && startDate < now && now < endDate;
+  const isCompleted = statusStr === "completed" || statusStr === "7" || (isApprovedOrActive && endDate && endDate < now);
 
   return (
     <motion.div
@@ -192,7 +276,7 @@ export default function EventDetailsPage() {
                   <ImageWithFallback
                     alt={event.title}
                     className="h-full w-full object-cover"
-                    src={event.image.startsWith("/") ? `http://localhost:5000${event.image}` : event.image}
+                    src={event.image.startsWith("/") ? `https://forsa-app.runasp.net${event.image}` : event.image}
                   />
                 ) : (
                   <ImageWithFallback
@@ -203,17 +287,19 @@ export default function EventDetailsPage() {
                 )}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--brand-slate-contrast)]/40 via-transparent to-transparent" />
                 <div className="absolute top-4 right-4 flex gap-2">
-                  <motion.button
-                    type="button"
-                    whileTap={{ scale: 0.92 }}
-                    transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
-                    onClick={() => setIsInWishlist(!isInWishlist)}
-                    className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-white text-muted-foreground shadow-md transition-colors duration-300 ease-in-out hover:bg-muted"
-                  >
-                    <Heart
-                      className={`h-5 w-5 ${isInWishlist ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
-                    />
-                  </motion.button>
+                  {isAttendee && (
+                    <motion.button
+                      type="button"
+                      whileTap={{ scale: 0.92 }}
+                      transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
+                      onClick={() => eventId && toggleWishlist(eventId)}
+                      className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-white text-muted-foreground shadow-md transition-colors duration-300 ease-in-out hover:bg-muted"
+                    >
+                      <Heart
+                        className={`h-5 w-5 ${eventId && isInWishlist(eventId) ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
+                      />
+                    </motion.button>
+                  )}
                   <motion.button
                     type="button"
                     whileTap={{ scale: 0.92 }}
@@ -234,17 +320,55 @@ export default function EventDetailsPage() {
                   {event.title}
                 </h1>
                 <div className="flex gap-2 items-center">
-                  {event.status && (
-                    <span className={`px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider ${
-                      event.status === 'Approved' ? 'bg-green-100 text-green-700' :
-                      event.status === 'Pending' ? 'bg-orange-100 text-orange-700' :
-                      event.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
-                      event.status === 'Completed' ? 'bg-gray-100 text-gray-700' :
-                      'bg-blue-100 text-blue-700'
-                    }`}>
-                      {event.status}
-                    </span>
-                  )}
+                  {event.status && (() => {
+                    if (isLive) {
+                      return (
+                        <span className="px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider bg-red-100 text-red-700 border border-red-200 animate-pulse flex items-center gap-1">
+                          <span className="w-1 h-1 rounded-full bg-red-500 animate-ping" /> Live Now
+                        </span>
+                      );
+                    }
+                    if (isCompleted) {
+                      return (
+                        <span className="px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider bg-gray-100 text-gray-700">
+                          Completed
+                        </span>
+                      );
+                    }
+                    if (statusStr === "approved" || statusStr === "2") {
+                      return (
+                        <span className="px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider bg-green-100 text-green-700">
+                          Approved
+                        </span>
+                      );
+                    }
+                    if (statusStr === "published" || statusStr === "4") {
+                      return (
+                        <span className="px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider bg-blue-100 text-blue-700">
+                          Published
+                        </span>
+                      );
+                    }
+                    if (statusStr === "pending" || statusStr === "1") {
+                      return (
+                        <span className="px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider bg-orange-100 text-orange-700">
+                          Pending
+                        </span>
+                      );
+                    }
+                    if (statusStr === "cancelled" || statusStr === "6") {
+                      return (
+                        <span className="px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider bg-red-100 text-red-700">
+                          Cancelled
+                        </span>
+                      );
+                    }
+                    return (
+                      <span className="px-3 py-1 rounded-[8px] text-[12px] font-['Inter:Bold',sans-serif] font-bold uppercase tracking-wider bg-blue-100 text-blue-700">
+                        {event.status}
+                      </span>
+                    );
+                  })()}
                   <span className="px-3 py-1 bg-[var(--brand-blue-strong)] text-white rounded-[8px] text-[12px] font-['Inter:Medium',sans-serif] font-medium">
                     {event.category}
                   </span>
@@ -261,12 +385,20 @@ export default function EventDetailsPage() {
                       Date
                     </p>
                     <p className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[14px] text-foreground">
-                      {new Date(event.date).toLocaleDateString("en-US", {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                      {(() => {
+                        const start = event.startDate ? parseBackendDate(event.startDate) : parseBackendDate(event.date);
+                        const end = event.endDate ? parseBackendDate(event.endDate) : null;
+                        const formatDate = (d: Date) => d.toLocaleDateString("en-US", {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        });
+                        if (!end || start.toDateString() === end.toDateString()) {
+                          return formatDate(start);
+                        }
+                        return `${formatDate(start)} - ${formatDate(end)}`;
+                      })()}
                     </p>
                   </div>
                 </div>
@@ -339,18 +471,61 @@ export default function EventDetailsPage() {
                 </div>
               </div>
             </div>
-
+                                {/* Feedback Section Button */}
+              <div className="border-t border-[rgba(82,109,130,0.2)] pt-8 mt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground">
+                      Reviews & Feedback
+                    </h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      See what attendees are saying about this event
+                    </p>
+                  </div>
+                  <Link
+                    to={`/events/${eventId}/feedbacks`}
+                    className="flex items-center gap-2 bg-white border border-[rgba(82,109,130,0.25)] hover:bg-slate-50 px-5 py-2.5 rounded-xl font-medium text-sm transition-all hover:shadow-sm"
+                  >
+                    View All Reviews
+                    <ArrowLeft className="w-4 h-4 rotate-180" />
+                  </Link>
+                </div>
+              </div>
             {/* Venue Location Map */}
             <div className="rounded-2xl border border-[rgba(82,109,130,0.14)] bg-white p-8 shadow-[0_4px_24px_-8px_rgba(39,55,77,0.12)]">
               <h2 className="font-['Inter:Semi_Bold',sans-serif] font-semibold text-[18px] text-foreground mb-4">
                 Venue Location Map
               </h2>
-              <MapDisplay
-                address={event.location}
-                latitude={event.placeLatitude ?? null}
-                longitude={event.placeLongitude ?? null}
-                googlePlaceId={event.googlePlaceId ?? null}
-              />
+              {(() => {
+                const getCoords = () => {
+                  if (event.placeLatitude && event.placeLongitude) {
+                    return { lat: event.placeLatitude, lng: event.placeLongitude };
+                  }
+                  const loc = (event.location || "").toLowerCase();
+                  if (loc.includes("greek campus")) {
+                    return { lat: 30.0441, lng: 31.2397 };
+                  }
+                  if (loc.includes("ewart") || loc.includes("auc tahrir")) {
+                    return { lat: 30.0428, lng: 31.2403 };
+                  }
+                  if (loc.includes("creativa")) {
+                    return { lat: 30.0263, lng: 31.2081 };
+                  }
+                  if (loc.includes("smart village")) {
+                    return { lat: 30.0716, lng: 31.0182 };
+                  }
+                  return { lat: 30.0444, lng: 31.2357 }; // Default to Cairo
+                };
+                const coords = getCoords();
+                return (
+                  <MapDisplay
+                    address={event.location}
+                    latitude={coords.lat}
+                    longitude={coords.lng}
+                    googlePlaceId={event.googlePlaceId ?? null}
+                  />
+                );
+              })()}
             </div>
           </div>
 
@@ -367,17 +542,54 @@ export default function EventDetailsPage() {
                 </p>
               </div>
 
-              <motion.button
-                type="button"
-                onClick={() => setShowBookingModal(true)}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[var(--brand-slate-contrast)] to-[#1e2936] py-3 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-[#dde6ed] shadow-lg ring-1 ring-white/10 transition-shadow duration-300 ease-in-out hover:shadow-xl"
-              >
-                <Ticket className="h-5 w-5" />
-                Book Tickets
-              </motion.button>
+              {isAttendee && (
+                isCompleted ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 py-3 font-['Inter:Medium',sans-serif] text-[16px] font-semibold text-slate-400 border border-slate-200 cursor-not-allowed select-none"
+                  >
+                    <Ticket className="h-5 w-5 text-slate-300" />
+                    Event Completed
+                  </button>
+                ) : userBooking ? (
+                  userBooking.status.toLowerCase() === "pending" ? (
+                    <motion.button
+                      type="button"
+                      onClick={handlePayPendingBooking}
+                      disabled={paying}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
+                      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 py-3 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-white shadow-lg ring-1 ring-white/10 transition-all hover:shadow-xl hover:brightness-105"
+                    >
+                      <Ticket className="h-5 w-5" />
+                      {paying ? "Processing..." : "Complete Payment"}
+                    </motion.button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled
+                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-100 py-3 font-['Inter:Medium',sans-serif] text-[16px] font-semibold text-emerald-800 border border-emerald-200"
+                    >
+                      <Ticket className="h-5 w-5 text-emerald-700" />
+                      Ticket Confirmed
+                    </button>
+                  )
+                ) : (
+                  <motion.button
+                    type="button"
+                    onClick={() => setShowBookingModal(true)}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ duration: DURATION_FAST, ease: EASE_IN_OUT }}
+                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[var(--brand-slate-contrast)] to-[#1e2936] py-3 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-[#dde6ed] shadow-lg ring-1 ring-white/10 transition-shadow duration-300 ease-in-out hover:shadow-xl"
+                  >
+                    <Ticket className="h-5 w-5" />
+                    Book Tickets
+                  </motion.button>
+                )
+              )}
 
               <div className="mt-4 pt-4 border-t border-[rgba(82,109,130,0.2)]">
                 <p className="font-['Inter:Regular',sans-serif] text-[12px] text-muted-foreground text-center">
@@ -409,7 +621,7 @@ export default function EventDetailsPage() {
                   {organization.description}
                 </p>
                 <Link
-                  to={`/organizations/${organization.id}`}
+                  to={`/organizations/${organization.id}?returnTo=/events/${eventId}`}
                   className="w-full bg-white border-[0.8px] border-[rgba(82,109,130,0.2)] text-foreground py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#f8f9fa] transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Building2 className="w-4 h-4" />

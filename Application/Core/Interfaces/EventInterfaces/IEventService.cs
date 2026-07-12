@@ -1,4 +1,6 @@
 using Application.Core.DTOs.Event;
+using Application.Core.DTOs.Feedbacks;
+using Domain.Entities;
 using System.Collections.Generic;
 
 namespace Application.Core.Interfaces.EventInterfaces
@@ -12,5 +14,6 @@ namespace Application.Core.Interfaces.EventInterfaces
         Task<bool> DeductTicketInventoryAsync(int eventId, int quantity);
         Task ReleaseTicketInventoryAsync(int eventId, int quantity);
         Task<ShareEventDto> GetShareableLinkAsync(int eventId, string baseUrl);
+        Task<List<FeedbackDTO>> GetEventFeedbacks(int eventId);
     }
 }

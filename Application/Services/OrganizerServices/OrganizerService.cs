@@ -19,6 +19,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Domain.Entities.PaymentEntities;
+
 namespace Application.Services.OrganizerServices
 {
     public class OrganizerService : IOrganizerService
@@ -31,7 +33,11 @@ namespace Application.Services.OrganizerServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IGoogleCalendarSyncService _calendarSync;
-
+        private readonly IQueryableRepository<PaymentTransaction> _transactionRepository;
+        private readonly IQueryableRepository<WalletBalance> _walletRepo;
+        private readonly IFeedbackRepository _feedbackRepo;
+        private readonly IQueryableRepository<Domain.Entities.PlaceEntities.PlaceAvailability> _availabilityRepository;
+ 
         public OrganizerService(
             IOrganizerRepository organizerRepo,
             IQueryableRepository<Event> eventRepository,
@@ -40,7 +46,11 @@ namespace Application.Services.OrganizerServices
             IGenericRepository<Notification> notificationRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IGoogleCalendarSyncService calendarSync)
+            IGoogleCalendarSyncService calendarSync,
+            IQueryableRepository<PaymentTransaction> transactionRepository,
+            IQueryableRepository<WalletBalance> walletRepo,
+            IFeedbackRepository feedbackRepo,
+            IQueryableRepository<Domain.Entities.PlaceEntities.PlaceAvailability> availabilityRepository)
         {
             _organizerRepo = organizerRepo;
             _eventRepository = eventRepository;
@@ -50,6 +60,10 @@ namespace Application.Services.OrganizerServices
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _calendarSync = calendarSync;
+            _transactionRepository = transactionRepository;
+            _walletRepo = walletRepo;
+            _feedbackRepo = feedbackRepo;
+            _availabilityRepository = availabilityRepository;
         }
 
         public async Task<List<Organizer>> FilterOrganizers(OrganizerSearchParameters searchParameter)
@@ -112,7 +126,8 @@ namespace Application.Services.OrganizerServices
                 RemainingTickets = dto.TotalTickets,
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
-                Status = EventStatus.Draft,
+                CustomLocation = dto.CustomLocation,
+                Status = string.IsNullOrWhiteSpace(dto.CustomLocation) ? EventStatus.Draft : EventStatus.Pending,
                 IsDeleted = false
             };
 
@@ -145,14 +160,69 @@ namespace Application.Services.OrganizerServices
             if (ev == null)
                 throw new KeyNotFoundException("Event not found");
 
-            if (ev.StartDate <= DateTime.UtcNow || ev.Status == EventStatus.Completed)
-                throw new InvalidOperationException("Cannot modify an event that has already started or concluded.");
+            // Check if any tickets have been booked (Confirmed or Pending)
+            bool hasBookings = await _bookingRepository.GetQueryable()
+                .AnyAsync(b => b.EventId == eventId && (b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Pending) && !b.IsDeleted);
 
+            // Determine if we are within 24 hours of the event start (or it's already completed)
+            bool isWithin24HoursOrDone = ev.StartDate - DateTime.UtcNow < TimeSpan.FromHours(24) || ev.Status == EventStatus.Completed;
+
+            // Rule 1: Title, description, and category are ALWAYS editable — no restriction.
+
+            // Rule 2 & 3: Ticket price is locked once ANY ticket is booked (regardless of timing)
+            if (hasBookings && dto.TicketPrice != ev.TicketPrice)
+            {
+                throw new InvalidOperationException("Ticket price cannot be edited because tickets have already been booked for this event.");
+            }
+
+            // Rule 4: Dates, location, and total tickets are locked within 24 hours of the event start
+            if (isWithin24HoursOrDone)
+            {
+                if (ev.StartDate != dto.StartDate || ev.EndDate != dto.EndDate)
+                {
+                    throw new InvalidOperationException("Event dates cannot be changed within 24 hours of the event start time or after the event has completed.");
+                }
+
+                if (ev.CustomLocation != dto.CustomLocation)
+                {
+                    throw new InvalidOperationException("Event location cannot be changed within 24 hours of the event start time or after the event has completed.");
+                }
+
+                if (dto.TotalTickets != ev.TotalTickets)
+                {
+                    throw new InvalidOperationException("Total ticket count cannot be changed within 24 hours of the event start time.");
+                }
+            }
+
+            // Apply always-editable fields
             ev.Title = dto.Title;
             ev.Description = dto.Description;
             ev.Category = dto.Category;
-            ev.StartDate = dto.StartDate;
-            ev.EndDate = dto.EndDate;
+
+            // Apply date/location fields only if not locked
+            if (!isWithin24HoursOrDone)
+            {
+                ev.StartDate = dto.StartDate;
+                ev.EndDate = dto.EndDate;
+                ev.CustomLocation = dto.CustomLocation;
+
+                // Adjust total tickets and remaining tickets
+                int ticketsDiff = dto.TotalTickets - ev.TotalTickets;
+                ev.TotalTickets = dto.TotalTickets;
+                ev.RemainingTickets = Math.Max(0, ev.RemainingTickets + ticketsDiff);
+            }
+
+            // Apply price only if not booked
+            if (!hasBookings)
+            {
+                ev.TicketPrice = dto.TicketPrice;
+            }
+
+            // If draft and now has a custom location, submit for approval
+            if (ev.Status == EventStatus.Draft && !string.IsNullOrWhiteSpace(ev.CustomLocation))
+            {
+                ev.Status = EventStatus.Pending;
+            }
 
             _eventRepository.Update(ev);
             await _unitOfWork.SaveChangesAsync();
@@ -181,6 +251,27 @@ namespace Application.Services.OrganizerServices
             ev.Status = EventStatus.Cancelled;
             ev.IsDeleted = true;
             _eventRepository.Update(ev);
+
+            // Revert place availability slot back to Available
+            var request = await _bookingRequestRepository.GetQueryable()
+                .FirstOrDefaultAsync(r => r.EventId == eventId && r.Status == RequestStatus.Accepted && !r.IsDeleted);
+            if (request != null)
+            {
+                request.Status = RequestStatus.Cancelled;
+                _bookingRequestRepository.Update(request);
+
+                var slot = await _availabilityRepository.GetQueryable()
+                    .FirstOrDefaultAsync(a => a.PlaceId == request.PlaceId 
+                                              && a.Date.Date == request.RequestedDate.Date 
+                                              && a.Status == PlaceStatus.Booked
+                                              && !a.IsDeleted);
+                if (slot != null)
+                {
+                    slot.Status = PlaceStatus.Available;
+                    slot.LastModifiedAt = DateTime.UtcNow;
+                    _availabilityRepository.Update(slot);
+                }
+            }
 
             // Void current attendee bookings and notify
             if (ev.Bookings != null)
@@ -271,7 +362,9 @@ namespace Application.Services.OrganizerServices
                 .Include(r => r.Place)
                 .FirstOrDefaultAsync(r => r.Id == request.Id);
 
-            return _mapper.Map<BookingRequestDetailsDto>(populatedRequest ?? request);
+            var result = _mapper.Map<BookingRequestDetailsDto>(populatedRequest ?? request);
+            result.IsPaid = false;
+            return result;
         }
 
         public async Task CancelPendingBookingRequestAsync(int requestId)
@@ -299,11 +392,56 @@ namespace Application.Services.OrganizerServices
             var requests = await _bookingRequestRepository.GetQueryable()
                 .Include(r => r.Organizer)
                 .Include(r => r.Place)
+                .Include(r => r.Event)
                 .Where(r => r.OrganizerId == organizerId && !r.IsDeleted)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
 
-            return _mapper.Map<List<BookingRequestDetailsDto>>(requests);
+            var dtos = _mapper.Map<List<BookingRequestDetailsDto>>(requests);
+
+            if (dtos.Any())
+            {
+                var requestIds = dtos.Select(d => d.RequestId).ToList();
+                var paidRequestIds = await _transactionRepository.GetQueryable()
+                    .Where(t => t.ItemType == "PlaceBooking" && t.TransactionStatus == TransactionStatus.Completed && requestIds.Contains(t.ReferenceId))
+                    .Select(t => t.ReferenceId)
+                    .ToListAsync();
+
+                foreach (var dto in dtos)
+                {
+                    dto.IsPaid = paidRequestIds.Contains(dto.RequestId);
+                }
+            }
+
+            return dtos;
+        }
+
+        public async Task<List<BookingRequestDetailsDto>> GetOrganizerUpComingBookingRequestsAsync(int organizerId)
+        {
+            var requests = await _bookingRequestRepository.GetQueryable()
+                .Include(r => r.Organizer)
+                .Include(r => r.Place)
+                .Where(r => r.OrganizerId == organizerId && !r.IsDeleted && r.Status == RequestStatus.Accepted && r.StartTime > DateTime.UtcNow.TimeOfDay)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            var dtos = _mapper.Map<List<BookingRequestDetailsDto>>(requests);
+
+            if (dtos.Any())
+            {
+                var requestIds = dtos.Select(d => d.RequestId).ToList();
+                var paidRequestIds = await _transactionRepository.GetQueryable()
+                    .Where(t => t.ItemType == "PlaceBooking" && t.TransactionStatus == TransactionStatus.Completed && requestIds.Contains(t.ReferenceId))
+                    .Select(t => t.ReferenceId)
+                    .ToListAsync();
+
+                foreach (var dto in dtos)
+                {
+                    dto.IsPaid = paidRequestIds.Contains(dto.RequestId);
+                }
+            }
+
+            return dtos;
         }
 
         public async Task<List<TicketRequestDto>> GetOrganizerTicketRequestsAsync(int organizerId)
@@ -335,8 +473,15 @@ namespace Application.Services.OrganizerServices
         public async Task<List<OrganizerEventDashboardDto>> GetOrganizerEventsDashboardAsync(int organizerId)
         {
             var events = await _eventRepository.GetQueryable()
+                .Include(e => e.Place)
                 .Where(e => e.OrganizerId == organizerId && !e.IsDeleted)
                 .OrderByDescending(e => e.StartDate)
+                .ToListAsync();
+
+            var eventIds = events.Select(e => e.Id).ToList();
+            var reviewedEventIds = await _feedbackRepo.GetQueryable()
+                .Where(f => f.OrganizerId == organizerId && f.EventId != null && eventIds.Contains(f.EventId.Value))
+                .Select(f => f.EventId.Value)
                 .ToListAsync();
 
             return events.Select(e => new OrganizerEventDashboardDto
@@ -345,7 +490,12 @@ namespace Application.Services.OrganizerServices
                 Title = e.Title,
                 Status = e.Status.ToString(),
                 TotalTickets = e.TotalTickets,
-                RemainingTickets = e.RemainingTickets
+                RemainingTickets = e.RemainingTickets,
+                StartDate = e.StartDate,
+                EndDate = e.EndDate,
+                PlaceId = e.PlaceId,
+                PlaceName = e.Place?.Name,
+                HasReviewedPlace = reviewedEventIds.Contains(e.Id)
             }).ToList();
         }
         public async Task<OrganizerDashboardStatsDto> GetOrganizerDashboardStatsAsync(int organizerId)
@@ -358,12 +508,57 @@ namespace Application.Services.OrganizerServices
             var completedEvents = events.Count(e => e.Status == EventStatus.Completed);
             var pendingEvents = events.Count(e => e.Status == EventStatus.Pending || e.Status == EventStatus.Draft);
 
-            var totalTicketsSold = events.Sum(e => e.TotalTickets - e.RemainingTickets);
-            var totalRevenue = events.Sum(e => (decimal)((e.TotalTickets - e.RemainingTickets) * e.TicketPrice));
+            var organizerEventIds = events.Select(e => e.Id).ToList();
 
-            var bookingRequests = await _bookingRequestRepository.GetQueryable()
-                .Where(r => r.OrganizerId == organizerId && r.Status == RequestStatus.Accepted && !r.IsDeleted)
+            var bookings = await _bookingRepository.GetQueryable()
+                .Where(b => organizerEventIds.Contains(b.EventId) && !b.IsDeleted)
                 .ToListAsync();
+
+            var bookingIds = bookings.Select(b => b.Id).ToList();
+
+            // Get paid bookings via completed transactions
+            var paidBookingIds = await _transactionRepository.GetQueryable()
+                .Where(t => t.ItemType == "EventBooking" 
+                            && bookingIds.Contains(t.ReferenceId) 
+                            && t.TransactionStatus == TransactionStatus.Completed)
+                .Select(t => t.ReferenceId)
+                .Distinct()
+                .ToListAsync();
+
+            var validBookings = bookings
+                .Where(b => b.Status == BookingStatus.Confirmed || paidBookingIds.Contains(b.Id))
+                .ToList();
+
+            var totalTicketsSold = validBookings.Sum(b => b.NumberOfTickets);
+
+            // Sum of completed event ticket transactions
+            var totalRevenue = await _transactionRepository.GetQueryable()
+                .Where(t => t.ItemType == "EventBooking" 
+                            && bookingIds.Contains(t.ReferenceId) 
+                            && t.TransactionStatus == TransactionStatus.Completed)
+                .SumAsync(t => t.Amount);
+
+            // Places booked
+            var allBookingRequests = await _bookingRequestRepository.GetQueryable()
+                .Where(r => r.OrganizerId == organizerId && !r.IsDeleted)
+                .ToListAsync();
+            
+            var bookingRequestIds = allBookingRequests.Select(r => r.Id).ToList();
+
+            var paidRequestIds = await _transactionRepository.GetQueryable()
+                .Where(t => t.ItemType == "PlaceBooking" 
+                            && bookingRequestIds.Contains(t.ReferenceId) 
+                            && t.TransactionStatus == TransactionStatus.Completed)
+                .Select(t => t.ReferenceId)
+                .Distinct()
+                .ToListAsync();
+
+            var acceptedOrPaidRequests = allBookingRequests
+                .Where(r => r.Status == RequestStatus.Accepted || paidRequestIds.Contains(r.Id))
+                .ToList();
+
+            var wallet = await _walletRepo.GetQueryable().FirstOrDefaultAsync(w => w.UserId == organizerId);
+            var availableBalance = wallet?.AvailableBalance ?? 0m;
 
             return new OrganizerDashboardStatsDto
             {
@@ -372,7 +567,8 @@ namespace Application.Services.OrganizerServices
                 PendingEvents = pendingEvents,
                 TotalTicketsSold = totalTicketsSold,
                 TotalRevenue = totalRevenue,
-                TotalPlacesBooked = bookingRequests.Count
+                AvailableBalance = availableBalance,
+                TotalPlacesBooked = acceptedOrPaidRequests.Count
             };
         }
         public async Task<List<EventAttendeeDto>> GetEventAttendeesAsync(int eventId)
@@ -394,8 +590,10 @@ namespace Application.Services.OrganizerServices
                 BookingDate = b.BookingDate,
                 CheckInStatus = b.Status.ToString(), 
                 CheckInTime = b.CheckedInAt?.ToString("yyyy-MM-dd HH:mm"),
-                PaymentStatus = "paid" // Adjust based on logic
-            }).ToList();
+                PaymentStatus = (b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Attended) ? "paid" :
+                                b.Status == BookingStatus.Rejected ? "rejected" :
+                                b.Status == BookingStatus.Cancelled ? "cancelled" : "pending"
+             }).ToList();
         }
 
         public async Task ManualCheckInAsync(int bookingId)
@@ -423,6 +621,24 @@ namespace Application.Services.OrganizerServices
             _bookingRepository.Update(booking);
             await _unitOfWork.SaveChangesAsync();
         }
+
+        public async Task UndoCheckInAsync(int bookingId)
+        {
+            var booking = await _bookingRepository.GetQueryable()
+                .FirstOrDefaultAsync(b => b.Id == bookingId && !b.IsDeleted);
+
+            if (booking == null)
+                throw new KeyNotFoundException("Booking not found");
+
+            if (booking.Status != BookingStatus.Attended)
+                throw new InvalidOperationException("Attendee has not checked in yet");
+
+            booking.Status = BookingStatus.Confirmed;
+            booking.CheckedInAt = null;
+            _bookingRepository.Update(booking);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
         public async Task<OrganizerProfileDto> GetOrganizerProfileAsync(int organizerId)
         {
             var organizer = await _organizerRepo.GetQueryable()
@@ -448,6 +664,91 @@ namespace Application.Services.OrganizerServices
                 ReviewsCount = organizer.ReviewsCount
                 // You can add more fields if needed
             };
+        }
+
+        public async Task SubmitPlaceFeedbackAsync(int organizerId, int placeId, int eventId, OrganizerPlaceFeedbackDto dto)
+        {
+            var ev = await _eventRepository.GetQueryable()
+                .Include(e => e.Place)
+                .FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted);
+
+            if (ev == null)
+                throw new KeyNotFoundException("Event not found");
+
+            if (ev.OrganizerId != organizerId)
+                throw new UnauthorizedAccessException("You do not own this event.");
+
+            if (ev.PlaceId != placeId)
+                throw new InvalidOperationException("This event was not hosted at the specified place.");
+
+            var now = DateTime.UtcNow;
+            if (ev.Status != EventStatus.Completed && ev.EndDate >= now)
+                throw new InvalidOperationException("You can only review the venue after the event has completed or ended.");
+
+            var existingFeedback = await _feedbackRepo.GetQueryable()
+                .FirstOrDefaultAsync(f => f.OrganizerId == organizerId && f.EventId == eventId && !f.IsDeleted);
+
+            if (existingFeedback != null)
+                throw new InvalidOperationException("You have already submitted feedback for this event venue.");
+
+            var bookingRequest = await _bookingRequestRepository.GetQueryable()
+                .FirstOrDefaultAsync(br => br.EventId == eventId && br.PlaceId == placeId && br.OrganizerId == organizerId && !br.IsDeleted);
+
+            var feedback = new Feedback
+            {
+                Rating = dto.Rating,
+                Comment = dto.Comment,
+                OrganizerId = organizerId,
+                PlaceId = placeId,
+                EventId = eventId,
+                BookingRequestId = bookingRequest?.Id,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _feedbackRepo.AddAsync(feedback);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task ReleaseBookingRequestVenueAsync(int requestId)
+        {
+            var request = await _bookingRequestRepository.GetQueryable()
+                .Include(r => r.Place)
+                .FirstOrDefaultAsync(r => r.Id == requestId && !r.IsDeleted);
+
+            if (request == null)
+                throw new KeyNotFoundException("Booking request not found.");
+
+            // Find the booked availability slot for this place on this date
+            var slot = await _availabilityRepository.GetQueryable()
+                .FirstOrDefaultAsync(a => a.PlaceId == request.PlaceId 
+                                          && a.Date.Date == request.RequestedDate.Date 
+                                          && a.Status == PlaceStatus.Booked
+                                          && !a.IsDeleted);
+
+            if (slot != null)
+            {
+                slot.Status = PlaceStatus.Available;
+                slot.LastModifiedAt = DateTime.UtcNow;
+                _availabilityRepository.Update(slot);
+            }
+            else
+            {
+                // In case the slot doesn't exist, create an Available slot
+                var newSlot = new Domain.Entities.PlaceEntities.PlaceAvailability
+                {
+                    PlaceId = request.PlaceId,
+                    Date = request.RequestedDate.Date,
+                    Status = PlaceStatus.Available,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _availabilityRepository.AddAsync(newSlot);
+            }
+
+            request.Status = RequestStatus.Cancelled;
+            request.LastModifiedAt = DateTime.UtcNow;
+            _bookingRequestRepository.Update(request);
+
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

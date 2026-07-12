@@ -1,4 +1,4 @@
-﻿using Application.Core.Interfaces.LLMInterfaces;
+using Application.Core.Interfaces.LLMInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +26,7 @@ namespace Forsa.Controllers.LLMController
 
             try
             {
-                var botResponse = await _LLMService.ExecuteChatAsync(request.Message, request.History);
+                var botResponse = await _LLMService.ExecuteChatAsync(request.Message, request.History, request.SystemContext);
                 return Ok(new { response = botResponse });
             }
             catch (Exception ex)
