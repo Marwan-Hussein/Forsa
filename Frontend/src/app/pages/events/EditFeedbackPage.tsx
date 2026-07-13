@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router";
 import { ArrowLeft, Star, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "motion/react";
 import { FloatingLabelTextarea } from "../../components/ui/floating-label-field";
 import { eventsApi } from "../../api/eventsApi";
 import { apiGet, apiPut, getUserIdFromToken } from "../../api/api";
@@ -10,6 +11,7 @@ import { EventDetailsDto } from "../../types";
 export default function EditFeedbackPage() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
+  const MotionLink = motion(Link);
   
   const [event, setEvent] = useState<EventDetailsDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -111,29 +113,34 @@ export default function EditFeedbackPage() {
           <p className="font-['Inter:Regular',sans-serif] text-[14px] text-muted-foreground mb-4">
             The event details could not be found.
           </p>
-          <Link
+          <MotionLink
             to={`/events/${eventId}/feedbacks`}
-            className="inline-block bg-primary text-[#dde6ed] px-6 py-2 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[14px] hover:bg-[#1e2936]"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[var(--brand-slate-contrast)] to-[#1e2936] py-2 px-4 text-sm font-medium text-[#dde6ed] shadow-md transition-all hover:shadow-lg"
           >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Back to Feedbacks
-          </Link>
+          </MotionLink>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
+    <div className="min-h-screen bg-slate-50 pt-28 pb-12 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link
+          <MotionLink
             to={`/events/${eventId}/feedbacks`}
-            className="inline-flex items-center gap-2 mb-4 text-muted-foreground hover:text-foreground transition-colors font-['Inter:Regular',sans-serif] text-[14px]"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="group inline-flex items-center gap-2 mb-6 rounded-xl bg-gradient-to-br from-[var(--brand-slate-contrast)] to-[#1e2936] py-2 px-4 text-sm font-medium text-[#dde6ed] shadow-md transition-all hover:shadow-lg"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Back to Feedbacks
-          </Link>
+          </MotionLink>
           <h1 className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-foreground mb-2">
             Edit Your Feedback
           </h1>
@@ -170,13 +177,15 @@ export default function EditFeedbackPage() {
               </label>
               <div className="flex gap-2 justify-center py-4">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <button
+                  <motion.button
                     key={star}
                     type="button"
+                    whileHover={{ scale: 1.15 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => setRating(star)}
                     onMouseEnter={() => setHoveredRating(star)}
                     onMouseLeave={() => setHoveredRating(0)}
-                    className="transition-transform hover:scale-110"
+                    className="transition-transform cursor-pointer"
                   >
                     <Star
                       className={`w-12 h-12 ${
@@ -185,7 +194,7 @@ export default function EditFeedbackPage() {
                           : "text-muted-foreground"
                       }`}
                     />
-                  </button>
+                  </motion.button>
                 ))}
               </div>
               {rating > 0 && (
@@ -215,10 +224,12 @@ export default function EditFeedbackPage() {
             </div>
 
             {/* Submit Button */}
-            <button
+             <motion.button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-primary text-[#dde6ed] py-3 rounded-[8px] font-['Inter:Medium',sans-serif] font-medium text-[16px] hover:bg-[#1e2936] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[var(--brand-slate-contrast)] to-[#1e2936] py-3 font-['Inter:Medium',sans-serif] text-[16px] font-medium text-[#dde6ed] shadow-lg ring-1 ring-white/10 transition-all duration-300 ease-in-out hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
@@ -229,7 +240,7 @@ export default function EditFeedbackPage() {
                   <Send className="w-5 h-5" /> Update Feedback
                 </>
               )}
-            </button>
+            </motion.button>
           </form>
         </div>
 

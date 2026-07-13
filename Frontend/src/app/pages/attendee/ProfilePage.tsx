@@ -326,7 +326,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <GoogleCalendarConnect variant="button" />
-              <Link to="/interests" className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all">
+              <Link to="/interests" state={{ from: "profile" }} className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all">
                 <Bell className="w-4 h-4" /> Manage Interests
               </Link>
             </div>
@@ -403,7 +403,7 @@ export default function ProfilePage() {
 
             {/* Quick Links */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-              <Link to="/interests" className="w-full flex items-center gap-3 p-4 hover:bg-slate-50 transition-colors border-b border-slate-100 group text-left">
+              <Link to="/interests" state={{ from: "profile" }} className="w-full flex items-center gap-3 p-4 hover:bg-slate-50 transition-colors border-b border-slate-100 group text-left">
                 <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center">
                   <Star className="w-4 h-4 text-amber-500" />
                 </div>

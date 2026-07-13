@@ -732,7 +732,7 @@ function RecommendationsView({ events, wishlist, toggleWishlist, isLoading }: { 
       </div>
       <h3 className="text-base font-bold text-slate-800 mb-1.5">No recommendations yet</h3>
       <p className="text-slate-400 text-xs max-w-xs mx-auto mb-5">Tell us more about your interests to get personalized event recommendations.</p>
-      <Link to="/interests" className="inline-flex items-center justify-center px-5 py-2.5 bg-amber-500 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-colors shadow-md">
+      <Link to="/interests" state={{ from: "dashboard" }} className="inline-flex items-center justify-center px-5 py-2.5 bg-amber-500 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-colors shadow-md">
         Update Interests
       </Link>
     </div>
@@ -944,6 +944,7 @@ export default function AttendeeDashboard() {
                 </div>
                 <Link 
                   to="/interests" 
+                  state={{ from: "dashboard" }}
                   className="bg-white/15 hover:bg-white/25 backdrop-blur-md text-white font-semibold text-sm px-5 py-3 rounded-lg transition-all shadow-md shrink-0 flex items-center justify-center gap-1.5 border border-white/10"
                 >
                   <Star className="w-4 h-4 text-amber-300 fill-amber-300" /> Manage Interests

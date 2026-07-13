@@ -1,6 +1,26 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
-import { ArrowLeft, Save, Sparkles, Check, Flame } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router";
+import { 
+  ArrowLeft, 
+  Save, 
+  Sparkles, 
+  Check, 
+  Flame,
+  Laptop,
+  Briefcase,
+  Rocket,
+  GraduationCap,
+  Brain,
+  Code2,
+  Megaphone,
+  Coins,
+  Heart,
+  Music,
+  Trophy,
+  Palette,
+  Compass,
+  LucideIcon
+} from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "../../api/api";
 import { attendeeApi } from "../../api/attendeeApi";
@@ -9,25 +29,30 @@ import { getUserIdFromToken } from "../../api/api";
 import { motion, AnimatePresence } from "motion/react";
 
 interface Interest extends InterestDto {
-  icon: string;
+  icon: LucideIcon;
   color: string;
   bgGrad: string;
 }
 
-const interestStyles: Record<string, { icon: string; color: string; bgGrad: string }> = {
-  business: { icon: "💼", color: "text-blue-600", bgGrad: "from-blue-500 to-indigo-600" },
-  music: { icon: "🎵", color: "text-violet-600", bgGrad: "from-violet-500 to-purple-600" },
-  technology: { icon: "💻", color: "text-cyan-600", bgGrad: "from-cyan-500 to-blue-600" },
-  sports: { icon: "⚽", color: "text-emerald-600", bgGrad: "from-emerald-500 to-teal-600" },
-  art: { icon: "🎨", color: "text-rose-600", bgGrad: "from-rose-400 to-pink-600" },
-  health: { icon: "🧘", color: "text-fuchsia-600", bgGrad: "from-fuchsia-500 to-rose-600" },
-  education: { icon: "📚", color: "text-amber-600", bgGrad: "from-amber-400 to-orange-500" },
-  travel: { icon: "✈️", color: "text-sky-600", bgGrad: "from-sky-400 to-blue-500" },
+const interestStyles: Record<string, { icon: LucideIcon; color: string; bgGrad: string }> = {
+  technology: { icon: Laptop, color: "text-cyan-600", bgGrad: "from-cyan-500 to-blue-600" },
+  business: { icon: Briefcase, color: "text-blue-600", bgGrad: "from-blue-500 to-indigo-600" },
+  entrepreneurship: { icon: Rocket, color: "text-amber-600", bgGrad: "from-amber-500 to-orange-600" },
+  education: { icon: GraduationCap, color: "text-indigo-600", bgGrad: "from-indigo-500 to-purple-600" },
+  "ai & machine learning": { icon: Brain, color: "text-purple-600", bgGrad: "from-purple-500 to-pink-600" },
+  programming: { icon: Code2, color: "text-emerald-600", bgGrad: "from-emerald-500 to-teal-600" },
+  marketing: { icon: Megaphone, color: "text-rose-600", bgGrad: "from-rose-500 to-red-600" },
+  finance: { icon: Coins, color: "text-yellow-600", bgGrad: "from-yellow-500 to-amber-600" },
+  health: { icon: Heart, color: "text-red-600", bgGrad: "from-red-500 to-rose-600" },
+  music: { icon: Music, color: "text-violet-600", bgGrad: "from-violet-500 to-fuchsia-600" },
+  sports: { icon: Trophy, color: "text-orange-600", bgGrad: "from-orange-500 to-red-600" },
+  art: { icon: Palette, color: "text-pink-600", bgGrad: "from-pink-500 to-rose-600" },
+  travel: { icon: Compass, color: "text-sky-600", bgGrad: "from-sky-400 to-blue-500" },
 };
 
 function mapInterest(interest: InterestDto): Interest {
   const style = interestStyles[interest.name.toLowerCase()] ?? {
-    icon: "✨",
+    icon: Sparkles,
     color: "text-slate-600",
     bgGrad: "from-slate-500 to-slate-700"
   };
@@ -63,6 +88,12 @@ function getErrorMessage(error: unknown, fallback: string) {
 export default function InterestsPage() {
   const attendeeId = getUserIdFromToken();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const fromPage = location.state?.from || "dashboard";
+  const backUrl = fromPage === "profile" ? "/profile" : "/dashboard";
+  const backLabel = fromPage === "profile" ? "Profile" : "Dashboard";
+
   const [availableInterests, setAvailableInterests] = useState<Interest[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
   const [originalInterests, setOriginalInterests] = useState<number[]>([]);
@@ -169,9 +200,9 @@ export default function InterestsPage() {
       {/* Hero */}
       <div className="bg-gradient-to-br from-[var(--brand-hero-deep)] via-[var(--brand-navy)] to-[var(--brand-hero-dark)] pt-24 pb-10 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <Link to="/profile" className="inline-flex items-center gap-2 text-blue-200 hover:text-white text-sm font-medium mb-6 group transition-colors">
+          <Link to={backUrl} className="inline-flex items-center gap-2 text-blue-200 hover:text-white text-sm font-medium mb-6 group transition-colors">
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Profile
+            {backLabel}
           </Link>
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
             <div>
@@ -248,8 +279,8 @@ export default function InterestsPage() {
                 />
                 
                 <div className="relative z-10">
-                  <div className={`text-4xl mb-3 transition-transform duration-300 ${isSelected ? "scale-110" : ""}`}>
-                    {interest.icon}
+                  <div className={`mb-3 transition-all duration-300 ${isSelected ? "scale-110 text-white" : interest.color}`}>
+                    <interest.icon className="w-10 h-10 stroke-[1.5]" />
                   </div>
                   <span className={`font-bold text-base transition-colors ${
                     isSelected ? "text-white" : "text-slate-800"

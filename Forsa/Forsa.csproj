@@ -5,6 +5,9 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>eecac45f-74de-4d4a-891a-7bdd8c37b68b</UserSecretsId>
+		<!--<SpaRoot>..\Frontend\</SpaRoot>-->
+		<!--<SpaProxyServerUrl>http://localhost:5173</SpaProxyServerUrl>-->
+		<!--<SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>-->
 	</PropertyGroup>
 
   <ItemGroup>
