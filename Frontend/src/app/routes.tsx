@@ -65,7 +65,12 @@ import VerifyAccountPage from "./pages/auth/VerifyAccountPage";
 import EventFeedbacksPage from "./pages/events/EventFeedbacksPage";
 import EditFeedbackPage from "./pages/events/EditFeedbackPage";
 import DeleteFeedbackPage from "./pages/events/DeleteFeedbackPage";   
+import LoadingPreviewPage from "./pages/LoadingPreviewPage";
 export const router = createBrowserRouter([
+  {
+    path: "/loading",
+    Component: LoadingPreviewPage,
+  },
   {
     path: "/admin/login",
     Component: AdminLoginPage,

@@ -228,7 +228,7 @@ export default function RegistrationPage() {
 
     { name: "password", label: "Password *", type: "password", icon: Lock, placeholder: "Create a strong password", step: 2 },
     { name: "confirmPassword", label: "Confirm Password *", type: "password", icon: Lock, placeholder: "Re-enter your password", step: 2 },
-    { name: "phone", label: "Phone Number *", type: "tel", icon: Phone, placeholder: "+20 11 12345678", step: 2 },
+    { name: "phone", label: "Phone Number *", type: "tel", icon: Phone, placeholder: "+20 1112345678", step: 2 },
 
     { name: "location", label: "Location *", type: "text", icon: MapPin, placeholder: "City, State/Country", step: 3 },
   ];
