@@ -3,6 +3,7 @@ import { router } from "./routes";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { NotificationProvider } from "./contexts/NotificationContext";
+import { GlobalRequestLoader } from "./components/Loading";
 //import { ForsaIntroAnimation } from "./components/ForsaIntroAnimation/ForsaIntroAnimation";
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
       {/*<ForsaIntroAnimation />*/}
 
       <RouterProvider router={router} />
+      <GlobalRequestLoader />
       <ToastContainer
         position="bottom-right"
         autoClose={4000}
