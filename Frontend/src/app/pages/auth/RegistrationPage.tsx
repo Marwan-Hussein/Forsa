@@ -6,6 +6,29 @@ import { apiPost, ApiError } from "../../api/api";
 import { toast } from "sonner";
 import { ForSaLogo } from "../../components/ForSaLogo";
 
+// Password: min 8 chars, at least 1 uppercase, 1 lowercase, 1 digit, 1 special char
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$/;
+
+/** Normalise any Egyptian phone format (+20 1143777598, +201143777598, 01143777598, spaces included) to 01XXXXXXXXX (11 digits) */
+const normalisePhone = (raw: string): string => {
+  let s = raw.replace(/\s+/g, "");
+  if (s.startsWith("+20")) s = s.slice(3);
+  else if (s.startsWith("0020")) s = s.slice(4);
+  else if (s.startsWith("+2")) s = s.slice(2);
+
+  // If after prefix stripping it starts with 1, 2, 5, 0 (without leading 0), add leading 0
+  if (/^1[0125]\d{8}$/.test(s)) {
+    s = "0" + s;
+  }
+  return s;
+};
+
+/** Validates whether the raw input represents a valid Egyptian phone number */
+const isEgyptianPhone = (raw: string): boolean => {
+  const norm = normalisePhone(raw);
+  return /^01[0125]\d{8}$/.test(norm);
+};
+
 interface OtpResponse {
   email: string;
   message: string;
@@ -15,7 +38,7 @@ export default function RegistrationPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const registrationType = searchParams.get("type") || "attendee";
-  
+
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
@@ -37,14 +60,54 @@ export default function RegistrationPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
+
+    // Real-time inline validation for password & phone
+    setErrors((prev) => {
+      const updated = { ...prev };
+
+      if (name === "password") {
+        if (!value) {
+          updated.password = "Password is required";
+        } else if (!PASSWORD_REGEX.test(value)) {
+          updated.password = "Must be ≥8 chars with uppercase, lowercase, number & special character";
+        } else {
+          delete updated.password;
+        }
+        // Re-validate confirmPassword against new password
+        if (formData.confirmPassword && value !== formData.confirmPassword) {
+          updated.confirmPassword = "Passwords do not match";
+        } else if (formData.confirmPassword && value === formData.confirmPassword) {
+          delete updated.confirmPassword;
+        }
+      }
+
+      if (name === "confirmPassword") {
+        if (value && value !== formData.password) {
+          updated.confirmPassword = "Passwords do not match";
+        } else {
+          delete updated.confirmPassword;
+        }
+      }
+
+      if (name === "phone") {
+        if (!value.trim()) {
+          updated.phone = "Phone number is required";
+        } else if (!isEgyptianPhone(value)) {
+          updated.phone = "Enter a valid Egyptian number (e.g. 01143777598 or +20 1143777598)";
+        } else {
+          delete updated.phone;
+        }
+      }
+
+      // Clear other field errors on change
+      if (name !== "password" && name !== "confirmPassword" && name !== "phone") {
+        delete updated[name];
+      }
+
+      return updated;
+    });
   };
 
   const validateStep = (step: number) => {
@@ -59,10 +122,21 @@ export default function RegistrationPage() {
     }
 
     if (step === 2) {
-      if (!formData.password) newErrors.password = "Required";
-      else if (formData.password.length < 8) newErrors.password = "Min 8 chars";
-      if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords mismatch";
-      if (!formData.phone.trim()) newErrors.phone = "Required";
+      if (!formData.password) {
+        newErrors.password = "Password is required";
+      } else if (!PASSWORD_REGEX.test(formData.password)) {
+        newErrors.password = "Must be ≥8 chars with uppercase, lowercase, number & special character";
+      }
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = "Please confirm your password";
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
+      }
+      if (!formData.phone.trim()) {
+        newErrors.phone = "Phone number is required";
+      } else if (!isEgyptianPhone(formData.phone)) {
+        newErrors.phone = "Enter a valid Egyptian number (e.g. 01143777598 or +20 1143777598)";
+      }
     }
 
     if (step === 3) {
@@ -98,7 +172,7 @@ export default function RegistrationPage() {
         fullName: formData.fullName,
         email: formData.email,
         password: formData.password,
-        phoneNumber: formData.phone,
+        phoneNumber: normalisePhone(formData.phone),
         location: formData.location,
         UserName: formData.username,
         birthdate: formData.birthdate,
@@ -151,11 +225,11 @@ export default function RegistrationPage() {
     { name: "fullName", label: registrationType === "organization" ? "Organization Name *" : registrationType === "place" ? "Owner Name *" : "Full Name *", type: "text", icon: User, placeholder: registrationType === "organization" ? "Enter organization name" : registrationType === "place" ? "Enter owner name" : "Enter your full name", step: 1 },
     { name: "username", label: "Username *", type: "text", icon: User, placeholder: "Choose a username", step: 1 },
     { name: "email", label: "Email Address *", type: "email", icon: Mail, placeholder: "your.email@example.com", step: 1 },
-    
+
     { name: "password", label: "Password *", type: "password", icon: Lock, placeholder: "Create a strong password", step: 2 },
     { name: "confirmPassword", label: "Confirm Password *", type: "password", icon: Lock, placeholder: "Re-enter your password", step: 2 },
-    { name: "phone", label: "Phone Number *", type: "tel", icon: Phone, placeholder: "+1 (555) 123-4567", step: 2 },
-    
+    { name: "phone", label: "Phone Number *", type: "tel", icon: Phone, placeholder: "+20 11 12345678", step: 2 },
+
     { name: "location", label: "Location *", type: "text", icon: MapPin, placeholder: "City, State/Country", step: 3 },
   ];
 
@@ -167,8 +241,8 @@ export default function RegistrationPage() {
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col p-12 border-r border-white/5">
         {/* Stunning Image Background */}
         <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop" 
+          <img
+            src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop"
             alt="Event Concert"
             className="w-full h-full object-cover"
           />
@@ -192,9 +266,9 @@ export default function RegistrationPage() {
               <Sparkles className="w-4 h-4 text-emerald-400" />
               <span className="text-sm font-medium text-white tracking-wide drop-shadow-md">Your journey starts here</span>
             </div>
-            
+
             <h2 className="text-5xl font-bold text-white mb-6 leading-[1.15] drop-shadow-lg">
-              Begin your <br/>
+              Begin your <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 drop-shadow-md">journey</span> with us.
             </h2>
             <p className="text-xl text-slate-100 font-medium leading-relaxed mb-10 max-w-lg drop-shadow-md">
@@ -203,25 +277,25 @@ export default function RegistrationPage() {
 
             {/* Quick benefits floating bar */}
             <div className="flex flex-col gap-4 p-6 rounded-2xl bg-white/10 border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]">
-               <div className="flex items-center gap-4">
-                 <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                   <Shield className="w-5 h-5 text-blue-300" />
-                 </div>
-                 <div>
-                   <h4 className="text-white font-semibold text-sm drop-shadow-sm">Secure & Reliable</h4>
-                   <p className="text-slate-300 text-xs mt-0.5">Your data is safe with us.</p>
-                 </div>
-               </div>
-               <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-               <div className="flex items-center gap-4">
-                 <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                   <Calendar className="w-5 h-5 text-emerald-300" />
-                 </div>
-                 <div>
-                   <h4 className="text-white font-semibold text-sm drop-shadow-sm">Seamless Planning</h4>
-                   <p className="text-slate-300 text-xs mt-0.5">Everything you need in one place.</p>
-                 </div>
-               </div>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-blue-300" />
+                </div>
+                <div>
+                  <h4 className="text-white font-semibold text-sm drop-shadow-sm">Secure & Reliable</h4>
+                  <p className="text-slate-300 text-xs mt-0.5">Your data is safe with us.</p>
+                </div>
+              </div>
+              <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-emerald-300" />
+                </div>
+                <div>
+                  <h4 className="text-white font-semibold text-sm drop-shadow-sm">Seamless Planning</h4>
+                  <p className="text-slate-300 text-xs mt-0.5">Everything you need in one place.</p>
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -237,172 +311,170 @@ export default function RegistrationPage() {
 
         <motion.div
           className="w-full max-w-lg relative z-10 my-auto"
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      >
-        {/* Header */}
-        <div className="mb-8 lg:mb-10">
-          <Link
-            to="/"
-            className="mb-8 inline-block lg:hidden"
-          >
-            <ForSaLogo className="h-14 text-white" />
-          </Link>
-
-          <AnimatePresence mode="wait">
-            <motion.h1
-              key={`title-${registrationType}`}
-              className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-white mb-2 tracking-tight"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.3 }}
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {/* Header */}
+          <div className="mb-8 lg:mb-10">
+            <Link
+              to="/"
+              className="mb-8 inline-block lg:hidden"
             >
-              {config.title}
-            </motion.h1>
-          </AnimatePresence>
+              <ForSaLogo className="h-14 text-white" />
+            </Link>
 
-          <motion.p
-            className="font-['Inter:Regular',sans-serif] text-[16px] text-slate-300 mb-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.15 }}
-          >
-            {config.description}
-          </motion.p>
+            <AnimatePresence mode="wait">
+              <motion.h1
+                key={`title-${registrationType}`}
+                className="font-['Inter:Bold',sans-serif] font-bold text-[36px] text-white mb-2 tracking-tight"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.3 }}
+              >
+                {config.title}
+              </motion.h1>
+            </AnimatePresence>
 
-          {/* Registration Type Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto mb-6">
-            {registrationTypes.map((type) => {
-              const Icon = type.icon;
-              const isActive = registrationType === type.id;
-              return (
-                <Link
-                  key={type.id}
-                  to={`/register?type=${type.id}`}
-                  onClick={() => setCurrentStep(1)} // Reset step on type change
-                  className={`relative flex-1 flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 ease-out border ${
-                    isActive
-                      ? "text-white shadow-md border-transparent"
-                      : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
-                  }`}
-                  style={isActive ? { backgroundColor: type.color, borderColor: type.color } : undefined}
-                >
-                  <Icon className="w-4 h-4" />
-                  {type.label}
-                  {isActive && (
-                    <motion.div
-                      className="absolute -bottom-1 left-1/2 h-1 w-8 rounded-full bg-white/40"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3 }}
-                      style={{ x: "-50%" }}
-                    />
-                  )}
-                </Link>
-              );
-            })}
+            <motion.p
+              className="font-['Inter:Regular',sans-serif] text-[16px] text-slate-300 mb-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.15 }}
+            >
+              {config.description}
+            </motion.p>
+
+            {/* Registration Type Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto mb-6">
+              {registrationTypes.map((type) => {
+                const Icon = type.icon;
+                const isActive = registrationType === type.id;
+                return (
+                  <Link
+                    key={type.id}
+                    to={`/register?type=${type.id}`}
+                    onClick={() => setCurrentStep(1)} // Reset step on type change
+                    className={`relative flex-1 flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl font-['Inter:Medium',sans-serif] font-medium text-[14px] transition-all duration-300 ease-out border ${isActive
+                        ? "text-white shadow-md border-transparent"
+                        : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
+                      }`}
+                    style={isActive ? { backgroundColor: type.color, borderColor: type.color } : undefined}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {type.label}
+                    {isActive && (
+                      <motion.div
+                        className="absolute -bottom-1 left-1/2 h-1 w-8 rounded-full bg-white/40"
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3 }}
+                        style={{ x: "-50%" }}
+                      />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
-        </div>
 
-        {/* Wizard Progress */}
-        <div className="flex items-center justify-between mb-8">
+          {/* Wizard Progress */}
+          <div className="flex items-center justify-between mb-8">
             <div className="flex gap-2">
-                {[1, 2, 3].map((step) => (
-                    <div key={step} className={`h-1.5 rounded-full transition-all duration-500 ${step === currentStep ? 'w-8 bg-[var(--brand-blue-accent)]' : step < currentStep ? 'w-4 bg-[var(--brand-blue-accent)]/60' : 'w-4 bg-white/10'}`} />
-                ))}
+              {[1, 2, 3].map((step) => (
+                <div key={step} className={`h-1.5 rounded-full transition-all duration-500 ${step === currentStep ? 'w-8 bg-[var(--brand-blue-accent)]' : step < currentStep ? 'w-4 bg-[var(--brand-blue-accent)]/60' : 'w-4 bg-white/10'}`} />
+              ))}
             </div>
             <span className="text-xs text-slate-400 font-medium tracking-widest uppercase">Step {currentStep} of {totalSteps}</span>
-        </div>
+          </div>
 
-        {/* Registration Form */}
-        <motion.div
-          className="rounded-3xl border border-white/10 bg-[#162032] p-8 sm:p-10 relative overflow-hidden shadow-[0_8px_32px_0_rgba(31,38,135,0.37)]"
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          {/* Top accent line */}
+          {/* Registration Form */}
           <motion.div
-            className="absolute top-0 left-0 right-0 h-[1px]"
-            style={{ background: `linear-gradient(to right, transparent, ${config.accentColor}, transparent)` }}
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 0.8, scaleX: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          />
-          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            className="rounded-3xl border border-white/10 bg-[#162032] p-8 sm:p-10 relative overflow-hidden shadow-[0_8px_32px_0_rgba(31,38,135,0.37)]"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            {/* Top accent line */}
+            <motion.div
+              className="absolute top-0 left-0 right-0 h-[1px]"
+              style={{ background: `linear-gradient(to right, transparent, ${config.accentColor}, transparent)` }}
+              initial={{ opacity: 0, scaleX: 0 }}
+              animate={{ opacity: 0.8, scaleX: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            />
+            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-          <form onSubmit={handleNextStep} className="space-y-5">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`step-${currentStep}`}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-5"
-              >
-                {currentFields.map((field) => {
-                  const Icon = field.icon;
-                  const isFocused = focusedField === field.name;
-                  return (
-                    <div key={field.name}>
-                      <label
-                        htmlFor={field.name}
-                        className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-slate-200 mb-2"
-                      >
-                        {field.label}
-                      </label>
-                      <div className="relative">
-                        <Icon
-                          className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${
-                            isFocused ? "text-white" : "text-slate-400"
-                          }`}
-                        />
-                        <input
-                          type={
-                            field.name === "password"
-                              ? (showPassword ? "text" : "password")
-                              : field.name === "confirmPassword"
-                              ? (showConfirmPassword ? "text" : "password")
-                              : field.type
-                          }
-                          id={field.name}
-                          name={field.name}
-                          value={formData[field.name as keyof typeof formData]}
-                          onChange={handleChange}
-                          onFocus={() => setFocusedField(field.name)}
-                          onBlur={() => setFocusedField(null)}
-                          className={`w-full pl-12 py-4 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:border-[var(--brand-blue-accent)] focus:bg-white/10 focus:ring-1 focus:ring-[var(--brand-blue-accent)]/50 font-['Inter:Regular',sans-serif] text-[15px] text-white placeholder:text-slate-500 transition-all duration-300 ${(field.name === "password" || field.name === "confirmPassword") ? 'pr-12' : 'pr-4'}`}
-                          placeholder={field.placeholder}
-                        />
-                        {(field.name === "password" || field.name === "confirmPassword") && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (field.name === "password") setShowPassword(!showPassword);
-                              if (field.name === "confirmPassword") setShowConfirmPassword(!showConfirmPassword);
-                            }}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-                          >
-                            {(field.name === "password" ? showPassword : showConfirmPassword) ? (
-                              <EyeOff className="h-5 w-5" />
-                            ) : (
-                              <Eye className="h-5 w-5" />
-                            )}
-                          </button>
+            <form onSubmit={handleNextStep} className="space-y-5">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`step-${currentStep}`}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-5"
+                >
+                  {currentFields.map((field) => {
+                    const Icon = field.icon;
+                    const isFocused = focusedField === field.name;
+                    return (
+                      <div key={field.name}>
+                        <label
+                          htmlFor={field.name}
+                          className="block font-['Inter:Medium',sans-serif] font-medium text-[14px] text-slate-200 mb-2"
+                        >
+                          {field.label}
+                        </label>
+                        <div className="relative">
+                          <Icon
+                            className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${isFocused ? "text-white" : "text-slate-400"
+                              }`}
+                          />
+                          <input
+                            type={
+                              field.name === "password"
+                                ? (showPassword ? "text" : "password")
+                                : field.name === "confirmPassword"
+                                  ? (showConfirmPassword ? "text" : "password")
+                                  : field.type
+                            }
+                            id={field.name}
+                            name={field.name}
+                            value={formData[field.name as keyof typeof formData]}
+                            onChange={handleChange}
+                            onFocus={() => setFocusedField(field.name)}
+                            onBlur={() => setFocusedField(null)}
+                            className={`w-full pl-12 py-4 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:border-[var(--brand-blue-accent)] focus:bg-white/10 focus:ring-1 focus:ring-[var(--brand-blue-accent)]/50 font-['Inter:Regular',sans-serif] text-[15px] text-white placeholder:text-slate-500 transition-all duration-300 ${(field.name === "password" || field.name === "confirmPassword") ? 'pr-12' : 'pr-4'}`}
+                            placeholder={field.placeholder}
+                          />
+                          {(field.name === "password" || field.name === "confirmPassword") && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (field.name === "password") setShowPassword(!showPassword);
+                                if (field.name === "confirmPassword") setShowConfirmPassword(!showConfirmPassword);
+                              }}
+                              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                            >
+                              {(field.name === "password" ? showPassword : showConfirmPassword) ? (
+                                <EyeOff className="h-5 w-5" />
+                              ) : (
+                                <Eye className="h-5 w-5" />
+                              )}
+                            </button>
+                          )}
+                        </div>
+                        {errors[field.name] && (
+                          <p className="mt-1.5 text-[12px] text-red-400">{errors[field.name]}</p>
                         )}
                       </div>
-                      {errors[field.name] && (
-                        <p className="mt-1.5 text-[12px] text-red-400">{errors[field.name]}</p>
-                      )}
-                    </div>
-                  );
-                })}
+                    );
+                  })}
 
-                {/* Step 3 Additions */}
-                {currentStep === 3 && registrationType === "attendee" && (
+                  {/* Step 3 Additions */}
+                  {currentStep === 3 && registrationType === "attendee" && (
                     <div>
                       <label
                         htmlFor="birthdate"
@@ -412,9 +484,8 @@ export default function RegistrationPage() {
                       </label>
                       <div className="relative">
                         <Calendar
-                          className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${
-                            focusedField === "birthdate" ? "text-white" : "text-slate-400"
-                          }`}
+                          className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === "birthdate" ? "text-white" : "text-slate-400"
+                            }`}
                         />
                         <input
                           type="date"
@@ -431,9 +502,9 @@ export default function RegistrationPage() {
                         <p className="mt-1.5 text-[12px] text-red-400">{errors.birthdate}</p>
                       )}
                     </div>
-                )}
+                  )}
 
-                {currentStep === 3 && (
+                  {currentStep === 3 && (
                     <div className="flex items-start gap-3 pt-4">
                       <input
                         type="checkbox"
@@ -448,72 +519,72 @@ export default function RegistrationPage() {
                         I agree to the Terms of Service and Privacy Policy
                       </label>
                     </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
+                  )}
+                </motion.div>
+              </AnimatePresence>
 
-            {/* Form Actions */}
-            <div className="flex gap-4 mt-8 pt-4 border-t border-white/5">
+              {/* Form Actions */}
+              <div className="flex gap-4 mt-8 pt-4 border-t border-white/5">
                 {currentStep > 1 && (
-                    <button
-                        type="button"
-                        onClick={() => setCurrentStep(p => p - 1)}
-                        className="flex-1 py-4 rounded-xl border border-white/10 bg-white/5 text-white font-semibold transition-all hover:bg-white/10 flex items-center justify-center gap-2"
-                    >
-                        <ArrowLeft className="w-4 h-4" /> Back
-                    </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(p => p - 1)}
+                    className="flex-1 py-4 rounded-xl border border-white/10 bg-white/5 text-white font-semibold transition-all hover:bg-white/10 flex items-center justify-center gap-2"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </button>
                 )}
                 <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className={`flex-[2] rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-4 font-['Inter:Bold',sans-serif] text-[16px] font-bold text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] transition-all duration-300 hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] active:scale-[0.98] flex items-center justify-center gap-2 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`flex-[2] rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-4 font-['Inter:Bold',sans-serif] text-[16px] font-bold text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] transition-all duration-300 hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] active:scale-[0.98] flex items-center justify-center gap-2 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
-                    {isSubmitting ? (
-                        <><Loader2 className="w-5 h-5 animate-spin" /> Sending...</>
-                    ) : currentStep < totalSteps ? (
-                        <>Continue <ArrowRight className="w-4 h-4" /></>
-                    ) : (
-                        "Create Account"
-                    )}
+                  {isSubmitting ? (
+                    <><Loader2 className="w-5 h-5 animate-spin" /> Sending...</>
+                  ) : currentStep < totalSteps ? (
+                    <>Continue <ArrowRight className="w-4 h-4" /></>
+                  ) : (
+                    "Create Account"
+                  )}
                 </button>
+              </div>
+            </form>
+
+            {/* Already have an account */}
+            <div className="mt-8 text-center">
+              <p className="font-['Inter:Regular',sans-serif] text-[15px] text-slate-400">
+                Already have an account?{" "}
+                <Link
+                  to="/login"
+                  className="font-['Inter:Medium',sans-serif] font-medium text-white hover:text-[var(--brand-blue-accent)] transition-colors duration-300"
+                >
+                  Sign In
+                </Link>
+              </p>
             </div>
-          </form>
+          </motion.div>
 
-          {/* Already have an account */}
-          <div className="mt-8 text-center">
-            <p className="font-['Inter:Regular',sans-serif] text-[15px] text-slate-400">
-              Already have an account?{" "}
-              <Link
-                to="/login"
-                className="font-['Inter:Medium',sans-serif] font-medium text-white hover:text-[var(--brand-blue-accent)] transition-colors duration-300"
-              >
-                Sign In
-              </Link>
-            </p>
-          </div>
+          {/* Trust indicators */}
+          <motion.div
+            className="mt-8 flex flex-wrap items-center justify-start gap-6 text-[13px] text-slate-500 font-medium"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 1 }}
+          >
+            <span className="flex items-center gap-1.5">
+              <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
+              Free to join
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Shield className="h-3.5 w-3.5 text-blue-400" />
+              Secure & Private
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+              Personalized experience
+            </span>
+          </motion.div>
         </motion.div>
-
-        {/* Trust indicators */}
-        <motion.div
-          className="mt-8 flex flex-wrap items-center justify-start gap-6 text-[13px] text-slate-500 font-medium"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 1 }}
-        >
-          <span className="flex items-center gap-1.5">
-            <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
-            Free to join
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Shield className="h-3.5 w-3.5 text-blue-400" />
-            Secure & Private
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-            Personalized experience
-          </span>
-        </motion.div>
-      </motion.div>
       </div>
     </div>
   );
