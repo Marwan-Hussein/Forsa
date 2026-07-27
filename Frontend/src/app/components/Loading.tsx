@@ -32,7 +32,7 @@ export default function ConcentricTicketLoader({
   const halfWidth = ticketWidth / 2;
   const ticketHeight = 36;
   const halfHeight = ticketHeight / 2;
-  const lineSpeed= 1.5;
+  const lineSpeed= 1;
   return (
     <div
       className={className}
@@ -57,9 +57,7 @@ export default function ConcentricTicketLoader({
         .ticket-cw,
         .ticket-ccw,
         .line-cw-x1,
-        .line-ccw-x1,
-        .line-cw-x2,
-        .line-ccw-x2 {
+        .line-ccw-x1{
           transform-origin: 60px 60px;
         }
 
@@ -80,17 +78,7 @@ export default function ConcentricTicketLoader({
 
         /* Line 2: Counter-Clockwise (3.5s) */
         .line-ccw-x1 {
-          animation: rotateCCW ${lineSpeed+1}s linear infinite;
-        }
-
-        /* Line 3: Clockwise (4.5s) */
-        .line-cw-x2 {
-          animation: rotateCW ${lineSpeed+2}s linear infinite;
-        }
-
-        /* Line 4: Counter-Clockwise (5.5s) */
-        .line-ccw-x2 {
-          animation: rotateCCW ${lineSpeed+3}s linear infinite;
+          animation: rotateCCW ${lineSpeed}s linear infinite;
         }
       `}</style>
 
@@ -119,30 +107,6 @@ export default function ConcentricTicketLoader({
                 stroke="#75BBE2"
                 strokeWidth="3"
                 strokeLinecap="round"
-              />
-            </g>
-
-            {/* Line 3 */}
-            <g className="line-cw-x2">
-              <path
-                d="M 60 106 A 46 46 0 0 1 14 60"
-                fill="none"
-                stroke="#75BBE2"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                opacity="0.85"
-              />
-            </g>
-
-            {/* Line 4 */}
-            <g className="line-ccw-x2">
-              <path
-                d="M 116 60 A 56 56 0 0 1 60 116"
-                fill="none"
-                stroke="#75BBE2"
-                strokeWidth="2"
-                strokeLinecap="round"
-                opacity="0.7"
               />
             </g>
 
